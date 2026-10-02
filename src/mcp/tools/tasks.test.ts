@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { describe, expect, it, vi } from "vitest"
 import { z } from "zod"
 import { registerTaskTools } from "./tasks.js"
@@ -53,6 +53,12 @@ function makeTask(id: string, overrides: Partial<TaskSummary> = {}): TaskSummary
   }
 }
 
+// The tools register `z.object(...)` input schemas; expose the field shape so
+// assertions can address individual parameters.
+function shapeOf<T>(inputSchema: T): T {
+  return (inputSchema instanceof z.ZodObject ? inputSchema.shape : inputSchema) as T
+}
+
 function createMockServer() {
   const handlers = new Map<string, (...args: never[]) => Promise<unknown>>()
   const configs = new Map<string, { inputSchema?: Record<string, z.ZodTypeAny> }>()
@@ -64,7 +70,7 @@ function createMockServer() {
         handler: (...args: never[]) => Promise<unknown>
       ) => {
         handlers.set(name, handler)
-        configs.set(name, config)
+        configs.set(name, { ...config, inputSchema: shapeOf(config.inputSchema) })
       }
     ),
   } as unknown as McpServer

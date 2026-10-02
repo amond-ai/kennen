@@ -367,5 +367,21 @@ export function formatDispatchError(toolName: string, error: ZodError): string {
   const issue = error.issues[0]
   if (!issue) return `${toolName}: invalid arguments`
   const path = issue.path.length > 0 ? issue.path.join(".") : "(root)"
-  return `${toolName}: ${path}: ${issue.message}`
+  return `${toolName}: ${path}: ${issue.message}${receivedSuffix(issue)}`
+}
+
+// Echo the rejected value for enum / literal mismatches so the agent sees
+// what it sent. Only primitives are echoed: objects and arrays could be
+// large or carry secrets. Requires parsing with `{ reportInput: true }`.
+function receivedSuffix(issue: ZodError["issues"][number]): string {
+  if (issue.code !== "invalid_value") return ""
+  const input: unknown = issue.input
+  if (
+    typeof input !== "string" &&
+    typeof input !== "number" &&
+    typeof input !== "boolean"
+  ) {
+    return ""
+  }
+  return `, received '${String(input)}'`
 }

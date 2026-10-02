@@ -12,7 +12,7 @@
  */
 
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import {
   formatDispatchError,
@@ -1045,7 +1045,7 @@ export function registerTaskTools(server: McpServer, services: LoreServices): vo
         "- `action: 'reconcile'` — scan active tasks for resolution-shaped " +
         "memory matches and return ranked closure candidates with close " +
         "incantations. Read-only; never auto-closes.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["create", "update", "close", "close-many", "list", "reconcile"])
           .describe(
@@ -1228,10 +1228,10 @@ export function registerTaskTools(server: McpServer, services: LoreServices): vo
               "another formatter."
           ),
         scope: scopeInputSchema,
-      },
+      }),
     },
     async (args) => {
-      const parsed = taskDispatchSchema.safeParse(args)
+      const parsed = taskDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-task", parsed.error)))
       }

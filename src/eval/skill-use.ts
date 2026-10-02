@@ -880,7 +880,7 @@ function firstSatisfiedSupportSet(
 function readJsonlText<T>(
   raw: string,
   path: string,
-  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  schema: z.ZodType<T, unknown>,
   label: string
 ): T[] {
   const rows: T[] = []

@@ -125,7 +125,9 @@ const taskEvalTaskSchema = z
      * runs once with no memory seeded — the agent's tools see whatever
      * the workspace fixture itself includes (typically nothing).
      */
-    memoryConditions: z.record(memoryConditionSchema, z.string().min(1)).default({}),
+    memoryConditions: z
+      .partialRecord(memoryConditionSchema, z.string().min(1))
+      .default({}),
     verifiers: z.array(verifierSchema).min(1),
     /** Per-task timeout cap on the agent invocation, in milliseconds. */
     timeoutMs: z.number().int().positive().default(300_000),
@@ -181,7 +183,7 @@ const longitudinalExpectedContextSchema = z
     harmfulKeywords: z.array(z.string().min(1)).default([]),
   })
   .strict()
-  .default({})
+  .prefault({})
 
 const longitudinalSeededContextSchema = z
   .object({

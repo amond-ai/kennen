@@ -1,4 +1,4 @@
-import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/server"
 
 export type HelpRecipe = {
   tool: string

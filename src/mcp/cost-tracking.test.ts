@@ -1,8 +1,9 @@
 import { existsSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { z } from "zod"
 import { recordNotionRead, recordNotionWrite } from "../core/cost-accounting.js"
 import { readLedgerEvents, resolveCostTracking } from "../core/cost-ledger.js"
 import type { LoreServices } from "../services.js"
@@ -626,13 +627,19 @@ function actionSets(
   )
 }
 
+// The tools register `z.object(...)` input schemas; expose the field shape so
+// assertions can address individual parameters.
+function shapeOf<T>(inputSchema: T): T {
+  return (inputSchema instanceof z.ZodObject ? inputSchema.shape : inputSchema) as T
+}
+
 function createMockServer() {
   const handlers = new Map<string, Handler>()
   const configs = new Map<string, ToolConfig>()
   const server = {
     registerTool: vi.fn((name: string, config: ToolConfig, handler: Handler) => {
       handlers.set(name, handler)
-      configs.set(name, config)
+      configs.set(name, { ...config, inputSchema: shapeOf(config.inputSchema) })
     }),
   } as unknown as McpServer
   return {
@@ -662,12 +669,10 @@ function enumValuesOf(schema: unknown): string[] {
   let cursor = schema
   for (let i = 0; i < 8; i++) {
     if (!cursor || typeof cursor !== "object") return []
-    const def = (cursor as { _def?: { values?: unknown; innerType?: unknown } })._def
-    if (
-      Array.isArray(def?.values) &&
-      def.values.every((value) => typeof value === "string")
-    ) {
-      return [...def.values]
+    const def = (cursor as { _def?: { innerType?: unknown } })._def
+    const options = (cursor as { options?: unknown }).options
+    if (Array.isArray(options) && options.every((value) => typeof value === "string")) {
+      return [...options]
     }
     if (def?.innerType) {
       cursor = def.innerType

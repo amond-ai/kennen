@@ -78,7 +78,7 @@ vi.mock("./cost-tracking.js", () => ({
   installCostTrackingToolWrapper: mocks.installCostTrackingToolWrapper,
 }))
 
-vi.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
+vi.mock("@modelcontextprotocol/server", () => ({
   McpServer: vi.fn().mockImplementation(() => {
     const server: MockServer = {
       tools: new Map(),
@@ -92,7 +92,7 @@ vi.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
   }),
 }))
 
-vi.mock("@modelcontextprotocol/sdk/server/stdio.js", () => ({
+vi.mock("@modelcontextprotocol/server/stdio", () => ({
   StdioServerTransport: vi.fn().mockImplementation(() => {
     const transport = { kind: "stdio" as const }
     mocks.transports.push(transport)

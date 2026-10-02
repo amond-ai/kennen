@@ -2,7 +2,7 @@
 // ABOUTME: Edit when agent-facing memory inputs, validation hints, or dispatched actions change.
 
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import { formatDispatchError, toolError, withWakeUpCacheBump } from "../helpers.js"
 import { RICH_TEXT_PROPERTY_MAX_LEN } from "../../core/rich-text-schema.js"
@@ -63,7 +63,7 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
         "Use `lore-pinned` for pinned context blocks.\n\n" +
         "For architectural decisions prefer `lore-decision` with `action: 'create'` — it captures structured rationale and supersession chains.\n\n" +
         "`tags` is a closed vocabulary; for free-form labels (PR numbers, file paths, IDs) use `keywords`.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum([
             "save",
@@ -334,10 +334,10 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
             "(action='promote') Preview the audit block + resolved status without writing to the target vault. Mirrors `lore promote --dry-run`. Mis-resolved targets / missing identity / same-vault rejection all surface before the source read so a misconfigured call cannot burn target-vault quota."
           ),
         scope: scopeInputSchema,
-      },
+      }),
     },
     async (args) => {
-      const parsed = memoryDispatchSchema.safeParse(args)
+      const parsed = memoryDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-memory", parsed.error)))
       }

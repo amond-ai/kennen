@@ -296,7 +296,7 @@ vault:
 memory:
   synopsisMaxChars: 501
 `)
-    ).toThrow(/less than or equal to 500/)
+    ).toThrow(/<=500/)
 
     expect(() =>
       parseConfigAllowingInvalidHooks(`
@@ -305,7 +305,7 @@ vault:
 memory:
   synopsisMaxChars: 0
 `)
-    ).toThrow(/greater than or equal to 1/)
+    ).toThrow(/>=1/)
   })
 
   it("keeps cost tracking disabled by default when omitted", () => {

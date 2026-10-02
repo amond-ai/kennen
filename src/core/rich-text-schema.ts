@@ -77,7 +77,7 @@ function formatRichTextMetadataIssue(issue: z.ZodIssue): string {
 
   if (
     issue.code === z.ZodIssueCode.too_big &&
-    issue.type === "string" &&
+    issue.origin === "string" &&
     issue.maximum === RICH_TEXT_PROPERTY_MAX_LEN &&
     issue.inclusive === true &&
     issue.path.length === 1 &&

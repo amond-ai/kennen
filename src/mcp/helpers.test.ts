@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { z } from "zod"
 
 import {
   debugLogAutoFactFailure,
   debugLogFactTouchFailure,
   debugLogTouchFailure,
+  formatDispatchError,
   toolError,
 } from "./helpers.js"
 import { WriteBudgetExceededError } from "../notion/rate-limit.js"
@@ -367,5 +369,29 @@ describe("LORE_DEBUG redaction routing (issue #488)", () => {
         "[lore] fact-touch-failure: fact=fact-1 error=notion 429 tool=lore-query\n"
       )
     })
+  })
+})
+
+describe("formatDispatchError", () => {
+  const schema = z.object({ kind: z.enum(["note", "decision"]) })
+
+  it("echoes a rejected primitive value", () => {
+    const parsed = schema.safeParse({ kind: "task" }, { reportInput: true })
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(formatDispatchError("lore-memory", parsed.error)).toBe(
+      `lore-memory: kind: Invalid option: expected one of "note"|"decision", received 'task'`
+    )
+  })
+
+  it("never echoes object or array input", () => {
+    for (const kind of [{ secret: "x" }, ["note"]]) {
+      const parsed = schema.safeParse({ kind }, { reportInput: true })
+      expect(parsed.success).toBe(false)
+      if (parsed.success) return
+      const message = formatDispatchError("lore-memory", parsed.error)
+      expect(message).not.toContain("received")
+      expect(message).not.toContain("secret")
+    }
   })
 })

@@ -28,6 +28,8 @@ the same shape:
    `z.discriminatedUnion("action", [...])` schema parses the args inside the
    handler. Failed parses route through `formatDispatchError()` so the agent
    gets a single-line `tool: field: message` error instead of a stack trace.
+   Parse with `{ reportInput: true }` so enum and literal mismatches can echo
+   the rejected primitive value (`, received 'task'`).
 
 3. **One handler per action.** Handlers are local async functions named
    `handle<Action>` taking `(services, args) → Promise<ToolResult>`. The
@@ -49,14 +51,14 @@ const memoryDispatchSchema = z.discriminatedUnion("action", [
 server.registerTool("lore-memory", {
   title: "Memory operations",
   description: "Action-dispatched: save | archive | ...",
-  inputSchema: {
+  inputSchema: z.object({
     action: z.enum(["save", "archive", ...]).describe("..."),
     title: z.string().optional().describe("(action='save') Required."),
     memoryId: z.string().optional().describe("(action='archive') Required."),
     ...
-  },
+  }),
 }, async (args) => {
-  const parsed = memoryDispatchSchema.safeParse(args)
+  const parsed = memoryDispatchSchema.safeParse(args, { reportInput: true })
   if (!parsed.success) {
     return toolError(new Error(formatDispatchError("lore-memory", parsed.error)))
   }
@@ -92,7 +94,7 @@ that calls `server.registerTool()` for each tool. The pattern:
 
 ```typescript
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import { toolError } from "../helpers.js"
 
@@ -102,10 +104,10 @@ export function registerFooTools(server: McpServer, services: LoreServices): voi
     {
       title: "Human-readable title",
       description: "What this tool does. Include usage guidance for the AI.",
-      inputSchema: {
+      inputSchema: z.object({
         paramName: z.string().describe("What this parameter is for"),
         optionalParam: z.string().optional().describe("Optional context"),
-      },
+      }),
       annotations: { readOnlyHint: true }, // if tool only reads data
     },
     async ({ paramName, optionalParam }) => {
@@ -128,8 +130,9 @@ export function registerFooTools(server: McpServer, services: LoreServices): voi
    `toolError(err)` on failure. MCP protocol requires tools to report errors as
    content, not throw exceptions.
 
-3. **inputSchema**: Always uses Zod objects. Each field must have a `.describe()`
-   call explaining the parameter to the AI.
+3. **inputSchema**: Always a `z.object({ ... })` schema. MCP SDK v2 takes
+   Standard Schema objects; raw `{ field: z.string() }` shapes are deprecated.
+   Each field must have a `.describe()` call explaining the parameter to the AI.
 
 4. **Clear sentinels**: For optional update fields, omission always means
    "leave unchanged." For clearable non-string Notion properties, `null` is the

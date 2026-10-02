@@ -17,7 +17,7 @@
  * suites; this file specifically covers the dispatcher.
  */
 
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { describe, expect, it, vi } from "vitest"
 import { z } from "zod"
 import { registerContextTools } from "./context.js"
@@ -43,13 +43,19 @@ type ToolConfig = {
   [key: string]: unknown
 }
 
+// The tools register `z.object(...)` input schemas; expose the field shape so
+// assertions can address individual parameters.
+function shapeOf<T>(inputSchema: T): T {
+  return (inputSchema instanceof z.ZodObject ? inputSchema.shape : inputSchema) as T
+}
+
 function createMockServer() {
   const handlers = new Map<string, Handler>()
   const configs = new Map<string, ToolConfig>()
   const server = {
     registerTool: vi.fn((name: string, config: ToolConfig, handler: Handler) => {
       handlers.set(name, handler)
-      configs.set(name, config)
+      configs.set(name, { ...config, inputSchema: shapeOf(config.inputSchema) })
     }),
   } as unknown as McpServer
   return {
@@ -111,14 +117,15 @@ function renderConfigForSize(config: ToolConfig): string {
 
 function describeOf(schema: unknown): string {
   if (!schema || typeof schema !== "object") return ""
-  // Zod v3 stashes the .describe() string at `_def.description`. Walk
-  // down through wrappers (.optional() etc.) until we find one or run
-  // out of layers.
+  // Zod exposes the .describe() string as `description`. Walk down
+  // through wrappers (.optional() etc.) until we find one or run out of
+  // layers.
   let cursor: unknown = schema
   for (let i = 0; i < 6; i++) {
     if (!cursor || typeof cursor !== "object") return ""
-    const def = (cursor as { _def?: { description?: string; innerType?: unknown } })._def
-    if (def?.description) return def.description
+    const description = (cursor as { description?: string }).description
+    if (description) return description
+    const def = (cursor as { _def?: { innerType?: unknown } })._def
     if (def?.innerType) cursor = def.innerType
     else return ""
   }
@@ -127,8 +134,8 @@ function describeOf(schema: unknown): string {
 
 function enumValuesOf(schema: unknown): string[] {
   if (!schema || typeof schema !== "object") return []
-  const def = (schema as { _def?: { values?: unknown } })._def
-  if (Array.isArray(def?.values)) return [...def.values]
+  const options = (schema as { options?: unknown }).options
+  if (Array.isArray(options)) return [...options]
   return []
 }
 
@@ -682,7 +689,7 @@ describe("lore-memory polymorphic dispatcher", () => {
     } as never)
 
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("Invalid enum value")
+    expect(extractText(result)).toContain("Invalid option")
     expect(memoriesCreate).not.toHaveBeenCalled()
   })
 
@@ -1723,15 +1730,13 @@ describe("lore-task polymorphic dispatcher", () => {
     registerTaskTools(mock.server, makeServices() as never)
     const cfg = mock.config("lore-task")
     const schema = cfg.inputSchema as Record<string, unknown>
-    // Pull the `action` field's enum values via Zod internals. The mock
-    // captures the raw schema map, not a finalized JSON Schema; this
+    // Pull the `action` field's enum values from the Zod enum. The mock
+    // captures the schema field map, not a finalized JSON Schema; this
     // mirrors the helper at top of file.
-    const actionField = schema["action"] as
-      | { _def?: { values?: readonly string[] } }
-      | undefined
+    const actionField = schema["action"] as { options?: readonly string[] } | undefined
     expect(actionField).toBeDefined()
-    expect(actionField?._def?.values).toContain("reconcile")
-    expect(actionField?._def?.values).toContain("close-many")
+    expect(actionField?.options).toContain("reconcile")
+    expect(actionField?.options).toContain("close-many")
   })
 
   it("describes the reconcile action in the top-level description", () => {
