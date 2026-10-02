@@ -394,4 +394,17 @@ describe("formatDispatchError", () => {
       expect(message).not.toContain("secret")
     }
   })
+
+  it("echoes a rejected discriminator value on a single line", () => {
+    const union = z.discriminatedUnion("action", [
+      z.object({ action: z.literal("save") }),
+      z.object({ action: z.literal("search") }),
+    ])
+    const parsed = union.safeParse({ action: "sav\ne" }, { reportInput: true })
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(formatDispatchError("lore-memory", parsed.error)).toBe(
+      `lore-memory: action: Invalid discriminator value. Expected 'save' | 'search', received 'sav e'`
+    )
+  })
 })

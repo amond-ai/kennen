@@ -359,9 +359,9 @@ export async function fireFactTouchOnRead(
  * Render a Zod validation error as a single-line dispatch error message
  * for the polymorphic `lore-*` tools. Surfaces the first issue
  * with `field.path: message` so the calling agent can correct the call
- * without parsing a stack trace. Discriminated-union mismatches manifest
- * as `action: Invalid discriminator value` which already names the
- * offending field, so no extra formatting is needed for that case.
+ * without parsing a stack trace. Enum, literal, and discriminator
+ * mismatches also echo the rejected primitive value so the agent sees
+ * what it sent.
  */
 export function formatDispatchError(toolName: string, error: ZodError): string {
   const issue = error.issues[0]
@@ -370,12 +370,11 @@ export function formatDispatchError(toolName: string, error: ZodError): string {
   return `${toolName}: ${path}: ${issue.message}${receivedSuffix(issue)}`
 }
 
-// Echo the rejected value for enum / literal mismatches so the agent sees
-// what it sent. Only primitives are echoed: objects and arrays could be
-// large or carry secrets. Requires parsing with `{ reportInput: true }`.
+// Echo the rejected value for enum / literal / discriminator mismatches so
+// the agent sees what it sent. Only primitives are echoed: objects and arrays
+// could be large or carry secrets. Requires parsing with `{ reportInput: true }`.
 function receivedSuffix(issue: ZodError["issues"][number]): string {
-  if (issue.code !== "invalid_value") return ""
-  const input: unknown = issue.input
+  const input = rejectedValue(issue)
   if (
     typeof input !== "string" &&
     typeof input !== "number" &&
@@ -383,5 +382,19 @@ function receivedSuffix(issue: ZodError["issues"][number]): string {
   ) {
     return ""
   }
-  return `, received '${String(input)}'`
+  return `, received '${oneLine(String(input))}'`
+}
+
+// A discriminated-union mismatch reports the whole object as `input`, so the
+// rejected value is the discriminator property of that object.
+function rejectedValue(issue: ZodError["issues"][number]): unknown {
+  if (issue.code === "invalid_value") return issue.input
+  if (issue.code === "invalid_union" && "discriminator" in issue) {
+    const input: unknown = issue.input
+    const key = issue.discriminator
+    if (typeof key === "string" && typeof input === "object" && input !== null) {
+      return (input as Record<string, unknown>)[key]
+    }
+  }
+  return undefined
 }
