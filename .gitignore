@@ -11,6 +11,8 @@ dist/
 # version control. Copy .kennen.example.yaml to .kennen.yaml locally and fill
 # in your own pageId; the pre-commit guard rejects any staged .kennen.yaml.
 .kennen.yaml
+# .lore.yaml holds the same per-user vault values as .kennen.yaml; never commit it.
+.lore.yaml
 
 # OS
 .DS_Store

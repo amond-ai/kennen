@@ -19,8 +19,10 @@ log is the canonical source for those.
   under `~/.kennen/`. The topic-upsert fingerprint marker written into Notion
   page bodies is now `<!-- kennen-topic-upsert-sha256: … -->`, so revisions
   saved under the old marker are not recognized as duplicates on the next
-  upsert. The old names are not accepted. Entries for earlier releases keep
-  the names that were current when they shipped.
+  upsert, and memories tagged with the old `__lore-cleanup-orphan` keyword
+  sentinel are no longer excluded from search and list results. The old names
+  are not accepted. Entries for earlier releases keep the names that were
+  current when they shipped.
 - The MCP server now runs on MCP TypeScript SDK v2 (`@modelcontextprotocol/server`)
   and zod 4. The negotiated protocol is unchanged (2025-era revisions; the
   2026-07-28 revision is not enabled). What clients can observe:
@@ -1255,7 +1257,7 @@ move atomically per the release-coordinator pattern (#13).
   `lore migrate --migrate-tracking-to-tasks` still works; on 0.6.0
   the prose updates to reflect the migration command's removal.
 
-[Unreleased]: https://github.com/makenotion/lore/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/amond-ai/kennen/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/makenotion/lore/compare/v0.19.1...v1.0.0
 [0.19.1]: https://github.com/makenotion/lore/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/makenotion/lore/compare/v0.18.1...v0.19.0

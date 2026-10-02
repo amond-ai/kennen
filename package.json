@@ -80,7 +80,9 @@
     "notion",
     "mcp",
     "claude-code",
-    "cursor"
+    "cursor",
+    "kennen",
+    "memory"
   ],
   "homepage": "https://github.com/amond-ai/kennen#readme",
   "bugs": {

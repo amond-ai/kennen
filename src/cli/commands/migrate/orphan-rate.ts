@@ -37,8 +37,7 @@ import { FACT_PROPS } from "../../../notion/schema.js"
  * `SqlPartialResultError` / malformed response). A 400 /
  * `validation_error` re-throws so query-shape drift surfaces as an
  * operator-actionable failure rather than silently masking. The
- * fallback emits a one-line `[kennen] partial-failure` notice under
- * `KENNEN_DEBUG=1`.
+ * fallback emits a one-line `[kennen] partial-failure` notice on stderr.
  *
  * **Pre/post-pass labeling**. `apply` is the canonical signal for
  * which graph the metric measured. On `apply === true` (i.e.

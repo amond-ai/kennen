@@ -440,8 +440,8 @@ export class MemoryCreate {
         // `rich_text` segment cap is 2000 chars
         // (`RICH_TEXT_PROPERTY_MAX_LEN`), and the MCP boundary's
         // `keywordsSchema` accepts keywords up to exactly that cap.
-        // Concatenating ` __kennen-cleanup-orphan` (22 chars) onto a
-        // 2000-char keyword string would produce a 2022-char single
+        // Concatenating ` __kennen-cleanup-orphan` (24 chars) onto a
+        // 2000-char keyword string would produce a 2024-char single
         // segment that Notion rejects with a validation error. A
         // rejected cleanup write means `cleanedUp = false` and the
         // orphan stays live in the vault — exactly the partial-failure
