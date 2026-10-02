@@ -1,0 +1,30 @@
+src/cli/commands/migrate/orphan-rate.ts
+  s_ad34c75736933e::t_43a29bc6c31731 40
+CHANGELOG.md
+  s_ad34c75736933e::t_7fdff4e5bb7c1b 23-25
+  s_ad34c75736933e::t_43a29bc6c31731 1260
+  s_ad34c75736933e::t_49390217a82190 22
+.gitignore
+  s_ad34c75736933e::t_f514f69ee8979a 14
+  s_ad34c75736933e::t_43a29bc6c31731 15
+src/core/memory-create.ts
+  s_ad34c75736933e::t_43a29bc6c31731 443-444
+package.json
+  s_ad34c75736933e::t_43a29bc6c31731 83-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c295be090834ac282634f1b7aa506115f2ce06a8",
+  "prompts": {},
+  "sessions": {
+    "s_ad34c75736933e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3efe81-3327-413e-b2cf-d68f17808adc",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
