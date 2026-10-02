@@ -1,0 +1,21 @@
+README.md
+  s_ad34c75736933e::t_719034b1e76d17 262-264
+src/core/memory.test.ts
+  s_ad34c75736933e::t_3b8c0f3c057163 11902
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "164a7961a9ee16aca08e17a647277277b19be575",
+  "prompts": {},
+  "sessions": {
+    "s_ad34c75736933e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b3efe81-3327-413e-b2cf-d68f17808adc",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
