@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import { formatDispatchError, toolError } from "../helpers.js"
 import { handleRecall, handleSearch } from "./memory.js"
@@ -112,7 +112,7 @@ export function registerQueryTools(server: McpServer, services: LoreServices): v
         "- `action: 'ask'` — query facts and tasks about an entity. Returns Governance / Structure / Tasks buckets capped at 5 each (raise via `limit`). Prepends a project framing block by default (`includeContext: false` to suppress). Pass `asOf: 'YYYY-MM-DD'` for a transaction-time as-of recall (what Lore knew at that date) or `includeHistory: true` to surface invalidated facts inline.\n" +
         "- `action: 'audit'` — list facts, decisions, and tasks past their review-by date.\n\n" +
         "For tracked work (open / blocked / done), use `lore-task action='list'` rather than `lore-query`.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["recall", "search", "ask", "audit"])
           .describe(
@@ -254,11 +254,11 @@ export function registerQueryTools(server: McpServer, services: LoreServices): v
           .describe(
             "(action='ask') Include invalidated facts in the result (default false — only live facts surface). Useful for tracing how knowledge about an entity changed over time. The invalidation date renders inline on each historical row."
           ),
-      },
+      }),
       annotations: { readOnlyHint: true },
     },
     async (args) => {
-      const parsed = queryDispatchSchema.safeParse(args)
+      const parsed = queryDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-query", parsed.error)))
       }

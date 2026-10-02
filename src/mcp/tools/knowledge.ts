@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import {
   formatDispatchError,
@@ -814,7 +814,7 @@ export function registerKnowledgeTools(server: McpServer, services: LoreServices
         "- `action: 'extend'` — set or clear a fact's review-by date.\n\n" +
         "Every created fact MUST link back to a supporting memory via `sourceMemoryId` so `lore-query action='ask'` can retrace the reasoning. Pass a live Memories row ID directly, or pass `agent`+`session` matching an earlier `lore-memory action='save'` / `lore-decision action='create'` call in the same process and `sourceMemoryId` auto-links. If neither path produces a compatible Source memory, the create call is rejected before writing.\n\n" +
         "Decision predicates (`decided_by`, `supersedes_decision`, `informs`) and the auto-emitted `mentions` predicate are internal-only and not accepted here — `decided_by` / `supersedes_decision` / `informs` are auto-created by the decision tool family; `mentions` is auto-emitted by `lore-memory action='save'`. Use richer relationship predicates (`uses`, `depends_on`, etc.) for agent-curated edges.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["create", "invalidate", "extend"])
           .describe("Operation: create, invalidate, or extend (set/clear review date)."),
@@ -875,10 +875,10 @@ export function registerKnowledgeTools(server: McpServer, services: LoreServices
             "Required for action='invalidate' and action='extend'. The fact's page ID."
           ),
         scope: scopeInputSchema,
-      },
+      }),
     },
     async (args) => {
-      const parsed = factDispatchSchema.safeParse(args)
+      const parsed = factDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-fact", parsed.error)))
       }

@@ -151,7 +151,7 @@ const configSchema = z.object({
     .object({
       token: z
         .undefined({
-          invalid_type_error:
+          error:
             "auth.token has been removed. Use `lore auth --login` or set NOTION_API_TOKEN, then remove auth.token from .lore.yaml.",
         })
         .optional(),

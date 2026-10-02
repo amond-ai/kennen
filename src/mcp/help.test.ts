@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/server"
 
 import {
   HELP_RECIPES,

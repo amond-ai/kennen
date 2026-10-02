@@ -1718,7 +1718,7 @@ function resolveSkillRetrievalCorpusPaths(
 
 async function readJsonl<T>(
   path: string,
-  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  schema: z.ZodType<T, unknown>,
   label: string
 ): Promise<T[]> {
   const raw = await readFile(path, "utf-8")

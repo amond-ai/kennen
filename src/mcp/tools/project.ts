@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import { formatDispatchError, toolError } from "../helpers.js"
 import { resolveProjectByName } from "../../core/project-scope.js"
@@ -135,7 +135,7 @@ export function registerProjectTools(server: McpServer, services: LoreServices):
         "List projects or get details for one project. Action-dispatched:\n\n" +
         "- `action: 'list'` — list active projects by default (optionally filtered by `status`; use `archived` for archived-only or `any` to include archived with active).\n" +
         "- `action: 'get'` — get details for a project by `name`, including topics and recent activity.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["list", "get"])
           .describe(
@@ -151,11 +151,11 @@ export function registerProjectTools(server: McpServer, services: LoreServices):
           .string()
           .optional()
           .describe("(action='get') Project name. Required when action='get'."),
-      },
+      }),
       annotations: { readOnlyHint: true },
     },
     async (args) => {
-      const parsed = projectDispatchSchema.safeParse(args)
+      const parsed = projectDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-project", parsed.error)))
       }

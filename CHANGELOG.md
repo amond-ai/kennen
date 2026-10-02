@@ -11,6 +11,22 @@ log is the canonical source for those.
 
 ## [Unreleased]
 
+### Changed
+
+- The MCP server now runs on MCP TypeScript SDK v2 (`@modelcontextprotocol/server`)
+  and zod 4. The negotiated protocol is unchanged (2025-era revisions; the
+  2026-07-28 revision is not enabled). What clients can observe:
+  - `tools/list` input schemas are JSON Schema draft 2020-12, no longer set
+    top-level `additionalProperties: false`, and drop the `execution` field.
+    Unknown arguments are still stripped at runtime.
+  - Calling an unknown or disabled tool returns a JSON-RPC `-32602` error
+    instead of an `isError` tool result.
+  - SDK input-validation errors are single-line zod 4 messages without the
+    `MCP error -32602:` prefix. Dispatcher errors still echo a rejected enum
+    value (`, received 'task'`).
+- Numeric config fields in `.lore.yaml` now reject `Infinity` (e.g. YAML
+  `.inf`).
+
 ## [1.0.0] - 2026-08-04
 
 ### Changed

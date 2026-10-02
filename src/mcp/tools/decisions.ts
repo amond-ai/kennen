@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import {
   formatDispatchError,
@@ -1043,7 +1043,7 @@ export function registerDecisionTools(server: McpServer, services: LoreServices)
         "- `action: 'context'` — graph walk: every active decision governing an entity, resolved through any supersession chain.\n" +
         "- `action: 'supersede'` — atomically mark `oldDecisionId` superseded by `newDecisionId` and create the `supersedes_decision` fact.\n" +
         "- `action: 'review'` — mark reviewed; set or clear the review-by date (default +90 days).",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["create", "list", "get", "context", "supersede", "review"])
           .describe(
@@ -1210,10 +1210,10 @@ export function registerDecisionTools(server: McpServer, services: LoreServices)
           .optional()
           .describe("(action='supersede') Required. ID of the decision being replaced."),
         scope: scopeInputSchema,
-      },
+      }),
     },
     async (args) => {
-      const parsed = decisionDispatchSchema.safeParse(args)
+      const parsed = decisionDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-decision", parsed.error)))
       }

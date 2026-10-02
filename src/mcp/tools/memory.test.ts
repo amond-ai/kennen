@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { describe, expect, it, vi } from "vitest"
 import { z } from "zod"
 import { registerMemoryTools } from "./memory.js"
@@ -96,6 +96,12 @@ function makeTopic(id: string, overrides: Partial<Topic> = {}): Topic {
   }
 }
 
+// The tools register `z.object(...)` input schemas; expose the field shape so
+// assertions can address individual parameters.
+function shapeOf<T>(inputSchema: T): T {
+  return (inputSchema instanceof z.ZodObject ? inputSchema.shape : inputSchema) as T
+}
+
 function createMockServer() {
   const handlers = new Map<string, (...args: never[]) => Promise<unknown>>()
   const configs = new Map<string, { inputSchema?: Record<string, z.ZodTypeAny> }>()
@@ -106,7 +112,7 @@ function createMockServer() {
         config: { inputSchema?: Record<string, z.ZodTypeAny> },
         handler: (...args: never[]) => Promise<unknown>
       ) => {
-        configs.set(name, config)
+        configs.set(name, { ...config, inputSchema: shapeOf(config.inputSchema) })
         handlers.set(name, handler)
       }
     ),
@@ -130,7 +136,7 @@ function createMockServer() {
       if (!handler) throw new Error(`missing handler ${toolName}`)
       return (args: Record<string, unknown>) => handler({ ...args, action } as never)
     },
-    getInputSchema(name: string): z.ZodObject<z.ZodRawShape> {
+    getInputSchema(name: string): z.ZodObject<Record<string, z.ZodTypeAny>> {
       const config = configs.get(name)
       if (!config?.inputSchema) throw new Error(`missing inputSchema for ${name}`)
       return z.object(config.inputSchema)
@@ -8018,7 +8024,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
 
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
-    expect(text).toContain("kind: Invalid enum value")
+    expect(text).toContain("kind: Invalid option")
     expect(text).toContain("received 'task'")
 
     expect(findByName).not.toHaveBeenCalled()

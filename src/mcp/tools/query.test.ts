@@ -8,7 +8,7 @@
  * dispatcher's forwarding contract.
  */
 
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { describe, expect, it, vi } from "vitest"
 import { queryDispatchSchema, registerQueryTools } from "./query.js"
 import { registerKnowledgeTools } from "./knowledge.js"

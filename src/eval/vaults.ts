@@ -72,7 +72,7 @@ export const evalVaultSchema = z
     label: nonEmptyStringSchema,
     description: z.string().default(""),
     notionEnv: notionEnvSchema,
-    notionWorkspaceId: z.string().uuid(),
+    notionWorkspaceId: z.guid(),
     vaultPageId: pageIdSchema,
     defaultProjectName: nonEmptyStringSchema.optional(),
     defaultProjectEnvVar: envVarNameSchema.optional(),

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { JSONRPCMessage, JSONRPCResponse } from "@modelcontextprotocol/sdk/types.js"
+import type { JSONRPCMessage, JSONRPCResultResponse } from "@modelcontextprotocol/server"
 
 type PendingResponse = {
   resolve: (message: JSONRPCMessage) => void
@@ -26,7 +26,7 @@ vi.mock("../services.js", () => ({
   initServices: mocks.initServices,
 }))
 
-vi.mock("@modelcontextprotocol/sdk/server/stdio.js", () => ({
+vi.mock("@modelcontextprotocol/server/stdio", () => ({
   StdioServerTransport: vi.fn().mockImplementation(() => {
     const waiters = new Map<string | number, PendingResponse>()
     const transport: FakeTransport = {
@@ -245,9 +245,9 @@ describe("MCP help resources", () => {
 
 async function expectJsonRpcResult(
   response: Promise<JSONRPCMessage>
-): Promise<JSONRPCResponse & { result: unknown }> {
+): Promise<JSONRPCResultResponse & { result: unknown }> {
   const message = await response
   expect("error" in message ? message.error : undefined).toBeUndefined()
   expect("result" in message).toBe(true)
-  return message as JSONRPCResponse & { result: unknown }
+  return message as JSONRPCResultResponse & { result: unknown }
 }

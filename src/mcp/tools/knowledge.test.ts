@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { Client, PageObjectResponse } from "@notionhq/client"
 import { describe, expect, it, vi } from "vitest"
 import { registerKnowledgeTools } from "./knowledge.js"

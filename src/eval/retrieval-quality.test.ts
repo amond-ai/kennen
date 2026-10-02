@@ -349,9 +349,7 @@ cases:
       "utf-8"
     )
 
-    await expect(loadRetrievalQualitySuite(suitePath)).rejects.toThrow(
-      /greater than or equal to 10/
-    )
+    await expect(loadRetrievalQualitySuite(suitePath)).rejects.toThrow(/>=10/)
   })
 
   it("rejects contradictory expected and harmful labels", async () => {

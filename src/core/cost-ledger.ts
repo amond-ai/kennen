@@ -171,7 +171,7 @@ const modelRatesSchema = z
 const pricingTableSchema = z
   .object({
     source: z.string().optional(),
-    models: z.record(modelRatesSchema),
+    models: z.record(z.string(), modelRatesSchema),
   })
   .strict()
 

@@ -112,7 +112,7 @@ const evalTaskSchema = z
         limit: z.number().int().positive().default(5),
       })
       .strict()
-      .default({}),
+      .prefault({}),
   })
   .strict()
   .superRefine((task, ctx) => {

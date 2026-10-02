@@ -24,7 +24,7 @@
  */
 
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import type { LoreServices } from "../server.js"
 import {
   DEFAULT_PINNED_BLOCK_LIMIT,
@@ -157,7 +157,7 @@ export function registerPinnedTools(server: McpServer, services: LoreServices): 
         "- `action: 'unpin'` — flip a pinned block back to a regular memory.\n" +
         "- `action: 'update'` — change priority / audience / mutability. Pass `force: true` to override `Mutability: read-only`.\n" +
         "- `action: 'list'` — list active blocks for current project + audience (or vault-wide). Use `includeAllAudiences: true` to skip the audience filter — every block in scope surfaces regardless of audience tokens. Not an authorization boundary; the field is rendered metadata for human triage.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["pin", "unpin", "update", "list"])
           .describe("Operation: pin | unpin | update | list."),
@@ -223,10 +223,10 @@ export function registerPinnedTools(server: McpServer, services: LoreServices): 
           .describe(
             `(list) Max blocks returned (default ${DEFAULT_PINNED_BLOCK_LIMIT}, cap 100).`
           ),
-      },
+      }),
     },
     async (args) => {
-      const parsed = pinnedDispatchSchema.safeParse(args)
+      const parsed = pinnedDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-pinned", parsed.error)))
       }

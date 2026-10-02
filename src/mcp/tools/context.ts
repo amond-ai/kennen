@@ -1,4 +1,5 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
+import { z } from "zod"
 import type { LoreServices } from "../server.js"
 import { formatDispatchError, toolError } from "../helpers.js"
 import { handleDigest } from "./context/digest.js"
@@ -21,11 +22,11 @@ export function registerContextTools(server: McpServer, services: LoreServices):
         "- `action: 'status'` — vault page id, topology health when configured, database counts, active project, configured projects, background hook failures, a task summary line (active / overdue / stale / in-progress / blocked, plus a closure-rate line on vaults with the `Done At` column), and a proposed-memory inbox count line when proposed learnings exist (excludes proposed-state decisions, which surface via `lore-decision` instead).\n" +
         "- `action: 'wake-up'` — load digest + ranked memories when `userQuery` is set + recent memories + tasks + active facts + decisions requiring attention. Title-tier rows by default; `expand: true` for bodies. Pass `userQuery` after pivots; it suppresses pinned/upstream context unless `governanceContext: true`. Use `mode: 'task-only'` for one-shot retrieval. Pass `debug: true` for coverage counters.\n" +
         "- `action: 'digest'` — gather raw activity data for synthesis into a digest memory. Save the synthesis via `lore-memory` action='save' with source='digest'.",
-      inputSchema: contextInputSchema,
+      inputSchema: z.object(contextInputSchema),
       annotations: { readOnlyHint: true },
     },
     async (args) => {
-      const parsed = contextDispatchSchema.safeParse(args)
+      const parsed = contextDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
         return toolError(new Error(formatDispatchError("lore-context", parsed.error)))
       }

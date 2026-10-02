@@ -15,7 +15,7 @@
  */
 
 import { z } from "zod"
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 
 import {
   buildProposeProcedureInput,
@@ -472,7 +472,7 @@ export function registerProcedureTools(server: McpServer, services: LoreServices
         "- `action: 'propose'` — create a `Kind: procedure, Status: proposed` memory with structured activation conditions and steps. Validates every `sourceMemoryIds` entry resolves to a live source memory in scope; idempotent on `(topicKey, project-set)`. Supporting source ids render under the procedure body's `## Sources` section; `supersedesIds` (predecessor procedures / runbooks) write the `Supersedes` self-relation. Approval lives on the existing inbox surface (`lore-memory action='approve'`).\n" +
         "- `action: 'deprecate'` — flip an accepted procedure to `Status: deprecated` (history preserved). Rejects `proposed` rows (those leave via `lore-memory action='reject'`). Supersession workflow: pass `supersedesIds` at propose time, then run `lore-procedure action='deprecate'` on each predecessor after the replacement is approved.\n\n" +
         "Procedures are reviewed governance memory. The propose path never auto-promotes — raw session summaries do not become fleet-wide procedures.",
-      inputSchema: {
+      inputSchema: z.object({
         action: z
           .enum(["scan-candidates", "propose", "deprecate"])
           .describe("Operation: scan-candidates | propose | deprecate."),
@@ -564,11 +564,11 @@ export function registerProcedureTools(server: McpServer, services: LoreServices
           .describe(
             "(action='deprecate') Optional rationale; appended as a `## Deprecated` block to the procedure body."
           ),
-      },
+      }),
     },
     async (args): Promise<ToolResult> => {
       try {
-        const parsed = procedureDispatchSchema.safeParse(args)
+        const parsed = procedureDispatchSchema.safeParse(args, { reportInput: true })
         if (!parsed.success) {
           return toolError(new Error(formatDispatchError("lore-procedure", parsed.error)))
         }

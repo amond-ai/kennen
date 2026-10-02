@@ -9,8 +9,9 @@
  * - audience filtering on list
  */
 
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { describe, expect, it, vi } from "vitest"
+import { z } from "zod"
 import {
   registerPinnedTools,
   bodyContainsPinAuditLine,
@@ -30,13 +31,19 @@ type ToolConfig = {
   [key: string]: unknown
 }
 
+// The tools register `z.object(...)` input schemas; expose the field shape so
+// assertions can address individual parameters.
+function shapeOf<T>(inputSchema: T): T {
+  return (inputSchema instanceof z.ZodObject ? inputSchema.shape : inputSchema) as T
+}
+
 function createMockServer() {
   const handlers = new Map<string, Handler>()
   const configs = new Map<string, ToolConfig>()
   const server = {
     registerTool: vi.fn((name: string, config: ToolConfig, handler: Handler) => {
       handlers.set(name, handler)
-      configs.set(name, config)
+      configs.set(name, { ...config, inputSchema: shapeOf(config.inputSchema) })
     }),
   } as unknown as McpServer
   return {

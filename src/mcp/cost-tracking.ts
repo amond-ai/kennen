@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
+import type { McpServer } from "@modelcontextprotocol/server"
 import { z } from "zod"
 import { addCostOutputs, captureCostAccounting } from "../core/cost-accounting.js"
 import {
@@ -155,7 +155,7 @@ function zodEnumValues(schema: unknown): string[] {
   let cursor = schema
   for (let i = 0; i < 8; i++) {
     if (cursor instanceof z.ZodEnum) {
-      return [...cursor.options]
+      return cursor.options.filter((value): value is string => typeof value === "string")
     }
     if (cursor instanceof z.ZodOptional || cursor instanceof z.ZodNullable) {
       cursor = cursor.unwrap()
