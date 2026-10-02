@@ -288,11 +288,6 @@ and integration tokens (`secret_…`) are accepted on the wire; `kennen auth
 --whoami` surfaces the prefix classification so you can spot a wrong-token
 paste.
 
-`KENNEN_NOTION_TOKEN` is no longer read. If it is still set in your shell,
-move that value to `NOTION_API_TOKEN` only if it is a Personal Access
-Token. Integration tokens from `notion.so/profile/integrations` should be
-rotated to PATs from `notion.so/developers/tokens`.
-
 `auth.token` in `.kennen.yaml` is rejected at config-load time for every
 value. Move credentials to `NOTION_API_TOKEN` or `kennen auth --login`, then
 remove the field from `.kennen.yaml`.

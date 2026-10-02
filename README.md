@@ -259,11 +259,9 @@ and preflight access with:
 kennen auth --login
 ```
 
-Legacy token sources are not valid for new setup. `KENNEN_NOTION_TOKEN` is no
-longer read as an auth source; when no supported auth source resolves, Kennen
-only mentions it as a migration hint. Any `auth.token` value in `.kennen.yaml`
-is rejected at config load time. Use `NOTION_API_TOKEN` for Personal Access
-Tokens or `kennen auth --login` for ntn auth.
+Any `auth.token` value in `.kennen.yaml` is rejected at config load time. Use
+`NOTION_API_TOKEN` for Personal Access Tokens or `kennen auth --login` for ntn
+auth.
 
 #### Legacy Four-Database Vault Migration
 

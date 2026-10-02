@@ -429,14 +429,8 @@ export async function resolveAuth(
   // --status` / `--login` / `--whoami`. `kennen auth --login` is the
   // canonical wrapper; the ntn ambiguity hint is the actionable
   // piece when it applies, otherwise point at the wrapper.
-  const legacyEnvHint = process.env["KENNEN_NOTION_TOKEN"]
-    ? "Detected KENNEN_NOTION_TOKEN in the environment. This source was removed; " +
-      "move the value to NOTION_API_TOKEN only if it is a Notion Personal Access " +
-      "Token, otherwise rotate to a PAT."
-    : undefined
   throw new Error(
     "No Notion auth configured.\n" +
-      (legacyEnvHint ? legacyEnvHint + "\n" : "") +
       (ntnHint ? ntnHint + "\n" : "") +
       "Recommended: run `kennen auth --login` to authenticate via ntn.\n" +
       "Alternative: set NOTION_API_TOKEN with a Notion Personal Access Token."

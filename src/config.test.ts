@@ -487,7 +487,6 @@ const stderrText = (): string => stderrChunks.join("")
 
 const ENV_KEYS_TO_CLEAR = [
   "NOTION_API_TOKEN",
-  "KENNEN_NOTION_TOKEN",
   "NOTION_WORKSPACE_ID",
   "KENNEN_NOTION_BASE_URL",
   // ntn-native base-URL fallbacks consumed by `resolveOperatorBaseUrl`.
@@ -710,25 +709,6 @@ describe("resolveAuth", () => {
     await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/NOTION_API_TOKEN/)
     // The stale "Phase 2 will ship" copy must be gone.
     await expect(resolveAuth(undefined, SCRATCH)).rejects.not.toThrow(/once Phase 2/)
-  })
-
-  it("adds a removed KENNEN_NOTION_TOKEN hint when no supported source resolves", async () => {
-    setupNtnConfigHome()
-    setupHookStateDir()
-    process.env["KENNEN_NOTION_TOKEN"] = "legacy-removed-token"
-
-    let thrown: Error | undefined
-    try {
-      await resolveAuth(undefined, SCRATCH)
-    } catch (err) {
-      thrown = err as Error
-    }
-
-    expect(thrown?.message).toContain("No Notion auth configured.")
-    expect(thrown?.message).toContain("Detected KENNEN_NOTION_TOKEN")
-    expect(thrown?.message).toContain("NOTION_API_TOKEN")
-    expect(thrown?.message).toContain("rotate to a PAT")
-    expect(thrown?.message).not.toContain("legacy-removed-token")
   })
 
   it("throw message inlines the ntn ambiguity hint when auth.json carries multiple workspaces", async () => {

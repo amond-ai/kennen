@@ -11899,7 +11899,7 @@ describe("encodeCompareNotesRichText (0.9.0/02)", () => {
         JSON.stringify({
           verdict: "scoped",
           target: `page-${i}`,
-          reason: "kennenm ipsum dolor sit amet consectetur adipiscing elit",
+          reason: "lorem ipsum dolor sit amet consectetur adipiscing elit",
           judgedAt: "2026-04-30",
           promptVersion: "1",
         })
