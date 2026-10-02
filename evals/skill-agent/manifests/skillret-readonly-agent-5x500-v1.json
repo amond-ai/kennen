@@ -55,10 +55,10 @@
   "execution": {
     "suitePattern": "evals/skill-agent/skillret-readonly-agent-5x500-{001..005}.yaml",
     "conditions": [
-      "tool-driven-lore"
+      "tool-driven-kennen"
     ],
     "requiredConditions": [
-      "tool-driven-lore"
+      "tool-driven-kennen"
     ],
     "agent": {
       "kind": "codex",

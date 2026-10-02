@@ -681,7 +681,7 @@ describe("wake-up coverage counters", () => {
 
     expect(formatWakeUpCoverageReport(coverage)).toEqual([
       "Wake-up coverage:",
-      expect.stringContaining("[lore] wakeup: mode=default"),
+      expect.stringContaining("[kennen] wakeup: mode=default"),
     ])
   })
 })
@@ -1485,14 +1485,14 @@ describe("loadWakeUpData", () => {
 
   it("section count uses the true total, not the rendered slice", async () => {
     // `WakeUpSectionCounts.proposedMemories` must reflect inbox
-    // depth so the MCP debug-coverage surfaces (`lore status`
-    // coverage line, MCP `lore-context action='wake-up' debug=true`
+    // depth so the MCP debug-coverage surfaces (`kennen status`
+    // coverage line, MCP `kennen-context action='wake-up' debug=true`
     // output) report `sections.proposedMemories=25` for a 25-row
     // inbox even when only 20 rows fit in the rendered slice.
     // Operators most at risk of nudge fatigue should see depth.
     //
     // The shell hook (`src/hooks/helpers.ts`) intentionally passes
-    // `includeProposedMemories: false`, so its `LORE_DEBUG=1` log
+    // `includeProposedMemories: false`, so its `KENNEN_DEBUG=1` log
     // reports `sections.proposedMemories=0` by design. The depth
     // signal lives on the MCP and CLI status surfaces, not on the
     // hook log.

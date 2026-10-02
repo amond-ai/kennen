@@ -7,8 +7,8 @@ This page owns the read-upstream wake-up contract for configured
 
 ## Read inheritance
 
-When `.lore.yaml` declares one or more `upstreamVaults`, a full
-`lore-context action='wake-up'` adds a bounded, separately labeled
+When `.kennen.yaml` declares one or more `upstreamVaults`, a full
+`kennen-context action='wake-up'` adds a bounded, separately labeled
 `## Inherited from <Label>` section per upstream below the primary
 sections. Query-focused wake-up calls with `userQuery` skip inherited
 sections unless the caller passes `governanceContext: true`. The
@@ -79,15 +79,15 @@ structure.
   whose `toString()` itself throws degrades further to the
   literal `<unrenderable upstream error>` sentinel so the
   failure-isolation contract holds even when the redactor can't
-  format the value. Under `LORE_DEBUG=1`, one `[lore]
+  format the value. Under `KENNEN_DEBUG=1`, one `[kennen]
 upstream-vault-unavailable: label=<X> page=<page-id> error=<msg>`
   stderr line additionally fires per bundle per process — the
   whole line is routed through `redactDebugMessage`, so real
   Notion page ids are emitted as `<page-id>` (recon-class per
-  `src/debug-redact.ts`). The line is gated on `LORE_DEBUG`
+  `src/debug-redact.ts`). The line is gated on `KENNEN_DEBUG`
   because wake-up runs on every session start; subsequent
   retries inside the same process neither re-load the upstream
-  nor re-emit; the explicit retry surface is `lore status`,
+  nor re-emit; the explicit retry surface is `kennen status`,
   which constructs fresh bundles per invocation (governed by
   its own 60s cache TTL).
 - **Shared rate-limit bucket.** Every upstream read flows through
@@ -102,32 +102,32 @@ upstream-vault-unavailable: label=<X> page=<page-id> error=<msg>`
 ## Opting out
 
 There is no `--no-inherit` CLI flag — the operator-facing persistent
-toggle is the `.lore.yaml` config itself:
+toggle is the `.kennen.yaml` config itself:
 
 | Operator action                         | Effect                                                                    |
 | --------------------------------------- | ------------------------------------------------------------------------- |
-| Omit `upstreamVaults` from `.lore.yaml` | No inheritance code path runs. Byte-identical to pre-#286 wake-up output. |
+| Omit `upstreamVaults` from `.kennen.yaml` | No inheritance code path runs. Byte-identical to pre-#286 wake-up output. |
 | Remove one entry from `upstreamVaults`  | That upstream's section is dropped; siblings keep rendering.              |
 
 Programmatically, `WakeUpOptions.includeInheritedMemories: false` and
 `WakeUpOptions.inheritedMemoryLimit: 0` both skip the fan-out for one
 wake-up call. The shell-hook wake-up runner opts out by default because
 the hook never renders the inherited section. The MCP
-`lore-context action='wake-up'` surface defaults `governanceContext` to
+`kennen-context action='wake-up'` surface defaults `governanceContext` to
 false when `userQuery` is present and true for full catch-up calls.
 
 ## Promotion targets are NOT exposed as read upstreams
 
 `services.upstreams` carries only the configured `upstreamVaults` —
 not `promotionTargets`. Promotion is a deliberate write surface
-(`lore promote`, `lore-memory action='promote'`), not a read-
+(`kennen promote`, `kennen-memory action='promote'`), not a read-
 orchestration surface. Including promotion targets in
 `services.upstreams` would let read paths silently fan out to vaults
 the operator designated for review-gated writes only.
 
 ## Cross-references
 
-- [`docs/topology.md`](topology.md) — `lore status` topology section,
+- [`docs/topology.md`](topology.md) — `kennen status` topology section,
   health states, and recovery workflow.
 - [`docs/topology-promotion.md`](topology-promotion.md) — deliberate
   promotion workflow, audit block, guards, dry run, source validation,

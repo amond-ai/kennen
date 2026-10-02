@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, expect, it } from "vitest"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { Memory } from "../types.js"
 import {
   importSkillRetrievalCorpusToNotion,
@@ -128,7 +128,7 @@ describe("skill-retrieval runner", () => {
   })
 
   it("runs the keyword lane and writes a skill-retrieval artifact", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-"))
     const outPath = join(dir, "artifact.json")
 
     const { artifact, outPath: writtenPath } = await runSkillRetrievalSuite(
@@ -165,7 +165,7 @@ describe("skill-retrieval runner", () => {
   })
 
   it("imports a SkillRet corpus once and scores notion-ai through the manifest", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-notion-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-notion-"))
     const oversizedSkillMarkdown =
       "Prefer beta typography when dense scanning is required.\n\n" +
       "Dense dashboard typography guidance. ".repeat(3000)
@@ -343,7 +343,7 @@ retrieval:
           },
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const firstImport = await importSkillRetrievalCorpusToNotion(suitePath, {
       servicesFactory: async () => services,
@@ -545,7 +545,7 @@ retrieval:
   })
 
   it("recreates current manifest entries whose live Notion row disappeared", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-stale-live-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-stale-live-"))
     await writeFile(
       join(dir, "skills.jsonl"),
       [
@@ -631,7 +631,7 @@ notion:
           throw new Error("stale live row should be recreated, not updated")
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const firstImport = await importSkillRetrievalCorpusToNotion(suitePath, {
       servicesFactory: async () => services,
@@ -653,7 +653,7 @@ notion:
   })
 
   it("does not mark a legacy import manifest current during a limited repair", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-limit-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-limit-"))
     await writeFile(
       join(dir, "skills.jsonl"),
       [
@@ -750,7 +750,7 @@ retrieval:
           return testMemory(`memory-${skillId}`, String(input["title"] ?? ""))
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await importSkillRetrievalCorpusToNotion(suitePath, {
       servicesFactory: async () => services,
@@ -776,7 +776,7 @@ retrieval:
   })
 
   it("does not mark a failed full legacy repair current", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-repair-fail-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-repair-fail-"))
     await writeFile(
       join(dir, "skills.jsonl"),
       [
@@ -879,7 +879,7 @@ retrieval:
           }
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await importSkillRetrievalCorpusToNotion(suitePath, {
       servicesFactory: async () => services,
@@ -909,7 +909,7 @@ retrieval:
   })
 
   it("rejects fresh imports when another memory already owns the topic key", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-topic-key-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-topic-key-"))
     await writeFile(
       join(dir, "skills.jsonl"),
       JSON.stringify({
@@ -990,7 +990,7 @@ retrieval:
           throw new Error("create should not be called")
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await expect(
       importSkillRetrievalCorpusToNotion(suitePath, {
@@ -1001,7 +1001,7 @@ retrieval:
   })
 
   it("drains completed parallel imports before reporting failures", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-drain-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-drain-"))
     await writeFile(
       join(dir, "skills.jsonl"),
       [
@@ -1094,7 +1094,7 @@ retrieval:
           return testMemory("memory-skill-beta", title)
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await expect(
       importSkillRetrievalCorpusToNotion(suitePath, {
@@ -1111,7 +1111,7 @@ retrieval:
   })
 
   it("fails when qrels point at missing skills", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-retrieval-bad-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-retrieval-bad-"))
     await writeFile(
       join(dir, "skills.jsonl"),
       '{"id":"skill-one","name":"One","description":"","skill_md":""}\n',

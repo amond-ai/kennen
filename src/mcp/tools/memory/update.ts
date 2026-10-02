@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { debugLogAutoFactFailure, toolError } from "../../helpers.js"
 import { debugLogPartialFailures } from "../../../observability/partial-failure.js"
 import { resolveProjectIds } from "../../resolve.js"
@@ -101,7 +101,7 @@ function applyExpiryArgs(
   }
 }
 export async function handleUpdate(
-  services: LoreServices,
+  services: KennenServices,
   args: UpdateArgs
 ): Promise<ToolResult> {
   try {
@@ -203,7 +203,7 @@ export async function handleUpdate(
       })
       if (result.memory.kind === "state") {
         throw new Error(
-          "Cannot re-key a state memory through lore-memory action='update'. " +
+          "Cannot re-key a state memory through kennen-memory action='update'. " +
             "State topic keys are derived from subject-canonical saves with subject and replace=true."
         )
       }
@@ -230,11 +230,11 @@ export async function handleUpdate(
       const current = await loadCurrent()
       if (current?.kind === "state") {
         throw new Error(
-          `lore-memory action='update' cannot change a state memory's ${stateGuardedFields.join(
+          `kennen-memory action='update' cannot change a state memory's ${stateGuardedFields.join(
             " and "
           )}. ` +
-            "State memories are subject-canonical current-state rows; use lore-memory action='save' " +
-            "with subject and replace=true so Lore appends a revision and preserves the exact project scope used for future history lookups."
+            "State memories are subject-canonical current-state rows; use kennen-memory action='save' " +
+            "with subject and replace=true so Kennen appends a revision and preserves the exact project scope used for future history lookups."
         )
       }
     }
@@ -254,17 +254,17 @@ export async function handleUpdate(
     //    failure mode as the `kind: procedure` save-path block.
     //
     // 2. proposed → accepted on a procedure row via update —
-    //    `lore-memory action='approve'` (`recordReview`) is the
+    //    `kennen-memory action='approve'` (`recordReview`) is the
     //    only path that writes the `## Reviewed (YYYY-MM-DD)`
     //    audit with the reviewer identity. A bare status flip
     //    erases that audit.
     //
     // 3. proposed → rejected on a procedure row via update —
-    //    `lore-memory action='reject'` (`recordReview`) is the
+    //    `kennen-memory action='reject'` (`recordReview`) is the
     //    symmetric path; same audit-erasure concern.
     //
     // 4. accepted → deprecated on a procedure row via update —
-    //    `lore-procedure action='deprecate'` composes the
+    //    `kennen-procedure action='deprecate'` composes the
     //    `## Deprecated (YYYY-MM-DD)` audit block AND enforces the
     //    status-boundary gate (rejects proposed/superseded/rejected
     //    rows so they don't accidentally hit deprecated). A bare
@@ -300,22 +300,22 @@ export async function handleUpdate(
       const current = await loadCurrent()
       if (args.kind === "state" && current.kind !== "state") {
         throw new Error(
-          `lore-memory action='update' cannot promote kind='${current.kind}' to kind='state'. ` +
+          `kennen-memory action='update' cannot promote kind='${current.kind}' to kind='state'. ` +
             "State memories must be created through subject-canonical saves with subject and replace=true, " +
-            "so Lore derives one stable state topic key and preserves history in the revision chain."
+            "so Kennen derives one stable state topic key and preserves history in the revision chain."
         )
       }
       if (current.kind === "state" && args.kind !== undefined && args.kind !== "state") {
         throw new Error(
-          `lore-memory action='update' cannot demote a state memory to kind='${args.kind}'. ` +
+          `kennen-memory action='update' cannot demote a state memory to kind='${args.kind}'. ` +
             "State memory identity is tied to its subject-canonical topic key; changing kind would corrupt the current-state chain."
         )
       }
       // (1) Cross-kind promotion to procedure.
       if (args.kind === "procedure" && current.kind !== "procedure") {
         throw new Error(
-          `lore-memory action='update' cannot promote kind='${current.kind}' to kind='procedure'. ` +
-            "Procedures must be created via lore-procedure action='propose', which validates " +
+          `kennen-memory action='update' cannot promote kind='${current.kind}' to kind='procedure'. ` +
+            "Procedures must be created via kennen-procedure action='propose', which validates " +
             "supporting source memories, enforces the minimum-sources gate, probes the topic-key " +
             "slot for idempotency, and lands the row at Status: proposed for inbox review. " +
             "Cross-kind promotion via update would bypass every one of those gates."
@@ -325,19 +325,19 @@ export async function handleUpdate(
         // (5) Demotion away from procedure.
         if (args.kind !== undefined && args.kind !== "procedure") {
           throw new Error(
-            `lore-memory action='update' cannot demote a procedure to kind='${args.kind}'. ` +
+            `kennen-memory action='update' cannot demote a procedure to kind='${args.kind}'. ` +
               "The row's body carries procedure-specific `## Activation Conditions` / " +
               "`## Steps` / `## Sources` sections that would be orphaned by a kind change; " +
               "the row would also drop out of procedure-specific recall and wake-up rendering. " +
-              `If the procedure is no longer current, use lore-procedure action='deprecate' ` +
+              `If the procedure is no longer current, use kennen-procedure action='deprecate' ` +
               `with memoryId='${args.memoryId}' instead.`
           )
         }
         // (2) proposed → accepted.
         if (args.status === "accepted" && current.status !== "accepted") {
           throw new Error(
-            `lore-memory action='update' cannot flip a procedure to status='accepted'. ` +
-              "Approval is the inbox-review path — use lore-memory action='approve' " +
+            `kennen-memory action='update' cannot flip a procedure to status='accepted'. ` +
+              "Approval is the inbox-review path — use kennen-memory action='approve' " +
               `with memoryId='${args.memoryId}' so the \`## Reviewed (YYYY-MM-DD)\` audit ` +
               "block lands with the reviewer's identity. Bare status flips erase that audit."
           )
@@ -347,8 +347,8 @@ export async function handleUpdate(
         // clause would be dead code.
         if (args.status === "rejected" && current.status === "proposed") {
           throw new Error(
-            `lore-memory action='update' cannot flip a proposed procedure to status='rejected'. ` +
-              "Rejection is the inbox-review path — use lore-memory action='reject' " +
+            `kennen-memory action='update' cannot flip a proposed procedure to status='rejected'. ` +
+              "Rejection is the inbox-review path — use kennen-memory action='reject' " +
               `with memoryId='${args.memoryId}' so the \`## Reviewed (YYYY-MM-DD)\` audit ` +
               "block lands with the reviewer's identity."
           )
@@ -356,7 +356,7 @@ export async function handleUpdate(
         // (7) terminal/accepted → proposed reset. An operator could
         // otherwise flip a deprecated / superseded / rejected /
         // accepted procedure back to `Status: proposed` via update,
-        // then run `lore-memory action='approve'` and resurrect the
+        // then run `kennen-memory action='approve'` and resurrect the
         // row as accepted — bypassing both `## Deprecated` and
         // `## Reviewed` audit history on the resurrection path
         // (`recordReview` only requires `current.status === 'proposed'`).
@@ -365,18 +365,18 @@ export async function handleUpdate(
         // `supersedesIds` instead.
         if (args.status === "proposed" && current.status !== "proposed") {
           throw new Error(
-            `lore-memory action='update' cannot reset a procedure to status='proposed' (current: ${current.status}). ` +
+            `kennen-memory action='update' cannot reset a procedure to status='proposed' (current: ${current.status}). ` +
               "Procedures don't go backwards in the lifecycle — a deprecate / supersede / reject / accept transition " +
               "is terminal for that row. Ship a revision as a fresh proposal via " +
-              `lore-procedure action='propose' with \`supersedesIds: [${args.memoryId}]\` so the audit chain stays intact.`
+              `kennen-procedure action='propose' with \`supersedesIds: [${args.memoryId}]\` so the audit chain stays intact.`
           )
         }
         // (4) accepted/informational → deprecated.
         if (args.status === "deprecated" && current.status !== "deprecated") {
           throw new Error(
-            `lore-memory action='update' cannot flip a procedure to status='deprecated'. ` +
+            `kennen-memory action='update' cannot flip a procedure to status='deprecated'. ` +
               "Procedure deprecation has its own audit surface — use " +
-              `lore-procedure action='deprecate' memoryId='${args.memoryId}' so the ` +
+              `kennen-procedure action='deprecate' memoryId='${args.memoryId}' so the ` +
               "`## Deprecated (YYYY-MM-DD)` audit block lands and the status-boundary " +
               "gate (rejects proposed / superseded / rejected rows) enforces correctness."
           )
@@ -390,12 +390,12 @@ export async function handleUpdate(
         // status flip skips every step.
         if (args.status === "superseded" && current.status !== "superseded") {
           throw new Error(
-            `lore-memory action='update' cannot flip a procedure to status='superseded'. ` +
+            `kennen-memory action='update' cannot flip a procedure to status='superseded'. ` +
               "Procedure replacement is a two-step workflow: propose the replacement via " +
-              "lore-procedure action='propose' with `supersedesIds: [" +
+              "kennen-procedure action='propose' with `supersedesIds: [" +
               args.memoryId +
               "]`, approve it through the inbox, then deprecate this row via " +
-              `lore-procedure action='deprecate' memoryId='${args.memoryId}'. ` +
+              `kennen-procedure action='deprecate' memoryId='${args.memoryId}'. ` +
               "A bare status flip drops this row out of accepted recall without a " +
               "`## Deprecated` audit block and without guaranteeing a replacement relation."
           )
@@ -408,7 +408,7 @@ export async function handleUpdate(
     // `## Activation Conditions` / `## Steps` / `## Sources` sections
     // are what makes the row a procedure (not just a note tagged
     // `procedure`). Without this check, an agent calling
-    // `lore-memory action='update'` with `{ memoryId, content: "lol" }`
+    // `kennen-memory action='update'` with `{ memoryId, content: "lol" }`
     // would silently blank those sections and leave the row a
     // procedure-in-name-only. The kind/status gate above doesn't fire
     // on a pure content update, so this is the chokepoint.
@@ -426,12 +426,12 @@ export async function handleUpdate(
         )
         if (missingHeaders.length > 0) {
           throw new Error(
-            `lore-memory action='update' cannot blank the procedure body's required sections. ` +
+            `kennen-memory action='update' cannot blank the procedure body's required sections. ` +
               `The new content is missing: ${missingHeaders.join(", ")}. ` +
               "Procedures render under structured sections; an update that drops them leaves " +
               "a procedure-in-name-only row. Pass content that retains the three section headers " +
               "(`## Activation Conditions`, `## Steps`, `## Sources`), or deprecate the procedure " +
-              `via lore-procedure action='deprecate' memoryId='${args.memoryId}' if it's no longer current.`
+              `via kennen-procedure action='deprecate' memoryId='${args.memoryId}' if it's no longer current.`
           )
         }
         // Headers alone aren't enough — a body like `## Activation
@@ -445,16 +445,16 @@ export async function handleUpdate(
         )
         if (emptySections.length > 0) {
           throw new Error(
-            `lore-memory action='update' cannot leave a procedure's structural section${
+            `kennen-memory action='update' cannot leave a procedure's structural section${
               emptySections.length === 1 ? "" : "s"
             } empty. ` +
               `The new content has the header${
                 emptySections.length === 1 ? "" : "s"
               } but no body under: ${emptySections.join(", ")}. ` +
               "Procedures require at least one nonblank step under `## Steps` and at least one " +
-              "nonblank source line under `## Sources` (same contract `lore-procedure action='propose'` " +
+              "nonblank source line under `## Sources` (same contract `kennen-procedure action='propose'` " +
               "enforces at create time). Pass content with usable body under each required section, " +
-              `or deprecate the procedure via lore-procedure action='deprecate' memoryId='${args.memoryId}'.`
+              `or deprecate the procedure via kennen-procedure action='deprecate' memoryId='${args.memoryId}'.`
           )
         }
       }
@@ -632,7 +632,7 @@ export async function handleUpdate(
     // invalidates the corresponding existing fact. Symmetric contract
     // — without invalidate-on-remove, every entity rename (e.g.
     // `MemoryService` → `MemoryService.create`) would ratchet up the
-    // orphan-fact count for the source memory, polluting `lore-query
+    // orphan-fact count for the source memory, polluting `kennen-query
     // action='ask'` and the entity-graph wake-up surface with labels
     // the memory does not reference.
     //
@@ -712,15 +712,15 @@ export async function handleUpdate(
         // live); the next extraction-touching update on this memory
         // re-runs the probe and re-derives the diff, or an operator
         // can invalidate the orphan rows directly via
-        // `lore-fact action='invalidate'`.
-        debugLogPartialFailures("lore-memory", [
+        // `kennen-fact action='invalidate'`.
+        debugLogPartialFailures("kennen-memory", [
           { rootId: `${updated.id}: existing-mentions-probe`, error: err },
         ])
         existing = []
       }
       // Decode each existing fact's Object exactly once into a
       // tuple aligned with the source fact, then derive both sides
-      // of the diff from the decoded namespace. Pre-`lore migrate
+      // of the diff from the decoded namespace. Pre-`kennen migrate
       // --fix-fact-encoding` vaults still carry rows whose `Object`
       // is HTML-entity-encoded on disk (e.g. `Café &amp; Bar`); the
       // post-update extraction is decoded by `mentionedEntities`'s
@@ -745,7 +745,7 @@ export async function handleUpdate(
       // match. An existing fact whose decoded Object is still
       // surfaced but whose scope does not match the post-update
       // memory scope (because the operator re-scoped the source
-      // memory via `lore-memory action='update'` with `scope: { ... }`)
+      // memory via `kennen-memory action='update'` with `scope: { ... }`)
       // needs to be invalidated AND re-emitted under the new scope,
       // otherwise the fact stays at its original scope indefinitely
       // and either leaks or hides under the new reader context.
@@ -808,7 +808,7 @@ export async function handleUpdate(
       staleInvalidatedAttempted = staleFacts.length
       if (newCandidates.length > 0 || staleFacts.length > 0) {
         // Propagate the post-update scope onto newly-emitted mentions
-        // facts. A `lore-memory action='update'`
+        // facts. A `kennen-memory action='update'`
         // call that re-titles a session-scoped memory must produce
         // mentions facts with the SAME session scope; otherwise the
         // re-emit would land broadcast facts that leak across

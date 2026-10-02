@@ -362,7 +362,7 @@ async function runPatchedCommandVerifier(
   workspace: string,
   outputPath?: string
 ): Promise<RawVerifierResult> {
-  const verifierWorkspace = await mkdtemp(join(tmpdir(), "lore-eval-verifier-"))
+  const verifierWorkspace = await mkdtemp(join(tmpdir(), "kennen-eval-verifier-"))
   try {
     await cp(workspace, verifierWorkspace, {
       recursive: true,
@@ -564,8 +564,8 @@ function buildVerifierChildEnv(
   }
   out["CI"] = parentEnv["CI"] ?? "1"
   out["GOMODCACHE"] =
-    parentEnv["GOMODCACHE"] ?? resolve(tmpdir(), "lore-eval-go-mod-cache")
-  out["GOCACHE"] = parentEnv["GOCACHE"] ?? resolve(tmpdir(), "lore-eval-go-build-cache")
+    parentEnv["GOMODCACHE"] ?? resolve(tmpdir(), "kennen-eval-go-mod-cache")
+  out["GOCACHE"] = parentEnv["GOCACHE"] ?? resolve(tmpdir(), "kennen-eval-go-build-cache")
   return out
 }
 

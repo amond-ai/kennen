@@ -11,7 +11,7 @@ outputs, and fails nonzero if the default thresholds are missed. The `claude`
 provider runs the rendered autosave prompt with `claude -p` for repeated live
 samples with mutation/read tools disallowed, an empty strict MCP config, an
 explicit read-only replay instruction, and the prompt piped on stdin so replay
-cannot call Lore MCP tools, mutate a real Lore vault, or expose transcripts in
+cannot call Kennen MCP tools, mutate a real Kennen vault, or expose transcripts in
 argv.
 
 ## Run

@@ -1162,7 +1162,7 @@ describe("runFactDedupBackfill — scope-aware grouping (round-3)", () => {
 
 /**
  * The wake-up `## Overdue for Review` decision section and the MCP
- * `lore-query action='audit'` fan-out both consume the three
+ * `kennen-query action='audit'` fan-out both consume the three
  * `queryOverdue*` paths. Without scope filtering, a session-scoped
  * overdue fact / decision / task surfaces to readers whose session
  * id differs — the exact retrieval-contract violation issue #283

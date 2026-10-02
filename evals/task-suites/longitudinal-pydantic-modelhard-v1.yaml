@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-pydantic-modelhard-v1
+name: kennen-longitudinal-pydantic-modelhard-v1
 description: >-
   Model-hard pydantic longitudinal suite. Scenarios pin a stable pydantic
   release and ask the agent to implement application code against an intrinsic
@@ -10,8 +10,8 @@ description: >-
 seededCorpus: ../vault-seeds/pydantic-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: pydantic-alias-precedence-roundtrip-v1
     difficulty: hard
@@ -34,7 +34,7 @@ scenarios:
     phaseB:
       promptId: pydantic-alias-precedence-roundtrip-v1-use
       prompt: >-
-        Implement a new module `lore_solution.py` at the repository root that
+        Implement a new module `kennen_solution.py` at the repository root that
         bridges two systems with incompatible key vocabularies for the same
         record. Define a pydantic v2 `BaseModel` subclass named `Transfer` with
         exactly three fields whose Python attribute names are `amount`,
@@ -62,7 +62,7 @@ scenarios:
         configuration carry the input-key and output-key vocabularies, and have
         `archive` delegate to the model's standard dump-by-alias path. The clean
         attribute names (`amount`, `currency`, `reference`) are how the record is
-        read in memory after ingest. Do not edit files outside `lore_solution.py`.
+        read in memory after ingest. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         A pydantic field can carry independent input-key and output-key aliases;
@@ -82,14 +82,14 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_pydantic_alias.py b/lore_eval_hidden_pydantic_alias.py
+          diff --git a/kennen_eval_hidden_pydantic_alias.py b/kennen_eval_hidden_pydantic_alias.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_pydantic_alias.py
+          +++ b/kennen_eval_hidden_pydantic_alias.py
           @@ -0,0 +1,71 @@
           +import pytest
           +
-          +from lore_solution import Transfer, archive, ingest
+          +from kennen_solution import Transfer, archive, ingest
           +
           +
           +UPSTREAM = {"gross": 1250, "ccy": "EUR", "memo": "invoice-7741"}
@@ -168,6 +168,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_pydantic_alias.py
+          - kennen_eval_hidden_pydantic_alias.py
           - -q
         timeoutMs: 300000

@@ -1,6 +1,6 @@
 # Synthetic fixture. Do not copy production vault content into eval fixtures.
 name: noisy-memory
-description: Lore contains plausible but irrelevant memories for the task.
+description: Kennen contains plausible but irrelevant memories for the task.
 memories:
   - id: note/api-token-storage
     title: API tokens stay in developer keychains

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Operator-rerunnable probe for the server-side throughput ceiling of
- * read endpoints Lore depends on. Bypasses Lore's outbound rate-limit
+ * read endpoints Kennen depends on. Bypasses Kennen's outbound rate-limit
  * wrapper so the SERVER-side ceiling is observable; the wrapper-side
  * pacing is governed by the `DEFAULT_NOTION_*` constants on the shared
  * client and the per-endpoint defaults in
@@ -17,10 +17,10 @@
  *
  *   The `--yes` flag is required. Without it the probe refuses to run.
  *
- * Auth selection (matches the canonical Lore auth-resolution order):
+ * Auth selection (matches the canonical Kennen auth-resolution order):
  *   1. `NOTION_API_TOKEN` env (canonical, ntn-shaped tokens / PATs)
  *   2. ntn-managed `auth.json`, resolved via `XDG_CONFIG_HOME` or
- *      `~/.config`, keyed by `NOTION_WORKSPACE_ID` / `.lore.yaml`
+ *      `~/.config`, keyed by `NOTION_WORKSPACE_ID` / `.kennen.yaml`
  *      `auth.workspaceId`, or single-entry auto-pick.
  *
  * Probe matrix (per endpoint):
@@ -88,7 +88,7 @@ function ntnEnvBaseUrl(env) {
 
 function resolveOperatorBaseUrl() {
   return (
-    process.env["LORE_NOTION_BASE_URL"] ||
+    process.env["KENNEN_NOTION_BASE_URL"] ||
     process.env["NOTION_BASE_URL"] ||
     process.env["NOTION_API_BASE_URL"] ||
     ntnEnvBaseUrl(process.env["NOTION_ENV"]) ||
@@ -121,13 +121,13 @@ function resolveNtnBaseUrl() {
   }
 }
 
-function findLoreConfigPath() {
-  const root = process.env["LORE_CONFIG_ROOT"]?.trim()
-  if (root) return join(resolve(root), ".lore.yaml")
+function findKennenConfigPath() {
+  const root = process.env["KENNEN_CONFIG_ROOT"]?.trim()
+  if (root) return join(resolve(root), ".kennen.yaml")
 
   let dir = resolve(process.cwd())
   while (true) {
-    const candidate = join(dir, ".lore.yaml")
+    const candidate = join(dir, ".kennen.yaml")
     if (existsSync(candidate)) return candidate
     const parent = dirname(dir)
     if (parent === dir) return null
@@ -135,8 +135,8 @@ function findLoreConfigPath() {
   }
 }
 
-function loadLoreConfig() {
-  const path = findLoreConfigPath()
+function loadKennenConfig() {
+  const path = findKennenConfigPath()
   if (!path) return { path: null, config: {} }
   const yaml = readFileSync(path, "utf8")
   const parsed = parseYaml(yaml)
@@ -145,11 +145,11 @@ function loadLoreConfig() {
 }
 
 /**
- * Honor the same env-first priority chain Lore's own auth-resolution
- * path uses, but stop short of importing Lore's TypeScript source into
+ * Honor the same env-first priority chain Kennen's own auth-resolution
+ * path uses, but stop short of importing Kennen's TypeScript source into
  * this `.mjs` tool.
  */
-function loadToken(loreConfig) {
+function loadToken(kennenConfig) {
   const apiTokenEnv = process.env["NOTION_API_TOKEN"]
   if (apiTokenEnv) {
     return {
@@ -170,8 +170,8 @@ function loadToken(loreConfig) {
   )
   const explicit =
     process.env["NOTION_WORKSPACE_ID"] ??
-    (typeof loreConfig?.auth?.workspaceId === "string"
-      ? loreConfig.auth.workspaceId
+    (typeof kennenConfig?.auth?.workspaceId === "string"
+      ? kennenConfig.auth.workspaceId
       : undefined)
 
   if (explicit) {
@@ -188,7 +188,7 @@ function loadToken(loreConfig) {
   if (entries.length !== 1) {
     throw new Error(
       `${authPath} has ${entries.length} usable workspaces; set ` +
-        `NOTION_WORKSPACE_ID or auth.workspaceId in .lore.yaml to one of: ` +
+        `NOTION_WORKSPACE_ID or auth.workspaceId in .kennen.yaml to one of: ` +
         entries.map(([workspaceId]) => workspaceId).join(", "),
     )
   }
@@ -197,11 +197,11 @@ function loadToken(loreConfig) {
   return { token, workspaceId, baseUrl: resolveNtnBaseUrl() }
 }
 
-function loadVaultConfig(loreConfig, configPath) {
-  const explicit = process.env["LORE_PROBE_VAULT_PAGE_ID"]
+function loadVaultConfig(kennenConfig, configPath) {
+  const explicit = process.env["KENNEN_PROBE_VAULT_PAGE_ID"]
   if (explicit) return { pageId: explicit }
 
-  const pageId = loreConfig?.vault?.pageId
+  const pageId = kennenConfig?.vault?.pageId
   if (typeof pageId === "string" && pageId.length > 0) {
     return { pageId }
   }
@@ -209,7 +209,7 @@ function loadVaultConfig(loreConfig, configPath) {
   throw new Error(
     configPath
       ? `${configPath} does not contain vault.pageId`
-      : "No .lore.yaml found; set LORE_PROBE_VAULT_PAGE_ID or run from a Lore project",
+      : "No .kennen.yaml found; set KENNEN_PROBE_VAULT_PAGE_ID or run from a Kennen project",
   )
 }
 
@@ -411,9 +411,9 @@ async function main() {
     process.exit(2)
   }
 
-  const { path: configPath, config: loreConfig } = loadLoreConfig()
-  const { token, workspaceId, baseUrl } = loadToken(loreConfig)
-  const { pageId: vaultPageId } = loadVaultConfig(loreConfig, configPath)
+  const { path: configPath, config: kennenConfig } = loadKennenConfig()
+  const { token, workspaceId, baseUrl } = loadToken(kennenConfig)
+  const { pageId: vaultPageId } = loadVaultConfig(kennenConfig, configPath)
 
   console.log(`Probe v${VERSION} — endpoint=${args.endpoint}`)
   console.log(`Workspace id: ${workspaceId}`)

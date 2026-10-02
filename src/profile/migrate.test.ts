@@ -16,7 +16,7 @@ import {
   type ProfileMigrationPlan,
   validateProfileBundle,
 } from "./migrate.js"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 
 function writeFiles(dir: string, files: Record<string, string>): void {
   for (const [rel, content] of Object.entries(files)) {
@@ -40,7 +40,7 @@ function minimalServices(
     dataSources: { retrieve: vi.fn(), query: vi.fn(), update: vi.fn() },
     pages: { update: vi.fn() },
   }
-): LoreServices {
+): KennenServices {
   return {
     configRoot,
     config: { vault: { pageId: "vault-page-id" } },
@@ -54,12 +54,12 @@ function minimalServices(
       },
     },
     client,
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("parseMigrationFile", () => {
   it("parses every supported step kind", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -83,7 +83,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects destructive step kinds", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       for (const kind of REJECTED_PROFILE_MIGRATION_STEP_KINDS) {
         const path = join(dir, `${kind}.yaml`)
@@ -99,7 +99,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects unknown step kinds", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -113,7 +113,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects backfill steps without an empty/unset filter for the target property", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -127,7 +127,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects does_not_contain as the backfill empty-cell guard", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -141,7 +141,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects backfill steps whose limit exceeds the cap", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -155,7 +155,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects add_property steps that target a core memories property", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -169,7 +169,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects option appends to non-taxonomy core properties", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -183,7 +183,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects reserved fact predicates in option append migrations", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -197,7 +197,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("allows option appends to profile-owned core taxonomy columns", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -212,7 +212,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects backfills that target core properties", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -226,7 +226,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects add_property steps that use an unsupported additive type", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -240,7 +240,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects steps whose id collides with another in the same migration", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -254,7 +254,7 @@ describe("parseMigrationFile", () => {
   })
 
   it("rejects steps that explicitly set destructive: true", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(
@@ -282,7 +282,7 @@ describe("PROFILE_MIGRATION_STEP_KINDS", () => {
 
 describe("findMigrationFile", () => {
   it("throws when the migration file is missing", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       expect(() => findMigrationFile(dir, "1.0.0", "1.1.0")).toThrow(
         ProfileMigrationError
@@ -295,7 +295,7 @@ describe("findMigrationFile", () => {
 
 describe("buildMigrationPlan", () => {
   function writeSourceProfileWithPinMigration(configRoot: string): void {
-    const sourceDir = join(configRoot, ".lore", "profiles", "local", "sales", "1.0.0")
+    const sourceDir = join(configRoot, ".kennen", "profiles", "local", "sales", "1.0.0")
     writeFiles(sourceDir, {
       ...minimalProfileFiles("sales", "1.0.0"),
       "migrations/1.0.0__1.1.0.yaml":
@@ -304,7 +304,7 @@ describe("buildMigrationPlan", () => {
   }
 
   it("rejects a config-pin migration when the target profile is missing", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       writeSourceProfileWithPinMigration(dir)
 
@@ -322,10 +322,10 @@ describe("buildMigrationPlan", () => {
   })
 
   it("rejects a config-pin migration when the target profile cannot load", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       writeSourceProfileWithPinMigration(dir)
-      const targetDir = join(dir, ".lore", "profiles", "installed", "sales", "1.1.0")
+      const targetDir = join(dir, ".kennen", "profiles", "installed", "sales", "1.1.0")
       writeFiles(targetDir, minimalProfileFiles("support", "1.1.0"))
 
       await expect(
@@ -344,9 +344,9 @@ describe("buildMigrationPlan", () => {
 
 describe("rewriteConfigProfilePin", () => {
   it("replaces an existing profile: line in place", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
-      const path = join(dir, ".lore.yaml")
+      const path = join(dir, ".kennen.yaml")
       writeFileSync(path, 'vault:\n  pageId: "abc"\nprofile: default@1.0.0\n')
       rewriteConfigProfilePin(path, "sales@1.1.0")
       expect(readFileSync(path, "utf-8")).toContain("profile: sales@1.1.0")
@@ -356,9 +356,9 @@ describe("rewriteConfigProfilePin", () => {
   })
 
   it("appends profile: when the file lacks one", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
-      const path = join(dir, ".lore.yaml")
+      const path = join(dir, ".kennen.yaml")
       writeFileSync(path, 'vault:\n  pageId: "abc"\n')
       rewriteConfigProfilePin(path, "sales@1.1.0")
       expect(readFileSync(path, "utf-8")).toContain("profile: sales@1.1.0")
@@ -370,14 +370,14 @@ describe("rewriteConfigProfilePin", () => {
 
 describe("ledgerPath", () => {
   it("incorporates the vault page sha12 and profile name segments", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = ledgerPath(
         dir,
         { profile: "support", from: "1.0.0", to: "1.1.0", steps: [] },
         "vault-page-id"
       )
-      expect(path).toContain(".lore/profile-migrations/support/")
+      expect(path).toContain(".kennen/profile-migrations/support/")
       expect(path).toMatch(/1\.0\.0__1\.1\.0\.[0-9a-f]{12}\.json$/)
     } finally {
       rmSync(dir, { recursive: true, force: true })
@@ -387,7 +387,7 @@ describe("ledgerPath", () => {
 
 describe("digestMigrationFile", () => {
   it("produces a sha256 digest over the file bytes", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const path = join(dir, "migration.yaml")
       writeFileSync(path, "profile: sales\nfrom: 1.0.0\nto: 1.1.0\nsteps: []\n")
@@ -400,7 +400,7 @@ describe("digestMigrationFile", () => {
 
 describe("applyMigrationPlan", () => {
   it("caps backfill scans by row limit even when matched rows are non-empty", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       const migrationPath = join(dir, "migration.yaml")
       writeFileSync(
@@ -448,7 +448,7 @@ describe("applyMigrationPlan", () => {
           pages: { update },
         }),
         plan,
-        { configPath: join(dir, ".lore.yaml") }
+        { configPath: join(dir, ".kennen.yaml") }
       )
 
       expect(query).toHaveBeenCalledTimes(1)
@@ -463,7 +463,7 @@ describe("applyMigrationPlan", () => {
 
 describe("validateProfileBundle", () => {
   it("loads a valid bundle and rejects an invalid one", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       writeFiles(dir, minimalProfileFiles("custom"))
       const profile = validateProfileBundle(dir)
@@ -478,7 +478,7 @@ describe("validateProfileBundle", () => {
   })
 
   it("rejects bundles that use the reserved `extends` field", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-mig-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-mig-"))
     try {
       writeFiles(dir, minimalProfileFiles("custom"))
       writeFileSync(

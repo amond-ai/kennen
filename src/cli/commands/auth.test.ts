@@ -113,7 +113,7 @@ import {
 import { MIN_NTN_VERSION } from "../../auth/ntn.js"
 import type { ResolvedAuth } from "../../config.js"
 
-const SCRATCH = mkdtempSync(join(tmpdir(), "lore-auth-cli-test-"))
+const SCRATCH = mkdtempSync(join(tmpdir(), "kennen-auth-cli-test-"))
 afterAll(() => {
   rmSync(SCRATCH, { recursive: true, force: true })
 })
@@ -124,7 +124,7 @@ afterAll(() => {
 const scratchDirsToClean: string[] = []
 
 /**
- * Set up a scratch project directory containing a `.lore.yaml` with a
+ * Set up a scratch project directory containing a `.kennen.yaml` with a
  * minimal vault config, and chdir into it. Returns the directory path
  * so tests can pin assertions against the resolved config path.
  *
@@ -136,7 +136,7 @@ function setupVaultProject(opts: { authToken?: string } = {}): string {
   const yaml =
     `vault:\n  pageId: page-${Math.random().toString(36).slice(2, 10)}\n` +
     (opts.authToken ? `auth:\n  token: ${opts.authToken}\n` : "")
-  writeFileSync(join(dir, ".lore.yaml"), yaml, "utf-8")
+  writeFileSync(join(dir, ".kennen.yaml"), yaml, "utf-8")
   scratchDirsToClean.push(dir)
   process.chdir(dir)
   return dir
@@ -218,8 +218,8 @@ afterEach(() => {
   delete process.env["NOTION_API_TOKEN"]
   delete process.env["NOTION_WORKSPACE_ID"]
   delete process.env["NOTION_ENV"]
-  delete process.env["LORE_NOTION_BASE_URL"]
-  delete process.env["LORE_SUPPRESS_DEPRECATIONS"]
+  delete process.env["KENNEN_NOTION_BASE_URL"]
+  delete process.env["KENNEN_SUPPRESS_DEPRECATIONS"]
   delete process.env["XDG_CONFIG_HOME"]
   restoreIsTTY()
   // Drop scratch dirs created by this test so SCRATCH stays small.
@@ -319,7 +319,7 @@ describe("runStatus — no vault context", () => {
   it("prints the no-vault-context banner and not-authenticated when no token resolves", async () => {
     setupNoVaultContext()
     await runStatus()
-    expect(stdoutText()).toContain("Lore auth status (no vault context)")
+    expect(stdoutText()).toContain("Kennen auth status (no vault context)")
     expect(stdoutText()).toContain("Status: not authenticated")
   })
 
@@ -375,7 +375,7 @@ describe("runStatus — vault context", () => {
     expect(stdoutText()).toContain("notion.so/developers/tokens")
     expect(stdoutText()).toContain("PAT's owning Notion identity")
     expect(stdoutText()).toContain("Export the PAT as NOTION_API_TOKEN")
-    expect(stdoutText()).not.toContain("lore auth --login")
+    expect(stdoutText()).not.toContain("kennen auth --login")
   })
 
   it("surfaces integration-token warning before PAT-source not-found recovery", async () => {
@@ -429,7 +429,7 @@ describe("runStatus — vault context", () => {
     expect(stdoutText()).toContain("notion.so/developers/tokens")
     expect(stdoutText()).toContain("PAT's owning Notion identity")
     expect(stdoutText()).toContain("Export the PAT as NOTION_API_TOKEN")
-    expect(stdoutText()).not.toContain("lore auth --login")
+    expect(stdoutText()).not.toContain("kennen auth --login")
   })
 
   it("surfaces integration-token warning on PAT-source unauthorized preflight", async () => {
@@ -451,7 +451,7 @@ describe("runStatus — vault context", () => {
     expect(secretIndex).toBeLessThan(out.indexOf("Rotate the PAT"))
     expect(out).toContain("notion.so/profile/integrations")
     expect(out).toContain("notion.so/developers/tokens")
-    expect(out).not.toContain("lore auth --login")
+    expect(out).not.toContain("kennen auth --login")
     expect(out).not.toContain("    4.")
   })
 
@@ -471,7 +471,7 @@ describe("runStatus — vault context", () => {
     await runStatus()
     expect(stdoutText()).toContain("✗ Vault preflight: token rejected (unauthorized)")
     expect(stdoutText()).toContain("Recommended for ntn auth")
-    expect(stdoutText()).toContain("lore auth --login")
+    expect(stdoutText()).toContain("kennen auth --login")
     expect(stdoutText()).not.toContain("Rotate the PAT")
   })
 
@@ -492,7 +492,7 @@ describe("runStatus — vault context", () => {
     // operator's time. Pin against a future revert that lumps it
     // back into `unauthorized`'s copy.
     expect(stdoutText()).not.toContain(
-      "Recommended: run `lore auth --login` to issue a fresh token"
+      "Recommended: run `kennen auth --login` to issue a fresh token"
     )
   })
 
@@ -502,7 +502,7 @@ describe("runStatus — vault context", () => {
     // No supported env vars or ntn token — resolveAuth throws.
     await runStatus()
     expect(stdoutText()).toContain("Status: not authenticated")
-    expect(stdoutText()).toContain("lore auth --login")
+    expect(stdoutText()).toContain("kennen auth --login")
     expect(stdoutText()).toContain("ntn` does not appear to be installed")
   })
 
@@ -545,7 +545,7 @@ function mockProcessExit(): { calls: number[]; restore: () => void } {
 }
 
 describe("runLogin", () => {
-  it("exits 1 with vault-context error when no .lore.yaml is found", async () => {
+  it("exits 1 with vault-context error when no .kennen.yaml is found", async () => {
     setupNoVaultContext()
     const exit = mockProcessExit()
     await expect(runLogin({ yes: false })).rejects.toThrow("__process_exit_1__")
@@ -581,7 +581,7 @@ describe("runLogin", () => {
     readlineHolder.answer = "n"
     const exit = mockProcessExit()
     await expect(runLogin({ yes: false })).rejects.toThrow("__process_exit_1__")
-    expect(stderrText()).toContain("ntn is required for `lore auth --login`")
+    expect(stderrText()).toContain("ntn is required for `kennen auth --login`")
     expect(stderrText()).toContain("curl -fsSL https://ntn.dev | bash")
     expect(ntnMocks.installNtn).not.toHaveBeenCalled()
     expect(exit.calls).toContain(1)
@@ -622,7 +622,7 @@ describe("runLogin", () => {
     const out = stdoutText()
     expect(out).toContain("0.11.0")
     expect(out).toContain(MIN_NTN_VERSION)
-    expect(out).toContain("below Lore's tested minimum")
+    expect(out).toContain("below Kennen's tested minimum")
     expect(ntnMocks.runNtnLogin).toHaveBeenCalledTimes(1)
   })
 
@@ -645,7 +645,7 @@ describe("runLogin", () => {
 
   it("threads NOTION_ENV=dev into runNtnLogin so the spawned ntn login uses --env dev", async () => {
     // Engineers on the Notion dev environment can't get there through
-    // `lore auth --login` unless this PR threads NOTION_ENV through to
+    // `kennen auth --login` unless this PR threads NOTION_ENV through to
     // ntn — round-4 review blocker. The selection has to be visible in
     // both the spawn argv (asserted via the mock call signature) AND in
     // the operator's stdout (so a CI log shows which env was targeted).
@@ -678,18 +678,18 @@ describe("runLogin", () => {
     )
   })
 
-  it("infers `--env dev` from .lore.yaml `auth.baseUrl` when shell NOTION_ENV is unset (PnP-style dev project)", async () => {
+  it("infers `--env dev` from .kennen.yaml `auth.baseUrl` when shell NOTION_ENV is unset (PnP-style dev project)", async () => {
     // Round-5 review blocker: a PnP-style dev project's local
-    // `.lore.yaml` carries `auth.baseUrl: https://api-dev.notion.com`.
-    // Without this fix, `lore auth --login` from that project
+    // `.kennen.yaml` carries `auth.baseUrl: https://api-dev.notion.com`.
+    // Without this fix, `kennen auth --login` from that project
     // (without shell NOTION_ENV) ran bare `ntn login` (prod) and
-    // silently mismatched the operator's vault. Now Lore reads the
+    // silently mismatched the operator's vault. Now Kennen reads the
     // config baseUrl, infers `dev`, and prints a transparency line
     // so the operator sees which env is being targeted.
     const dir = mkdtempSync(join(SCRATCH, "vault-dev-"))
     scratchDirsToClean.push(dir)
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `vault:\n  pageId: page-dev\nauth:\n  baseUrl: https://api-dev.notion.com\n`,
       "utf-8"
     )
@@ -703,7 +703,7 @@ describe("runLogin", () => {
 
     expect(ntnMocks.runNtnLogin).toHaveBeenCalledWith({ env: "dev" })
     expect(stdoutText()).toContain(
-      "(Inferring `NOTION_ENV=dev` from auth.baseUrl in .lore.yaml.)"
+      "(Inferring `NOTION_ENV=dev` from auth.baseUrl in .kennen.yaml.)"
     )
     expect(stdoutText()).toContain(
       "Running `NOTION_KEYRING=0 NOTION_ENV=dev ntn login`..."
@@ -718,7 +718,7 @@ describe("runLogin", () => {
     const dir = mkdtempSync(join(SCRATCH, "vault-override-"))
     scratchDirsToClean.push(dir)
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `vault:\n  pageId: page-x\nauth:\n  baseUrl: https://api-dev.notion.com\n`,
       "utf-8"
     )
@@ -741,11 +741,11 @@ describe("runLogin", () => {
     // Defense against config-driven env-switching attacks: an
     // arbitrary baseUrl that isn't in the known-env table doesn't
     // get pasted into ntn's argv. ntn defaults to its own
-    // config.json (typically prod) — Lore stays out of guessing.
+    // config.json (typically prod) — Kennen stays out of guessing.
     const dir = mkdtempSync(join(SCRATCH, "vault-unknown-"))
     scratchDirsToClean.push(dir)
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `vault:\n  pageId: page-x\nauth:\n  baseUrl: https://internal.team/api\n`,
       "utf-8"
     )
@@ -769,7 +769,7 @@ describe("runLogin", () => {
     // post-login preflight client construction. This pins the full
     // PnP-style flow:
     //
-    //   1. .lore.yaml carries `auth.baseUrl: https://api-dev.notion.com`.
+    //   1. .kennen.yaml carries `auth.baseUrl: https://api-dev.notion.com`.
     //   2. No NOTION_API_TOKEN, no shell NOTION_ENV.
     //   3. runLogin infers `--env dev` from the config baseUrl and
     //      calls runNtnLogin("dev") — pinned by spy.
@@ -782,7 +782,7 @@ describe("runLogin", () => {
     const dir = mkdtempSync(join(SCRATCH, "vault-pnp-style-"))
     scratchDirsToClean.push(dir)
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `vault:\n  pageId: page-dev\nauth:\n  baseUrl: https://api-dev.notion.com\n`,
       "utf-8"
     )
@@ -808,7 +808,7 @@ describe("runLogin", () => {
     // Step 3 — config-derived `--env dev` reaches the spawn.
     expect(ntnMocks.runNtnLogin).toHaveBeenCalledWith({ env: "dev" })
     expect(stdoutText()).toContain(
-      "(Inferring `NOTION_ENV=dev` from auth.baseUrl in .lore.yaml.)"
+      "(Inferring `NOTION_ENV=dev` from auth.baseUrl in .kennen.yaml.)"
     )
     expect(stdoutText()).toContain(
       "Running `NOTION_KEYRING=0 NOTION_ENV=dev ntn login`..."
@@ -838,7 +838,7 @@ describe("runLogin", () => {
     await expect(runLogin({ yes: true })).rejects.toThrow("__process_exit_1__")
     expect(stderrText()).toContain("ntn login did not complete")
     expect(stderrText()).toContain("ntn exited with code 7")
-    expect(stderrText()).toContain("Re-run `lore auth --login`")
+    expect(stderrText()).toContain("Re-run `kennen auth --login`")
     exit.restore()
   })
 
@@ -850,7 +850,7 @@ describe("runLogin", () => {
     })
     // ntn was probed-installed at start AND still appears installed
     // on the post-spawn-error re-probe. The fallback path stays on
-    // the no-reinstall branch ("Re-run lore auth --login to retry").
+    // the no-reinstall branch ("Re-run kennen auth --login to retry").
     ntnMocks.isNtnInstalled.mockReturnValue(true)
     const exit = mockProcessExit()
     await expect(runLogin({ yes: true })).rejects.toThrow("__process_exit_1__")
@@ -890,7 +890,7 @@ describe("runLogin", () => {
     // "ntn re-installed" prefix and the "Re-run" suffix so a future
     // contributor who re-adds the misleading "✓" gets caught.
     expect(stderrText()).toContain("ntn re-installed")
-    expect(stderrText()).toContain("Re-run `lore auth --login` to complete login")
+    expect(stderrText()).toContain("Re-run `kennen auth --login` to complete login")
     expect(stderrText()).not.toContain("✓ ntn re-installed")
     expect(ntnMocks.resetNtnProbeCache).toHaveBeenCalledTimes(1)
     exit.restore()
@@ -927,7 +927,7 @@ describe("runLogin", () => {
     // The spec calls out multi-workspace ambiguity as the dominant
     // post-login failure: an operator with two workspaces in
     // auth.json hits the throw without a selector. Without this fix
-    // the operator was bounced to `lore auth --status` for the same
+    // the operator was bounced to `kennen auth --status` for the same
     // diagnostic that's already in scope.
     setupVaultProject()
     ntnMocks.runNtnLogin.mockResolvedValue({ kind: "success" })
@@ -936,7 +936,7 @@ describe("runLogin", () => {
     ntnMocks.listNtnWorkspaces.mockResolvedValue(["ws-1", "ws-2"])
     const exit = mockProcessExit()
     await expect(runLogin({ yes: true })).rejects.toThrow("__process_exit_1__")
-    expect(stderrText()).toContain("Lore could not resolve a token")
+    expect(stderrText()).toContain("Kennen could not resolve a token")
     // The resolveAuth error message names the workspaces and the
     // selector remediation — surface a substring that proves the
     // diagnostic landed.
@@ -983,7 +983,7 @@ describe("runLogin", () => {
     )
     expect(stderrText()).toContain("Notion rejected the bearer token")
     expect(stderrText()).toContain(
-      "Recommended: re-run `lore auth --login` to issue a fresh token."
+      "Recommended: re-run `kennen auth --login` to issue a fresh token."
     )
     expect(stderrText()).toContain("workspace")
     // The wrong-workspace numbered list MUST NOT fire — that's the
@@ -1007,7 +1007,7 @@ describe("runLogin", () => {
       "✗ Vault page not accessible after login (rate-limited)"
     )
     expect(stderrText()).toContain("throttled")
-    expect(stderrText()).toContain("Wait a few seconds and re-run `lore auth --login`")
+    expect(stderrText()).toContain("Wait a few seconds and re-run `kennen auth --login`")
     // 429 is transient — must NOT trigger re-auth or wrong-workspace
     // copy.
     expect(stderrText()).not.toContain("1. You authenticated against the wrong workspace")
@@ -1030,7 +1030,7 @@ describe("runLogin", () => {
       "✗ Vault page not accessible after login (unknown-error)"
     )
     expect(stderrText()).toContain("5xx Bad Gateway")
-    expect(stderrText()).toContain("Re-run `lore auth --login` after investigating")
+    expect(stderrText()).toContain("Re-run `kennen auth --login` after investigating")
     exit.restore()
   })
 })
@@ -1118,10 +1118,10 @@ describe("runWhoami / renderWhoamiIdentity", () => {
     exit.restore()
   })
 
-  it("runWhoami without .lore.yaml falls back to global auth (NOTION_API_TOKEN)", async () => {
+  it("runWhoami without .kennen.yaml falls back to global auth (NOTION_API_TOKEN)", async () => {
     // Mirrors --status / --logout's no-vault-context behavior so
-    // `lore auth --whoami` works as a script-friendly identity probe
-    // outside any Lore project. With NOTION_API_TOKEN set, the bot
+    // `kennen auth --whoami` works as a script-friendly identity probe
+    // outside any Kennen project. With NOTION_API_TOKEN set, the bot
     // identity prints to stdout; no vault-context error.
     setupNoVaultContext()
     process.env["NOTION_API_TOKEN"] = "tok"
@@ -1139,11 +1139,11 @@ describe("runWhoami / renderWhoamiIdentity", () => {
     expect(stdoutText()).toBe("Test\n")
   })
 
-  it("runWhoami without .lore.yaml AND no global auth: exits 1 with the Not authenticated message", async () => {
+  it("runWhoami without .kennen.yaml AND no global auth: exits 1 with the Not authenticated message", async () => {
     setupNoVaultContext()
     const exit = mockProcessExit()
     await expect(runWhoami()).rejects.toThrow("__process_exit_1__")
-    expect(stderrText()).toContain("Not authenticated. Run `lore auth --login`")
+    expect(stderrText()).toContain("Not authenticated. Run `kennen auth --login`")
     exit.restore()
   })
 
@@ -1151,7 +1151,7 @@ describe("runWhoami / renderWhoamiIdentity", () => {
     setupVaultProject()
     const exit = mockProcessExit()
     await expect(runWhoami()).rejects.toThrow("__process_exit_1__")
-    expect(stderrText()).toContain("Not authenticated. Run `lore auth --login`")
+    expect(stderrText()).toContain("Not authenticated. Run `kennen auth --login`")
     exit.restore()
   })
 
@@ -1242,7 +1242,7 @@ describe("runWhoami / renderWhoamiIdentity", () => {
     //
     // The split between stdout (identity + paren-free prefix label)
     // and stderr (rate-limit advisory) keeps the stdout line
-    // script-friendly: a downstream consumer parsing `lore auth
+    // script-friendly: a downstream consumer parsing `kennen auth
     // --whoami` output gets one identity line, no nested parens.
     setupVaultProject()
     process.env["NOTION_API_TOKEN"] = "secret_integration-bearer"
@@ -1293,7 +1293,7 @@ describe("runWhoami / renderWhoamiIdentity", () => {
     ntnMocks.listNtnWorkspaces.mockResolvedValue(["ws-1", "ws-2"])
     const exit = mockProcessExit()
     await expect(runWhoami()).rejects.toThrow("__process_exit_1__")
-    expect(stderrText()).toContain("Not authenticated. Run `lore auth --login`")
+    expect(stderrText()).toContain("Not authenticated. Run `kennen auth --login`")
     expect(stderrText()).toMatch(/NOTION_WORKSPACE_ID|workspaces|specify one/i)
     exit.restore()
   })
@@ -1331,7 +1331,7 @@ describe("runLogout", () => {
     })
     await runLogout()
     expect(stdoutText()).toContain("ntn logout")
-    expect(stdoutText()).toContain("Lore reads but doesn't write auth.json")
+    expect(stdoutText()).toContain("Kennen reads but doesn't write auth.json")
   })
 })
 
@@ -1418,11 +1418,11 @@ describe("authCommand action handler", () => {
     // is what wires `pickAuthAction`'s `ignored` list into the
     // stderr `console.warn` call — without this integration test,
     // a future contributor refactoring the warning to console.log
-    // (which would pollute `lore auth --whoami` script consumers)
+    // (which would pollute `kennen auth --whoami` script consumers)
     // breaks the spec without a test failing.
     await authCommand.parseAsync([
       "node",
-      "lore-auth",
+      "kennen-auth",
       "--status",
       "--whoami",
       "--logout",
@@ -1439,7 +1439,7 @@ describe("authCommand action handler", () => {
     setupVaultProject()
     process.env["NOTION_API_TOKEN"] = "tok"
     verifyVaultAccessMock.mockResolvedValue({ kind: "ok", pageTitle: "V" })
-    await authCommand.parseAsync(["node", "lore-auth", "--status"])
+    await authCommand.parseAsync(["node", "kennen-auth", "--status"])
     expect(stderrText()).not.toContain("multiple auth flags")
   })
 
@@ -1447,7 +1447,7 @@ describe("authCommand action handler", () => {
     setupVaultProject()
     process.env["NOTION_API_TOKEN"] = "tok"
     verifyVaultAccessMock.mockResolvedValue({ kind: "ok", pageTitle: "V" })
-    await authCommand.parseAsync(["node", "lore-auth"])
-    expect(stdoutText()).toContain("Lore auth status for")
+    await authCommand.parseAsync(["node", "kennen-auth"])
+    expect(stdoutText()).toContain("Kennen auth status for")
   })
 })

@@ -34,11 +34,11 @@ const BENCH_BASE = {
 
 describe("eval suite schema", () => {
   it("validates the committed starter suite", async () => {
-    const loaded = await loadEvalSuite("evals/suites/lore-core.yaml")
-    expect(loaded.suite.name).toBe("lore-core")
+    const loaded = await loadEvalSuite("evals/suites/kennen-core.yaml")
+    expect(loaded.suite.name).toBe("kennen-core")
     expect(loaded.suite.tasks[0]?.memoryScenarios).toMatchObject({
-      "no-lore": "../memory/no-lore.yaml",
-      "empty-lore": "../memory/empty.yaml",
+      "no-kennen": "../memory/no-kennen.yaml",
+      "empty-kennen": "../memory/empty.yaml",
       "noisy-memory": "../memory/noisy.yaml",
       "helpful-memory": "../memory/auth-decision.yaml",
     })
@@ -67,10 +67,10 @@ describe("eval suite schema", () => {
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.issues.map((issue) => issue.message)).toContain(
-        'required ablation scenario "no-lore" is missing'
+        'required ablation scenario "no-kennen" is missing'
       )
       expect(result.error.issues.map((issue) => issue.message)).toContain(
-        'required ablation scenario "empty-lore" is missing'
+        'required ablation scenario "empty-kennen" is missing'
       )
     }
   })
@@ -84,8 +84,8 @@ describe("eval suite schema", () => {
           id: "task-one",
           prompt: "Do the task",
           memoryScenarios: {
-            "no-lore": "../memory/no-lore.yaml",
-            "empty-lore": "../memory/empty.yaml",
+            "no-kennen": "../memory/no-kennen.yaml",
+            "empty-kennen": "../memory/empty.yaml",
             "helpful-memory": "../memory/helpful.yaml",
           },
           expectedRetrieval: {
@@ -101,14 +101,14 @@ describe("eval suite schema", () => {
   })
 
   it("validates scenario fixture names while loading the suite", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-schema-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-schema-"))
     const suitesDir = join(dir, "suites")
     const memoryDir = join(dir, "memory")
     await mkdir(suitesDir, { recursive: true })
     await mkdir(memoryDir, { recursive: true })
 
-    await writeFile(join(memoryDir, "no-lore.yaml"), "name: no-lore\nmemories: []\n")
-    await writeFile(join(memoryDir, "empty.yaml"), "name: empty-lore\nmemories: []\n")
+    await writeFile(join(memoryDir, "no-kennen.yaml"), "name: no-kennen\nmemories: []\n")
+    await writeFile(join(memoryDir, "empty.yaml"), "name: empty-kennen\nmemories: []\n")
     await writeFile(
       join(memoryDir, "helpful.yaml"),
       "name: wrong-scenario\nmemories: []\n"
@@ -122,8 +122,8 @@ tasks:
   - id: task-one
     prompt: Do the task
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -146,8 +146,8 @@ tasks:
           id: "task-one",
           prompt: "Do the task",
           memoryScenarios: {
-            "no-lore": "../memory/no-lore.yaml",
-            "empty-lore": "../memory/empty.yaml",
+            "no-kennen": "../memory/no-kennen.yaml",
+            "empty-kennen": "../memory/empty.yaml",
             "helpful-memory": "../memory/helpful.yaml",
           },
           expectedRetrieval: {
@@ -176,8 +176,8 @@ tasks:
           id: "task-one",
           prompt: "Do the task",
           memoryScenarios: {
-            "no-lore": "../memory/no-lore.yaml",
-            "empty-lore": "../memory/empty.yaml",
+            "no-kennen": "../memory/no-kennen.yaml",
+            "empty-kennen": "../memory/empty.yaml",
             "helpful-memory": "../memory/helpful.yaml",
           },
         },
@@ -197,8 +197,8 @@ tasks:
       id: "task-one",
       prompt: "Do the task",
       memoryScenarios: {
-        "no-lore": "../memory/no-lore.yaml",
-        "empty-lore": "../memory/empty.yaml",
+        "no-kennen": "../memory/no-kennen.yaml",
+        "empty-kennen": "../memory/empty.yaml",
         "helpful-memory": "../memory/helpful.yaml",
       },
       expectedRetrieval: {
@@ -258,7 +258,7 @@ describe("bench suite schema ingestion extraction fields", () => {
     const loaded = await loadBenchSuite(
       "evals/bench-suites/longmemeval-conversational-autosave.yaml"
     )
-    expect(loaded.suite.ingestion.strategy).toBe("lore-mine")
+    expect(loaded.suite.ingestion.strategy).toBe("kennen-mine")
     expect(loaded.suite.ingestion.memoryCaptureMode).toBe("conversational")
   })
 
@@ -275,18 +275,18 @@ describe("bench suite schema ingestion extraction fields", () => {
     expect(parsed.ingestion.strategy).toBe("simulated-autosave")
   })
 
-  it("accepts conversational memory capture mode for lore-mine ingestion", () => {
+  it("accepts conversational memory capture mode for kennen-mine ingestion", () => {
     const parsed = benchSuiteSchema.parse({
       ...BENCH_BASE,
       ingestion: {
-        strategy: "lore-mine",
+        strategy: "kennen-mine",
         memoryCaptureMode: "conversational",
       },
     })
     expect(parsed.ingestion.memoryCaptureMode).toBe("conversational")
   })
 
-  it("rejects memoryCaptureMode outside lore-mine ingestion", () => {
+  it("rejects memoryCaptureMode outside kennen-mine ingestion", () => {
     const result = benchSuiteSchema.safeParse({
       ...BENCH_BASE,
       ingestion: {
@@ -297,7 +297,7 @@ describe("bench suite schema ingestion extraction fields", () => {
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.issues.map((issue) => issue.message)).toContain(
-        'memoryCaptureMode is only valid when ingestion.strategy is "lore-mine"'
+        'memoryCaptureMode is only valid when ingestion.strategy is "kennen-mine"'
       )
     }
   })
@@ -336,7 +336,7 @@ describe("bench suite schema ingestion extraction fields", () => {
   })
 
   it("rejects extraction fields on non-extraction strategies", () => {
-    for (const strategy of ["lore-mine", "raw-transcript"]) {
+    for (const strategy of ["kennen-mine", "raw-transcript"]) {
       const result = benchSuiteSchema.safeParse({
         ...BENCH_BASE,
         ingestion: {

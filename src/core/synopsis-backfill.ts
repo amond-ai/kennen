@@ -2,7 +2,7 @@
  * Synopsis backfill migration.
  *
  * Companion to the memory-encoding migration for the Synopsis
- * property. `lore migrate
+ * property. `kennen migrate
  * --backfill-synopses` uses the functions here to discover memories whose
  * `Synopsis` is empty, optionally synthesize a 1–2 sentence synopsis from
  * the page's title + body via a pluggable backend, and write it back.
@@ -168,9 +168,9 @@ export interface BackfillOptions {
   /**
    * Resolved background-agent shape. Threads
    * `hooks.backgroundAgent.{command,args}` from the operator's
-   * .lore.yaml plus the `LORE_BACKGROUND_COMMAND` env override into
+   * .kennen.yaml plus the `KENNEN_BACKGROUND_COMMAND` env override into
    * the synthesizer spawn so a Codex-only operator running
-   * `lore migrate --backfill-synopses` (without `--synopsis-backend
+   * `kennen migrate --backfill-synopses` (without `--synopsis-backend
    * placeholder`) gets the same redirected binary the autosave / digest
    * paths use. When omitted, the synthesizer falls through to the
    * historical `claude -p` defaults — preserving back-compat for
@@ -198,10 +198,10 @@ const CANDIDATE_EXAMPLES_LIMIT = 3
 const ARCHIVED_EXAMPLES_LIMIT = 1
 
 /** Stderr prefix used for partial-failure log lines. Matches the
- *  `[lore] partial-failure:` shape used elsewhere in the codebase, with
+ *  `[kennen] partial-failure:` shape used elsewhere in the codebase, with
  *  `synopsis-backfill` substituted for the `partial-failure:` token —
  *  the prefix already conveys the source so we don't repeat it. */
-const STDERR_PREFIX = "[lore] synopsis-backfill"
+const STDERR_PREFIX = "[kennen] synopsis-backfill"
 // eslint-disable-next-line no-control-regex -- stderr events must stay one line
 const CONTROL_CHARS = /[\x00-\x1F\x7F]/g
 
@@ -355,7 +355,7 @@ export function makeBackgroundSynthesizer(agent: BackgroundAgentConfig): Synthes
     if (!binary) {
       throw new Error(
         `background command "${agent.command}" not found on PATH — install ` +
-          `the binary, override hooks.backgroundAgent.command in .lore.yaml, ` +
+          `the binary, override hooks.backgroundAgent.command in .kennen.yaml, ` +
           `or re-run with --synopsis-backend placeholder (synopsis-backfill only).`
       )
     }
@@ -534,8 +534,8 @@ export async function backfillSynopses(
   }
 
   // Resolve the configured background-agent shape. When
-  // `options.agent` is set the operator's .lore.yaml /
-  // `LORE_BACKGROUND_COMMAND` override drives the binary lookup and the
+  // `options.agent` is set the operator's .kennen.yaml /
+  // `KENNEN_BACKGROUND_COMMAND` override drives the binary lookup and the
   // arg shape. Falls through to historical claude-shaped defaults when
   // unset so callers that haven't been threaded through the config layer
   // (older tests, direct service calls) keep working byte-for-byte.
@@ -554,7 +554,7 @@ export async function backfillSynopses(
     if (!preflight()) {
       throw new Error(
         `background command "${agent.command}" not found on PATH — install ` +
-          "the binary, override hooks.backgroundAgent.command in .lore.yaml, " +
+          "the binary, override hooks.backgroundAgent.command in .kennen.yaml, " +
           "or re-run with `--synopsis-backend placeholder` (synopsis-backfill " +
           "only — writes a sentinel value to legacy rows without invoking the " +
           "agent CLI)."
@@ -750,7 +750,7 @@ function logPartialFailure(
   phase: "fetch" | "synthesize" | "sanitize" | "write",
   err: unknown
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
     `${STDERR_PREFIX}: id=${oneLine(pageId)} phase=${phase} error=${oneLine(redactDebugError(err))}\n`
   )

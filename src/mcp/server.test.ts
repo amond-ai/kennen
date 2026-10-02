@@ -104,15 +104,15 @@ import { startServer } from "./server.js"
 import { InvalidNotionBaseUrlError } from "../auth/oauth.js"
 
 const DIAGNOSTIC_TOOL_NAMES = [
-  "lore-context",
-  "lore-decision",
-  "lore-fact",
-  "lore-memory",
-  "lore-pinned",
-  "lore-procedure",
-  "lore-project",
-  "lore-query",
-  "lore-task",
+  "kennen-context",
+  "kennen-decision",
+  "kennen-fact",
+  "kennen-memory",
+  "kennen-pinned",
+  "kennen-procedure",
+  "kennen-project",
+  "kennen-query",
+  "kennen-task",
 ]
 
 afterEach(() => {
@@ -167,7 +167,7 @@ describe("startServer", () => {
   it("starts diagnostic tools when service initialization fails", async () => {
     mocks.initServices.mockRejectedValue(
       new Error(
-        "No .lore.yaml found. Run `lore init` to set up a vault. Wrapped snippet: ```shell\nlore init\n```"
+        "No .kennen.yaml found. Run `kennen init` to set up a vault. Wrapped snippet: ```shell\nkennen init\n```"
       )
     )
     const stderr = vi.spyOn(console, "error").mockImplementation(() => undefined)
@@ -195,7 +195,7 @@ describe("startServer", () => {
 
       const server = mocks.servers[0]
       expect([...server!.tools.keys()].sort()).toEqual(DIAGNOSTIC_TOOL_NAMES)
-      const diagnostic = server?.tools.get("lore-context")
+      const diagnostic = server?.tools.get("kennen-context")
       expect(diagnostic).toBeDefined()
       const inputSchema = (
         diagnostic!.config as {
@@ -215,7 +215,7 @@ describe("startServer", () => {
 
       const result = await diagnostic!.handler({ action: "status" })
       const wakeUpResult = await diagnostic!.handler({ action: "wake-up" })
-      const memoryResult = await server!.tools.get("lore-memory")!.handler({
+      const memoryResult = await server!.tools.get("kennen-memory")!.handler({
         action: "save",
         title: "ignored in diagnostic mode",
       })
@@ -224,18 +224,18 @@ describe("startServer", () => {
       expect(wakeUpResult.content[0]?.text).toBe(text)
       expect(memoryResult.content[0]?.text).toBe(text)
       expect(memoryResult.isError).toBe(true)
-      expect(text).toContain("Lore MCP server started in diagnostic mode")
-      expect(text).toContain("No .lore.yaml found")
+      expect(text).toContain("Kennen MCP server started in diagnostic mode")
+      expect(text).toContain("No .kennen.yaml found")
       // Fenced block now opens on the canonical stack header
       // (`<Name>: <message>\n    at ...`) emitted by V8 — the rich
       // formatter routes through `error.stack` so a future generic
       // failure carries a frame line an operator can grep on.
-      expect(text).toContain("````\nError: No .lore.yaml found")
+      expect(text).toContain("````\nError: No .kennen.yaml found")
       expect(text).toMatch(/\n {4}at .+:\d+:\d+/)
-      expect(text).toContain("```shell\nlore init\n```")
-      expect(text).toContain("lore init")
-      expect(text).toContain("lore doctor")
-      expect(text).toContain("lore auth --login")
+      expect(text).toContain("```shell\nkennen init\n```")
+      expect(text).toContain("kennen init")
+      expect(text).toContain("kennen doctor")
+      expect(text).toContain("kennen auth --login")
       expect(text).toContain("restart or reconnect the MCP client")
       expect(stderr).toHaveBeenCalledWith(
         expect.stringContaining("starting diagnostic MCP server")
@@ -252,10 +252,10 @@ describe("startServer", () => {
   })
 
   it("still serves diagnostics when only public autosave opt-out is disabled", async () => {
-    const previousAutosave = process.env["LORE_AUTOSAVE"]
-    const previousBackgroundAgent = process.env["LORE_BACKGROUND_AGENT"]
-    process.env["LORE_AUTOSAVE"] = "false"
-    delete process.env["LORE_BACKGROUND_AGENT"]
+    const previousAutosave = process.env["KENNEN_AUTOSAVE"]
+    const previousBackgroundAgent = process.env["KENNEN_BACKGROUND_AGENT"]
+    process.env["KENNEN_AUTOSAVE"] = "false"
+    delete process.env["KENNEN_BACKGROUND_AGENT"]
     mocks.initServices.mockRejectedValue(new Error("No Notion auth configured."))
     const stderr = vi.spyOn(console, "error").mockImplementation(() => undefined)
     const stdoutLog = vi.spyOn(console, "log").mockImplementation(() => undefined)
@@ -273,14 +273,14 @@ describe("startServer", () => {
       expect(stdoutWrite).not.toHaveBeenCalled()
     } finally {
       if (previousAutosave === undefined) {
-        delete process.env["LORE_AUTOSAVE"]
+        delete process.env["KENNEN_AUTOSAVE"]
       } else {
-        process.env["LORE_AUTOSAVE"] = previousAutosave
+        process.env["KENNEN_AUTOSAVE"] = previousAutosave
       }
       if (previousBackgroundAgent === undefined) {
-        delete process.env["LORE_BACKGROUND_AGENT"]
+        delete process.env["KENNEN_BACKGROUND_AGENT"]
       } else {
-        process.env["LORE_BACKGROUND_AGENT"] = previousBackgroundAgent
+        process.env["KENNEN_BACKGROUND_AGENT"] = previousBackgroundAgent
       }
       stdoutWrite.mockRestore()
       stdoutLog.mockRestore()
@@ -291,7 +291,7 @@ describe("startServer", () => {
   it("serves setup diagnostics for missing Entities instead of crashing", async () => {
     mocks.initServices.mockRejectedValue(
       new Error(
-        "Vault at 343b...199f is missing databases: Entities. Found existing Lore databases: Projects, Topics, Memories, Facts."
+        "Vault at 343b...199f is missing databases: Entities. Found existing Kennen databases: Projects, Topics, Memories, Facts."
       )
     )
     const stderr = vi.spyOn(console, "error").mockImplementation(() => undefined)
@@ -304,14 +304,14 @@ describe("startServer", () => {
       const server = mocks.servers[0]
       expect([...server!.tools.keys()].sort()).toEqual(DIAGNOSTIC_TOOL_NAMES)
       expect(server?.connect).toHaveBeenCalledWith(mocks.transports[0])
-      const result = await server!.tools.get("lore-context")!.handler({
+      const result = await server!.tools.get("kennen-context")!.handler({
         action: "status",
       })
       const text = result.content[0]?.text ?? ""
       expect(result.isError).toBe(true)
       expect(text).toContain("missing databases: Entities")
-      expect(text).toContain("lore vault ensure-entities")
-      expect(text).toContain("lore migrate --build-entities --allow-unscoped --yes")
+      expect(text).toContain("kennen vault ensure-entities")
+      expect(text).toContain("kennen migrate --build-entities --allow-unscoped --yes")
       expect(stderr).toHaveBeenCalledWith(
         expect.stringContaining("starting diagnostic MCP server")
       )
@@ -340,7 +340,7 @@ describe("startServer", () => {
 
       const text =
         (
-          await mocks.servers[0]!.tools.get("lore-context")!.handler({
+          await mocks.servers[0]!.tools.get("kennen-context")!.handler({
             action: "status",
           })
         ).content[0]?.text ?? ""
@@ -386,7 +386,7 @@ describe("startServer", () => {
 
       const text =
         (
-          await mocks.servers[0]!.tools.get("lore-context")!.handler({
+          await mocks.servers[0]!.tools.get("kennen-context")!.handler({
             action: "status",
           })
         ).content[0]?.text ?? ""
@@ -406,7 +406,7 @@ describe("startServer", () => {
   it("surfaces invalid base URL diagnostics with source-specific recovery", async () => {
     mocks.initServices.mockRejectedValue(
       new InvalidNotionBaseUrlError(
-        "LORE_NOTION_BASE_URL",
+        "KENNEN_NOTION_BASE_URL",
         "value is missing a URL protocol"
       )
     )
@@ -417,12 +417,12 @@ describe("startServer", () => {
 
       const text =
         (
-          await mocks.servers[0]!.tools.get("lore-context")!.handler({
+          await mocks.servers[0]!.tools.get("kennen-context")!.handler({
             action: "status",
           })
         ).content[0]?.text ?? ""
       expect(text).toContain("InvalidNotionBaseUrlError")
-      expect(text).toContain("LORE_NOTION_BASE_URL")
+      expect(text).toContain("KENNEN_NOTION_BASE_URL")
       expect(text).toContain("absolute http(s) URL")
       expect(text).toContain("fix or unset the named base-URL environment variable")
       expect(text).not.toContain("TypeError: Invalid URL")
@@ -449,7 +449,7 @@ describe("startServer", () => {
 
       const text =
         (
-          await mocks.servers[0]!.tools.get("lore-context")!.handler({
+          await mocks.servers[0]!.tools.get("kennen-context")!.handler({
             action: "status",
           })
         ).content[0]?.text ?? ""
@@ -472,7 +472,7 @@ describe("startServer", () => {
 
       const text =
         (
-          await mocks.servers[0]!.tools.get("lore-context")!.handler({
+          await mocks.servers[0]!.tools.get("kennen-context")!.handler({
             action: "status",
           })
         ).content[0]?.text ?? ""
@@ -492,9 +492,9 @@ describe("startServer", () => {
       `    at secretFrame (/tmp/${pageId}.ts:1:1)`
     mocks.initServices.mockRejectedValue(err)
     const previousArgv1 = process.argv[1]
-    const previousBackgroundAgent = process.env["LORE_BACKGROUND_AGENT"]
+    const previousBackgroundAgent = process.env["KENNEN_BACKGROUND_AGENT"]
     process.argv[1] = fileURLToPath(new URL("./server.ts", import.meta.url))
-    process.env["LORE_BACKGROUND_AGENT"] = "true"
+    process.env["KENNEN_BACKGROUND_AGENT"] = "true"
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     const exit = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never)
 
@@ -504,7 +504,7 @@ describe("startServer", () => {
 
       await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(1))
       expect(stderr).toHaveBeenCalledWith(
-        "[lore] Fatal error: fatal startup failure for <page-id> with <redacted-token> retry\n"
+        "[kennen] Fatal error: fatal startup failure for <page-id> with <redacted-token> retry\n"
       )
       const stderrText = stderr.mock.calls.map((call) => String(call[0])).join("\n")
       expect(stderrText).not.toContain(pageId)
@@ -518,9 +518,9 @@ describe("startServer", () => {
         process.argv[1] = previousArgv1
       }
       if (previousBackgroundAgent === undefined) {
-        delete process.env["LORE_BACKGROUND_AGENT"]
+        delete process.env["KENNEN_BACKGROUND_AGENT"]
       } else {
-        process.env["LORE_BACKGROUND_AGENT"] = previousBackgroundAgent
+        process.env["KENNEN_BACKGROUND_AGENT"] = previousBackgroundAgent
       }
       exit.mockRestore()
       stderr.mockRestore()
@@ -587,10 +587,10 @@ describe("startServer", () => {
   })
 
   it("fails fast instead of serving diagnostics inside background agent children", async () => {
-    const previous = process.env["LORE_AUTOSAVE"]
-    const previousBackgroundAgent = process.env["LORE_BACKGROUND_AGENT"]
-    process.env["LORE_AUTOSAVE"] = "false"
-    process.env["LORE_BACKGROUND_AGENT"] = "true"
+    const previous = process.env["KENNEN_AUTOSAVE"]
+    const previousBackgroundAgent = process.env["KENNEN_BACKGROUND_AGENT"]
+    process.env["KENNEN_AUTOSAVE"] = "false"
+    process.env["KENNEN_BACKGROUND_AGENT"] = "true"
     mocks.initServices.mockRejectedValue(new Error("No Notion auth configured."))
     const stderr = vi.spyOn(console, "error").mockImplementation(() => undefined)
     const stdoutLog = vi.spyOn(console, "log").mockImplementation(() => undefined)
@@ -606,14 +606,14 @@ describe("startServer", () => {
       expect(stdoutWrite).not.toHaveBeenCalled()
     } finally {
       if (previous === undefined) {
-        delete process.env["LORE_AUTOSAVE"]
+        delete process.env["KENNEN_AUTOSAVE"]
       } else {
-        process.env["LORE_AUTOSAVE"] = previous
+        process.env["KENNEN_AUTOSAVE"] = previous
       }
       if (previousBackgroundAgent === undefined) {
-        delete process.env["LORE_BACKGROUND_AGENT"]
+        delete process.env["KENNEN_BACKGROUND_AGENT"]
       } else {
-        process.env["LORE_BACKGROUND_AGENT"] = previousBackgroundAgent
+        process.env["KENNEN_BACKGROUND_AGENT"] = previousBackgroundAgent
       }
       stdoutWrite.mockRestore()
       stdoutLog.mockRestore()

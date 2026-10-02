@@ -3,8 +3,8 @@ import { DEFAULT_TAG_VOCABULARY, TAG_VOCABULARY } from "../../types.js"
 
 /**
  * Shared Zod schemas for the closed `tags` vocabulary and free-form
- * `keywords` field. Used by every memory-writing tool — `lore-memory`
- * (save | update) and `lore-decision` (create) — so agents get a
+ * `keywords` field. Used by every memory-writing tool — `kennen-memory`
+ * (save | update) and `kennen-decision` (create) — so agents get a
  * consistent error message when they try to invent an out-of-vocab tag.
  *
  * Tool-parameter descriptions stay short so the 40-term vocabulary doesn't

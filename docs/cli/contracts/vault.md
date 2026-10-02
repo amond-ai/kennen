@@ -1,6 +1,6 @@
 # Vault Command Contract
 
-`lore vault` hosts vault maintenance commands that operate on the configured
+`kennen vault` hosts vault maintenance commands that operate on the configured
 primary vault through the shared `initServices()` graph.
 
 ## `migrate-agent-diary`

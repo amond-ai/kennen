@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-httpx-modelhard-v1
+name: kennen-longitudinal-httpx-modelhard-v1
 description: >-
   Model-hard HTTPX longitudinal suite. Scenarios are pinned before real upstream
   protocol fixes whose correct behavior is counterintuitive to a strong model
@@ -10,8 +10,8 @@ description: >-
 seededCorpus: ../vault-seeds/httpx-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: httpx-https-upgrade-auth-redirect-v1
     difficulty: hard
@@ -59,10 +59,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_httpx_auth.py b/lore_eval_hidden_httpx_auth.py
+          diff --git a/kennen_eval_hidden_httpx_auth.py b/kennen_eval_hidden_httpx_auth.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_httpx_auth.py
+          +++ b/kennen_eval_hidden_httpx_auth.py
           @@ -0,0 +1,75 @@
           +import httpx
           +
@@ -152,6 +152,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_httpx_auth.py
+          - kennen_eval_hidden_httpx_auth.py
           - -q
         timeoutMs: 300000

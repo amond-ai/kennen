@@ -2,7 +2,7 @@
  * Text-and-tag similarity helpers for the near-duplicate probe.
  *
  * Pure functions, no Notion knowledge. Used by the write paths in
- * `lore-memory action='save'` and `lore-decision action='create'` to
+ * `kennen-memory action='save'` and `kennen-decision action='create'` to
  * surface candidate duplicates alongside freshly-saved rows — the
  * probe is advisory, not blocking.
  *

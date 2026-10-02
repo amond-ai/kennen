@@ -1,13 +1,13 @@
 # Topology Promotion
 
-`lore promote <memoryId> --to <name>` copies a memory from the primary
+`kennen promote <memoryId> --to <name>` copies a memory from the primary
 vault into a configured promotion target. It is the operator-deliberate
 path for crossing the vault boundary; normal save / update / fact /
 decision / task tools still write only to the primary vault.
 
 ## Workflow
 
-1. Declare the target in `.lore.yaml`:
+1. Declare the target in `.kennen.yaml`:
 
    ```yaml
    promotionTargets:
@@ -16,16 +16,16 @@ decision / task tools still write only to the primary vault.
        requireReview: true
    ```
 
-2. Run `lore status` to confirm the target is reachable. The
+2. Run `kennen status` to confirm the target is reachable. The
    topology section's `promotion (review required)` row health is the
    read-side preflight — a target that surfaces as `unavailable` or
-   `missing databases` will reject `lore promote` at the
+   `missing databases` will reject `kennen promote` at the
    `VaultManager.load` step.
 
 3. Promote a row:
 
    ```
-   $ lore promote 1234abcd5678 --to Team --reason "Generalizes pattern"
+   $ kennen promote 1234abcd5678 --to Team --reason "Generalizes pattern"
    Promoted to Team: JWT auth pattern for service-to-service calls (awaiting review)
      Target memory ID: 9876fedc4321
      Status: proposed
@@ -54,13 +54,13 @@ relation column living in the target vault.
 
 - **Project relations.** A project id from the source vault's Projects
   DB is meaningless in the target vault. The promoted row lands with
-  `Project = []`; re-scope via `lore-memory action='update'` in the
+  `Project = []`; re-scope via `kennen-memory action='update'` in the
   target vault if needed.
 - **Tags.** Mirrors the projectIds treatment for the same reason —
   taxonomy is vault-local. The closed `Tag` vocabulary is enforced
   at the MCP boundary, not at the service layer, so target-vault tag
   vocabularies can diverge from the source's. The promoted row lands
-  with `Tags = []`; re-tag via `lore-memory action='update'` against
+  with `Tags = []`; re-tag via `kennen-memory action='update'` against
   the target-vault MCP boundary if needed.
 - **Agent / Session attribution.** Promotion is operator-deliberate,
   not an agent-attributed write. The Agent and Session columns on the
@@ -76,7 +76,7 @@ Pass `--dry-run` to preview what the apply path would write without
 touching the target vault:
 
 ```
-$ lore promote 1234abcd5678 --to Team --reason "Trial run" --dry-run
+$ kennen promote 1234abcd5678 --to Team --reason "Trial run" --dry-run
 [dry-run] Would promote to Team: JWT auth pattern for service-to-service calls (awaiting review)
 [dry-run] Resolved status: proposed
 [dry-run] Promoter: Engineer Name
@@ -95,30 +95,30 @@ target-vault load and target-vault create are both skipped.
 
 ## Same-vault guard
 
-`lore promote --to <name>` rejects targets whose `pageId` equals the
+`kennen promote --to <name>` rejects targets whose `pageId` equals the
 primary vault page id. Both ids are normalized (strip hyphens,
 lowercase) before comparison so the guard catches the equivalent
 shapes Notion accepts for the same page (`abc12345-6789-…` vs
 `abc1234567...`). Without this normalization a misconfigured
-`.lore.yaml` carrying the same id in two different forms could
+`.kennen.yaml` carrying the same id in two different forms could
 bypass the guard and silently duplicate a row inside the same vault
 under the audit shape; the guard surfaces a clear redirect to
-`lore-memory action='update'`.
+`kennen-memory action='update'`.
 
 ## Source validation
 
-`lore promote` reads the source memory via the live-Memories-page
+`kennen promote` reads the source memory via the live-Memories-page
 gate (`MemoryService.getPropertiesById`), which rejects archived rows
 and pages whose parent is not the primary vault's Memories DB. A
 fat-fingered Notion page id pointing at another database — or an
 archived source — fails fast with the underlying error, before any
-target-vault round-trip. Without this gate, `lore promote <any
+target-vault round-trip. Without this gate, `kennen promote <any
 accessible page id>` would copy from any database while the audit
 block claimed primary-vault provenance.
 
 ## Idempotency posture
 
-`lore promote` is idempotent for a given source vault, source memory,
+`kennen promote` is idempotent for a given source vault, source memory,
 and target vault. Promoted target rows carry an additive Memories DB
 property named `Promotion Source Key`. It is a `rich_text` property
 populated only on rows created by cross-vault promotion. The key format
@@ -146,11 +146,11 @@ and legacy promoted rows can carry edited bodies after review.
 Schema/setup behavior:
 
 - New vault setup adds `Promotion Source Key` to the Memories DB.
-- `lore migrate` adds the property to the primary vault named by the
+- `kennen migrate` adds the property to the primary vault named by the
   active config, as an add-only schema migration.
-- `lore promote` does not auto-migrate a promotion target. If the
+- `kennen promote` does not auto-migrate a promotion target. If the
   target Memories DB is missing `Promotion Source Key`, it must fail
-  before create with setup guidance to run `lore migrate` against that
+  before create with setup guidance to run `kennen migrate` against that
   target vault.
 - Legacy promoted rows with an empty key are not deduped by title/body
   fallback. A backfill that parses historical audit blocks would be a
@@ -175,7 +175,7 @@ Already promoted to Team: JWT auth pattern for service-to-service calls (awaitin
   Promoter: Engineer Name
 ```
 
-The MCP `lore-memory action='promote'` response mirrors the same
+The MCP `kennen-memory action='promote'` response mirrors the same
 created vs already-promoted wording. Its cost outputs report
 `memoriesCreated: 1` only for the created path; the already-promoted
 path returns the existing memory without incrementing created counts.
@@ -186,7 +186,7 @@ matching target row already exists.
 ## Promoter identity
 
 The audit block's `Promoter:` line is resolved via
-`services.identity.resolveAuthor()` (the same `LORE_USER_NAME` →
+`services.identity.resolveAuthor()` (the same `KENNEN_USER_NAME` →
 `users.me` chain that authors Memory writes). An unresolvable identity
 fails fast with exit code 1 rather than landing an audit block
 attributed to `(unknown)`. Pass `--promoter <name>` to override.
@@ -200,9 +200,9 @@ attributed to `(unknown)`. Pass `--promoter <name>` to override.
 
 ## Cross-references
 
-- [`docs/topology.md`](topology.md) — `lore status` topology section,
+- [`docs/topology.md`](topology.md) — `kennen status` topology section,
   promotion-target health rows, and recovery workflow.
-- [`docs/cli.md`](cli.md) — `lore promote` command reference.
+- [`docs/cli.md`](cli.md) — `kennen promote` command reference.
 - [`docs/development.md`](development.md) — `promotionTargets`
   configuration context.
 - [`src/core/AGENTS.md`](../src/core/AGENTS.md) — `promote.ts`

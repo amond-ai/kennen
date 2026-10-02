@@ -351,7 +351,7 @@ describe("promoteMemory", () => {
             },
             {
               property: "Keywords",
-              rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+              rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
             },
           ]),
         },
@@ -687,7 +687,7 @@ describe("promoteMemory", () => {
     // `MemoryService.getPropertiesById` routes through
     // `requireLiveMemoryPage`, which rejects pages whose parent is
     // not the configured Memories DB. Pin that contract end-to-end
-    // here: without it, `lore promote <any accessible Notion page>`
+    // here: without it, `kennen promote <any accessible Notion page>`
     // would copy from any database while the audit block claimed
     // primary-vault provenance — breaking the source-isolation
     // contract the audit metadata is meant to guarantee.
@@ -791,9 +791,9 @@ describe("promoteMemory", () => {
     // target-vault tag vocabulary can diverge from the source's. A
     // copied tag that isn't valid in the target's MCP-boundary Zod
     // schema would commit on this write and then reject on the
-    // operator's next `lore-memory action='update'` in the target —
+    // operator's next `kennen-memory action='update'` in the target —
     // dropping tags here is the safer default. Operators re-tag via
-    // `lore-memory action='update'` against the target-vault MCP
+    // `kennen-memory action='update'` against the target-vault MCP
     // boundary.
     const source = makeSourceMemory({ tags: ["learning", "pattern"] })
     const { client, createSpy, memories } = makePromotionHarness(source)

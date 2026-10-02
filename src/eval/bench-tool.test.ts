@@ -70,10 +70,10 @@ describe("runBenchToolCli", () => {
     })
     tempDirs = []
     savedToken = process.env["NOTION_API_TOKEN"]
-    savedConfigRoot = process.env["LORE_CONFIG_ROOT"]
+    savedConfigRoot = process.env["KENNEN_CONFIG_ROOT"]
     savedNotionEnv = process.env["NOTION_ENV"]
     delete process.env["NOTION_API_TOKEN"]
-    delete process.env["LORE_CONFIG_ROOT"]
+    delete process.env["KENNEN_CONFIG_ROOT"]
     delete process.env["NOTION_ENV"]
   })
 
@@ -82,8 +82,8 @@ describe("runBenchToolCli", () => {
     stderrSpy.mockRestore()
     if (savedToken === undefined) delete process.env["NOTION_API_TOKEN"]
     else process.env["NOTION_API_TOKEN"] = savedToken
-    if (savedConfigRoot === undefined) delete process.env["LORE_CONFIG_ROOT"]
-    else process.env["LORE_CONFIG_ROOT"] = savedConfigRoot
+    if (savedConfigRoot === undefined) delete process.env["KENNEN_CONFIG_ROOT"]
+    else process.env["KENNEN_CONFIG_ROOT"] = savedConfigRoot
     if (savedNotionEnv === undefined) delete process.env["NOTION_ENV"]
     else process.env["NOTION_ENV"] = savedNotionEnv
     for (const dir of tempDirs) {
@@ -92,15 +92,15 @@ describe("runBenchToolCli", () => {
   })
 
   it("loads bench auth from the workspace Codex config for shim commands", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     await mkdir(join(workspace, ".codex"))
     await writeFile(
       join(workspace, ".codex", "config.toml"),
       [
-        "[mcp_servers.lore.env]",
+        "[mcp_servers.kennen.env]",
         'NOTION_API_TOKEN = "ntn_FROM_CONFIG_FOR_BENCH_TOOL_TEST_1234567890"',
-        'LORE_CONFIG_ROOT = "/tmp/lore-bench-config"',
+        'KENNEN_CONFIG_ROOT = "/tmp/kennen-bench-config"',
         'NOTION_ENV = "dev"',
         "",
       ].join("\n")
@@ -110,14 +110,14 @@ describe("runBenchToolCli", () => {
       expect(process.env["NOTION_API_TOKEN"]).toBe(
         "ntn_FROM_CONFIG_FOR_BENCH_TOOL_TEST_1234567890"
       )
-      expect(process.env["LORE_CONFIG_ROOT"]).toBe("/tmp/lore-bench-config")
+      expect(process.env["KENNEN_CONFIG_ROOT"]).toBe("/tmp/kennen-bench-config")
       expect(process.env["NOTION_ENV"]).toBe("dev")
       return { memories: { search } }
     })
 
-    const traceFile = join(workspace, "lore-tool-trace.jsonl")
+    const traceFile = join(workspace, "kennen-tool-trace.jsonl")
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", "query=blue"],
       {
         [BENCH_TOOL_TRACE_ENV]: traceFile,
@@ -131,30 +131,30 @@ describe("runBenchToolCli", () => {
     )
     const trace = JSON.parse(await readFile(traceFile, "utf-8"))
     expect(trace).toMatchObject({
-      tool: "lore-query",
+      tool: "kennen-query",
       action: "search",
       status: "success",
       surfacedMemoryIds: ["mem-1"],
     })
     expect(process.env["NOTION_API_TOKEN"]).toBeUndefined()
-    expect(process.env["LORE_CONFIG_ROOT"]).toBeUndefined()
+    expect(process.env["KENNEN_CONFIG_ROOT"]).toBeUndefined()
     expect(process.env["NOTION_ENV"]).toBeUndefined()
   })
 
   it("routes shim calls through a broker without client-visible auth env", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
-    const savedWriteBudget = process.env["LORE_MCP_WRITE_BUDGET"]
-    const savedBudgetState = process.env["LORE_MCP_BUDGET_STATE_FILE"]
-    process.env["LORE_MCP_WRITE_BUDGET"] = "500"
-    process.env["LORE_MCP_BUDGET_STATE_FILE"] = "/tmp/should-not-reach-broker.json"
+    const savedWriteBudget = process.env["KENNEN_MCP_WRITE_BUDGET"]
+    const savedBudgetState = process.env["KENNEN_MCP_BUDGET_STATE_FILE"]
+    process.env["KENNEN_MCP_WRITE_BUDGET"] = "500"
+    process.env["KENNEN_MCP_BUDGET_STATE_FILE"] = "/tmp/should-not-reach-broker.json"
     const search = vi.fn(async () => [testMemory()])
     mocks.initServices.mockImplementation(async () => {
       expect(process.env["NOTION_API_TOKEN"]).toBe("ntn_BROKER_TOKEN")
-      expect(process.env["LORE_CONFIG_ROOT"]).toBe("/tmp/lore-broker-config")
+      expect(process.env["KENNEN_CONFIG_ROOT"]).toBe("/tmp/kennen-broker-config")
       expect(process.env["NOTION_ENV"]).toBe("dev")
-      expect(process.env["LORE_MCP_WRITE_BUDGET"]).toBeUndefined()
-      expect(process.env["LORE_MCP_BUDGET_STATE_FILE"]).toBeUndefined()
+      expect(process.env["KENNEN_MCP_WRITE_BUDGET"]).toBeUndefined()
+      expect(process.env["KENNEN_MCP_BUDGET_STATE_FILE"]).toBeUndefined()
       return { memories: { search } }
     })
     const traceFile = join(workspace, "trace.jsonl")
@@ -165,14 +165,14 @@ describe("runBenchToolCli", () => {
       projectName: "Bench Project",
       runtimeEnv: {
         NOTION_API_TOKEN: "ntn_BROKER_TOKEN",
-        LORE_CONFIG_ROOT: "/tmp/lore-broker-config",
+        KENNEN_CONFIG_ROOT: "/tmp/kennen-broker-config",
         NOTION_ENV: "dev",
       },
     })
 
     try {
       const exitCode = await runBenchToolCli(
-        "lore-query",
+        "kennen-query",
         ["action=search", "query=blue"],
         { [BENCH_TOOL_SOCKET_ENV]: broker.socketPath }
       )
@@ -183,24 +183,25 @@ describe("runBenchToolCli", () => {
       )
       const trace = JSON.parse(await readFile(traceFile, "utf-8"))
       expect(trace).toMatchObject({
-        tool: "lore-query",
+        tool: "kennen-query",
         action: "search",
         status: "success",
         surfacedMemoryIds: ["mem-1"],
       })
       expect(process.env["NOTION_API_TOKEN"]).toBeUndefined()
-      expect(process.env["LORE_CONFIG_ROOT"]).toBeUndefined()
+      expect(process.env["KENNEN_CONFIG_ROOT"]).toBeUndefined()
       expect(process.env["NOTION_ENV"]).toBeUndefined()
-      expect(process.env["LORE_MCP_WRITE_BUDGET"]).toBe("500")
-      expect(process.env["LORE_MCP_BUDGET_STATE_FILE"]).toBe(
+      expect(process.env["KENNEN_MCP_WRITE_BUDGET"]).toBe("500")
+      expect(process.env["KENNEN_MCP_BUDGET_STATE_FILE"]).toBe(
         "/tmp/should-not-reach-broker.json"
       )
     } finally {
       await broker.close()
-      if (savedWriteBudget === undefined) delete process.env["LORE_MCP_WRITE_BUDGET"]
-      else process.env["LORE_MCP_WRITE_BUDGET"] = savedWriteBudget
-      if (savedBudgetState === undefined) delete process.env["LORE_MCP_BUDGET_STATE_FILE"]
-      else process.env["LORE_MCP_BUDGET_STATE_FILE"] = savedBudgetState
+      if (savedWriteBudget === undefined) delete process.env["KENNEN_MCP_WRITE_BUDGET"]
+      else process.env["KENNEN_MCP_WRITE_BUDGET"] = savedWriteBudget
+      if (savedBudgetState === undefined)
+        delete process.env["KENNEN_MCP_BUDGET_STATE_FILE"]
+      else process.env["KENNEN_MCP_BUDGET_STATE_FILE"] = savedBudgetState
     }
   })
 
@@ -208,14 +209,17 @@ describe("runBenchToolCli", () => {
     mocks.initServices.mockResolvedValue({
       memories: { search: vi.fn(async () => [testMemory()]) },
     })
-    const exitCode = await runBenchToolCli("lore-query", ["action=search", "query=blue"])
+    const exitCode = await runBenchToolCli("kennen-query", [
+      "action=search",
+      "query=blue",
+    ])
 
     expect(exitCode).toBe(1)
-    expect(stderrOutput.join("")).toContain("LORE_BENCH_TOOL_PROJECT_ID is required")
+    expect(stderrOutput.join("")).toContain("KENNEN_BENCH_TOOL_PROJECT_ID is required")
   })
 
   it("filters search results to the bench project before rendering or tracing", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const search = vi.fn(async () => [
@@ -233,7 +237,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", "query=blue", "includeContent=true"],
       {
         [BENCH_TOOL_TRACE_ENV]: traceFile,
@@ -248,7 +252,7 @@ describe("runBenchToolCli", () => {
     expect(stdout).not.toContain("Unscoped body should not render.")
     const trace = JSON.parse(await readFile(traceFile, "utf-8"))
     expect(trace).toMatchObject({
-      tool: "lore-query",
+      tool: "kennen-query",
       action: "search",
       status: "success",
       surfacedMemoryIds: ["mem-project"],
@@ -280,7 +284,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", "query=tenant metadata routing"],
       {
         [BENCH_TOOL_PROJECT_ID_ENV]: "project-1",
@@ -292,7 +296,7 @@ describe("runBenchToolCli", () => {
     const stdout = stdoutOutput.join("")
     expect(stdout).toContain("### Skill Candidate: Alpha Skill")
     expect(stdout).toContain("Rank: 1")
-    expect(stdout).toContain("Expand Candidate: lore-memory action=expand ids=m1")
+    expect(stdout).toContain("Expand Candidate: kennen-memory action=expand ids=m1")
     expect(stdout).toContain("Cite IDs from expanded output only.")
     expect(stdout).toContain("Skill Name: Alpha Skill")
     expect(stdout).toContain("Short Summary: Skill: Alpha Skill.")
@@ -304,7 +308,7 @@ describe("runBenchToolCli", () => {
     expect(stdout).toContain("latest` is replaced by every search")
   })
 
-  it("mirrors planned search metadata from the Lore search service", async () => {
+  it("mirrors planned search metadata from the Kennen search service", async () => {
     const searchWithMeta = vi.fn(async () => ({
       memories: [
         testMemory({
@@ -330,7 +334,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", "query=tenant metadata routing"],
       {
         [BENCH_TOOL_PROJECT_ID_ENV]: "project-1",
@@ -366,7 +370,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", `query=debug ${token}`],
       { [BENCH_TOOL_PROJECT_ID_ENV]: "project-1" }
     )
@@ -382,7 +386,7 @@ describe("runBenchToolCli", () => {
   })
 
   it("resolves listed memory handles when expanding search results", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const memory = testMemory({ id: "mem-project", title: "Project color" })
@@ -400,12 +404,12 @@ describe("runBenchToolCli", () => {
     }
 
     const searchExitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", "query=blue"],
       env
     )
     const expandExitCode = await runBenchToolCli(
-      "lore-memory",
+      "kennen-memory",
       ["action=expand", "ids=m1"],
       env
     )
@@ -420,12 +424,12 @@ describe("runBenchToolCli", () => {
       .map((line) => JSON.parse(line) as unknown)
     expect(trace).toEqual([
       expect.objectContaining({
-        tool: "lore-query",
+        tool: "kennen-query",
         action: "search",
         surfacedMemoryIds: ["mem-project"],
       }),
       expect.objectContaining({
-        tool: "lore-memory",
+        tool: "kennen-memory",
         action: "expand",
         surfacedMemoryIds: ["mem-project"],
         expandedMemoryIds: ["mem-project"],
@@ -456,7 +460,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-memory",
+      "kennen-memory",
       ["action=expand", "ids=mem-skill-alpha"],
       { [BENCH_TOOL_PROJECT_ID_ENV]: "project-1" }
     )
@@ -465,16 +469,16 @@ describe("runBenchToolCli", () => {
     const stdout = stdoutOutput.join("")
     expect(stdout).toContain("### Skill Candidate Expanded: Alpha Skill")
     expect(stdout).toContain(
-      "Use in usedMemoryIds and lore-memory expand: mem-skill-alpha"
+      "Use in usedMemoryIds and kennen-memory expand: mem-skill-alpha"
     )
     expect(stdout).toContain(
       "Use in usedSkillIds only: f6986dea-bb4c-4442-b0d0-3c960e732767"
     )
-    expect(stdout).toContain("Do not pass SkillRet IDs to lore-memory expand.")
+    expect(stdout).toContain("Do not pass SkillRet IDs to kennen-memory expand.")
   })
 
   it("keeps memory handles stable across multiple searches", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const first = testMemory({ id: "mem-first", title: "First memory" })
@@ -493,13 +497,13 @@ describe("runBenchToolCli", () => {
     }
 
     expect(
-      await runBenchToolCli("lore-query", ["action=search", "query=first"], env)
+      await runBenchToolCli("kennen-query", ["action=search", "query=first"], env)
     ).toBe(0)
     expect(
-      await runBenchToolCli("lore-query", ["action=search", "query=second"], env)
+      await runBenchToolCli("kennen-query", ["action=search", "query=second"], env)
     ).toBe(0)
     expect(
-      await runBenchToolCli("lore-memory", ["action=expand", "ids=m1,m2"], env)
+      await runBenchToolCli("kennen-memory", ["action=expand", "ids=m1,m2"], env)
     ).toBe(0)
 
     const stdout = stdoutOutput.join("")
@@ -510,7 +514,7 @@ describe("runBenchToolCli", () => {
   })
 
   it("expands the latest surfaced result set with the latest token", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const first = testMemory({ id: "mem-first", title: "First memory" })
@@ -529,13 +533,13 @@ describe("runBenchToolCli", () => {
     }
 
     expect(
-      await runBenchToolCli("lore-query", ["action=search", "query=first"], env)
+      await runBenchToolCli("kennen-query", ["action=search", "query=first"], env)
     ).toBe(0)
     expect(
-      await runBenchToolCli("lore-query", ["action=search", "query=second"], env)
+      await runBenchToolCli("kennen-query", ["action=search", "query=second"], env)
     ).toBe(0)
     expect(
-      await runBenchToolCli("lore-memory", ["action=expand", "ids=latest"], env)
+      await runBenchToolCli("kennen-memory", ["action=expand", "ids=latest"], env)
     ).toBe(0)
 
     expect(stdoutOutput.join("")).toContain("Expanded 2 memories")
@@ -545,7 +549,7 @@ describe("runBenchToolCli", () => {
       .split("\n")
       .map((line) => JSON.parse(line) as unknown)
     expect(trace.at(-1)).toMatchObject({
-      tool: "lore-memory",
+      tool: "kennen-memory",
       action: "expand",
       surfacedMemoryIds: ["mem-second", "mem-first"],
       expandedMemoryIds: ["mem-second", "mem-first"],
@@ -553,7 +557,7 @@ describe("runBenchToolCli", () => {
   })
 
   it("resolves recall handles and supports m2", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const first = testMemory({ id: "mem-first", title: "First memory" })
@@ -568,8 +572,10 @@ describe("runBenchToolCli", () => {
       [BENCH_TOOL_PROJECT_ID_ENV]: "project-1",
     }
 
-    expect(await runBenchToolCli("lore-query", ["action=recall"], env)).toBe(0)
-    expect(await runBenchToolCli("lore-memory", ["action=expand", "ids=m2"], env)).toBe(0)
+    expect(await runBenchToolCli("kennen-query", ["action=recall"], env)).toBe(0)
+    expect(await runBenchToolCli("kennen-memory", ["action=expand", "ids=m2"], env)).toBe(
+      0
+    )
 
     expect(stdoutOutput.join("")).toContain("### Second memory")
     expect(getById).toHaveBeenCalledWith("mem-second")
@@ -580,12 +586,12 @@ describe("runBenchToolCli", () => {
       memories: { getById: vi.fn() },
     })
 
-    const exitCode = await runBenchToolCli("lore-memory", ["action=expand", "ids=m1"], {
+    const exitCode = await runBenchToolCli("kennen-memory", ["action=expand", "ids=m1"], {
       [BENCH_TOOL_PROJECT_ID_ENV]: "project-1",
     })
 
     expect(exitCode).toBe(1)
-    expect(stderrOutput.join("")).toContain("run lore-query search or recall first")
+    expect(stderrOutput.join("")).toContain("run kennen-query search or recall first")
   })
 
   it("rejects the latest token before any surfaced results exist", async () => {
@@ -594,17 +600,17 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-memory",
+      "kennen-memory",
       ["action=expand", "ids=latest"],
       { [BENCH_TOOL_PROJECT_ID_ENV]: "project-1" }
     )
 
     expect(exitCode).toBe(1)
-    expect(stderrOutput.join("")).toContain("run lore-query search or recall first")
+    expect(stderrOutput.join("")).toContain("run kennen-query search or recall first")
   })
 
   it("rejects memory handles outside the known handle range", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const memory = testMemory({ id: "mem-project", title: "Project color" })
@@ -620,10 +626,10 @@ describe("runBenchToolCli", () => {
     }
 
     expect(
-      await runBenchToolCli("lore-query", ["action=search", "query=blue"], env)
+      await runBenchToolCli("kennen-query", ["action=search", "query=blue"], env)
     ).toBe(0)
     const exitCode = await runBenchToolCli(
-      "lore-memory",
+      "kennen-memory",
       ["action=expand", "ids=m2"],
       env
     )
@@ -639,7 +645,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-memory",
+      "kennen-memory",
       ["action=expand", "ids=27fa8a"],
       { [BENCH_TOOL_PROJECT_ID_ENV]: "project-1" }
     )
@@ -650,7 +656,7 @@ describe("runBenchToolCli", () => {
   })
 
   it("recalls only scoped project memories and disables unscoped reads", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     const list = vi.fn(async () => ({
@@ -670,7 +676,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=recall", "includeContent=true"],
       {
         [BENCH_TOOL_TRACE_ENV]: traceFile,
@@ -691,7 +697,7 @@ describe("runBenchToolCli", () => {
     expect(stdout).not.toContain("Unscoped body should not render.")
     const trace = JSON.parse(await readFile(traceFile, "utf-8"))
     expect(trace).toMatchObject({
-      tool: "lore-query",
+      tool: "kennen-query",
       action: "recall",
       status: "success",
       surfacedMemoryIds: ["mem-project"],
@@ -699,7 +705,7 @@ describe("runBenchToolCli", () => {
   })
 
   it("does not expose ask through the bench shim", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     mocks.runAsk.mockResolvedValue({
@@ -713,9 +719,13 @@ describe("runBenchToolCli", () => {
     })
     mocks.initServices.mockResolvedValue({})
 
-    const exitCode = await runBenchToolCli("lore-query", ["action=ask", "entity=Color"], {
-      [BENCH_TOOL_TRACE_ENV]: traceFile,
-    })
+    const exitCode = await runBenchToolCli(
+      "kennen-query",
+      ["action=ask", "entity=Color"],
+      {
+        [BENCH_TOOL_TRACE_ENV]: traceFile,
+      }
+    )
 
     expect(exitCode).toBe(1)
     expect(mocks.runAsk).not.toHaveBeenCalled()
@@ -723,7 +733,7 @@ describe("runBenchToolCli", () => {
     expect(stderrOutput.join("")).toContain("supported actions: search, recall")
     const trace = JSON.parse(await readFile(traceFile, "utf-8"))
     expect(trace).toMatchObject({
-      tool: "lore-query",
+      tool: "kennen-query",
       action: "ask",
       status: "error",
       surfacedMemoryIds: [],
@@ -739,7 +749,7 @@ describe("runBenchToolCli", () => {
       },
     })
     const exitCode = await runBenchToolCli(
-      "lore-memory",
+      "kennen-memory",
       ["action=expand", "ids=mem-1"],
       { [BENCH_TOOL_PROJECT_ID_ENV]: "project-1" }
     )
@@ -749,7 +759,7 @@ describe("runBenchToolCli", () => {
   })
 
   it("redacts bearer-shaped values from trace errors", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-tool-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-tool-test-"))
     tempDirs.push(workspace)
     const traceFile = join(workspace, "trace.jsonl")
     mocks.initServices.mockResolvedValue({
@@ -761,7 +771,7 @@ describe("runBenchToolCli", () => {
     })
 
     const exitCode = await runBenchToolCli(
-      "lore-query",
+      "kennen-query",
       ["action=search", "query=blue"],
       {
         [BENCH_TOOL_TRACE_ENV]: traceFile,

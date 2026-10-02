@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import {
   buildEntities,
   type EntityMigrationResult,
@@ -20,7 +20,7 @@ import {
  * canonicalizes existing Fact rows.
  */
 export async function runBuildEntitiesMigration(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     apply: boolean
     dryRun?: boolean
@@ -102,7 +102,7 @@ export async function runBuildEntitiesMigration(
 }
 
 export function acquireBuildEntitiesMigrationLock(
-  services: LoreServices,
+  services: KennenServices,
   options: { apply: boolean; dryRun?: boolean }
 ): MigrationLock | null {
   if (!options.apply || options.dryRun === true) return null

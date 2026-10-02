@@ -8,7 +8,7 @@ import {
   resolveAuth,
   resolveToken,
 } from "./config.js"
-import type { LoreConfig } from "./types.js"
+import type { KennenConfig } from "./types.js"
 
 describe("parseConfigAllowingInvalidHooks", () => {
   it("preserves a valid hooks section", () => {
@@ -259,19 +259,19 @@ vault:
   pageId: abc123
 costTracking:
   enabled: true
-  ledgerPath: ./state/lore-costs.jsonl
+  ledgerPath: ./state/kennen-costs.jsonl
   pricing:
     builtinTable: openai-2026-05
-    overridesPath: ~/.config/lore/pricing.json
+    overridesPath: ~/.config/kennen/pricing.json
 `)
 
     expect(warnings).toEqual([])
     expect(config.costTracking).toEqual({
       enabled: true,
-      ledgerPath: "./state/lore-costs.jsonl",
+      ledgerPath: "./state/kennen-costs.jsonl",
       pricing: {
         builtinTable: "openai-2026-05",
-        overridesPath: "~/.config/lore/pricing.json",
+        overridesPath: "~/.config/kennen/pricing.json",
       },
     })
   })
@@ -335,7 +335,7 @@ vault:
 profiles:
   allowedInstallSources:
     - kind: git
-      url: git@github.com:org/lore-sales-profile.git
+      url: git@github.com:org/kennen-sales-profile.git
       commit: 0123456789abcdef0123456789abcdef01234567
       manifestDigest: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
     - kind: path
@@ -382,8 +382,8 @@ auth:
   })
 
   it("rejects auth.token values loaded from disk", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-config-load-"))
-    const path = join(dir, ".lore.yaml")
+    const dir = mkdtempSync(join(tmpdir(), "kennen-config-load-"))
+    const path = join(dir, ".kennen.yaml")
     writeFileSync(
       path,
       `
@@ -425,8 +425,8 @@ upstreamVaults:
 
 describe("loadConfig placeholder rejection", () => {
   it("fails fast at config load time until a placeholder is replaced", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-placeholder-config-"))
-    const path = join(dir, ".lore.yaml")
+    const dir = mkdtempSync(join(tmpdir(), "kennen-placeholder-config-"))
+    const path = join(dir, ".kennen.yaml")
     writeFileSync(
       path,
       `
@@ -447,7 +447,7 @@ vault:
 // resolveAuth (0.10.0 ntn-first priority chain)
 // ---------------------------------------------------------------------------
 
-const SCRATCH = mkdtempSync(join(tmpdir(), "lore-config-resolveauth-"))
+const SCRATCH = mkdtempSync(join(tmpdir(), "kennen-config-resolveauth-"))
 
 afterAll(() => {
   rmSync(SCRATCH, { recursive: true, force: true })
@@ -478,7 +478,7 @@ function setupNtnConfigHome(body?: string): string {
 
 function setupHookStateDir(): string {
   const dir = mkdtempSync(join(SCRATCH, "hook-state-"))
-  process.env["LORE_HOOK_STATE_DIR"] = dir
+  process.env["KENNEN_HOOK_STATE_DIR"] = dir
   return dir
 }
 
@@ -487,15 +487,14 @@ const stderrText = (): string => stderrChunks.join("")
 
 const ENV_KEYS_TO_CLEAR = [
   "NOTION_API_TOKEN",
-  "LORE_NOTION_TOKEN",
   "NOTION_WORKSPACE_ID",
-  "LORE_NOTION_BASE_URL",
+  "KENNEN_NOTION_BASE_URL",
   // ntn-native base-URL fallbacks consumed by `resolveOperatorBaseUrl`.
   "NOTION_BASE_URL",
   "NOTION_API_BASE_URL",
   "NOTION_ENV",
   "XDG_CONFIG_HOME",
-  "LORE_HOOK_STATE_DIR",
+  "KENNEN_HOOK_STATE_DIR",
 ]
 
 describe("resolveAuth", () => {
@@ -504,7 +503,7 @@ describe("resolveAuth", () => {
   beforeEach(() => {
     stderrChunks = []
     // Clear inherited shell env BEFORE each test so a developer with
-    // (e.g.) LORE_NOTION_BASE_URL exported in their shell rc doesn't
+    // (e.g.) KENNEN_NOTION_BASE_URL exported in their shell rc doesn't
     // see false positives. afterEach also clears, but starting clean
     // defends against the very first test in the file.
     for (const key of ENV_KEYS_TO_CLEAR) delete process.env[key]
@@ -538,22 +537,22 @@ describe("resolveAuth", () => {
     expect(stderrText()).toBe("")
   })
 
-  it("REJECTS auth.baseUrl from .lore.yaml on the NOTION_API_TOKEN path (security: token-redirect attack)", async () => {
-    // `.lore.yaml` is persistent file state beside the repo; even
+  it("REJECTS auth.baseUrl from .kennen.yaml on the NOTION_API_TOKEN path (security: token-redirect attack)", async () => {
+    // `.kennen.yaml` is persistent file state beside the repo; even
     // local-only, it can be copied, synced, pasted, or force-added to
     // history, which is less trusted than operator-controlled env vars.
     // If `auth.baseUrl` from config flowed into the canonical
-    // NOTION_API_TOKEN path, a malicious `.lore.yaml` could redirect
+    // NOTION_API_TOKEN path, a malicious `.kennen.yaml` could redirect
     // every Notion call to an attacker-controlled host and exfiltrate
     // the engineer's bearer token. Pin the rejection so a regression
     // here surfaces as a test failure rather than a production
     // exfiltration. Operators who genuinely need a custom base URL set
-    // `LORE_NOTION_BASE_URL` (operator-controlled env).
+    // `KENNEN_NOTION_BASE_URL` (operator-controlled env).
     setupNtnConfigHome()
     setupHookStateDir()
     process.env["NOTION_API_TOKEN"] = "tok-from-env-api"
 
-    const config: LoreConfig = {
+    const config: KennenConfig = {
       vault: { pageId: "abc" },
       auth: { baseUrl: "https://attacker.example" },
     }
@@ -561,21 +560,21 @@ describe("resolveAuth", () => {
     expect(result.baseUrl).toBeUndefined()
   })
 
-  it("HONORS LORE_NOTION_BASE_URL env on the NOTION_API_TOKEN path (operator-controlled override)", async () => {
+  it("HONORS KENNEN_NOTION_BASE_URL env on the NOTION_API_TOKEN path (operator-controlled override)", async () => {
     // The shell-rc env var is the operator-controlled escape hatch
     // for non-prod endpoints. Since shell rc lives outside the
-    // `.lore.yaml` blast radius (no sync, no paste, no `git add -f`),
-    // it can't be hijacked by a malicious `.lore.yaml`.
+    // `.kennen.yaml` blast radius (no sync, no paste, no `git add -f`),
+    // it can't be hijacked by a malicious `.kennen.yaml`.
     setupNtnConfigHome()
     setupHookStateDir()
     process.env["NOTION_API_TOKEN"] = "tok-from-env-api"
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
 
     const result = await resolveAuth(undefined, SCRATCH)
     expect(result.baseUrl).toBe("https://api-dev.notion.com")
   })
 
-  it("HONORS NOTION_BASE_URL (ntn-native) on the NOTION_API_TOKEN path when LORE_NOTION_BASE_URL is unset", async () => {
+  it("HONORS NOTION_BASE_URL (ntn-native) on the NOTION_API_TOKEN path when KENNEN_NOTION_BASE_URL is unset", async () => {
     // ntn's documented native base-URL override. Operators who export
     // NOTION_BASE_URL (the `ntn --help`-documented form) must see it
     // honored — otherwise install-time preflight would resolve dev
@@ -589,7 +588,7 @@ describe("resolveAuth", () => {
     expect(result.baseUrl).toBe("https://api-dev.notion.com")
   })
 
-  it("HONORS NOTION_API_BASE_URL (legacy ntn name) when neither LORE_NOTION_BASE_URL nor NOTION_BASE_URL is set", async () => {
+  it("HONORS NOTION_API_BASE_URL (legacy ntn name) when neither KENNEN_NOTION_BASE_URL nor NOTION_BASE_URL is set", async () => {
     // Same posture as NOTION_BASE_URL — `resolveOperatorBaseUrl`
     // walks all three names in priority order, so the lowest-priority
     // ntn name still gets honored when nothing higher is set.
@@ -602,28 +601,28 @@ describe("resolveAuth", () => {
     expect(result.baseUrl).toBe("https://api-stg.notion.com")
   })
 
-  it("LORE_NOTION_BASE_URL still wins over the ntn-native names (priority order)", async () => {
-    // The Lore-namespaced override is the highest priority — when
-    // both are set, the operator's explicit Lore choice beats the
+  it("KENNEN_NOTION_BASE_URL still wins over the ntn-native names (priority order)", async () => {
+    // The Kennen-namespaced override is the highest priority — when
+    // both are set, the operator's explicit Kennen choice beats the
     // ambient ntn-shaped value.
     setupNtnConfigHome()
     setupHookStateDir()
     process.env["NOTION_API_TOKEN"] = "tok-from-env-api"
-    process.env["LORE_NOTION_BASE_URL"] = "https://lore-explicit.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://kennen-explicit.notion.com"
     process.env["NOTION_BASE_URL"] = "https://ntn-fallback.notion.com"
 
     const result = await resolveAuth(undefined, SCRATCH)
-    expect(result.baseUrl).toBe("https://lore-explicit.notion.com")
+    expect(result.baseUrl).toBe("https://kennen-explicit.notion.com")
   })
 
   it("rejects invalid base URL env on the NOTION_API_TOKEN path before client construction", async () => {
     setupNtnConfigHome()
     setupHookStateDir()
     process.env["NOTION_API_TOKEN"] = "tok-from-env-api"
-    process.env["LORE_NOTION_BASE_URL"] = "api.notion.so"
+    process.env["KENNEN_NOTION_BASE_URL"] = "api.notion.so"
 
     await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(
-      /Invalid Notion API base URL from LORE_NOTION_BASE_URL/
+      /Invalid Notion API base URL from KENNEN_NOTION_BASE_URL/
     )
   })
 
@@ -638,21 +637,21 @@ describe("resolveAuth", () => {
     )
   })
 
-  it("REJECTS auth.baseUrl from .lore.yaml on the ntn-auth-json path (security)", async () => {
+  it("REJECTS auth.baseUrl from .kennen.yaml on the ntn-auth-json path (security)", async () => {
     // Same security rationale as the NOTION_API_TOKEN path. ntn-issued
     // tokens are bearer credentials inheriting the engineer's Notion
     // permissions; redirecting them would be just as exfiltration-y.
     setupNtnConfigHome(JSON.stringify({ "ws-1": "tok-ntn" }))
     setupHookStateDir()
 
-    const config: LoreConfig = {
+    const config: KennenConfig = {
       vault: { pageId: "abc" },
       auth: { baseUrl: "https://attacker.example" },
     }
     const result = await resolveAuth(config, SCRATCH)
     expect(result.source).toBe("ntn-auth-json")
     expect(result.baseUrl).toBeUndefined()
-    // ntn's own LORE_NOTION_BASE_URL handling is verified separately;
+    // ntn's own KENNEN_NOTION_BASE_URL handling is verified separately;
     // the point of this test is purely "do NOT pick up the repo
     // override when the canonical source resolved."
   })
@@ -684,7 +683,7 @@ describe("resolveAuth", () => {
     setupNtnConfigHome(JSON.stringify({ "ws-1": "tok-1", "ws-2": "tok-2" }))
     setupHookStateDir()
 
-    const config: LoreConfig = {
+    const config: KennenConfig = {
       vault: { pageId: "abc" },
       auth: { workspaceId: "ws-1" },
     }
@@ -696,39 +695,20 @@ describe("resolveAuth", () => {
     setupNtnConfigHome() // ntn absent
     setupHookStateDir()
 
-    // Now that issue 0.10.0/06 has shipped `lore auth --login`, the
+    // Now that issue 0.10.0/06 has shipped `kennen auth --login`, the
     // throw message recommends the canonical wrapper as the primary
     // path and `NOTION_API_TOKEN` as the alternative. The thrown
-    // message is forwarded to the operator by `lore auth --status` /
+    // message is forwarded to the operator by `kennen auth --status` /
     // `--login` / `--whoami`; it must NOT contain stale
     // "Phase 2 will ship" copy that would contradict the wrapper
     // those very commands provide.
     await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(
       /No Notion auth configured/
     )
-    await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/lore auth --login/)
+    await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/kennen auth --login/)
     await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/NOTION_API_TOKEN/)
     // The stale "Phase 2 will ship" copy must be gone.
     await expect(resolveAuth(undefined, SCRATCH)).rejects.not.toThrow(/once Phase 2/)
-  })
-
-  it("adds a removed LORE_NOTION_TOKEN hint when no supported source resolves", async () => {
-    setupNtnConfigHome()
-    setupHookStateDir()
-    process.env["LORE_NOTION_TOKEN"] = "legacy-removed-token"
-
-    let thrown: Error | undefined
-    try {
-      await resolveAuth(undefined, SCRATCH)
-    } catch (err) {
-      thrown = err as Error
-    }
-
-    expect(thrown?.message).toContain("No Notion auth configured.")
-    expect(thrown?.message).toContain("Detected LORE_NOTION_TOKEN")
-    expect(thrown?.message).toContain("NOTION_API_TOKEN")
-    expect(thrown?.message).toContain("rotate to a PAT")
-    expect(thrown?.message).not.toContain("legacy-removed-token")
   })
 
   it("throw message inlines the ntn ambiguity hint when auth.json carries multiple workspaces", async () => {
@@ -754,13 +734,13 @@ describe("resolveAuth", () => {
       /requested workspaceId \(ws-missing\) is not among them/
     )
     await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/Available: ws-1/)
-    // Recovery recommendation MUST point at `lore auth --login` (the
+    // Recovery recommendation MUST point at `kennen auth --login` (the
     // canonical wrapper that forces NOTION_KEYRING=0). Bare
     // `ntn login` on macOS defaults to keychain mode and writes
     // nothing to auth.json, so a recovery hint that recommended it
     // would loop the operator back into this same selector miss on
     // the next run. Round-4 review blocker; pin against revert.
-    await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/lore auth --login/)
+    await expect(resolveAuth(undefined, SCRATCH)).rejects.toThrow(/kennen auth --login/)
     // The bare-ntn-login wording must NOT appear standalone (the
     // recommendation can't substitute it for the wrapper).
     await expect(resolveAuth(undefined, SCRATCH)).rejects.not.toThrow(
@@ -773,7 +753,7 @@ describe("resolveToken", () => {
   beforeEach(() => {
     stderrChunks = []
     // Clear inherited shell env BEFORE each test so a developer with
-    // (e.g.) LORE_NOTION_BASE_URL exported in their shell rc doesn't
+    // (e.g.) KENNEN_NOTION_BASE_URL exported in their shell rc doesn't
     // see false positives. afterEach also
     // clears, but starting clean defends against the very first test
     // in the file.

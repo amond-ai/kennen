@@ -1,14 +1,14 @@
 /**
- * `lore-procedure` polymorphic MCP tool.
+ * `kennen-procedure` polymorphic MCP tool.
  *
  * Three actions — `scan-candidates` (read-only mining), `propose`
  * (create a `Status: proposed` procedure memory), and `deprecate`
  * (status flip on an accepted procedure). Approval flows through
- * the existing `lore-memory action='approve'` inbox path; this
+ * the existing `kennen-memory action='approve'` inbox path; this
  * tool deliberately does NOT expose an `approve` action of its own
  * so the inbox-review codepath has one entrypoint.
  *
- * Same registration shape as `lore-memory` / `lore-decision`: flat
+ * Same registration shape as `kennen-memory` / `kennen-decision`: flat
  * `inputSchema` for agent ergonomics, `z.discriminatedUnion` for
  * runtime validation, one `handle<Action>` per action wrapped in
  * try/catch with `toolError` on failure.
@@ -35,7 +35,7 @@ import {
   type ProposeProcedureInput,
 } from "../../core/procedure.js"
 import { resolveProjectIds, resolveReadProjectScope } from "../resolve.js"
-import type { LoreServices } from "../../services.js"
+import type { KennenServices } from "../../services.js"
 import { formatDispatchError, toolError, withWakeUpCacheBump } from "../helpers.js"
 import { nonBlankString } from "./text-schema.js"
 import { notionPageIdSchema } from "../../notion/page-id-schema.js"
@@ -48,7 +48,7 @@ type ToolResult = {
 }
 
 const PROCEDURE_BUILDER_SNIPPET = [
-  "lore-procedure({",
+  "kennen-procedure({",
   "  action: 'propose',",
   "  title: '<short title>',",
   "  entity: '<activation entity>',",
@@ -86,8 +86,8 @@ function formatCandidatesMarkdown(candidates: ProcedureCandidate[]): string {
     "```",
     "",
     "Promoted procedures land with `Status: proposed`. They become",
-    "fleet-wide guidance only after `lore-memory action='approve'`",
-    "(or `lore inbox approve <id>`).",
+    "fleet-wide guidance only after `kennen-memory action='approve'`",
+    "(or `kennen inbox approve <id>`).",
     "",
   ]
   candidates.forEach((c, i) => {
@@ -116,7 +116,7 @@ interface ScanArgs {
 }
 
 async function handleScanCandidates(
-  services: LoreServices,
+  services: KennenServices,
   args: ScanArgs
 ): Promise<ToolResult> {
   const scope = await resolveReadProjectScope(services, args.projectName)
@@ -153,7 +153,7 @@ interface ProposeArgs {
 }
 
 async function handlePropose(
-  services: LoreServices,
+  services: KennenServices,
   args: ProposeArgs
 ): Promise<ToolResult> {
   // Procedures land in a single project scope (matches the CLI's
@@ -189,7 +189,7 @@ async function handlePropose(
   }
 
   // 2. Idempotency probe BEFORE source resolution. Mirrors
-  //    `lore-task action='create'`'s `findExactReuseTarget` posture:
+  //    `kennen-task action='create'`'s `findExactReuseTarget` posture:
   //    look up the `(topicKey, project-set)` slot first so a
   //    reuse-short-circuit doesn't pay N Notion round-trips fetching
   //    sources we're not going to write. A live proposed procedure on
@@ -209,9 +209,9 @@ async function handlePropose(
         `- Project ids: ${probe.reuseTarget.projectIds.join(", ")}`,
         "",
         "Topic key matched an existing in-flight proposed row; nothing was created.",
-        "Review and ship via `lore-memory action='approve'` with this id, or",
-        "`lore-memory action='reject'`. Update the body / steps via",
-        "`lore-memory action='update'`.",
+        "Review and ship via `kennen-memory action='approve'` with this id, or",
+        "`kennen-memory action='reject'`. Update the body / steps via",
+        "`kennen-memory action='update'`.",
       ]
       return {
         content: [{ type: "text", text: reuseLines.join("\n") }],
@@ -282,8 +282,8 @@ async function handlePropose(
     `- Topic key: ${memory.topicKey || "(none)"}`,
     `- Project ids: ${resolved.ids.join(", ")}`,
     "",
-    "Review and ship via `lore-memory action='approve'` with this id —",
-    "or reject via `lore-memory action='reject'`. Proposed procedures",
+    "Review and ship via `kennen-memory action='approve'` with this id —",
+    "or reject via `kennen-memory action='reject'`. Proposed procedures",
     "do NOT surface as approved fleet-wide guidance in wake-up; they",
     "show up labeled as candidates until reviewed.",
   ]
@@ -296,11 +296,11 @@ async function handlePropose(
     lines.push(
       "",
       `Supersession recorded on the new row's \`Supersedes\` relation (${input.supersedesIds.length} entr${input.supersedesIds.length === 1 ? "y" : "ies"}). Notion does NOT auto-deprecate the predecessor.`,
-      "After approval, run `lore-procedure action='deprecate'` on each predecessor so the old row drops out of accepted recall:"
+      "After approval, run `kennen-procedure action='deprecate'` on each predecessor so the old row drops out of accepted recall:"
     )
     for (const id of input.supersedesIds) {
       lines.push(
-        `  lore-procedure action='deprecate' memoryId='${id}' reason='Superseded by ${memory.id}'`
+        `  kennen-procedure action='deprecate' memoryId='${id}' reason='Superseded by ${memory.id}'`
       )
     }
   }
@@ -321,12 +321,12 @@ interface DeprecateArgs {
 }
 
 async function handleDeprecate(
-  services: LoreServices,
+  services: KennenServices,
   args: DeprecateArgs
 ): Promise<ToolResult> {
   const existing = await services.memories.getById(args.memoryId)
   if (existing.kind !== "procedure") {
-    // Kind-scoped guidance: `lore-memory action='update'` with
+    // Kind-scoped guidance: `kennen-memory action='update'` with
     // `status: 'deprecated'` is the right path for non-procedure
     // rows (decisions, runbooks, etc.). The update path's
     // procedure-row gate intentionally rejects that same call for
@@ -334,8 +334,8 @@ async function handleDeprecate(
     return toolError(
       new Error(
         `Memory ${args.memoryId} has kind="${existing.kind}", not "procedure". ` +
-          `This lore-procedure deprecate handler is the only procedure-deprecation surface. ` +
-          `For this non-procedure row (kind="${existing.kind}"), deprecate via lore-memory action='update' with status: 'deprecated' instead. ` +
+          `This kennen-procedure deprecate handler is the only procedure-deprecation surface. ` +
+          `For this non-procedure row (kind="${existing.kind}"), deprecate via kennen-memory action='update' with status: 'deprecated' instead. ` +
           `Do NOT copy that advice back onto a procedure id — the update path rejects procedure rows for the same audit-contract reason this handler exists.`
       )
     )
@@ -352,8 +352,8 @@ async function handleDeprecate(
     }
   }
   // Status-boundary gate: a `Status: proposed` procedure must leave
-  // the inbox via the review surface (`lore-memory action='reject'` /
-  // `lore inbox reject`) so the `## Reviewed (YYYY-MM-DD)` audit
+  // the inbox via the review surface (`kennen-memory action='reject'` /
+  // `kennen inbox reject`) so the `## Reviewed (YYYY-MM-DD)` audit
   // block lands with the reviewer identity. Deprecate would bypass
   // that audit and produce a second terminal path for unreviewed
   // candidates.
@@ -361,9 +361,9 @@ async function handleDeprecate(
     return toolError(
       new Error(
         `Procedure ${args.memoryId} is Status: proposed and must leave the inbox via review, not deprecate. ` +
-          "Use `lore-memory action='reject' memoryId='" +
+          "Use `kennen-memory action='reject' memoryId='" +
           args.memoryId +
-          "'` (or `lore inbox reject " +
+          "'` (or `kennen inbox reject " +
           args.memoryId +
           "`) so the `## Reviewed (YYYY-MM-DD)` audit block lands with the reviewer identity."
       )
@@ -461,16 +461,19 @@ const procedureDispatchSchema = z.discriminatedUnion("action", [
   }),
 ])
 
-export function registerProcedureTools(server: McpServer, services: LoreServices): void {
+export function registerProcedureTools(
+  server: McpServer,
+  services: KennenServices
+): void {
   server.registerTool(
-    "lore-procedure",
+    "kennen-procedure",
     {
       title: "Procedure memory operations",
       description:
         "Promote resolved episodes into reusable, reviewed procedural memories. Action-dispatched:\n\n" +
         "- `action: 'scan-candidates'` — read-only mining over resolved incidents / postmortems / runbooks plus closed tasks. Returns ranked candidate clusters of repeated solved work.\n" +
-        "- `action: 'propose'` — create a `Kind: procedure, Status: proposed` memory with structured activation conditions and steps. Validates every `sourceMemoryIds` entry resolves to a live source memory in scope; idempotent on `(topicKey, project-set)`. Supporting source ids render under the procedure body's `## Sources` section; `supersedesIds` (predecessor procedures / runbooks) write the `Supersedes` self-relation. Approval lives on the existing inbox surface (`lore-memory action='approve'`).\n" +
-        "- `action: 'deprecate'` — flip an accepted procedure to `Status: deprecated` (history preserved). Rejects `proposed` rows (those leave via `lore-memory action='reject'`). Supersession workflow: pass `supersedesIds` at propose time, then run `lore-procedure action='deprecate'` on each predecessor after the replacement is approved.\n\n" +
+        "- `action: 'propose'` — create a `Kind: procedure, Status: proposed` memory with structured activation conditions and steps. Validates every `sourceMemoryIds` entry resolves to a live source memory in scope; idempotent on `(topicKey, project-set)`. Supporting source ids render under the procedure body's `## Sources` section; `supersedesIds` (predecessor procedures / runbooks) write the `Supersedes` self-relation. Approval lives on the existing inbox surface (`kennen-memory action='approve'`).\n" +
+        "- `action: 'deprecate'` — flip an accepted procedure to `Status: deprecated` (history preserved). Rejects `proposed` rows (those leave via `kennen-memory action='reject'`). Supersession workflow: pass `supersedesIds` at propose time, then run `kennen-procedure action='deprecate'` on each predecessor after the replacement is approved.\n\n" +
         "Procedures are reviewed governance memory. The propose path never auto-promotes — raw session summaries do not become fleet-wide procedures.",
       inputSchema: z.object({
         action: z
@@ -543,7 +546,7 @@ export function registerProcedureTools(server: McpServer, services: LoreServices
           .array(z.string())
           .optional()
           .describe(
-            "(action='propose') Notion page ids (32-char hex or dashed UUID) of memories this procedure supersedes (e.g. an older runbook). Recorded on the `Supersedes` self-relation. After approval, run `lore-procedure action='deprecate'` on each predecessor — Notion does not auto-deprecate."
+            "(action='propose') Notion page ids (32-char hex or dashed UUID) of memories this procedure supersedes (e.g. an older runbook). Recorded on the `Supersedes` self-relation. After approval, run `kennen-procedure action='deprecate'` on each predecessor — Notion does not auto-deprecate."
           ),
         topicKey: z
           .string()
@@ -570,7 +573,9 @@ export function registerProcedureTools(server: McpServer, services: LoreServices
       try {
         const parsed = procedureDispatchSchema.safeParse(args, { reportInput: true })
         if (!parsed.success) {
-          return toolError(new Error(formatDispatchError("lore-procedure", parsed.error)))
+          return toolError(
+            new Error(formatDispatchError("kennen-procedure", parsed.error))
+          )
         }
         const data = parsed.data
         switch (data.action) {
@@ -582,7 +587,7 @@ export function registerProcedureTools(server: McpServer, services: LoreServices
             // branch (existing proposed procedure on the topic-key
             // slot) is a no-op cache-wise, but the bump is
             // structurally harmless and keeps the dispatch shape
-            // uniform with the other write actions on `lore-memory`.
+            // uniform with the other write actions on `kennen-memory`.
             return await withWakeUpCacheBump(services.wakeupCache, () =>
               handlePropose(services, data)
             )

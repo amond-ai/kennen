@@ -14,14 +14,14 @@
  *   - `add_multi_select_options` — append options to an existing
  *     multi_select column
  *   - `write_config_profile_pin` — rewrite the `profile:` selector in
- *     `.lore.yaml`
+ *     `.kennen.yaml`
  *   - `backfill_empty_property` — write a literal value to empty cells
  *     that match a bounded filter (capped at 500 rows per run)
  *
  * Apply mode is dry-run by default. `--apply` requires the migration
  * lock and writes a per-vault ledger to
  *
- *   `<configRoot>/.lore/profile-migrations/<safe-profile-name>/<from>__<to>.<vault-page-sha12>.json`
+ *   `<configRoot>/.kennen/profile-migrations/<safe-profile-name>/<from>__<to>.<vault-page-sha12>.json`
  *
  * Idempotency: every step is re-checked against live Notion state at
  * the start of apply. A step whose effect is already visible is skipped
@@ -51,7 +51,7 @@ import {
   resolveProfileSelector,
   type ResolvedProfile,
 } from "./index.js"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 
 export const PROFILE_MIGRATION_STEP_KINDS = [
   "add_property",
@@ -707,7 +707,7 @@ export function writeLedger(path: string, ledger: ProfileMigrationLedger): void 
 }
 
 export interface PlanInputs {
-  services: LoreServices
+  services: KennenServices
   sourceSelector: string
   targetSelector: string
   /**
@@ -812,7 +812,7 @@ function ensureConfigPinTargetLoadable(
   const targetLocation = resolveProfileSelector(targetParsed, configRoot)
   if (!targetLocation) {
     throw new ProfileMigrationError(
-      `Target profile not resolvable for config pin: ${targetParsed.selector}. Install it first with \`lore profile install\`.`
+      `Target profile not resolvable for config pin: ${targetParsed.selector}. Install it first with \`kennen profile install\`.`
     )
   }
   try {
@@ -849,7 +849,7 @@ interface LiveEvaluation {
 }
 
 async function evaluateStepLive(
-  services: LoreServices,
+  services: KennenServices,
   step: ProfileMigrationStep
 ): Promise<LiveEvaluation> {
   try {
@@ -889,7 +889,7 @@ async function evaluateStepLive(
         if (services.config.profile === step.selector) {
           return {
             status: "skip-already-satisfied",
-            reason: `.lore.yaml profile already pinned to ${step.selector}.`,
+            reason: `.kennen.yaml profile already pinned to ${step.selector}.`,
           }
         }
         return { status: "would-run" }
@@ -904,7 +904,10 @@ async function evaluateStepLive(
   }
 }
 
-function databaseRefId(services: LoreServices, key: ProfileMigrationDatabaseKey): string {
+function databaseRefId(
+  services: KennenServices,
+  key: ProfileMigrationDatabaseKey
+): string {
   const databases = services.vault.databases
   return databases[key].dataSourceId
 }
@@ -977,7 +980,7 @@ export interface ApplyResult {
  * failure leaves the source pin intact.
  */
 export async function applyMigrationPlan(
-  services: LoreServices,
+  services: KennenServices,
   plan: ProfileMigrationPlan,
   options: ApplyOptions
 ): Promise<ApplyResult> {
@@ -1044,7 +1047,7 @@ export async function applyMigrationPlan(
 }
 
 async function applyStep(
-  services: LoreServices,
+  services: KennenServices,
   step: ProfileMigrationStep,
   options: ApplyOptions
 ): Promise<string> {
@@ -1097,7 +1100,7 @@ async function applyStep(
 }
 
 async function verifyStepIdempotent(
-  services: LoreServices,
+  services: KennenServices,
   step: ProfileMigrationStep,
   options: ApplyOptions
 ): Promise<{ ok: boolean; reason?: string }> {
@@ -1152,7 +1155,7 @@ async function verifyStepIdempotent(
 }
 
 /**
- * Update only the `profile:` selector in a `.lore.yaml` file without
+ * Update only the `profile:` selector in a `.kennen.yaml` file without
  * disturbing other keys, comments, or YAML formatting Notion-readers
  * have come to depend on. Falls back to a clean YAML rewrite when the
  * regex form cannot match.
@@ -1231,16 +1234,16 @@ function isPropertyEmptyOnPage(
 }
 
 /**
- * Try to determine the on-disk path of the loaded `.lore.yaml` for use
+ * Try to determine the on-disk path of the loaded `.kennen.yaml` for use
  * by `applyMigrationPlan`. Used by the CLI which already knows the
  * config root from `initServices`.
  */
 export function defaultConfigPath(configRoot: string): string {
-  return resolve(configRoot, ".lore.yaml")
+  return resolve(configRoot, ".kennen.yaml")
 }
 
 /**
- * Helper used by `lore profile show` / `preview` to summarize a profile
+ * Helper used by `kennen profile show` / `preview` to summarize a profile
  * by reading its on-disk bundle.
  */
 export function summarizeProfile(profile: ResolvedProfile): {
@@ -1277,7 +1280,7 @@ export function summarizeProfile(profile: ResolvedProfile): {
 }
 
 /**
- * Helper used by `lore profile validate` to load a bundle from a path.
+ * Helper used by `kennen profile validate` to load a bundle from a path.
  */
 export function validateProfileBundle(path: string): ResolvedProfile {
   const root = resolve(path)

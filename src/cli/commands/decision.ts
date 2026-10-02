@@ -1,6 +1,6 @@
 import { Command } from "commander"
 import { syncDecisionReachability } from "../../core/decision-graph.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { memoryScopeToInput } from "../../types.js"
 import type { CreateDecisionInput, Decision, Fact } from "../../types.js"
 import { notionPageUrl, terminalLink } from "../output.js"
@@ -115,7 +115,7 @@ export function parseDecisionCreateCliOptions(
 }
 
 export async function runDecisionCreate(
-  services: LoreServices,
+  services: KennenServices,
   opts: DecisionCreateCliOptions,
   rationale: string
 ): Promise<DecisionCreateCliResult> {

@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-powered-candidates
+name: kennen-longitudinal-github-cli-powered-candidates
 description: |
   Expanded PR-derived and generalized GitHub CLI longitudinal scenario
   candidates. These are candidate slots, not independent statistical units:
@@ -17,8 +17,8 @@ seededCorpus: ../vault-seeds/github-cli-powered.yaml
 costKillSwitchUsd: 1500
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 
 scenarios:
   - id: gh-cli-config-list-json-continuity

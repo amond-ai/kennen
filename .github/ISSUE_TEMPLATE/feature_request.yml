@@ -21,7 +21,7 @@ body:
     id: proposal
     attributes:
       label: Proposed solution
-      description: What should Lore do differently?
+      description: What should Kennen do differently?
     validations:
       required: true
   - type: dropdown

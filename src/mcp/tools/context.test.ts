@@ -6,7 +6,7 @@ import { dirname, join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { registerContextTools, neutralizeLeadingBlockquote } from "./context.js"
 import { RANKED_WAKEUP_LIMITS, loadWakeUpData } from "../../core/wakeup.js"
-import { LoreError } from "../../errors.js"
+import { KennenError } from "../../errors.js"
 import {
   backgroundFailureMarkerPath,
   recordBackgroundFailure,
@@ -15,7 +15,7 @@ import type {
   DecisionSummary,
   Fact,
   ListTasksOpts,
-  LoreConfig,
+  KennenConfig,
   Memory,
   Project,
   TaskSummary,
@@ -152,7 +152,7 @@ function makeTask(overrides: Partial<TaskSummary> & { id: string }): TaskSummary
   return { ...base, ...overrides }
 }
 
-class RetryableWakeUpLoadError extends LoreError<"transient-project-resolution"> {
+class RetryableWakeUpLoadError extends KennenError<"transient-project-resolution"> {
   readonly code = "wake_up_load_retry"
   readonly retryable = true
 
@@ -290,7 +290,7 @@ interface WakeServicesOverrides {
   /** Override `services.configRoot`; omitted by default to avoid filesystem reads. */
   configRoot?: string
   /** Additional top-level config fields for status/topology tests. */
-  configOverrides?: Partial<LoreConfig>
+  configOverrides?: Partial<KennenConfig>
   /** Shared client stub for status paths that verify configured vault topology. */
   client?: unknown
   /** Override `services.projects.findByName`. Used by explicit-projectName tests. */
@@ -311,7 +311,7 @@ interface WakeServicesOverrides {
   /**
    * Proposed-memory inbox count returned by
    * `services.memories.countProposed` for the
-   * `lore-context action='status'` inbox-line surface (issue #281).
+   * `kennen-context action='status'` inbox-line surface (issue #281).
    * Defaults to a zero-row report so tests that don't care about the
    * inbox line emit the same byte-shape they did pre-#281.
    */
@@ -382,9 +382,9 @@ function makeWakeServices(overrides: WakeServicesOverrides = {}) {
     ? vi.fn(overrides.findByName)
     : vi.fn(async () => null)
   const countProposed = vi.fn(async () => ({
-    // Two override paths: `proposedInbox` for `lore-context
+    // Two override paths: `proposedInbox` for `kennen-context
     // action='status'` tests (which only assert the rendered total
-    // line), and `proposedMemoriesTotal` for `lore-context
+    // line), and `proposedMemoriesTotal` for `kennen-context
     // action='wake-up'` saturation tests (which need to simulate a
     // deeper inbox than the rendered slice).
     total:
@@ -417,7 +417,7 @@ function makeWakeServices(overrides: WakeServicesOverrides = {}) {
       countProposed,
       listPinnedBlocks,
       countPinnedBlocks,
-      // Issue #283 — `lore-context action='status'` calls
+      // Issue #283 — `kennen-context action='status'` calls
       // `loadExpiringScopedStatus` which fans out to both services.
       expiringScopedStats: vi.fn(async () => ({
         expired: 0,
@@ -533,17 +533,17 @@ function extractErrorMetadata(text: string): Record<string, unknown> {
 }
 
 async function withTempHookState<T>(fn: () => Promise<T>): Promise<T> {
-  const originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
-  const stateDir = `${process.env["TMPDIR"] ?? "/tmp"}/lore-context-status-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
-  process.env["LORE_HOOK_STATE_DIR"] = stateDir
+  const originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+  const stateDir = `${process.env["TMPDIR"] ?? "/tmp"}/kennen-context-status-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  process.env["KENNEN_HOOK_STATE_DIR"] = stateDir
   try {
     return await fn()
   } finally {
     rmSync(stateDir, { recursive: true, force: true })
     if (originalStateDir) {
-      process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
     } else {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     }
   }
 }
@@ -554,8 +554,8 @@ function extractBackgroundStatus(text: string): Record<string, unknown> {
   return JSON.parse(json ?? "{}") as Record<string, unknown>
 }
 
-describe("lore-wake-up — Part A: title-only by default", () => {
-  it("preserves retryable LoreError metadata on wake-up failures", async () => {
+describe("kennen-wake-up — Part A: title-only by default", () => {
+  it("preserves retryable KennenError metadata on wake-up failures", async () => {
     const pageId = "abcdef0123456789abcdef0123456789"
     const mockServer = createMockServer()
     const services = makeWakeServices()
@@ -564,7 +564,7 @@ describe("lore-wake-up — Part A: title-only by default", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     expect((result as { isError?: boolean }).isError).toBe(true)
@@ -596,7 +596,7 @@ describe("lore-wake-up — Part A: title-only by default", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -625,7 +625,7 @@ describe("lore-wake-up — Part A: title-only by default", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ expand: true } as never)
 
     const text = extractText(result)
@@ -635,7 +635,7 @@ describe("lore-wake-up — Part A: title-only by default", () => {
     )
   })
 })
-describe("lore-wake-up — revision marker (issue 0.9.0/10)", () => {
+describe("kennen-wake-up — revision marker (issue 0.9.0/10)", () => {
   // Pinned at the surface so a future contributor swapping the wake-up
   // Recent Memories renderer away from `wakeUpMemoryMetaBuilder` would
   // see the rev marker disappear from listings and surface here, not
@@ -659,7 +659,7 @@ describe("lore-wake-up — revision marker (issue 0.9.0/10)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -685,7 +685,7 @@ describe("lore-wake-up — revision marker (issue 0.9.0/10)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -697,12 +697,12 @@ describe("lore-wake-up — revision marker (issue 0.9.0/10)", () => {
   })
 })
 
-describe("lore-wake-up — Part B: topical dedup", () => {
+describe("kennen-wake-up — Part B: topical dedup", () => {
   it("collapses overlapping memories with a (related: <uuid>) trailer", async () => {
     // Three wake-up debugging sessions with shared tags must collapse to
     // one representative entry (the first-seen) plus an IDs trailer
     // pointing at the collapsed peers. The trailer emits the FULL UUID
-    // so agents can `lore-recall` / `lore-get-decision` the peer — a
+    // so agents can `kennen-recall` / `kennen-get-decision` the peer — a
     // last-8 hint would be reader-only and not agent-actionable.
     const tags = ["hooks", "wakeup", "debugging"]
     const peerId = "2c1ffab4-e67f-8185-bec0-d3902135c5bb"
@@ -721,7 +721,7 @@ describe("lore-wake-up — Part B: topical dedup", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -729,13 +729,13 @@ describe("lore-wake-up — Part B: topical dedup", () => {
     // The collapsed peer should NOT render as its own heading.
     expect(text).not.toContain("Wakeup silent-failure debugging followup")
     // The trailer emits the peer's full Notion UUID so agents can
-    // re-fetch it directly — pass the ID to `lore-recall` /
-    // `lore-get-decision` to load the peer's body on demand.
+    // re-fetch it directly — pass the ID to `kennen-recall` /
+    // `kennen-get-decision` to load the peer's body on demand.
     expect(text).toContain(`(related: ${peerId})`)
   })
 })
 
-describe("lore-wake-up — Part C: UUID → title resolution", () => {
+describe("kennen-wake-up — Part C: UUID → title resolution", () => {
   it("renders resolved titles in Active Facts instead of raw UUIDs", async () => {
     // The facts section must route every UUID through the P1-05 title
     // resolver. A raw 36-char hex string in wake-up output is the bug
@@ -757,7 +757,7 @@ describe("lore-wake-up — Part C: UUID → title resolution", () => {
     )
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -784,7 +784,7 @@ describe("lore-wake-up — Part C: UUID → title resolution", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -810,7 +810,7 @@ describe("lore-wake-up — Part C: UUID → title resolution", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -821,7 +821,7 @@ describe("lore-wake-up — Part C: UUID → title resolution", () => {
   })
 })
 
-describe("lore-wake-up — Part D: per-section limits", () => {
+describe("kennen-wake-up — Part D: per-section limits", () => {
   it("reports cost outputs for rendered memory rows after wake-up caps", async () => {
     const services = makeWakeServices({
       memories: [
@@ -831,7 +831,7 @@ describe("lore-wake-up — Part D: per-section limits", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const result = await wake({ limit: 1 })
     const text = extractText(result)
@@ -851,7 +851,7 @@ describe("lore-wake-up — Part D: per-section limits", () => {
     const services = makeWakeServices({ facts: [] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     await wake({ knowledgeFactLimit: 3 } as never)
 
     expect(services._calls.factsListRecent).toHaveBeenCalledWith(
@@ -860,7 +860,7 @@ describe("lore-wake-up — Part D: per-section limits", () => {
   })
 })
 
-describe("lore-wake-up — expand interacts with collapse", () => {
+describe("kennen-wake-up — expand interacts with collapse", () => {
   it("renders the (related: <uuid>) trailer before the body when expand is true", async () => {
     // Order matters for readability: metadata and the collapse trailer
     // belong on the header line; the body is the payload underneath.
@@ -884,7 +884,7 @@ describe("lore-wake-up — expand interacts with collapse", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ expand: true } as never)
 
     const text = extractText(result)
@@ -895,7 +895,7 @@ describe("lore-wake-up — expand interacts with collapse", () => {
     expect(trailerIdx).toBeLessThan(bodyIdx)
     // Collapsed peer's body stays suppressed even in expand mode — only
     // the representative's body is rendered. An agent that wants the
-    // peer's body re-fetches it via `lore-recall` with the trailer ID.
+    // peer's body re-fetches it via `kennen-recall` with the trailer ID.
     expect(text).not.toContain("Body for a collapsed peer")
   })
 
@@ -918,7 +918,7 @@ describe("lore-wake-up — expand interacts with collapse", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -929,7 +929,7 @@ describe("lore-wake-up — expand interacts with collapse", () => {
   })
 })
 
-describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
+describe("kennen-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
   // The MCP tool is the second surface for ranked wake-up. Hooks ship
   // ranked output via Claude Code's UserPromptSubmit; the MCP tool ships
   // it via an explicit `userQuery` argument that an agent passes after a
@@ -945,7 +945,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ userQuery: "fix outlook auth bug" } as never)
 
     const text = extractText(result)
@@ -983,7 +983,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({
       userQuery: "fix outlook auth bug",
       debug: true,
@@ -1019,7 +1019,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({
       userQuery: "fix outlook auth bug",
       governanceContext: true,
@@ -1042,7 +1042,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -1064,7 +1064,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({
       userQuery: "fix auth",
       taskMemoryLimit: 0,
@@ -1094,7 +1094,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     await wake({ userQuery: "fix auth" } as never)
 
     expect(services._calls.factsListRecent).toHaveBeenCalledWith(
@@ -1109,7 +1109,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     const services = makeWakeServices({})
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     await wake({} as never)
 
     const knowledgeCall = services._calls.factsListRecent.mock.calls[0]?.[0] as
@@ -1130,7 +1130,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     await wake({
       userQuery: "fix auth",
       knowledgeFactLimit: 47,
@@ -1179,7 +1179,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
       taskMemories: taskMemoriesFixture,
     })
     registerContextTools(mcpServer.server, mcpServices as never)
-    const mcpWake = mcpServer.getActionHandler("lore-context", "wake-up")
+    const mcpWake = mcpServer.getActionHandler("kennen-context", "wake-up")
     const mcpResult = await mcpWake({ userQuery: "auth bug" } as never)
     const mcpText = extractText(mcpResult)
 
@@ -1237,7 +1237,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ userQuery: "fix auth" } as never)
 
     const text = extractText(result)
@@ -1276,7 +1276,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({
       mode: "task-only",
       userQuery: "fix payment retry",
@@ -1312,7 +1312,7 @@ describe("lore-wake-up — Part E: P3-05 ranked output (userQuery)", () => {
   })
 })
 
-describe("lore-wake-up — coverage counters (issue #361)", () => {
+describe("kennen-wake-up — coverage counters (issue #361)", () => {
   it("keeps coverage counters out of the default MCP response", async () => {
     const mockServer = createMockServer()
     const services = makeWakeServices({
@@ -1320,12 +1320,12 @@ describe("lore-wake-up — coverage counters (issue #361)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
     expect(text).not.toContain("Wake-Up Coverage")
-    expect(text).not.toContain("[lore] wakeup:")
+    expect(text).not.toContain("[kennen] wakeup:")
   })
 
   it("renders privacy-conscious, display-adjusted counters when debug is true", async () => {
@@ -1354,7 +1354,7 @@ describe("lore-wake-up — coverage counters (issue #361)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({
       userQuery: "Fix retrieval metrics",
       debug: true,
@@ -1378,7 +1378,7 @@ describe("lore-wake-up — coverage counters (issue #361)", () => {
 })
 
 // Issue 0.6.0/18: project framing block on wake-up.
-describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () => {
+describe("kennen-wake-up — Part F: project framing block (issue 0.6.0/18)", () => {
   it("renders description and siblings under the Project header", async () => {
     const mockServer = createMockServer()
     const services = makeWakeServices({
@@ -1396,7 +1396,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       ],
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -1427,7 +1427,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       ],
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -1450,7 +1450,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       configProjects: [],
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -1477,7 +1477,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       ],
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -1522,7 +1522,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       findByName: async (name) => (name === "Web" ? webProject : null),
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ projectName: "Web" } as never)
 
     const text = extractText(result)
@@ -1545,7 +1545,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       findByName: async () => null,
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const result = await wake({ projectName: "Missing" } as never)
     const text = extractText(result)
@@ -1568,7 +1568,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       findByName: async () => null,
     })
     registerContextTools(mockServer.server, services as never)
-    const digest = mockServer.getActionHandler("lore-context", "digest")
+    const digest = mockServer.getActionHandler("kennen-context", "digest")
 
     const result = await digest({ projectName: "Missing" } as never)
     const text = extractText(result)
@@ -1593,7 +1593,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       ],
     })
     registerContextTools(mockServer.server, services as never)
-    const digest = mockServer.getActionHandler("lore-context", "digest")
+    const digest = mockServer.getActionHandler("kennen-context", "digest")
 
     const result = await digest({ period: "day" } as never)
     const text = extractText(result)
@@ -1611,7 +1611,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
 
   it("renders the Proposed memories inbox line on action='status' (issue #281, AC #5)", async () => {
     // Acceptance criterion: the inbox-count line is byte-identical
-    // between `lore status` (CLI) and `lore-context action='status'`
+    // between `kennen status` (CLI) and `kennen-context action='status'`
     // (MCP) — same parity contract as the Tasks summary above. Pin
     // both the singular-1 inflection AND the source/agent breakdown
     // form so a future divergence between the two surfaces fails
@@ -1626,7 +1626,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     })
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
@@ -1643,7 +1643,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     const services = makeWakeServices()
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
@@ -1653,7 +1653,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
 
   it("renders the Tasks summary line on action='status' (issue 0.7.0/13)", async () => {
     // Acceptance criterion: the same `formatTaskSummary` shape the CLI
-    // emits also surfaces via `lore-context action='status'`. Pin the
+    // emits also surfaces via `kennen-context action='status'`. Pin the
     // line shape so a future divergence between the two surfaces fails
     // here instead of leaking into operator-facing output.
     const mockServer = createMockServer()
@@ -1668,7 +1668,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     services.tasks.countClosedSince = vi.fn(async () => 14)
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
@@ -1688,12 +1688,12 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     })
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
     expect(text).toContain("Wake-up coverage:")
-    expect(text).toContain("[lore] wakeup: mode=default")
+    expect(text).toContain("[kennen] wakeup: mode=default")
     expect(text).toContain("reason=no-ranked-search")
     expect(text).toContain("sections.recent=1")
     expect(text).toContain("sections.facts=1")
@@ -1725,7 +1725,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     })
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
@@ -1737,9 +1737,9 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
   })
 
   it("reuses cached topology health on repeated action='status'", async () => {
-    const stateDir = await mkdtemp(join(tmpdir(), "lore-mcp-topology-status-"))
-    const previousStateDir = process.env["LORE_HOOK_STATE_DIR"]
-    process.env["LORE_HOOK_STATE_DIR"] = stateDir
+    const stateDir = await mkdtemp(join(tmpdir(), "kennen-mcp-topology-status-"))
+    const previousStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+    process.env["KENNEN_HOOK_STATE_DIR"] = stateDir
     try {
       const mockServer = createMockServer()
       const listBlocks = vi.fn(async ({ block_id }: { block_id: string }) => {
@@ -1766,7 +1766,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       })
 
       registerContextTools(mockServer.server, services as never)
-      const status = mockServer.getActionHandler("lore-context", "status")
+      const status = mockServer.getActionHandler("kennen-context", "status")
       await status({} as never)
       const second = await status({} as never)
 
@@ -1776,9 +1776,9 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       expect(text).toContain("health unavailable (not shared: team-page; cached")
     } finally {
       if (previousStateDir === undefined) {
-        delete process.env["LORE_HOOK_STATE_DIR"]
+        delete process.env["KENNEN_HOOK_STATE_DIR"]
       } else {
-        process.env["LORE_HOOK_STATE_DIR"] = previousStateDir
+        process.env["KENNEN_HOOK_STATE_DIR"] = previousStateDir
       }
       await rm(stateDir, { recursive: true, force: true })
     }
@@ -1800,7 +1800,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     services.tasks.countClosedSince = vi.fn(async () => null)
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
@@ -1815,7 +1815,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     const mockServer = createMockServer()
     const services = makeWakeServices()
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     const text = extractText(result)
@@ -1846,7 +1846,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
         const mockServer = createMockServer()
         const services = makeWakeServices({ configRoot: "/repo" })
         registerContextTools(mockServer.server, services as never)
-        const status = mockServer.getActionHandler("lore-context", "status")
+        const status = mockServer.getActionHandler("kennen-context", "status")
         const result = await status({} as never)
 
         const text = extractText(result)
@@ -1874,7 +1874,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     const mockServer = createMockServer()
     const services = makeWakeServices()
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     const result = await status({} as never)
 
     expect(extractBackgroundStatus(extractText(result))).toMatchObject({
@@ -1890,7 +1890,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       const mockServer = createMockServer()
       const services = makeWakeServices({ configRoot: "/repo" })
       registerContextTools(mockServer.server, services as never)
-      const status = mockServer.getActionHandler("lore-context", "status")
+      const status = mockServer.getActionHandler("kennen-context", "status")
       const result = await status({} as never)
 
       expect(extractBackgroundStatus(extractText(result))).toMatchObject({
@@ -1920,7 +1920,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       const mockServer = createMockServer()
       const services = makeWakeServices({ configRoot: "/repo" })
       registerContextTools(mockServer.server, services as never)
-      const status = mockServer.getActionHandler("lore-context", "status")
+      const status = mockServer.getActionHandler("kennen-context", "status")
       const result = await status({} as never)
       const background = extractBackgroundStatus(extractText(result)) as {
         failures: unknown[]
@@ -1945,7 +1945,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       const mockServer = createMockServer()
       const services = makeWakeServices({ configRoot: "/repo" })
       registerContextTools(mockServer.server, services as never)
-      const status = mockServer.getActionHandler("lore-context", "status")
+      const status = mockServer.getActionHandler("kennen-context", "status")
       const result = await status({} as never)
 
       expect(extractBackgroundStatus(extractText(result))).toMatchObject({
@@ -1977,7 +1977,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
     services.tasks.countClosedSince = countClosedSince
 
     registerContextTools(mockServer.server, services as never)
-    const status = mockServer.getActionHandler("lore-context", "status")
+    const status = mockServer.getActionHandler("kennen-context", "status")
     await status({} as never)
 
     expect(countActive).toHaveBeenCalledWith(
@@ -2016,7 +2016,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
       findByName: async (name) => (name === "Widget" ? subProject : null),
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ projectName: "Widget" } as never)
 
     const text = extractText(result)
@@ -2026,7 +2026,7 @@ describe("lore-wake-up — Part F: project framing block (issue 0.6.0/18)", () =
   })
 })
 
-describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
+describe("kennen-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
   // Wake-up's three memory sections (Recent, Related, For-Your-Current-Task)
   // all gain synopsis rendering by default. The digest section is
   // unchanged — the digest IS the content. The `expand: true` opt-in
@@ -2047,7 +2047,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2072,7 +2072,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2097,7 +2097,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ userQuery: "fix outlook auth bug" } as never)
 
     const text = extractText(result)
@@ -2131,7 +2131,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2160,7 +2160,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ expand: true } as never)
 
     const text = extractText(result)
@@ -2182,7 +2182,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     await wake({} as never)
 
     // Pre-#03 wake-up calls memories.list once for the digest probe and
@@ -2194,7 +2194,7 @@ describe("lore-wake-up — Part G: synopsis rendering (issue 0.7.0/03)", () => {
   })
 })
 
-describe("lore-wake-up — synopsis is always rendered on wake-up (issue 0.7.0/03 scoping)", () => {
+describe("kennen-wake-up — synopsis is always rendered on wake-up (issue 0.7.0/03 scoping)", () => {
   // Per the spec's scoping rationale, includeSynopsis is a recall/search
   // knob only. Wake-up's dispatch schema does not declare the field, and
   // wake-up's renderer does not consult it — so even a caller that
@@ -2213,14 +2213,14 @@ describe("lore-wake-up — synopsis is always rendered on wake-up (issue 0.7.0/0
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const result = await wake({ includeSynopsis: false } as never)
     const text = extractText(result)
     expect(text).toContain("This synopsis must render on wake-up.")
   })
 })
-describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () => {
+describe("kennen-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () => {
   // Pre-#12 the Tasks section was a flat list capped at 10. Real vaults
   // accumulated dead work that rendered identically to live work — no
   // staleness signal, no closure CTA. #12 splits the section into
@@ -2268,7 +2268,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2318,16 +2318,16 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
     // Each bucket's row carries the same "ID: <id> — close if resolved:"
-    // trailer + a ready-to-copy `lore-task({ action: 'close', ... })`
+    // trailer + a ready-to-copy `kennen-task({ action: 'close', ... })`
     // call. The agent never has to remember the dispatcher signature.
     for (const id of ["overdue-id", "stale-id", "active-id"]) {
       expect(text).toContain(`ID: ${id} — close if resolved:`)
-      expect(text).toContain(`lore-task({ action: 'close', taskId: '${id}' })`)
+      expect(text).toContain(`kennen-task({ action: 'close', taskId: '${id}' })`)
     }
   })
 
@@ -2343,7 +2343,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     const services = makeWakeServices({ tasks: [activeTask] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2361,7 +2361,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     const services = makeWakeServices({ tasks: [] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2384,7 +2384,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     const services = makeWakeServices({ tasks: [both] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2396,7 +2396,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     // The over-fetched window holds up to 4× the cap. Per-bucket caps
     // ensure no single bucket dominates the rendered Tasks section.
     // The heading itself surfaces the shown/total/hidden split — same
-    // single-signal posture `lore-task action='list'` already uses.
+    // single-signal posture `kennen-task action='list'` already uses.
     const tasks: TaskSummary[] = []
     for (let i = 0; i < 12; i++) {
       tasks.push(
@@ -2413,7 +2413,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     const services = makeWakeServices({ tasks })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     // Default `taskLimit` is 10 — render 10, hide 2.
     const result = await wake({} as never)
 
@@ -2472,7 +2472,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
     const services = makeWakeServices({ tasks })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2484,7 +2484,7 @@ describe("lore-wake-up — Part H: stale-task bucketing (issue 0.7.0/12)", () =>
   })
 })
 
-describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order starvation (DEFERRED-04)", () => {
+describe("kennen-wake-up — Part H follow-ups: saturation marker + sort-order starvation (DEFERRED-04)", () => {
   // Clock-frozen determinism: wall-clock-relative `daysAgo` produces
   // a flake window when the suite crosses UTC midnight; `vi.setSystemTime`
   // anchors every fixture and the renderer's `new Date().toISOString()`
@@ -2520,7 +2520,7 @@ describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order sta
     // no longer claim a precise inventory. The `≥`
     // prefix on both the total and the hidden count signals "lower
     // bound, not inventory" so the agent's triage view stays honest
-    // about what the wake-up window can actually see. `lore-task
+    // about what the wake-up window can actually see. `kennen-task
     // action='reconcile'` is the proper audit surface; `## Tasks` is
     // the triage view, and the saturation marker is its claim to
     // that scope.
@@ -2540,7 +2540,7 @@ describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order sta
     const services = makeWakeServices({ tasks })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2572,7 +2572,7 @@ describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order sta
     const services = makeWakeServices({ tasks })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2605,7 +2605,7 @@ describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order sta
     const services = makeWakeServices({ tasks })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2664,7 +2664,7 @@ describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order sta
     const services = makeWakeServices({ tasks })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2678,7 +2678,7 @@ describe("lore-wake-up — Part H follow-ups: saturation marker + sort-order sta
   })
 })
 
-describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () => {
+describe("kennen-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () => {
   function daysAgo(n: number): string {
     return new Date(Date.now() - n * 86_400_000).toISOString()
   }
@@ -2717,7 +2717,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2747,7 +2747,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     const services = makeWakeServices({ tasks: [task] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2761,7 +2761,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     const titleIdx = lines.findIndex((l) => l.includes("**Plain row**"))
     expect(`${lines[titleIdx]}\n${lines[titleIdx + 1]}`).toBe(
       "- **Plain row** [open]\n" +
-        " ID: plain-id — close if resolved: lore-task({ action: 'close', taskId: 'plain-id' })"
+        " ID: plain-id — close if resolved: kennen-task({ action: 'close', taskId: 'plain-id' })"
     )
   })
 
@@ -2782,7 +2782,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     const services = makeWakeServices({ tasks: [task] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2790,7 +2790,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     const titleIdx = lines.findIndex((l) => l.includes("**Whitespace row**"))
     expect(`${lines[titleIdx]}\n${lines[titleIdx + 1]}`).toBe(
       "- **Whitespace row** [open]\n" +
-        " ID: ws-id — close if resolved: lore-task({ action: 'close', taskId: 'ws-id' })"
+        " ID: ws-id — close if resolved: kennen-task({ action: 'close', taskId: 'ws-id' })"
     )
   })
 
@@ -2799,8 +2799,8 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     // is not declared on the `wake-up` branch of `contextDispatchSchema`,
     // so Zod's default `strip` posture drops it during `safeParse` —
     // there is no dispatcher-layer code rejecting it explicitly. Pin
-    // this so a copy-paste from `lore-task action='list'` to
-    // `lore-context action='wake-up'` doesn't silently suppress the
+    // this so a copy-paste from `kennen-task action='list'` to
+    // `kennen-context action='wake-up'` doesn't silently suppress the
     // synopsis on the triage view.
     const task = makeTask({
       id: "syn-id",
@@ -2814,7 +2814,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     const services = makeWakeServices({ tasks: [task] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({ includeSynopsis: false } as never)
 
     const text = extractText(result)
@@ -2836,7 +2836,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     const services = makeWakeServices({ tasks: [task] })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
 
     const text = extractText(result)
@@ -2854,7 +2854,7 @@ describe("lore-wake-up — Part I: Tasks synopsis rendering (DEFERRED-01)", () =
     expect(synopsisLine).not.toContain("…")
   })
 })
-describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
+describe("kennen-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
   function withTouch(
     overrides: WakeServicesOverrides = {},
     touchOnRead: ReturnType<typeof vi.fn> = vi.fn().mockResolvedValue(undefined)
@@ -2896,7 +2896,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
       relatedReadyOverrides({ memories: recent, relatedMemories: related })
     )
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -2933,7 +2933,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
     )
     const { services, touchOnRead } = withTouch({ memories: overFetched })
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -2969,7 +2969,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
     })
     const { services, touchOnRead } = withTouch({ memories: [rep, peer] })
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -3017,7 +3017,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
       memories: [recentSameId],
     })
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -3037,7 +3037,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
       taskMemories: [taskMem],
     })
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({ userQuery: "current focus" })
 
@@ -3052,7 +3052,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
       vi.fn().mockRejectedValue(new Error("notion 503"))
     )
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const result = await wakeUp({})
     expect((result as { isError?: boolean }).isError).not.toBe(true)
@@ -3065,7 +3065,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
     const mockServer = createMockServer()
     const { services, touchOnRead } = withTouch({})
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -3089,7 +3089,7 @@ describe("lore-wake-up — touch-on-read wiring (issue 0.8.0/05)", () => {
 // so the call is asserted, not absorbed.
 // ---------------------------------------------------------------------------
 
-describe("lore-wake-up — fact touch-on-read wiring (DEFERRED-02)", () => {
+describe("kennen-wake-up — fact touch-on-read wiring (DEFERRED-02)", () => {
   function withFactTouch(
     overrides: WakeServicesOverrides = {},
     factsTouchOnRead: ReturnType<typeof vi.fn> = vi.fn().mockResolvedValue(undefined)
@@ -3115,7 +3115,7 @@ describe("lore-wake-up — fact touch-on-read wiring (DEFERRED-02)", () => {
     ]
     const { services, factsTouchOnRead } = withFactTouch({ facts })
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -3133,7 +3133,7 @@ describe("lore-wake-up — fact touch-on-read wiring (DEFERRED-02)", () => {
     const mockServer = createMockServer()
     const { services, factsTouchOnRead } = withFactTouch({ facts: [] })
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     await wakeUp({})
 
@@ -3159,7 +3159,7 @@ describe("lore-wake-up — fact touch-on-read wiring (DEFERRED-02)", () => {
       vi.fn().mockRejectedValue(new Error("notion 503"))
     )
     registerContextTools(mockServer.server, services as never)
-    const wakeUp = mockServer.getActionHandler("lore-context", "wake-up")
+    const wakeUp = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const result = await wakeUp({})
     expect((result as { isError?: boolean }).isError).not.toBe(true)
@@ -3168,12 +3168,12 @@ describe("lore-wake-up — fact touch-on-read wiring (DEFERRED-02)", () => {
   })
 })
 
-describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", () => {
+describe("kennen-wake-up — Proposed Memories review inbox (issue #281, AC #2)", () => {
   it("omits the section when no proposed memories exist", async () => {
     const mockServer = createMockServer()
     const services = makeWakeServices({ proposedMemories: [] })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const text = extractText(await wake({}))
     expect(text).not.toContain("## Proposed Memories")
@@ -3188,7 +3188,7 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
       ],
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const text = extractText(await wake({}))
     expect(text).toContain("## Proposed Memories (2 pending review)")
@@ -3200,9 +3200,9 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
     // Acceptance criterion: a 25-row inbox with the 20-row default
     // cap shows `(25 pending review)` AND a `Showing the 20 oldest
     // of 25` cue pointing at the only shipped read path that
-    // surfaces the full set: `lore-query action='recall'
+    // surfaces the full set: `kennen-query action='recall'
     // status="proposed" limit=<N>`. The MCP schema does not expose
-    // `proposedMemoryLimit` and `lore inbox list` doesn't ship
+    // `proposedMemoryLimit` and `kennen inbox list` doesn't ship
     // until Phase 4 of #281, so any cue that points at either
     // would be a dead-end on this PR's surface area.
     const mockServer = createMockServer()
@@ -3213,23 +3213,23 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
       proposedMemoriesTotal: 25,
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const text = extractText(await wake({}))
     expect(text).toContain("## Proposed Memories (25 pending review)")
     expect(text).toContain("Showing the 20 oldest of 25")
     // Pin that the cue does NOT advertise unshipped paths.
     expect(text).not.toContain("widen the window")
-    expect(text).not.toContain("lore inbox list")
+    expect(text).not.toContain("kennen inbox list")
     // Pin that the cue points at the actual recall surface.
-    expect(text).toContain("lore-query action='recall' status=\"proposed\"")
+    expect(text).toContain("kennen-query action='recall' status=\"proposed\"")
   })
 
   it("debug coverage line reports the true total, not the rendered slice", async () => {
     // Acceptance criterion: an operator running
-    // `lore-context action='wake-up' debug=true` needs to see the
+    // `kennen-context action='wake-up' debug=true` needs to see the
     // same `sections.proposedMemories=25` number that lands in the
-    // section heading and `lore-context action='status'`'s count
+    // section heading and `kennen-context action='status'`'s count
     // line. Pre-fix the renderer overrode `sectionCounts` with
     // `renderedCoverageCounts.proposedMemories: proposedMemories.length`,
     // which collapsed depth to the 20-row slice on a saturated
@@ -3242,18 +3242,18 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
       proposedMemoriesTotal: 25,
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const text = extractText(await wake({ debug: true }))
     expect(text).toContain("sections.proposedMemories=25")
     expect(text).not.toContain("sections.proposedMemories=20")
   })
 
-  it("CTA points at lore-query for discovery and lore-memory action='approve'/'reject' for lifecycle", async () => {
+  it("CTA points at kennen-query for discovery and kennen-memory action='approve'/'reject' for lifecycle", async () => {
     // Mechanical correctness: discovery routes through the read
-    // path (`lore-query action='recall' status="proposed"`);
+    // path (`kennen-query action='recall' status="proposed"`);
     // lifecycle routes through this PR's dedicated
-    // `lore-memory action='approve' / 'reject'` actions, both of
+    // `kennen-memory action='approve' / 'reject'` actions, both of
     // which go through `MemoryService.recordReview` and append a
     // `## Reviewed (YYYY-MM-DD)` audit block. The bare
     // `action='update' status='accepted'/'rejected'` mutation path
@@ -3265,10 +3265,10 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
       proposedMemories: [makeMemory("p1", { title: "A proposal" })],
     })
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
 
     const text = extractText(await wake({}))
-    expect(text).toContain("lore-query action='recall' status=\"proposed\"")
+    expect(text).toContain("kennen-query action='recall' status=\"proposed\"")
     expect(text).toContain("action='approve'")
     expect(text).toContain("action='reject'")
     expect(text).toContain("Reviewed (YYYY-MM-DD)")
@@ -3278,7 +3278,7 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
     expect(text).not.toContain("status='rejected'")
     // Mechanically wrong copy must not regress.
     expect(text).not.toContain(
-      "explicitly opt in via `status: \"proposed\"` on `lore-memory action='update'`"
+      "explicitly opt in via `status: \"proposed\"` on `kennen-memory action='update'`"
     )
     // The "Phase 4 ships" forward-looking framing must not appear
     // now that Phase 4 IS this PR.
@@ -3286,7 +3286,7 @@ describe("lore-wake-up — Proposed Memories review inbox (issue #281, AC #2)", 
   })
 })
 
-describe("lore-wake-up — inherited upstream prompt-injection containment (issue #286)", () => {
+describe("kennen-wake-up — inherited upstream prompt-injection containment (issue #286)", () => {
   // PR #589 round-2 review (post-merge follow-up) requested
   // rendering tests that pin the inline-code containment + trust
   // marker against an adversarial upstream payload. The
@@ -3318,7 +3318,7 @@ describe("lore-wake-up — inherited upstream prompt-injection containment (issu
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3356,7 +3356,7 @@ describe("lore-wake-up — inherited upstream prompt-injection containment (issu
 
   it("strips control characters from the section.label so a malicious operator-config cannot inject a fake heading", async () => {
     // Even though `section.label` is operator-controlled (from
-    // `.lore.yaml`), a label carrying `\n## CRITICAL PRIMARY
+    // `.kennen.yaml`), a label carrying `\n## CRITICAL PRIMARY
     // GUIDANCE` would punch a fake primary-section heading through
     // the renderer. Symmetric posture to title/synopsis/tag
     // stripping (PR #589 round-2 review).
@@ -3372,7 +3372,7 @@ describe("lore-wake-up — inherited upstream prompt-injection containment (issu
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3409,7 +3409,7 @@ describe("lore-wake-up — inherited upstream prompt-injection containment (issu
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3438,7 +3438,7 @@ describe("lore-wake-up — inherited upstream prompt-injection containment (issu
     })
 
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3465,7 +3465,7 @@ describe("lore-wake-up — inherited upstream prompt-injection containment (issu
   })
 })
 
-describe("lore-wake-up — Pinned Context section (issue #282)", () => {
+describe("kennen-wake-up — Pinned Context section (issue #282)", () => {
   function pinnedMemory(
     id: string,
     overrides: {
@@ -3508,7 +3508,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3529,7 +3529,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3548,7 +3548,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3563,7 +3563,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     expect(extractText(result)).toContain("audience: all")
   })
@@ -3574,7 +3574,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     expect(extractText(result)).toContain("id: uuid-1")
   })
@@ -3585,7 +3585,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     expect(extractText(result)).toContain("## Pinned Context (1 block)")
   })
@@ -3604,7 +3604,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
     expect(text).toContain("authored by peer MCP callers")
@@ -3626,7 +3626,7 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     expect(extractText(result)).toContain("## Pinned Context (2 of 25 blocks)")
   })
@@ -3645,12 +3645,12 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
     expect(text).toContain("WARNING: 250 pinned blocks active")
     expect(text).toContain("100-block abuse threshold")
-    expect(text).toContain("lore pinned list --all-audiences")
+    expect(text).toContain("kennen pinned list --all-audiences")
   })
 
   it("does NOT emit the abuse warning when the count is at or below the threshold", async () => {
@@ -3660,24 +3660,24 @@ describe("lore-wake-up — Pinned Context section (issue #282)", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     expect(extractText(result)).not.toContain("abuse threshold")
   })
 
-  it("renders the corrected lore-pinned action='update' force=true caption", async () => {
+  it("renders the corrected kennen-pinned action='update' force=true caption", async () => {
     // Pin the audit-line caption pointing at the real
-    // `lore-pinned action='update' force=true` surface so a refactor
+    // `kennen-pinned action='update' force=true` surface so a refactor
     // reverting the wording to a nonexistent action fails loudly.
     const services = makeWakeServices({
       pinnedBlocks: [pinnedMemory("a", { priority: 10 })],
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
-    expect(text).toContain("lore-pinned action='update' force=true")
+    expect(text).toContain("kennen-pinned action='update' force=true")
     expect(text).not.toContain("update-pinned")
   })
 })
@@ -3706,7 +3706,7 @@ describe("neutralizeLeadingBlockquote (issue #282)", () => {
   })
 })
 
-describe("lore-wake-up — Pinned Context starvation + abuse signal", () => {
+describe("kennen-wake-up — Pinned Context starvation + abuse signal", () => {
   function pinnedMemory(
     id: string,
     overrides: {
@@ -3749,7 +3749,7 @@ describe("lore-wake-up — Pinned Context starvation + abuse signal", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3766,7 +3766,7 @@ describe("lore-wake-up — Pinned Context starvation + abuse signal", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 
@@ -3787,7 +3787,7 @@ describe("lore-wake-up — Pinned Context starvation + abuse signal", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     expect(extractText(result)).not.toContain("## Pinned Context")
   })
@@ -3804,7 +3804,7 @@ describe("lore-wake-up — Pinned Context starvation + abuse signal", () => {
     })
     const mockServer = createMockServer()
     registerContextTools(mockServer.server, services as never)
-    const wake = mockServer.getActionHandler("lore-context", "wake-up")
+    const wake = mockServer.getActionHandler("kennen-context", "wake-up")
     const result = await wake({} as never)
     const text = extractText(result)
 

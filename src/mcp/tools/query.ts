@@ -1,6 +1,6 @@
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import { formatDispatchError, toolError } from "../helpers.js"
 import { handleRecall, handleSearch } from "./memory.js"
 import { handleAsk, handleAudit } from "./knowledge.js"
@@ -25,7 +25,7 @@ const INTENT_DESCRIPTION =
   "`mode: 'contains'`. Whitespace-only intent is treated as unset."
 
 /**
- * Polymorphic dispatcher schema for `lore-query`. The MCP-level inputSchema
+ * Polymorphic dispatcher schema for `kennen-query`. The MCP-level inputSchema
  * is declared flat (every field optional with action-scoped descriptions);
  * this discriminated union runs at handler entry for clean per-action
  * validation errors.
@@ -90,17 +90,17 @@ export const queryDispatchSchema = z.discriminatedUnion("action", [
   }),
 ])
 
-export function registerQueryTools(server: McpServer, services: LoreServices): void {
+export function registerQueryTools(server: McpServer, services: KennenServices): void {
   // -------------------------------------------------------------------------
-  // lore-query — polymorphic read-path dispatcher
+  // kennen-query — polymorphic read-path dispatcher
   //
   // Spans memory and knowledge read paths because they share heavy
   // structural overlap (project scoping, limit/cursor knobs, content-off
-  // defaults). Mutations stay on `lore-memory` / `lore-fact` /
-  // `lore-decision` so the read/write boundary stays visible to agents.
+  // defaults). Mutations stay on `kennen-memory` / `kennen-fact` /
+  // `kennen-decision` so the read/write boundary stays visible to agents.
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-query",
+    "kennen-query",
     {
       title: "Vault read paths",
       description:
@@ -109,9 +109,9 @@ export function registerQueryTools(server: McpServer, services: LoreServices): v
         "Action-dispatched:\n\n" +
         "- `action: 'recall'` — list recent memories with optional filters (server-side via `dataSources.query`). Title-tier rows return expand handles; `includeContent: true` fetches every body. Cursor-paginated.\n" +
         "- `action: 'search'` — memory search; `mode: contains | semantic | hybrid` (default `semantic`), `strategy: planned | direct` (default `planned`). `planned` splits semantic search into extracted query variants and rank-fuses candidates; `contains` remains a DS-scoped substring lookup. Title-tier rows return expand handles.\n" +
-        "- `action: 'ask'` — query facts and tasks about an entity. Returns Governance / Structure / Tasks buckets capped at 5 each (raise via `limit`). Prepends a project framing block by default (`includeContext: false` to suppress). Pass `asOf: 'YYYY-MM-DD'` for a transaction-time as-of recall (what Lore knew at that date) or `includeHistory: true` to surface invalidated facts inline.\n" +
+        "- `action: 'ask'` — query facts and tasks about an entity. Returns Governance / Structure / Tasks buckets capped at 5 each (raise via `limit`). Prepends a project framing block by default (`includeContext: false` to suppress). Pass `asOf: 'YYYY-MM-DD'` for a transaction-time as-of recall (what Kennen knew at that date) or `includeHistory: true` to surface invalidated facts inline.\n" +
         "- `action: 'audit'` — list facts, decisions, and tasks past their review-by date.\n\n" +
-        "For tracked work (open / blocked / done), use `lore-task action='list'` rather than `lore-query`.",
+        "For tracked work (open / blocked / done), use `kennen-task action='list'` rather than `kennen-query`.",
       inputSchema: z.object({
         action: z
           .enum(["recall", "search", "ask", "audit"])
@@ -246,7 +246,7 @@ export function registerQueryTools(server: McpServer, services: LoreServices): v
         asOf: ymdDateSchema
           .optional()
           .describe(
-            "(action='ask') Transaction-time cutoff (YYYY-MM-DD). Returns only facts Lore had observed by this date AND had not yet invalidated by this date — what Lore believed at that point in time. Independent of `includeHistory`; either or both may be set. Distinct from domain-truth `Valid From` / `Valid Until` (when the fact was true in the world). On un-migrated vaults (rows missing `Invalidated At`), the filter approximates with `Valid Until` so a historical invalidation cannot leak past its cutoff; run `lore migrate --backfill-fact-observed-at` to seed transaction-time columns and get strict asOf semantics."
+            "(action='ask') Transaction-time cutoff (YYYY-MM-DD). Returns only facts Kennen had observed by this date AND had not yet invalidated by this date — what Kennen believed at that point in time. Independent of `includeHistory`; either or both may be set. Distinct from domain-truth `Valid From` / `Valid Until` (when the fact was true in the world). On un-migrated vaults (rows missing `Invalidated At`), the filter approximates with `Valid Until` so a historical invalidation cannot leak past its cutoff; run `kennen migrate --backfill-fact-observed-at` to seed transaction-time columns and get strict asOf semantics."
           ),
         includeHistory: z
           .boolean()
@@ -260,7 +260,7 @@ export function registerQueryTools(server: McpServer, services: LoreServices): v
     async (args) => {
       const parsed = queryDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-query", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-query", parsed.error)))
       }
       switch (parsed.data.action) {
         case "recall":
@@ -268,7 +268,7 @@ export function registerQueryTools(server: McpServer, services: LoreServices): v
         case "search":
           return handleSearch(services, parsed.data)
         case "ask":
-          return handleAsk(services, parsed.data, "lore-query")
+          return handleAsk(services, parsed.data, "kennen-query")
         case "audit":
           return handleAudit(services, parsed.data)
       }

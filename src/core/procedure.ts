@@ -2,7 +2,7 @@
  * Procedure memories — promotion from resolved episodes to reusable
  * fleet-wide operating knowledge.
  *
- * Lore already stores closed tasks, resolved incidents, postmortems,
+ * Kennen already stores closed tasks, resolved incidents, postmortems,
  * runbooks, and decisions. Adapting LangMem's episodic / semantic /
  * procedural taxonomy: episodes stay inspectable history, while
  * `kind: "procedure"` memories carry reviewed, fleet-wide operating
@@ -14,7 +14,7 @@
  * Notion writes go through `MemoryService.create` with
  * `kind: "procedure", status: "proposed"`, then humans/authorized
  * agents flip status to `accepted` via the existing inbox
- * (`lore-memory action='approve'`). The two-step gate is the
+ * (`kennen-memory action='approve'`). The two-step gate is the
  * load-bearing safety property: raw session summaries never become
  * fleet-wide procedures silently.
  *
@@ -34,7 +34,7 @@ import type {
 import type { MemoryService } from "./memory.js"
 import { extractEntityCandidates } from "./near-duplicate.js"
 import { COMBINING_MARK_PATTERN } from "./topic-key.js"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 
 /**
  * Memory kinds that can be mined into procedure candidates. Closed
@@ -69,7 +69,7 @@ export const PROCEDURE_RESOLVED_TASK_STATES: readonly TaskState[] = [
  * surface as a candidate. Two is the smallest count that signals
  * a repeated pattern — a one-shot incident is not a procedure.
  * Operators wanting to inspect one-off resolutions use
- * `lore-query action='ask'` directly.
+ * `kennen-query action='ask'` directly.
  */
 export const PROCEDURE_MIN_SOURCES = 2
 
@@ -241,7 +241,7 @@ export interface ResolvedProcedureSource {
  * specific failure mode so the operator can correct the input. Named
  * subclass so consumers can branch on `instanceof`.
  */
-export class ProcedureSourceResolutionError extends LoreError<"procedure-source-resolution"> {
+export class ProcedureSourceResolutionError extends KennenError<"procedure-source-resolution"> {
   readonly memoryIds: readonly string[]
   constructor(message: string, memoryIds: readonly string[]) {
     super("procedure-source-resolution", message, { memoryIds })
@@ -511,7 +511,7 @@ export async function resolveProcedureSupersedesIds(
  * memory id so the response surface can show the operator what to
  * deprecate.
  */
-export class ProcedureTopicKeyConflictError extends LoreError<"procedure-topic-key-conflict"> {
+export class ProcedureTopicKeyConflictError extends KennenError<"procedure-topic-key-conflict"> {
   readonly existingMemoryId: string
   readonly existingStatus: Memory["status"]
   readonly topicKey: string
@@ -548,7 +548,7 @@ export interface FindExistingProcedureResult {
   /**
    * When `existing != null` and its status is `proposed`, this is the
    * row the propose path should return as a reuse short-circuit
-   * (matching `lore-task action='create'`'s `findExactReuseTarget`
+   * (matching `kennen-task action='create'`'s `findExactReuseTarget`
    * posture). When the existing status is non-proposed, the propose
    * path throws `ProcedureTopicKeyConflictError` instead.
    */
@@ -615,8 +615,8 @@ export async function findExistingProposedProcedure(
     message:
       `${article} ${existing.status} procedure already exists on topic key '${input.topicKey}' ` +
       `(${existing.id}). To ship a replacement: revise that row via ` +
-      `lore-memory action='update', or deprecate it via ` +
-      `lore-procedure action='deprecate' first and then re-propose. ` +
+      `kennen-memory action='update', or deprecate it via ` +
+      `kennen-procedure action='deprecate' first and then re-propose. ` +
       `Silently creating a duplicate would split the procedure's audit history.`,
   })
 }
@@ -693,7 +693,7 @@ function recencyScore(createdAt: string, today: string): number {
  *   cluster from the last quarter.
  *
  * Pure function. The constants are starting points; tune from
- * real-vault feedback (operators running `lore procedures scan`
+ * real-vault feedback (operators running `kennen procedures scan`
  * who can tell us "these were the candidates I actually promoted").
  */
 export function scoreCandidate(
@@ -903,7 +903,7 @@ export interface ProcedureBodyInput {
   /**
    * Notion page ids of supporting memories. Rendered as a bulleted
    * `## Sources` section with anchor-style references so an
-   * inspecting agent can pull them via `lore-memory action='expand'`.
+   * inspecting agent can pull them via `kennen-memory action='expand'`.
    */
   sourceMemoryIds: string[]
 }

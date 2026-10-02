@@ -55,7 +55,7 @@ describe("renderAgentArgs", () => {
 
 describe("findBackgroundBinary", () => {
   it("short-circuits to existsSync for an absolute path that exists", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-bg-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-bg-"))
     try {
       const binPath = join(dir, "fake-agent")
       writeFileSync(binPath, "#!/bin/sh\necho fake\n")
@@ -67,7 +67,7 @@ describe("findBackgroundBinary", () => {
   })
 
   it("returns null for an absolute path that does not exist", () => {
-    const missingPath = join(tmpdir(), "lore-bg-missing-noexist-xyz")
+    const missingPath = join(tmpdir(), "kennen-bg-missing-noexist-xyz")
     expect(findBackgroundBinary(missingPath)).toBeNull()
   })
 
@@ -78,6 +78,6 @@ describe("findBackgroundBinary", () => {
   })
 
   it("returns null for a missing binary name", () => {
-    expect(findBackgroundBinary("__lore_nonexistent_binary_xyz_1234__")).toBeNull()
+    expect(findBackgroundBinary("__kennen_nonexistent_binary_xyz_1234__")).toBeNull()
   })
 })

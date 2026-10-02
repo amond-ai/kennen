@@ -10,7 +10,7 @@
  *
  * The Stop hook spawns `node helpers.js auto-digest` as a detached child
  * via `scheduleAutoDigestSpawn` below, so this scheduler — which loads
- * .lore.yaml, initializes a Notion client, and gathers digest data — never
+ * .kennen.yaml, initializes a Notion client, and gathers digest data — never
  * runs inline on the Stop hot path.
  *
  * Design rules:
@@ -21,7 +21,7 @@
  *   we don't retry every session. Deliberate.
  * - **Project-mismatch bails silently**: if the config-derived project name
  *   doesn't match the Notion-resolved project, don't touch the marker —
- *   the user needs to reconcile via `lore status` before auto-digest can
+ *   the user needs to reconcile via `kennen status` before auto-digest can
  *   proceed.
  */
 
@@ -29,10 +29,10 @@ import { spawn as forkChildProcess } from "node:child_process"
 import { fileURLToPath } from "node:url"
 import { initServicesFromConfig } from "../services.js"
 import { redactDebugError } from "../debug-redact.js"
-import type { InitServicesOptions, LoreServices } from "../services.js"
+import type { InitServicesOptions, KennenServices } from "../services.js"
 import { RUNTIME_FORWARDED_AUTH_TOKEN_KEYS } from "../auth/forwarded-env.js"
 import type { AuthSource } from "../config.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 import { resolveProjectPathFromCwd } from "../core/context.js"
 import {
   DIGEST_STALE_DAYS,
@@ -58,14 +58,14 @@ import {
 } from "./background-failure-marker.js"
 
 export interface DigestSchedulerState {
-  config: LoreConfig
+  config: KennenConfig
   configRoot: string
   autoDigest: boolean
   /**
    * Resolved background-agent shape. When omitted, the
    * scheduler falls through to the spawn primitive's built-in default
    * (`claude -p`). Production callers pass the value from the merged
-   * `HookConfig` so a .lore.yaml override or `LORE_BACKGROUND_COMMAND`
+   * `HookConfig` so a .kennen.yaml override or `KENNEN_BACKGROUND_COMMAND`
    * env knob applies to digest spawns the same way it applies to autosave
    * spawns.
    */
@@ -95,11 +95,11 @@ export interface DigestSchedulerDeps {
   initServices?: (
     cwd: string,
     configRoot: string,
-    config: LoreConfig,
+    config: KennenConfig,
     options?: InitServicesOptions
-  ) => Promise<LoreServices>
+  ) => Promise<KennenServices>
   gatherDigest?: (
-    services: LoreServices,
+    services: KennenServices,
     opts: Parameters<typeof gatherDigestData>[1]
   ) => Promise<DigestData>
   markerAge?: (configRoot: string, projectName: string) => Promise<number>
@@ -117,7 +117,7 @@ export interface DigestSchedulerDeps {
  *
  * Never throws — any service-layer or filesystem error is caught internally
  * and reported via the injected `log` sink. The outcome enum signals the
- * branch taken so tests (and, eventually, a `lore status` surface) can
+ * branch taken so tests (and, eventually, a `kennen status` surface) can
  * observe what actually happened without parsing stderr.
  */
 export async function fireDigestIfStale(
@@ -149,7 +149,7 @@ export async function fireDigestIfStale(
   // attempt starts. Init/gather failures recorded by a concurrent helper during
   // this attempt must remain visible to the operator.
   const schedulerRecoveredAt = now()
-  let services: LoreServices
+  let services: KennenServices
   try {
     // The auto-digest helper runs in a detached child spawned off the Stop
     // hook — same hot startup path the wake-up hook hits. Debounce the
@@ -166,7 +166,7 @@ export async function fireDigestIfStale(
       message: `init failed: ${err instanceof Error ? err.message : String(err)}`,
     })
     log(
-      `[lore] digest scheduler: init failed — ${err instanceof Error ? err.message : err}\n`
+      `[kennen] digest scheduler: init failed — ${err instanceof Error ? err.message : err}\n`
     )
     return "init-failed"
   }
@@ -174,7 +174,7 @@ export async function fireDigestIfStale(
   const resolved = services.context.project
   if (!resolved || resolved.name !== project.name) {
     // Config and vault disagree on project identity — operator should run
-    // `lore status` to reconcile. Don't auto-fire against a mismatched scope.
+    // `kennen status` to reconcile. Don't auto-fire against a mismatched scope.
     return "project-mismatch"
   }
 
@@ -194,7 +194,7 @@ export async function fireDigestIfStale(
       message: `gather failed: ${err instanceof Error ? err.message : String(err)}`,
     })
     log(
-      `[lore] digest scheduler: gather failed — ${err instanceof Error ? err.message : err}\n`
+      `[kennen] digest scheduler: gather failed — ${err instanceof Error ? err.message : err}\n`
     )
     return "gather-failed"
   }
@@ -207,8 +207,8 @@ export async function fireDigestIfStale(
     // Trade-off: a project with sustained-low-volume activity (e.g. 1–2
     // routine memories per week, all below the digest-worthy bar) can drift
     // here on every Stop without ever producing a `source: "digest"`
-    // memory, leaving `lore-context action='wake-up'`'s fast path dark for that project.
-    // The explicit escape is `lore digest --since YYYY-MM-DD`, which
+    // memory, leaving `kennen-context action='wake-up'`'s fast path dark for that project.
+    // The explicit escape is `kennen digest --since YYYY-MM-DD`, which
     // widens the window past the per-project 7-day debounce.
     await touch(state.configRoot, project.name)
     await clearFailureMarker(
@@ -276,8 +276,8 @@ export async function fireDigestIfStale(
     prompt,
     result,
     projectName: project.name,
-    agentName: process.env["LORE_AGENT_NAME"],
-    sessionId: process.env["LORE_SESSION_ID"],
+    agentName: process.env["KENNEN_AGENT_NAME"],
+    sessionId: process.env["KENNEN_SESSION_ID"],
     agent: state.backgroundAgent,
   })
 
@@ -325,7 +325,7 @@ function digestSpawnFailureMessage(
     case "spawn-error":
       return `spawn failed: ${result.error instanceof Error ? result.error.message : String(result.error)}`
     case "lock-path-too-long":
-      return `lock path too long (${result.code}); shorten LORE_HOOK_STATE_DIR`
+      return `lock path too long (${result.code}); shorten KENNEN_HOOK_STATE_DIR`
     default:
       return `unexpected spawn result: ${result.kind}`
   }
@@ -403,8 +403,8 @@ export function scheduleAutoDigestSpawn(
     // Default-inherited env minus the auth-token subset under
     // `ntn-auth-json`. Spread-then-delete preserves
     // every other operator-controlled knob the helper expects in
-    // env (`LORE_HOOK_STATE_DIR`, `LORE_DEBUG`, `LORE_AUTO_DIGEST`,
-    // `LORE_AGENT_NAME`, etc.) — only the bearer-token keys are
+    // env (`KENNEN_HOOK_STATE_DIR`, `KENNEN_DEBUG`, `KENNEN_AUTO_DIGEST`,
+    // `KENNEN_AGENT_NAME`, etc.) — only the bearer-token keys are
     // removed, so the helper's own `resolveAuth` falls through to
     // `loadNtnToken` against ~/.config/notion/auth.json and
     // lands on the same source as the foreground. For non-ntn
@@ -437,7 +437,7 @@ export function scheduleAutoDigestSpawn(
       message: `spawn failed: ${err instanceof Error ? err.message : String(err)}`,
     })
     process.stderr.write(
-      `[lore] auto-digest scheduler: spawn failed: ${redactDebugError(err)}\n`
+      `[kennen] auto-digest scheduler: spawn failed: ${redactDebugError(err)}\n`
     )
   }
 }
@@ -446,8 +446,8 @@ export function scheduleAutoDigestSpawn(
  * Build the env passed to the detached `helpers.js auto-digest`
  * fork. Always returns a shallow copy of `process.env` so the
  * helper inherits every operator-controlled runtime knob it
- * expects to see (`LORE_HOOK_STATE_DIR`, `LORE_DEBUG`,
- * `LORE_AUTO_DIGEST`, `LORE_AGENT_NAME`, `TMPDIR`, etc.). Under
+ * expects to see (`KENNEN_HOOK_STATE_DIR`, `KENNEN_DEBUG`,
+ * `KENNEN_AUTO_DIGEST`, `KENNEN_AGENT_NAME`, `TMPDIR`, etc.). Under
  * `ntn-auth-json` the auth-token subset
  * (`RUNTIME_FORWARDED_AUTH_TOKEN_KEYS`) is deleted from the copy
  * so the bearer never lands in the helper child's env; the

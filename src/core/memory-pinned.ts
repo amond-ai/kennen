@@ -8,7 +8,7 @@
  * ## Pinned context blocks (`MemoryService.listPinnedBlocks` / `countPinnedBlocks`)
  *
  * Pinned context blocks are a constrained Memory facet that renders in
- * `lore-context action='wake-up'` before every relevance-ranked section. Three
+ * `kennen-context action='wake-up'` before every relevance-ranked section. Three
  * additive Memory columns (`Pinned`, `Pinned Priority`, `Mutability`) plus the
  * reused `Audience` rich text column carry the state; the wake-up renderer
  * composes them into the `## Pinned Context` section.
@@ -23,7 +23,7 @@
  * other audiences. Scope and audience checks are not post-materialization
  * filters, because slicing before audience filtering can starve matching pins.
  *
- * Audience is render metadata, not authorization. Lore writes through one
+ * Audience is render metadata, not authorization. Kennen writes through one
  * operator bearer token. `pinnedBlockAudienceMatches` comma-splits, case-folds,
  * and exact-matches tokens against the reader's `MemoryScopeContext` slots:
  * `agent`, `role`, and `userId`. Universal tokens (`all`, `*`, `everyone`,
@@ -39,7 +39,7 @@
  * `Mutability = read-only`, and `allowReadOnlyUpdate !== true`. The extra
  * round trip per update keeps CLI, hooks, and future direct service callers
  * under the same contract as the MCP surface. The override is visible audit
- * posture, not access control: Lore still uses one operator token, and forced
+ * posture, not access control: Kennen still uses one operator token, and forced
  * MCP writes append a `> Forced read-only update` audit line to the memory
  * body.
  *
@@ -117,7 +117,7 @@ import {
   extractTitle,
   isLiveFullPage,
 } from "../notion/extractors.js"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 import { todayUtc } from "./task.js"
 import { matchesDefaultScope } from "./memory-scope.js"
 
@@ -134,7 +134,7 @@ type MaterializeMemories = (
  * message uses a sanitized title so a pinned-block author cannot
  * inject control characters into logs or tool output.
  */
-export class MemoryReadOnlyError extends LoreError<"memory-read-only"> {
+export class MemoryReadOnlyError extends KennenError<"memory-read-only"> {
   readonly memoryId: string
   readonly memoryTitle: string
 
@@ -146,7 +146,7 @@ export class MemoryReadOnlyError extends LoreError<"memory-read-only"> {
     const safeTitle = sanitizeMemoryTitleForMessage(memoryTitle)
     const baseMessage =
       `MemoryReadOnlyError: cannot modify pinned block "${safeTitle}" (${memoryId}): ` +
-      `Mutability is read-only. Pass force=true on lore-pinned action='update' ` +
+      `Mutability is read-only. Pass force=true on kennen-pinned action='update' ` +
       `(or allowReadOnlyUpdate=true at the service layer) to override.`
     const recovery = options.recovery?.trim()
     super("memory-read-only", recovery ? `${baseMessage} ${recovery}` : baseMessage, {
@@ -167,7 +167,7 @@ export class MemoryReadOnlyError extends LoreError<"memory-read-only"> {
  * enforced for CLI, hook, and future service-layer callers that flip
  * `Pinned = true` directly through the memory update surface.
  */
-export class MemoryPinCapExceededError extends LoreError<"memory-pin-cap-exceeded"> {
+export class MemoryPinCapExceededError extends KennenError<"memory-pin-cap-exceeded"> {
   readonly memoryId: string
   readonly currentCount: number
   readonly cap: number

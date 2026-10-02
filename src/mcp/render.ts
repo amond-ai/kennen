@@ -140,7 +140,7 @@ export function renderFact(fact: Fact, options: RenderFactOptions): string {
  * Format a single ID as its resolved title (when known) or a short
  * unresolved-hint that preserves enough of the UUID to trace back
  * without dumping the whole string inline. Exposed so callers rendering
- * non-fact structures (e.g., `lore-decision action='get'`'s Supersedes section)
+ * non-fact structures (e.g., `kennen-decision action='get'`'s Supersedes section)
  * share the same lookup discipline as `renderFact`.
  */
 export function displayId(id: string, titleMap: Map<string, string>): string {
@@ -208,7 +208,7 @@ export interface MemoryListItem {
   /**
    * Engineer-attribution display name (DEFERRED-ATTRIBUTION). Empty
    * string for pre-attribution rows and for any save where neither
-   * `LORE_USER_NAME` nor `users.me` resolved a usable name. The
+   * `KENNEN_USER_NAME` nor `users.me` resolved a usable name. The
    * default meta builder surfaces it as `by <name>` between tags and
    * the revision marker when non-empty; empty rows render
    * byte-identically to pre-DEFERRED-ATTRIBUTION. `Memory`,
@@ -281,7 +281,7 @@ export const REVISION_DISPLAY_THRESHOLD = 2
  * `.filter((p): p is string => p !== null)` chains drop the slot
  * cleanly. Single helper consumed by every meta builder
  * (`defaultMemoryMetaBuilder`, plus wake-up's `wakeUpMemoryMetaBuilder`
- * on the `lore-context` MCP tool) so a future tuning of the threshold
+ * on the `kennen-context` MCP tool) so a future tuning of the threshold
  * or the rendered string lands in one place.
  *
  * Returns `null` rather than the empty string so consumers using a
@@ -354,8 +354,8 @@ export function defaultMemoryMetaBuilder(memory: MemoryListItem): string {
 }
 
 /**
- * Render one memory listing entry. Shared by `lore-query action='recall'`,
- * `lore-query action='search'`, and `lore-context action='wake-up'`'s
+ * Render one memory listing entry. Shared by `kennen-query action='recall'`,
+ * `kennen-query action='search'`, and `kennen-context action='wake-up'`'s
  * memory sections so a future rendering tweak (e.g. wrapping the
  * synopsis in italics, or moving it after the metadata line) is a
  * one-place edit instead of a fan-out across three handlers with
@@ -428,7 +428,7 @@ function renderMetaLine(
  *
  * Exported so the per-surface formatters that don't go through
  * `formatMemoryListItem` (decision-list's bold meta line; the bullet-
- * row task formatters in `lore-task action='list'` and the wake-up
+ * row task formatters in `kennen-task action='list'` and the wake-up
  * `## Tasks` section) share the same defensive discipline. Internal
  * callers (bulk migrations, the `--backfill-synopses` synthesizer)
  * can write up to the Notion 2000-char ceiling; every list surface
@@ -444,7 +444,7 @@ export function truncateSynopsis(synopsis: string): string {
 
 /**
  * Predicate classification for the grouped-display taxonomy used by
- * `lore-query action='ask'`:
+ * `kennen-query action='ask'`:
  *
  * - `governance` — decision-graph edges (`decided_by`, `supersedes_decision`)
  *   that answer "what decisions govern this?"
@@ -550,7 +550,7 @@ export interface CollapsedMemoryGroup {
  *
  * The spec errs toward showing — thresholds are high enough that
  * distinct memories rarely collapse, and a hidden nuance can still be
- * fetched via `lore-memory action='expand'` / `lore-query action='recall'`.
+ * fetched via `kennen-memory action='expand'` / `kennen-query action='recall'`.
  *
  * **Input-size budget: N ≤ 50.** The cluster-comparison loop is
  * O(N · K) with K = cluster count, and in the degenerate case where

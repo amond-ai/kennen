@@ -1,6 +1,6 @@
 # Notion SDK v5 Contract
 
-Lore targets `@notionhq/client` v5.x. This guide is the source of truth for
+Kennen targets `@notionhq/client` v5.x. This guide is the source of truth for
 SDK shapes that differ from v4. Use it when adding or reviewing Notion SDK call
 sites in `src/notion/`.
 
@@ -56,7 +56,7 @@ await client.databases.create({
 })
 ```
 
-In Lore, prefer `createDbArgs()` from `src/notion/setup.ts` when creating
+In Kennen, prefer `createDbArgs()` from `src/notion/setup.ts` when creating
 vault databases. It centralizes the casting needed for
 `initial_data_source.properties`.
 
@@ -104,7 +104,7 @@ await client.pages.updateMarkdown({
 ```
 
 Use block children only for code that is explicitly about Notion blocks rather
-than Lore memory bodies.
+than Kennen memory bodies.
 
 ## Bearer-token auth
 

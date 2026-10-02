@@ -74,10 +74,10 @@ export interface BenchIngestResult {
   notionWrites: number
   /**
    * `true` when `notionWrites` came from the write-budget proxy's
-   * counter (`lore-mine` path with a clean shutdown, OR the
+   * counter (`kennen-mine` path with a clean shutdown, OR the
    * `raw-transcript` path where the loop counts per-call mutations
    * directly). `false` when it fell back to `memoriesCreated +
-   * factsCreated` — the unhappy `lore-mine` case where the MCP child
+   * factsCreated` — the unhappy `kennen-mine` case where the MCP child
    * died before the shutdown flush ran (SIGKILL, OOM, process tree
    * race). Downstream comparisons that need byte-exact equality (a
    * baseline drift check, a cap-vs-spend audit) must read this flag
@@ -130,7 +130,7 @@ export interface RunBenchIngestInput {
    * applies the same auth-token partition the production hook
    * applies — preserves the partition contract under `ntn-auth-json`
    * where forwarded auth-token env keys would silently win over a
-   * disk-resident `.lore.yaml`.
+   * disk-resident `.kennen.yaml`.
    */
   authSource?: AuthSource
   /** Autosave capture policy for the mining prompt. Defaults to durable. */
@@ -277,8 +277,8 @@ export async function runBenchIngest(
  * Raw-transcript ingestion: each session is written as ONE memory
  * containing the verbatim transcript. Bypasses `runConversationMining`
  * entirely — no `claude -p`, no MCP, no autosave-prompt filter. The
- * agent's `lore-query` retrieves transcript memories by question
- * relevance and reads the body via `lore-memory action='expand'`.
+ * agent's `kennen-query` retrieves transcript memories by question
+ * relevance and reads the body via `kennen-memory action='expand'`.
  *
  * Every conversational token is stored, so this lane isolates retrieval
  * over full-fidelity LongMemEval transcripts.

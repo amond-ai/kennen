@@ -26,7 +26,7 @@ interface LockRecord {
 const heldEntityRelationLocks = new AsyncLocalStorage<ReadonlySet<string>>()
 
 function lockDir(): string {
-  return join(process.env["HOME"] ?? tmpdir(), ".lore", "entity-relation-locks")
+  return join(process.env["HOME"] ?? tmpdir(), ".kennen", "entity-relation-locks")
 }
 
 export function normalizeEntityRelationLockKey(entityId: string): string {

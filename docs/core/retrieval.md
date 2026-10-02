@@ -70,7 +70,7 @@ occupy a result slot a live row would otherwise fill.
 `strategy` controls how the semantic lane is executed. Core service callers
 default to `strategy: "direct"`; agent-facing MCP and eval tool shims default
 to `strategy: "planned"` unless the caller opts out with `strategy: "direct"`.
-The `.lore.yaml` setting `features.queryPlanning` defaults to `true`; setting
+The `.kennen.yaml` setting `features.queryPlanning` defaults to `true`; setting
 it to `false` makes planned requests execute as direct semantic searches.
 
 `strategy: "direct"` issues one semantic query. `strategy: "planned"` builds
@@ -89,7 +89,7 @@ below. With RunTool, each planned variant requests a smaller page window
 (currently 10) before hydrating hits, bounding the fanout cost. With REST,
 each planned variant inherits the same pagination cap as direct semantic
 search. Variant failures are partial: one failed variant is logged only under
-`LORE_DEBUG=1` and the surviving variants are rank-fused; if every variant
+`KENNEN_DEBUG=1` and the surviving variants are rank-fused; if every variant
 fails, the first failure is thrown.
 
 Planned merge order uses Reciprocal Rank Fusion over the variant result sets.
@@ -98,10 +98,10 @@ of the caller's requested `limit` from that lane is preserved in the final
 candidate set. This lets extracted variants add recall without evicting normal
 direct semantic hits the agent would otherwise have seen.
 
-Uses RunTool `search` when `LORE_USE_RUNTOOL_SEARCH` is enabled and the
+Uses RunTool `search` when `KENNEN_USE_RUNTOOL_SEARCH` is enabled and the
 composed query is non-empty. RunTool search is scoped to the Memories data
 source and returns Notion's relevance order over titles and bodies. The raw
-window is capped at 25 because the tool exposes no cursor; Lore accepts that
+window is capped at 25 because the tool exposes no cursor; Kennen accepts that
 window as authoritative and surfaces saturation as `capped: true` rather than
 switching to REST ranking. A RunTool response type other than `ai_search`
 throws an "AI semantic search unavailable" error instead of returning lexical
@@ -130,7 +130,7 @@ headroom when the workspace contains unrelated pages matching the query
 tokens.
 
 When using REST, the path **paginates up to `SEMANTIC_SEARCH_MAX_PAGES` raw pages (default 5)** when
-the first 100 raw hits do not yield enough post-filtered Lore memories to
+the first 100 raw hits do not yield enough post-filtered Kennen memories to
 satisfy the requested `limit` (issue #192). Loop exits early on
 saturation (`accumulated >= limit`) or exhaustion (`has_more: false`); the
 cap fires only when both conditions miss — bounding worst-case latency at
@@ -162,9 +162,9 @@ wider pool.
 **Operator triage signal.** When the cap fires (loop exhausted
 `SEMANTIC_SEARCH_MAX_PAGES` without saturating or hitting `has_more:
 false`), `debugLogSemanticSearchCapFired` writes one stderr line under
-`LORE_DEBUG=1`: `[lore] semantic-search-cap-fired: pages=5
-  accumulated=N limit=L source=fetch-semantic-pages`. The `LORE_DEBUG`
-gate keeps the common path silent; operators triaging "lore-query
+`KENNEN_DEBUG=1`: `[kennen] semantic-search-cap-fired: pages=5
+  accumulated=N limit=L source=fetch-semantic-pages`. The `KENNEN_DEBUG`
+gate keeps the common path silent; operators triaging "kennen-query
 returned empty / short results" use this to distinguish the
 pathological-query case from genuine no-matches. Same posture as
 `debugLogHybridBranchFailure`.
@@ -225,7 +225,7 @@ Once both settle:
   rejection at `Promise.allSettled`. `searchByHybridPages` filters
   it via `isAbortRejection` and maps it to fulfilled-empty BEFORE
   the both-failure detector and the partial-failure log gate run.
-  A cooperative discard is silent under `LORE_DEBUG=1` and does
+  A cooperative discard is silent under `KENNEN_DEBUG=1` and does
   not trip the both-down outage path.
 
   **Saturation/abort gate is single-source via `shouldUseSaturationCutoff`.**
@@ -268,15 +268,15 @@ HYBRID_FALLBACK_THRESHOLD` is read by both the post-`allSettled`
   transient `429`/`5xx` from `client.search` no longer takes down a
   contains query that saturated independently, and an outage on
   `dataSources.query` no longer takes down a semantic query that
-  returned. `LORE_DEBUG=1` emits one stderr line per failed branch
-  (`[lore] partial-failure: branch=<contains|semantic> error=<message>
+  returned. `KENNEN_DEBUG=1` emits one stderr line per failed branch
+  (`[kennen] partial-failure: branch=<contains|semantic> error=<message>
 source=hybrid-search`) so an operator can distinguish a transient
   blip from a pathological loop. **Both branches rejected** still
   surfaces an error so a fully broken search subsystem doesn't
   masquerade as "no results found." The both-fail path additionally
-  writes `[lore] both-failure: contains=<message> semantic=<message>
+  writes `[kennen] both-failure: contains=<message> semantic=<message>
 source=hybrid-search` **unconditionally** — not gated on
-  `LORE_DEBUG` — because there is no surviving response to mask
+  `KENNEN_DEBUG` — because there is no surviving response to mask
   noise on, the caller's `try/catch` only sees one chosen `throw`,
   and an operator triaging a real outage needs both rejection
   reasons regardless of how their environment was started. The
@@ -289,11 +289,11 @@ source=hybrid-search` **unconditionally** — not gated on
   down, the other returned zero hits" both surface as an empty
   result to the caller — by design, since the surviving branch's
   empty result IS the honest answer to the query. The operator-side
-  mitigation is the `LORE_DEBUG=1` stderr line; the production
+  mitigation is the `KENNEN_DEBUG=1` stderr line; the production
   followup is an error-counter dashboard alert.
 
   **Log-format divergence from the shared partial-failure logger.**
-  Both helpers share the `[lore] partial-failure:` prefix and the
+  Both helpers share the `[kennen] partial-failure:` prefix and the
   `error=` field — that is the stable contract for `grep`-based
   log aggregation. The key names diverge: hybrid search uses
   `branch=<contains|semantic>` and `source=hybrid-search` because
@@ -306,9 +306,9 @@ source=hybrid-search` **unconditionally** — not gated on
 Parallelism keeps the under-shooting case to one branch fan-out while
 preserving contains precision when it produces enough signal. Switching from
 `Promise.all` to `Promise.allSettled` preserves the wall-clock guarantee while
-decoupling the failure domains. `LORE_FORCE_SEMANTIC_SEARCH=1` remains the
+decoupling the failure domains. `KENNEN_FORCE_SEMANTIC_SEARCH=1` remains the
 manual rollback to semantic-only mode; it does not disable the RunTool search
-transport. Use `LORE_USE_RUNTOOL_SEARCH=0` or `LORE_USE_RUNTOOL=0` when the
+transport. Use `KENNEN_USE_RUNTOOL_SEARCH=0` or `KENNEN_USE_RUNTOOL=0` when the
 rollback needs to bypass RunTool itself.
 
 Three is a tradeoff: small enough that a niche query with one or two
@@ -385,7 +385,7 @@ contains missed. This mirrors qmd's "original query ×2" rule. When
 intent is unset, both weights default to `1` — byte-identical to
 the pre-#17 RRF baseline. The `2` is empirical and the same
 operator-tuning posture as `RRF_K`: a future env knob
-(`LORE_HYBRID_CONTAINS_WEIGHT`) is the next step if real-query
+(`KENNEN_HYBRID_CONTAINS_WEIGHT`) is the next step if real-query
 ordering needs adjustment, not a per-call argument.
 
 **Empty `query` composition.** The semantic branch composes its relevance query
@@ -424,7 +424,7 @@ The explain shape (`SearchExplain` in `src/types.ts`) carries:
 - `rrfScore` — populated only on the `"rrf"` branch.
 - `branch` — the canonical signal: `"contains-only"`, `"semantic-only"`,
   `"contains-saturated"`, or `"rrf"`. Reflects the **resolved** mode (after
-  `LORE_FORCE_SEMANTIC_SEARCH=1` is applied), not the caller's request.
+  `KENNEN_FORCE_SEMANTIC_SEARCH=1` is applied), not the caller's request.
 
 **Branch-field rules** (pinned by tests):
 
@@ -440,13 +440,13 @@ branch ran in parallel and may have returned the same id, but the
 saturation cutoff discarded its output. Surfacing its rank in the trace
 would imply influence on ordering that did not happen.
 
-The explain trace is also surfaced through `lore-query
+The explain trace is also surfaced through `kennen-query
 action='search'` via the optional `explain: boolean` field, rendered as a
 `## Score trace` footer (one row per result). Agents that don't pass
 `explain` pay zero output-token cost.
 
 Field names (`containsRank`, `semanticRank`, `rrfScore`, `branch`) are
-canonical to lore and a test pins them. qmd uses `lexRank` for the contains
+canonical to kennen and a test pins them. qmd uses `lexRank` for the contains
 lane; we keep `containsRank` because the underlying Notion query is a
 `contains` filter, not a lexical index. A future contributor chasing qmd's
 vocabulary would silently break the contract.
@@ -484,19 +484,19 @@ Hybrid composes the raw fetch helpers so the saturation branch can preserve
 contains ordering and the under-shooting branch can run RRF over the two
 independent ranked lists.
 
-### Mode Force: `LORE_FORCE_SEMANTIC_SEARCH=1`
+### Mode Force: `KENNEN_FORCE_SEMANTIC_SEARCH=1`
 
 Operator escape hatch checked inside `search()`. When set, every search resolves
 to `mode: "semantic"` regardless of the caller's requested mode. It is a
 contains/hybrid rollback, not a RunTool transport rollback: with
-`LORE_USE_RUNTOOL_SEARCH` enabled, non-empty semantic queries still use RunTool
+`KENNEN_USE_RUNTOOL_SEARCH` enabled, non-empty semantic queries still use RunTool
 AI search. Operators who need to bypass RunTool search must set
-`LORE_USE_RUNTOOL_SEARCH=0` or `LORE_USE_RUNTOOL=0`.
+`KENNEN_USE_RUNTOOL_SEARCH=0` or `KENNEN_USE_RUNTOOL=0`.
 
-Use `LORE_FORCE_SEMANTIC_SEARCH=1` if the contains path silently under-recalls
-in a vault that hasn't run `lore migrate --fix-memory-encoding` yet — encoded
+Use `KENNEN_FORCE_SEMANTIC_SEARCH=1` if the contains path silently under-recalls
+in a vault that hasn't run `kennen migrate --fix-memory-encoding` yet — encoded
 titles miss substring matches against post-decode queries (see P2-10). Same
-posture as `LORE_DISABLE_NEAR_DUPLICATE_PROBE`: an opt-in defensive lever, not
+posture as `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE`: an opt-in defensive lever, not
 a default.
 
 The `list()` method uses `dataSources.query()` with property filters and is

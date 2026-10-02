@@ -1,9 +1,9 @@
 # Memory Debt Audit
 
-`lore debt` is the recurring maintenance workflow for a shared Lore vault.
+`kennen debt` is the recurring maintenance workflow for a shared Kennen vault.
 `scan` is a read-only inventory of hygiene problems across the vault,
 ranked by likely impact on retrieval and governance. `create-tasks`
-folds the highest-priority debt items into normal `lore-task` triage so
+folds the highest-priority debt items into normal `kennen-task` triage so
 memory hygiene becomes regular work rather than a one-off cleanup.
 
 The scanner does not mutate any Notion row by default. Every remediation
@@ -14,10 +14,10 @@ reviewing the report) decides what to act on.
 
 A shared memory corpus decays without explicit maintenance. Stale,
 duplicate, ownerless, or orphaned rows quietly affect every engineer and agent
-that relies on wake-up / search / ask. Lore already has individual hygiene
-surfaces — `lore conflicts scan`, `lore status`'s proposed-memories line, and
+that relies on wake-up / search / ask. Kennen already has individual hygiene
+surfaces — `kennen conflicts scan`, `kennen status`'s proposed-memories line, and
 scope-expiry checks — but they are scattered across several commands.
-`lore debt scan` collapses them into one operator-pulled audit that answers a
+`kennen debt scan` collapses them into one operator-pulled audit that answers a
 single question:
 
 > What memory debt is accumulating in this vault, what should I fix
@@ -45,13 +45,13 @@ orchestrator, not a re-implementation of vault walking.
 - **`scope_anomaly` requires the issue #283 schema columns** (`Scope Kind`,
   `Expires At`, …). On a pre-#283 vault the probe degrades to
   `stats.scopeAnomalies: null` and the rest of the scanner runs regardless.
-  Run `lore migrate` to enable the surface.
+  Run `kennen migrate` to enable the surface.
 - **`operational_expiry` is for temporary rows only.** Use
   `kind: "operational"` for PR poll state, closeout receipts, and other
   execution breadcrumbs. Add `expiresAt` or `expiresOn` when creating the
-  row; retroactively add it with `lore memory update <id> --expires-at ...`,
-  `lore memory update <id> --expires-on ...`, or
-  `lore-memory action='update'`. `task-closed` markers resolve through Lore
+  row; retroactively add it with `kennen memory update <id> --expires-at ...`,
+  `kennen memory update <id> --expires-on ...`, or
+  `kennen-memory action='update'`. `task-closed` markers resolve through Kennen
   tasks; `pr-closed` markers resolve through the GitHub pull-request API, using
   `GITHUB_TOKEN` or `GH_TOKEN` when private-repo access needs a token.
 - **`summary_quality` audits scan surfaces.** Digest bodies and
@@ -158,7 +158,7 @@ off `safeToAutoFix: true`; the flag is currently a no-op signal.
 `stats.scopeAnomalies` semantics:
 
 - A **non-null number** means the scope-anomaly probe ran successfully and observed that many anomalies (including `0`).
-- `null` means the probe was attempted but the underlying data source lacks the issue-#283 columns (pre-#283 vault). Operators run `lore migrate` to enable.
+- `null` means the probe was attempted but the underlying data source lacks the issue-#283 columns (pre-#283 vault). Operators run `kennen migrate` to enable.
 - `0` paired with `stats.scopeAnomalyProbeSkipped: true` means the scope category was filtered out by `--category`; the probe never ran. Consumers check `scopeAnomalyProbeSkipped` before treating `null` as a degraded-probe signal.
 
 The `stats` block reports per-category counters and these diagnostic fields:
@@ -193,49 +193,49 @@ A monthly cadence is the starting point; tune to vault activity.
 
 ```bash
 # 1. Scan and review priority bucket P1/P2 by hand.
-lore debt scan --project Mail
-lore debt scan --project Mail --json > debt.json   # for automation / dashboards
+kennen debt scan --project Mail
+kennen debt scan --project Mail --json > debt.json   # for automation / dashboards
 
 # 2. Drill into one dimension when triaging.
-lore debt scan --project Mail --category orphan_fact
-lore debt scan --project Mail --category duplicate_cluster --limit 20
+kennen debt scan --project Mail --category orphan_fact
+kennen debt scan --project Mail --category duplicate_cluster --limit 20
 
 # 3. Fold the highest-priority items into normal task hygiene.
-lore debt create-tasks --project Mail --dry-run    # preview
-lore debt create-tasks --project Mail              # creates P1/P2 tasks (cap 25)
-lore debt create-tasks --project Mail --priority-floor P1   # P1 only
+kennen debt create-tasks --project Mail --dry-run    # preview
+kennen debt create-tasks --project Mail              # creates P1/P2 tasks (cap 25)
+kennen debt create-tasks --project Mail --priority-floor P1   # P1 only
 
 # 4. Act on individual rows — the scanner's suggestedActions name the path:
 #    - `attach_source`              → save a supporting memory, then re-run
-#                                      `lore-fact action='create'` with the
+#                                      `kennen-fact action='create'` with the
 #                                      same triple and `sourceMemoryId` set.
-#    - `compare_memories`           → `lore conflicts scan --project ...`
+#    - `compare_memories`           → `kennen conflicts scan --project ...`
 #                                      surfaces the same pair as a compare
 #                                      candidate; judge via
-#                                      `lore-memory action='compare'`.
-#    - `merge_topics_dry_run`       → `lore migrate --merge-duplicate-topics`
+#                                      `kennen-memory action='compare'`.
+#    - `merge_topics_dry_run`       → `kennen migrate --merge-duplicate-topics`
 #                                      (dry-run first).
 #    - `archive_expired_memories` / `invalidate_expired_facts`
-#                                   → review under `lore status`'s
+#                                   → review under `kennen status`'s
 #                                      expiring-rows section, then archive /
 #                                      invalidate individually.
 #    - `review_and_extend`          → bump `reviewBy` on the decision or fact
 #                                      via the normal update tools.
 
 # 5. Re-scan until the report is clean.
-lore debt scan --project Mail
+kennen debt scan --project Mail
 ```
 
-## `lore debt create-tasks`
+## `kennen debt create-tasks`
 
-`create-tasks` lets a team fold memory maintenance into the same `lore-task`
+`create-tasks` lets a team fold memory maintenance into the same `kennen-task`
 triage loop they use for normal work. The command:
 
 - Reuses `scanDebt`'s result, then filters by `--priority-floor` (default
   `P2`; pass `P1` to surface only the most severe items).
 - Defaults to a 25-task cap per run. Raise deliberately via `--limit`.
 - Stamps each task with `Tags: [audit]`, a `Debt ID: <id>` line in the
-  body, and the stable `lore-debt-id-<…>` marker token in `Keywords`.
+  body, and the stable `kennen-debt-id-<…>` marker token in `Keywords`.
 - Is **idempotent on debt id**: before creating, the command searches
   for an existing task carrying the marker token via three coverage
   passes that span the full `MemoryStatus` space. The default pass
@@ -268,7 +268,7 @@ of low-impact rows per run.
 
 **Partial-failure contract**: if any per-item `tasks.create` call
 throws, the command writes one stderr line per failure and exits with
-code `1`. Automation wrapping `lore debt create-tasks` can therefore
+code `1`. Automation wrapping `kennen debt create-tasks` can therefore
 distinguish a clean maintenance pass from an incomplete one without
 parsing the trailing count line.
 
@@ -294,7 +294,7 @@ shape — it avoids the per-project walk in `duplicate_cluster` and
 fits comfortably in a single terminal window. The vault-wide form
 is intended for periodic automation runs, not interactive use.
 
-`lore debt create-tasks` adds a preflight cost on top of the scan: up
+`kennen debt create-tasks` adds a preflight cost on top of the scan: up
 to `--limit` items × 3 status-coverage passes (default
 `25 × 3 = 75`) sequential `MemoryService.search` round-trips before
 any write. Each preflight call is bounded (`limit: 5`) and reads only
@@ -314,6 +314,6 @@ per-call latency.
   `findSimilarTopicGroups` helper. Entity alias ambiguity and
   low-row-count topic overlap are not reported by this category.
 - The scope-anomaly category surfaces aggregate counters, not per-row
-  ids. The `lore status` expiring-rows surface remains the canonical
-  per-row view; `lore debt scan` adds it to a single triage view alongside
+  ids. The `kennen status` expiring-rows surface remains the canonical
+  per-row view; `kennen debt scan` adds it to a single triage view alongside
   the other dimensions.

@@ -164,7 +164,7 @@ describe("validateTaskSubjectForCreate", () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.message).toContain("looks like a code pointer rather than a task")
-      expect(result.message).toContain("lore-fact action='create'")
+      expect(result.message).toContain("kennen-fact action='create'")
       expect(result.message).toContain("predicate=<writable predicate for this vault>")
       expect(result.message).not.toContain("has_concern")
       expect(result.message).not.toContain("needs_review")
@@ -249,7 +249,7 @@ describe("TaskService.create", () => {
     const args = (client.pages.create as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(args.properties.Kind).toEqual({ select: { name: "task" } })
     expect(args.properties["Task State"]).toEqual({ select: { name: "open" } })
-    // Default entity = subject so lore-ask(entity) finds the task without
+    // Default entity = subject so kennen-ask(entity) finds the task without
     // the caller having to restate it.
     expect(args.properties.Entity).toEqual({
       rich_text: [{ text: { content: "Rotate keys" } }],

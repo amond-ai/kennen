@@ -1,6 +1,6 @@
 # Partial-Failure Observability
 
-Lore treats partial failures as successful calls with operator-visible
+Kennen treats partial failures as successful calls with operator-visible
 diagnostics. The agent-facing response keeps the useful partial result and a
 `Warnings:` footer. Recoverable RunTool-to-REST exceptions are always emitted
 to stderr so REST usage remains measurable while RunTool is the primary Notion
@@ -8,7 +8,7 @@ API path.
 
 ## Debug Gate
 
-Set `LORE_DEBUG=1` to emit legacy partial-failure diagnostics that are still
+Set `KENNEN_DEBUG=1` to emit legacy partial-failure diagnostics that are still
 useful only during investigation, such as hybrid-search branch failures. RunTool
 fallback events are not debug-gated because they are part of the operator
 contract for explicit REST exceptions.
@@ -17,7 +17,7 @@ Every new partial-result surface must route its recoverable per-item failures
 through the shared stderr convention so a single grep sweep stays useful:
 
 ```text
-[lore] partial-failure: ... error=<message> ...
+[kennen] partial-failure: ... error=<message> ...
 ```
 
 The `error=` value must contain only the error message, not stacks, SDK
@@ -30,7 +30,7 @@ line so each failure produces exactly one newline-delimited event.
 MCP read-path fan-outs that use `settleAll` emit one line per failed root:
 
 ```text
-[lore] partial-failure: root=<rootId> error=<message> tool=<toolName>
+[kennen] partial-failure: root=<rootId> error=<message> tool=<toolName>
 ```
 
 `root` is the failed Notion root id, and `tool` is the MCP tool name that
@@ -39,11 +39,11 @@ is the operator's triage key; the `error` value is redacted.
 
 ## Fact Provenance Precheck
 
-`lore-fact action='create'` provenance precheck failures use a separate
+`kennen-fact action='create'` provenance precheck failures use a separate
 parser-friendly prefix:
 
 ```text
-[lore] fact-precheck-rejected: reason=<reason> agent=<agent> session=<session> sourceMemoryId=<sourceMemoryId> project=<projectIds>
+[kennen] fact-precheck-rejected: reason=<reason> agent=<agent> session=<session> sourceMemoryId=<sourceMemoryId> project=<projectIds>
 ```
 
 This line is emitted only for runtime provenance failures after schema
@@ -54,15 +54,15 @@ source. `reason` is the stable classifier. `agent`, `session`,
 
 ## Surface-Specific Keys
 
-The `[lore] partial-failure:` prefix and `error=` field are stable across
+The `[kennen] partial-failure:` prefix and `error=` field are stable across
 surfaces. Other keys are scoped to the emitting surface and may differ when
 `root` and `tool` would be misleading.
 
 Examples:
 
 ```text
-[lore] partial-failure: branch=<contains|semantic> error=<message> source=hybrid-search
-[lore] partial-failure: source=<source> status=<status> code=<code> reason=<reason> error=<message> runtool-fallback=1 used-rest=1
+[kennen] partial-failure: branch=<contains|semantic> error=<message> source=hybrid-search
+[kennen] partial-failure: source=<source> status=<status> code=<code> reason=<reason> error=<message> runtool-fallback=1 used-rest=1
 ```
 
 Downstream parsers should match on the prefix and the `error=` field, then

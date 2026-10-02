@@ -68,8 +68,8 @@ export async function writePatchEvidence(input: {
 const PATCH_STATS_IGNORED_NAMES = new Set([
   ".codex",
   ".git",
-  ".lore-memories.json",
-  ".lore.yaml",
+  ".kennen-memories.json",
+  ".kennen.yaml",
   ".mcp.json",
   "node_modules",
 ])

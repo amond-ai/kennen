@@ -1,24 +1,24 @@
 /**
- * `lore conflicts scan`.
+ * `kennen conflicts scan`.
  *
  * Walks the vault, runs candidate generation per project (delegated to
  * `findConflictCandidates`), filters out pairs already judged via
  * `Compared With`, and emits *prompt-ready* output the calling agent can
  * read and act on. The CLI does NOT call any LLM and does NOT call
- * `lore-memory action='compare'` — it produces structured material that
+ * `kennen-memory action='compare'` — it produces structured material that
  * the agent reads and dispatches back via the compare tool.
  *
  * Engram's analog (`engram conflicts scan`) shells out to the user's
- * agent CLI via `ENGRAM_AGENT_CLI`. Lore's MCP server is invoked *by*
+ * agent CLI via `ENGRAM_AGENT_CLI`. Kennen's MCP server is invoked *by*
  * Claude Code already; the natural judge is the *current* Claude
  * session, not a fresh subprocess. So the design is inverted: the
  * scanner produces output the calling agent reads, judges, and
- * dispatches back via `lore-memory action='compare'`.
+ * dispatches back via `kennen-memory action='compare'`.
  */
 
 import { Command } from "commander"
 import { randomUUID } from "node:crypto"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import {
   CONFLICT_PAIR_LIMIT,
   findConflictCandidates,
@@ -173,11 +173,11 @@ export interface ScanProjectRef {
 }
 
 export async function resolveScanProjects(
-  services: LoreServices,
+  services: KennenServices,
   projectName: string | undefined
 ): Promise<ScanProjectRef[]> {
   const explicitProjectName = validateExplicitProjectScopeName(projectName, "--project", {
-    listHint: "run `lore status projects` to list configured projects",
+    listHint: "run `kennen status projects` to list configured projects",
   })
   if (explicitProjectName !== undefined) {
     const found = await resolveProjectScopeName(
@@ -185,12 +185,12 @@ export async function resolveScanProjects(
       explicitProjectName,
       "--project",
       {
-        listHint: "run `lore status projects` to list configured projects",
+        listHint: "run `kennen status projects` to list configured projects",
       }
     )
     return [{ id: found.id, label: found.name }]
   }
-  // Scope all-projects scans to active projects. `lore status projects`
+  // Scope all-projects scans to active projects. `kennen status projects`
   // uses `-a` to *opt in* to archived projects — the inverted default
   // is the established convention; archived projects walking through
   // the conflict-scan pipeline pays for paginated `Memory` walks
@@ -210,7 +210,7 @@ export async function resolveScanProjects(
  * primary pipeline, leaving the runScan implementation incorrect.
  */
 export async function runScan(
-  services: LoreServices,
+  services: KennenServices,
   opts: ScanCliOptions,
   log: (msg: string) => void = (msg) => process.stderr.write(msg + "\n")
 ): Promise<ScanReport> {
@@ -304,7 +304,7 @@ export async function runScan(
   //    deliberately does NOT filter here — state-aware filtering
   //    belongs to the caller (this CLI).
   //
-  //    SQL path: when `LORE_USE_RUNTOOL_FILTER_SQL=1` and a
+  //    SQL path: when `KENNEN_USE_RUNTOOL_FILTER_SQL=1` and a
   //    RunTool wrapper is wired, pre-build the set of already-compared
   //    pair-keys via one targeted SQL query per project that
   //    server-side narrows to rows whose `Compared With` is non-empty
@@ -420,9 +420,9 @@ function toScanPairMemory(
 /**
  * Render the scan as prompt-ready markdown for the calling agent. The
  * header explicitly tells the agent the next move (call
- * `lore-memory action='compare'`) and references the verdict
+ * `kennen-memory action='compare'`) and references the verdict
  * vocabulary by name. The scan does NOT inline the locked prompt
- * verbatim — the verdict-vocabulary contract lives in the lore
+ * verbatim — the verdict-vocabulary contract lives in the kennen
  * conflict-detection workflow doc.
  */
 export function renderScanMarkdown(report: ScanReport): string {
@@ -440,7 +440,7 @@ export function renderScanMarkdown(report: ScanReport): string {
   // and Markdown collapses the soft break into a space at render time
   // anyway, so there's no width budget being saved.
   lines.push(
-    "**Action:** judge each pair below; call `lore-memory action='compare'` once per pair with one of the six verdicts."
+    "**Action:** judge each pair below; call `kennen-memory action='compare'` once per pair with one of the six verdicts."
   )
   lines.push("")
   lines.push(
@@ -560,7 +560,7 @@ function renderPairMemoryMarkdown(label: "A" | "B", m: ScanPairMemory): string[]
 /**
  * Render the scan as JSON for programmatic consumers. The JSON variant
  * carries a `compareContract` block so an agent piping `--json` into
- * another lore tool doesn't have to consult separate prose to figure
+ * another kennen tool doesn't have to consult separate prose to figure
  * out which ID is which. ~400 bytes per run; negligible cost for the
  * contract clarity it buys.
  */
@@ -573,7 +573,7 @@ export function renderScanJson(report: ScanReport): string {
         promptVersion: report.promptVersion,
         stats: report.stats,
         compareContract: {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "compare",
           verdicts: {
             asymmetric: ["conflicts_with", "supersedes"],

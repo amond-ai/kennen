@@ -9,9 +9,9 @@ import {
 const ORIGINAL_ENV = { ...process.env }
 
 beforeEach(() => {
-  // Drop any test-leaked LORE_USER_NAME so the env-override branch is
+  // Drop any test-leaked KENNEN_USER_NAME so the env-override branch is
   // exercised intentionally per-test, not by ambient shell state.
-  delete process.env["LORE_USER_NAME"]
+  delete process.env["KENNEN_USER_NAME"]
 })
 
 afterEach(() => {
@@ -82,8 +82,8 @@ describe("resolveAuthorIdentity — users.me shape walking", () => {
 })
 
 describe("resolveAuthorIdentity", () => {
-  it("prefers LORE_USER_NAME env override and skips the users.me call", async () => {
-    process.env["LORE_USER_NAME"] = "testuser"
+  it("prefers KENNEN_USER_NAME env override and skips the users.me call", async () => {
+    process.env["KENNEN_USER_NAME"] = "testuser"
     const client = makeClient({ bot: { owner: { user: { name: "Other" } } } })
     const result = await resolveAuthorIdentity(client)
     expect(result.author).toBe("testuser")
@@ -94,15 +94,15 @@ describe("resolveAuthorIdentity", () => {
     ).not.toHaveBeenCalled()
   })
 
-  it("trims whitespace on the LORE_USER_NAME path", async () => {
-    process.env["LORE_USER_NAME"] = "  testuser  "
+  it("trims whitespace on the KENNEN_USER_NAME path", async () => {
+    process.env["KENNEN_USER_NAME"] = "  testuser  "
     const client = makeClient({})
     const result = await resolveAuthorIdentity(client)
     expect(result.author).toBe("testuser")
   })
 
-  it("treats whitespace-only LORE_USER_NAME as unset and falls through to users.me", async () => {
-    process.env["LORE_USER_NAME"] = "   "
+  it("treats whitespace-only KENNEN_USER_NAME as unset and falls through to users.me", async () => {
+    process.env["KENNEN_USER_NAME"] = "   "
     const client = makeClient({
       bot: { owner: { user: { name: "Test User" } } },
     })
@@ -150,12 +150,12 @@ describe("resolveAuthorIdentity", () => {
     ).toHaveBeenCalledOnce()
   })
 
-  it("does not cache LORE_USER_NAME so the synchronous override always wins", async () => {
-    process.env["LORE_USER_NAME"] = "testuser"
+  it("does not cache KENNEN_USER_NAME so the synchronous override always wins", async () => {
+    process.env["KENNEN_USER_NAME"] = "testuser"
     const client = makeClient({})
     const resolver = createAuthorIdentityResolver(client, () => ({ token: "token-a" }))
     const first = await resolver.resolveAuthor()
-    process.env["LORE_USER_NAME"] = "different"
+    process.env["KENNEN_USER_NAME"] = "different"
     const second = await resolver.resolveAuthor()
     expect(first).toBe("testuser")
     expect(second).toBe("different")
@@ -350,9 +350,9 @@ describe("resolveAuthorIdentity", () => {
     expect(me).toHaveBeenCalledTimes(3)
   })
 
-  it("emits LORE_DEBUG diagnostics for env, users.me, and failure paths", async () => {
-    const priorDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+  it("emits KENNEN_DEBUG diagnostics for env, users.me, and failure paths", async () => {
+    const priorDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     const stderrChunks: string[] = []
     const stderrSpy = vi
       .spyOn(process.stderr, "write")
@@ -366,14 +366,14 @@ describe("resolveAuthorIdentity", () => {
       })
 
     try {
-      process.env["LORE_USER_NAME"] = "Env Author"
+      process.env["KENNEN_USER_NAME"] = "Env Author"
       const envResolver = createAuthorIdentityResolver(makeClient({}), () => ({
         token: "env-token",
       }))
       await expect(envResolver.resolveAuthor()).resolves.toBe("Env Author")
       await expect(envResolver.resolveAuthor()).resolves.toBe("Env Author")
 
-      delete process.env["LORE_USER_NAME"]
+      delete process.env["KENNEN_USER_NAME"]
       const usersMeResolver = createAuthorIdentityResolver(
         makeClient({ bot: { owner: { user: { name: "API Author" } } } }),
         () => ({ token: "api-token" })
@@ -388,16 +388,16 @@ describe("resolveAuthorIdentity", () => {
     } finally {
       stderrSpy.mockRestore()
       if (priorDebug === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = priorDebug
+        process.env["KENNEN_DEBUG"] = priorDebug
       }
     }
 
     expect(stderrChunks).toEqual([
-      "[lore] identity: resolved author (source=env)\n",
-      "[lore] identity: resolved author (source=users.me, author=present)\n",
-      "[lore] identity: users.me failed: network failure\n",
+      "[kennen] identity: resolved author (source=env)\n",
+      "[kennen] identity: resolved author (source=users.me, author=present)\n",
+      "[kennen] identity: users.me failed: network failure\n",
     ])
   })
 
@@ -407,8 +407,8 @@ describe("resolveAuthorIdentity", () => {
     // identity debug logger routes the message through the shared
     // redactor so a vault page id leaked into `Error.message` does
     // not flow into the operator's centralized log surface.
-    const priorDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const priorDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     const stderrChunks: string[] = []
     const stderrSpy = vi
       .spyOn(process.stderr, "write")
@@ -438,9 +438,9 @@ describe("resolveAuthorIdentity", () => {
     } finally {
       stderrSpy.mockRestore()
       if (priorDebug === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = priorDebug
+        process.env["KENNEN_DEBUG"] = priorDebug
       }
     }
 

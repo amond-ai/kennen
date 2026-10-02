@@ -11,7 +11,7 @@ import {
   type AuthSource,
   type ResolvedAuth,
 } from "../../config.js"
-import type { LoreConfig } from "../../types.js"
+import type { KennenConfig } from "../../types.js"
 import { verifyVaultAccess, ntnEnvFromBaseUrl } from "../../auth/oauth.js"
 import { classifyTokenPrefix } from "../../auth/token-prefix.js"
 import { createClient } from "../../notion/client.js"
@@ -50,9 +50,9 @@ interface ConfigCheck {
   effective: {
     path: string
     root: string
-    source: "LORE_CONFIG_ROOT" | "discovery"
+    source: "KENNEN_CONFIG_ROOT" | "discovery"
   } | null
-  config: LoreConfig | null
+  config: KennenConfig | null
   problem: DoctorProblem | null
 }
 
@@ -62,7 +62,7 @@ interface HostCheck {
 }
 
 interface JsonMcpCheck extends HostCheck {
-  hasLoreEntry: boolean
+  hasKennenEntry: boolean
 }
 
 interface HostConfigInspection {
@@ -112,7 +112,7 @@ export interface DoctorResult {
   problems: DoctorProblem[]
 }
 
-const CONFIG_FILENAME = ".lore.yaml"
+const CONFIG_FILENAME = ".kennen.yaml"
 const DEFAULT_NOTION_BASE_URL = "https://api.notion.so"
 
 const DEFAULT_DEPS: DoctorDeps = {
@@ -219,7 +219,7 @@ async function loadConfigCheck(
   cwd: string,
   env: NodeJS.ProcessEnv
 ): Promise<ConfigCheck> {
-  const envRootRaw = env["LORE_CONFIG_ROOT"]
+  const envRootRaw = env["KENNEN_CONFIG_ROOT"]
   const envRoot = envRootRaw?.trim() ? resolve(envRootRaw.trim()) : undefined
   const discovered = await findConfigFile(cwd)
   const base: Omit<ConfigCheck, "effective" | "config" | "problem"> = {
@@ -243,8 +243,8 @@ async function loadConfigCheck(
         problem: {
           kind: "config",
           message:
-            "LORE_CONFIG_ROOT does not point at a directory containing .lore.yaml.",
-          nextAction: ["unset LORE_CONFIG_ROOT", "lore doctor"],
+            "KENNEN_CONFIG_ROOT does not point at a directory containing .kennen.yaml.",
+          nextAction: ["unset KENNEN_CONFIG_ROOT", "kennen doctor"],
         },
       }
     }
@@ -252,7 +252,7 @@ async function loadConfigCheck(
     return loadConfigFromPath(nextBase, {
       path: envConfigPath,
       root: envRoot,
-      source: "LORE_CONFIG_ROOT",
+      source: "KENNEN_CONFIG_ROOT",
     })
   }
 
@@ -263,8 +263,8 @@ async function loadConfigCheck(
       config: null,
       problem: {
         kind: "config",
-        message: "No .lore.yaml was found from the current directory.",
-        nextAction: "lore init",
+        message: "No .kennen.yaml was found from the current directory.",
+        nextAction: "kennen init",
       },
     }
   }
@@ -287,7 +287,7 @@ async function loadConfigFromPath(
       problem: {
         kind: "config",
         message: `Config failed to load: ${formatError(err)}`,
-        nextAction: [`Fix ${effective!.path}`, "lore doctor"],
+        nextAction: [`Fix ${effective!.path}`, "kennen doctor"],
       },
     }
   }
@@ -296,17 +296,17 @@ async function loadConfigFromPath(
 function formatConfigLines(check: ConfigCheck): string[] {
   const lines = [`  Current working directory: ${check.cwd}`]
   if (check.envRootRaw === undefined || check.envRootRaw.trim() === "") {
-    lines.push("  LORE_CONFIG_ROOT: not set")
+    lines.push("  KENNEN_CONFIG_ROOT: not set")
   } else {
-    lines.push(`  LORE_CONFIG_ROOT: ${check.envRoot}`)
+    lines.push(`  KENNEN_CONFIG_ROOT: ${check.envRoot}`)
     lines.push(`    directory: ${check.envRootDirectoryExists ? "present" : "missing"}`)
-    lines.push(`    .lore.yaml: ${check.envRootConfigExists ? "present" : "missing"}`)
+    lines.push(`    .kennen.yaml: ${check.envRootConfigExists ? "present" : "missing"}`)
   }
 
   if (check.discovered) {
     lines.push(`  Normal discovery: ${check.discovered.path}`)
   } else {
-    lines.push("  Normal discovery: no .lore.yaml found from cwd")
+    lines.push("  Normal discovery: no .kennen.yaml found from cwd")
   }
 
   if (check.effective) {
@@ -324,7 +324,7 @@ function formatConfigLines(check: ConfigCheck): string[] {
 }
 
 async function runAuthCheck(
-  config: LoreConfig,
+  config: KennenConfig,
   configRoot: string,
   env: NodeJS.ProcessEnv,
   deps: DoctorDeps
@@ -379,9 +379,9 @@ function formatTokenPrefix(token: string): string {
   }
 }
 
-function formatWorkspaceSelector(config: LoreConfig, env: NodeJS.ProcessEnv): string {
+function formatWorkspaceSelector(config: KennenConfig, env: NodeJS.ProcessEnv): string {
   if (env["NOTION_WORKSPACE_ID"]) return `${env["NOTION_WORKSPACE_ID"]} (env)`
-  if (config.auth?.workspaceId) return `${config.auth.workspaceId} (.lore.yaml)`
+  if (config.auth?.workspaceId) return `${config.auth.workspaceId} (.kennen.yaml)`
   return "none"
 }
 
@@ -394,12 +394,12 @@ function formatNotionEnvironment(baseUrl: string | undefined): string {
 }
 
 function authMissingNextAction(env: NodeJS.ProcessEnv): string {
-  if (env["NOTION_API_TOKEN"]?.trim()) return "lore auth --status"
-  return "lore auth --login"
+  if (env["NOTION_API_TOKEN"]?.trim()) return "kennen auth --status"
+  return "kennen auth --login"
 }
 
 async function runVaultCheck(
-  config: LoreConfig,
+  config: KennenConfig,
   auth: ResolvedAuth,
   deps: DoctorDeps
 ): Promise<{ lines: string[]; problem: DoctorProblem | null }> {
@@ -438,7 +438,7 @@ async function runVaultCheck(
       problem: {
         kind: "vault",
         message: "Required database probe failed.",
-        nextAction: "lore status",
+        nextAction: "kennen status",
       },
     }
   }
@@ -454,17 +454,17 @@ function formatVaultAccessFailure(
       problem: {
         kind: "vault",
         message: "Vault preflight returned an unexpected error.",
-        nextAction: "lore auth --status",
+        nextAction: "kennen auth --status",
       },
     }
   }
 
   const nextAction =
     result.kind === "rate-limited"
-      ? "lore doctor"
+      ? "kennen doctor"
       : auth.source === "ntn-auth-json"
-        ? "lore auth --login"
-        : ["Rotate or export NOTION_API_TOKEN for the vault workspace", "lore doctor"]
+        ? "kennen auth --login"
+        : ["Rotate or export NOTION_API_TOKEN for the vault workspace", "kennen doctor"]
 
   return {
     lines: [`  Vault page: ${result.kind} - ${result.message}`],
@@ -478,9 +478,9 @@ function formatVaultAccessFailure(
 
 function missingDatabaseNextAction(err: MissingVaultDatabasesError): string {
   const missing = new Set(err.missing)
-  if (missing.size === 1 && missing.has("Entities")) return "lore vault ensure-entities"
-  if (err.present.length === 0) return "lore init"
-  return "lore status"
+  if (missing.size === 1 && missing.has("Entities")) return "kennen vault ensure-entities"
+  if (err.present.length === 0) return "kennen init"
+  return "kennen status"
 }
 
 async function inspectHostConfig(
@@ -563,7 +563,7 @@ async function inspectHostConfig(
     expectedConfigRoot,
     {
       cursor: true,
-      shadowedBy: projectCursor.hasLoreEntry ? "project .cursor/mcp.json" : undefined,
+      shadowedBy: projectCursor.hasKennenEntry ? "project .cursor/mcp.json" : undefined,
       launcher: {
         kind: "cursor",
         inspect: { ...inspect, yarnPnp: cursorYarnPnp },
@@ -625,7 +625,7 @@ async function inspectJsonMcpFile(
 ): Promise<JsonMcpCheck> {
   const parsed = await readJsonIfPresent(path)
   if (parsed.kind === "missing")
-    return { lines: [`  ${label}: not present`], problems: [], hasLoreEntry: false }
+    return { lines: [`  ${label}: not present`], problems: [], hasKennenEntry: false }
   if (parsed.kind === "invalid") {
     if (opts.shadowedBy) {
       return {
@@ -633,49 +633,49 @@ async function inspectJsonMcpFile(
           `  ${label}: invalid JSON - ${parsed.error} (shadowed by ${opts.shadowedBy})`,
         ],
         problems: [],
-        hasLoreEntry: false,
+        hasKennenEntry: false,
       }
     }
     return {
       ...hostConfigProblem(label, `invalid JSON - ${parsed.error}`),
-      hasLoreEntry: false,
+      hasKennenEntry: false,
     }
   }
 
   const mcpServers = objectRecord(parsed.value)?.["mcpServers"]
-  const loreEntry = objectRecord(mcpServers)?.["lore"]
-  if (!loreEntry) {
+  const kennenEntry = objectRecord(mcpServers)?.["kennen"]
+  if (!kennenEntry) {
     return {
-      lines: [`  ${label}: present, Lore MCP entry missing`],
+      lines: [`  ${label}: present, Kennen MCP entry missing`],
       problems: [],
-      hasLoreEntry: false,
+      hasKennenEntry: false,
     }
   }
 
   const lines = opts.shadowedBy
-    ? [`  ${label}: Lore MCP entry present (shadowed by ${opts.shadowedBy})`]
-    : [`  ${label}: Lore MCP entry present`]
+    ? [`  ${label}: Kennen MCP entry present (shadowed by ${opts.shadowedBy})`]
+    : [`  ${label}: Kennen MCP entry present`]
   if (opts.cursor)
-    lines.push("    hooks: MCP-only (Cursor has no Lore Stop/session hooks)")
-  if (opts.shadowedBy) return { lines, problems: [], hasLoreEntry: true }
+    lines.push("    hooks: MCP-only (Cursor has no Kennen Stop/session hooks)")
+  if (opts.shadowedBy) return { lines, problems: [], hasKennenEntry: true }
 
-  const rootLine = describeLoreConfigRoot(objectRecord(loreEntry), expectedConfigRoot)
+  const rootLine = describeKennenConfigRoot(objectRecord(kennenEntry), expectedConfigRoot)
   if (rootLine.problem) {
     lines.push(`    ${rootLine.line}`)
     return {
       lines,
-      hasLoreEntry: true,
+      hasKennenEntry: true,
       problems: [
         {
           kind: "host-config",
-          message: `${label} has a stale LORE_CONFIG_ROOT.`,
-          nextAction: "lore install",
+          message: `${label} has a stale KENNEN_CONFIG_ROOT.`,
+          nextAction: "kennen install",
         },
       ],
     }
   }
   if (rootLine.line) lines.push(`    ${rootLine.line}`)
-  const launcher = objectRecord(loreEntry)
+  const launcher = objectRecord(kennenEntry)
   const launcherStatus =
     launcher && opts.launcher ? classifyJsonMcpLauncher(launcher, opts.launcher) : null
   if (launcherStatus) lines.push(`    launcher: ${launcherStatus}`)
@@ -685,41 +685,41 @@ async function inspectJsonMcpFile(
       problems: [
         {
           kind: "host-config",
-          message: `${label} has a stale Lore MCP launcher.`,
-          nextAction: "lore install",
+          message: `${label} has a stale Kennen MCP launcher.`,
+          nextAction: "kennen install",
         },
       ],
-      hasLoreEntry: true,
+      hasKennenEntry: true,
     }
   }
-  return { lines, problems: [], hasLoreEntry: true }
+  return { lines, problems: [], hasKennenEntry: true }
 }
 
 function classifyJsonMcpLauncher(
-  loreEntry: Record<string, unknown>,
+  kennenEntry: Record<string, unknown>,
   launcher: JsonMcpLauncher
 ): DoctorLauncherStatus {
-  const entryConfigRoot = objectRecord(loreEntry["env"])?.["LORE_CONFIG_ROOT"]
+  const entryConfigRoot = objectRecord(kennenEntry["env"])?.["KENNEN_CONFIG_ROOT"]
   const inspect =
     typeof entryConfigRoot === "string" && entryConfigRoot
       ? { ...launcher.inspect, configRoot: entryConfigRoot }
       : launcher.inspect
-  const notionBaseUrlLiteral = extractJsonMcpNotionBaseUrlLiteral(loreEntry)
+  const notionBaseUrlLiteral = extractJsonMcpNotionBaseUrlLiteral(kennenEntry)
   let status: HookStatus
   if (launcher.kind === "claude") {
-    status = classifyClaudeMcpLauncher(loreEntry, {
+    status = classifyClaudeMcpLauncher(kennenEntry, {
       ...launcherOptions(inspect),
       notionBaseUrlLiteral,
     })
   } else {
-    status = classifyCursorMcpLauncher(loreEntry, {
+    status = classifyCursorMcpLauncher(kennenEntry, {
       ...launcherOptions(inspect),
       notionBaseUrlLiteral,
       useGlobalScope: launcher.useGlobalScope,
       launchCwd: launcher.launchCwd,
     })
   }
-  return status === "stale" && isCustomMcpLauncher(loreEntry) ? "custom" : status
+  return status === "stale" && isCustomMcpLauncher(kennenEntry) ? "custom" : status
 }
 
 function launcherOptions(inspect: HostConfigInspection): {
@@ -739,9 +739,9 @@ function launcherOptions(inspect: HostConfigInspection): {
 }
 
 function extractJsonMcpNotionBaseUrlLiteral(
-  loreEntry: Record<string, unknown>
+  kennenEntry: Record<string, unknown>
 ): string | undefined {
-  const env = objectRecord(loreEntry["env"])
+  const env = objectRecord(kennenEntry["env"])
   const value =
     typeof env?.["NOTION_BASE_URL"] === "string" ? env["NOTION_BASE_URL"] : null
   return canonicalNotionBaseUrlLiteral(value)
@@ -760,21 +760,21 @@ async function inspectClaudeSettingsMcp(
   }
 
   const mcpServers = objectRecord(parsed.value)?.["mcpServers"]
-  const loreEntry = objectRecord(mcpServers)?.["lore"]
-  if (!loreEntry) {
-    return { lines: [`  ${label}: present; no legacy Lore MCP entry`], problems: [] }
+  const kennenEntry = objectRecord(mcpServers)?.["kennen"]
+  if (!kennenEntry) {
+    return { lines: [`  ${label}: present; no legacy Kennen MCP entry`], problems: [] }
   }
 
-  const lines = [`  ${label}: legacy Lore MCP entry present (will migrate)`]
-  const rootLine = describeLoreConfigRoot(objectRecord(loreEntry), expectedConfigRoot)
+  const lines = [`  ${label}: legacy Kennen MCP entry present (will migrate)`]
+  const rootLine = describeKennenConfigRoot(objectRecord(kennenEntry), expectedConfigRoot)
   if (rootLine.line) lines.push(`    ${rootLine.line}`)
   return {
     lines,
     problems: [
       {
         kind: "host-config",
-        message: `${label} still carries a legacy Lore MCP entry.`,
-        nextAction: "lore install",
+        message: `${label} still carries a legacy Kennen MCP entry.`,
+        nextAction: "kennen install",
       },
     ],
   }
@@ -788,13 +788,13 @@ async function inspectCodexConfig(
 ): Promise<HostCheck> {
   const text = await readTextIfPresent(path)
   if (text.kind === "missing") return { lines: [`  ${label}: not present`], problems: [] }
-  const block = extractTomlTableGroup(text.value, "mcp_servers.lore")
+  const block = extractTomlTableGroup(text.value, "mcp_servers.kennen")
   if (!block) {
-    return { lines: [`  ${label}: present, Lore MCP entry missing`], problems: [] }
+    return { lines: [`  ${label}: present, Kennen MCP entry missing`], problems: [] }
   }
 
-  const lines = [`  ${label}: Lore MCP entry present`]
-  const configRoot = extractShellEnvAssignment(block, "LORE_CONFIG_ROOT")
+  const lines = [`  ${label}: Kennen MCP entry present`]
+  const configRoot = extractShellEnvAssignment(block, "KENNEN_CONFIG_ROOT")
   const rootLine = compareConfigRoot(configRoot, expectedConfigRoot)
   if (rootLine.problem) {
     lines.push(`    ${rootLine.line}`)
@@ -803,8 +803,8 @@ async function inspectCodexConfig(
       problems: [
         {
           kind: "host-config",
-          message: ".codex/config.toml has a stale LORE_CONFIG_ROOT.",
-          nextAction: "lore install",
+          message: ".codex/config.toml has a stale KENNEN_CONFIG_ROOT.",
+          nextAction: "kennen install",
         },
       ],
     }
@@ -824,8 +824,8 @@ async function inspectCodexConfig(
       problems: [
         {
           kind: "host-config",
-          message: ".codex/config.toml has a stale Lore MCP launcher.",
-          nextAction: "lore install",
+          message: ".codex/config.toml has a stale Kennen MCP launcher.",
+          nextAction: "kennen install",
         },
       ],
     }
@@ -848,19 +848,19 @@ function hostConfigProblem(label: string, detail: string): HostCheck {
       {
         kind: "host-config",
         message: `${label}: ${detail}`,
-        nextAction: "lore install",
+        nextAction: "kennen install",
       },
     ],
   }
 }
 
-function describeLoreConfigRoot(
-  loreEntry: Record<string, unknown> | null,
+function describeKennenConfigRoot(
+  kennenEntry: Record<string, unknown> | null,
   expectedConfigRoot: string | undefined
 ): { line: string | null; problem: boolean } {
-  const env = objectRecord(loreEntry?.["env"])
+  const env = objectRecord(kennenEntry?.["env"])
   const root =
-    typeof env?.["LORE_CONFIG_ROOT"] === "string" ? env["LORE_CONFIG_ROOT"] : null
+    typeof env?.["KENNEN_CONFIG_ROOT"] === "string" ? env["KENNEN_CONFIG_ROOT"] : null
   return compareConfigRoot(root, expectedConfigRoot)
 }
 
@@ -869,10 +869,10 @@ function compareConfigRoot(
   expectedConfigRoot: string | undefined
 ): { line: string | null; problem: boolean } {
   if (!actualRoot)
-    return { line: "LORE_CONFIG_ROOT: not carried by entry", problem: false }
+    return { line: "KENNEN_CONFIG_ROOT: not carried by entry", problem: false }
   if (!expectedConfigRoot) {
     return {
-      line: `LORE_CONFIG_ROOT: ${actualRoot} (no discovered root to compare)`,
+      line: `KENNEN_CONFIG_ROOT: ${actualRoot} (no discovered root to compare)`,
       problem: false,
     }
   }
@@ -881,10 +881,10 @@ function compareConfigRoot(
   const normalizedActual = normalizeConfigRoot(resolvedActual)
   const normalizedExpected = normalizeConfigRoot(resolvedExpected)
   if (normalizedActual === normalizedExpected) {
-    return { line: `LORE_CONFIG_ROOT: matches ${resolvedExpected}`, problem: false }
+    return { line: `KENNEN_CONFIG_ROOT: matches ${resolvedExpected}`, problem: false }
   }
   return {
-    line: `LORE_CONFIG_ROOT: ${resolvedActual} (expected ${resolvedExpected})`,
+    line: `KENNEN_CONFIG_ROOT: ${resolvedActual} (expected ${resolvedExpected})`,
     problem: true,
   }
 }
@@ -905,11 +905,13 @@ async function inspectHooks(
 ): Promise<HostCheck> {
   const problems: DoctorProblem[] = []
   const lines: string[] = []
-  const claudeMcpHasLore = await jsonMcpFileHasLoreEntry(join(roots.claude, ".mcp.json"))
+  const claudeMcpHasKennen = await jsonMcpFileHasKennenEntry(
+    join(roots.claude, ".mcp.json")
+  )
   const claude = await inspectClaudeHooks(
     join(roots.claude, ".claude", "settings.json"),
     resolveClaudeSettingsPath(roots.claude, homeDir),
-    claudeMcpHasLore
+    claudeMcpHasKennen
   )
   lines.push(...claude.lines)
   problems.push(...claude.problems)
@@ -932,7 +934,7 @@ async function inspectHooks(
     problems.push({
       kind: "hooks",
       message: "Recent background hook failures are present.",
-      nextAction: "lore status",
+      nextAction: "kennen status",
     })
   }
   return { lines, problems }
@@ -949,7 +951,7 @@ interface ClaudeHookFileCheck {
   wakeup?: HookPresence
   autosave?: HookPresence
   sessionEnd?: boolean
-  hasLoreOwnedHook?: boolean
+  hasKennenOwnedHook?: boolean
 }
 
 async function inspectClaudeHooks(
@@ -970,10 +972,12 @@ async function inspectClaudeHooks(
       check.autosave === "present" &&
       !check.sessionEnd
   )
-  const withLore = checks.find((check) => check.kind === "ok" && check.hasLoreOwnedHook)
+  const withKennen = checks.find(
+    (check) => check.kind === "ok" && check.hasKennenOwnedHook
+  )
   const ok =
     complete ??
-    withLore ??
+    withKennen ??
     (home.kind === "ok" ? home : project.kind === "ok" ? project : null)
   const invalidChecks = checks.filter((check) => check.kind === "invalid")
 
@@ -986,14 +990,14 @@ async function inspectClaudeHooks(
         problems: invalidChecks.map((check) => ({
           kind: "hooks",
           message: `${check.label}: invalid JSON - ${check.error}`,
-          nextAction: "lore install",
+          nextAction: "kennen install",
         })),
       }
     }
     return {
       lines: [
         required
-          ? "  Claude Code hooks: not present (required by .mcp.json Lore MCP entry)"
+          ? "  Claude Code hooks: not present (required by .mcp.json Kennen MCP entry)"
           : "  Claude Code hooks: not present",
       ],
       problems: required
@@ -1001,8 +1005,8 @@ async function inspectClaudeHooks(
             {
               kind: "hooks",
               message:
-                "Claude Code hooks are missing while Claude Code Lore MCP is configured.",
-              nextAction: "lore install",
+                "Claude Code hooks are missing while Claude Code Kennen MCP is configured.",
+              nextAction: "kennen install",
             },
           ]
         : [],
@@ -1012,8 +1016,8 @@ async function inspectClaudeHooks(
   const wakeup = ok.wakeup ?? "missing"
   const autosave = ok.autosave ?? "missing"
   const sessionEnd = ok.sessionEnd ?? false
-  const hasLoreOwnedHook = ok.hasLoreOwnedHook ?? false
-  const enforceHooks = required || hasLoreOwnedHook
+  const hasKennenOwnedHook = ok.hasKennenOwnedHook ?? false
+  const enforceHooks = required || hasKennenOwnedHook
   const lines = [
     `  Claude Code wakeup hook: ${wakeup}`,
     `  Claude Code autosave hook: ${autosave}`,
@@ -1023,24 +1027,24 @@ async function inspectClaudeHooks(
     return {
       kind: "hooks",
       message: `${check.label}: invalid JSON - ${check.error}`,
-      nextAction: "lore install",
+      nextAction: "kennen install",
     }
   })
 
   for (const check of checks) {
-    if (check.kind !== "ok" || check === ok || !check.hasLoreOwnedHook) continue
+    if (check.kind !== "ok" || check === ok || !check.hasKennenOwnedHook) continue
     lines.push(
       `  ${check.label} wakeup hook: ${check.wakeup}`,
       `  ${check.label} autosave hook: ${check.autosave}`
     )
     if (check.sessionEnd) {
-      lines.push(`  ${check.label} SessionEnd hook: legacy Lore entry present`)
+      lines.push(`  ${check.label} SessionEnd hook: legacy Kennen entry present`)
     }
   }
 
-  const loreChecks = checks.filter(
+  const kennenChecks = checks.filter(
     (check): check is ClaudeHookFileCheck & { kind: "ok" } =>
-      check.kind === "ok" && Boolean(check.hasLoreOwnedHook)
+      check.kind === "ok" && Boolean(check.hasKennenOwnedHook)
   )
   const hasCompleteHooks = checks.some(
     (check) =>
@@ -1049,38 +1053,41 @@ async function inspectClaudeHooks(
       check.autosave === "present" &&
       !check.sessionEnd
   )
-  if (!required && loreChecks.length > 0) {
+  if (!required && kennenChecks.length > 0) {
     problems.push({
       kind: "hooks",
       message:
-        "Claude Code hooks are present while Claude Code Lore MCP is not configured.",
-      nextAction: "lore install",
+        "Claude Code hooks are present while Claude Code Kennen MCP is not configured.",
+      nextAction: "kennen install",
     })
   }
   if (required && !hasCompleteHooks) {
     problems.push({
       kind: "hooks",
-      message: "Claude Code hook config is missing or has a stale Lore hook.",
-      nextAction: "lore install",
+      message: "Claude Code hook config is missing or has a stale Kennen hook.",
+      nextAction: "kennen install",
     })
   }
   if (
     enforceHooks &&
     (!required || hasCompleteHooks) &&
-    loreChecks.some((check) => check.wakeup !== "present" || check.autosave !== "present")
+    kennenChecks.some(
+      (check) => check.wakeup !== "present" || check.autosave !== "present"
+    )
   ) {
     problems.push({
       kind: "hooks",
-      message: "Claude Code hook config is missing or has a stale Lore hook.",
-      nextAction: "lore install",
+      message: "Claude Code hook config is missing or has a stale Kennen hook.",
+      nextAction: "kennen install",
     })
   }
-  if (loreChecks.some((check) => check.sessionEnd)) {
-    if (sessionEnd) lines.push("  Claude Code SessionEnd hook: legacy Lore entry present")
+  if (kennenChecks.some((check) => check.sessionEnd)) {
+    if (sessionEnd)
+      lines.push("  Claude Code SessionEnd hook: legacy Kennen entry present")
     problems.push({
       kind: "hooks",
-      message: "Claude Code SessionEnd still carries a legacy Lore hook.",
-      nextAction: "lore install",
+      message: "Claude Code SessionEnd still carries a legacy Kennen hook.",
+      nextAction: "kennen install",
     })
   }
   return { lines, problems }
@@ -1104,7 +1111,7 @@ async function inspectClaudeHookFile(
     wakeup,
     autosave,
     sessionEnd,
-    hasLoreOwnedHook: wakeup !== "missing" || autosave !== "missing" || sessionEnd,
+    hasKennenOwnedHook: wakeup !== "missing" || autosave !== "missing" || sessionEnd,
   }
 }
 
@@ -1115,7 +1122,7 @@ async function inspectCodexHooks(
   const feature = await inspectCodexHooksFeature(configPath)
   const parsed = await readJsonIfPresent(hooksPath)
   if (parsed.kind === "missing") {
-    if (!feature.hasLoreConfig) {
+    if (!feature.hasKennenConfig) {
       return { lines: ["  Codex hooks: not present"], problems: [] }
     }
     const lines = [
@@ -1125,8 +1132,8 @@ async function inspectCodexHooks(
     const problems: DoctorProblem[] = [
       {
         kind: "hooks",
-        message: "Codex hooks file is missing while Codex Lore MCP is configured.",
-        nextAction: "lore install",
+        message: "Codex hooks file is missing while Codex Kennen MCP is configured.",
+        nextAction: "kennen install",
       },
     ]
     if (!feature.enabled) problems.push(codexHooksFeatureProblem(feature.status))
@@ -1143,7 +1150,7 @@ async function inspectCodexHooks(
     problems.push({
       kind: "hooks",
       message: `Codex hooks: invalid JSON - ${parsed.error}`,
-      nextAction: "lore install",
+      nextAction: "kennen install",
     })
     return { lines, problems }
   }
@@ -1151,16 +1158,16 @@ async function inspectCodexHooks(
   const hooks = objectRecord(objectRecord(parsed.value)?.["hooks"])
   const wakeup = hasHookCommand(hooks?.["UserPromptSubmit"], "wakeup")
   const autosave = hasHookCommand(hooks?.["Stop"], "autosave")
-  const enforceHooks = feature.hasLoreConfig || wakeup || autosave
+  const enforceHooks = feature.hasKennenConfig || wakeup || autosave
   lines.push(
     `  Codex wakeup hook: ${wakeup ? "present" : "missing"}`,
     `  Codex autosave hook: ${autosave ? "present" : "missing"}`
   )
-  if (!feature.hasLoreConfig && (wakeup || autosave)) {
+  if (!feature.hasKennenConfig && (wakeup || autosave)) {
     problems.push({
       kind: "hooks",
-      message: "Codex hooks are present while Codex Lore MCP is not configured.",
-      nextAction: "lore install",
+      message: "Codex hooks are present while Codex Kennen MCP is not configured.",
+      nextAction: "kennen install",
     })
   }
   if (!feature.enabled && enforceHooks) {
@@ -1169,8 +1176,8 @@ async function inspectCodexHooks(
   if (enforceHooks && (!wakeup || !autosave)) {
     problems.push({
       kind: "hooks",
-      message: "Codex hook config is missing a Lore hook.",
-      nextAction: "lore install",
+      message: "Codex hook config is missing a Kennen hook.",
+      nextAction: "kennen install",
     })
   }
   return { lines, problems }
@@ -1180,29 +1187,29 @@ function codexHooksFeatureProblem(status: string): DoctorProblem {
   return {
     kind: "hooks",
     message: `Codex hooks feature is not enabled (${status}).`,
-    nextAction: "lore install",
+    nextAction: "kennen install",
   }
 }
 
 async function inspectCodexHooksFeature(
   path: string
-): Promise<{ enabled: boolean; hasLoreConfig: boolean; status: string }> {
+): Promise<{ enabled: boolean; hasKennenConfig: boolean; status: string }> {
   const text = await readTextIfPresent(path)
   if (text.kind === "missing") {
     return {
       enabled: false,
-      hasLoreConfig: false,
+      hasKennenConfig: false,
       status: "missing (.codex/config.toml not present)",
     }
   }
 
-  const hasLoreConfig = extractTomlTableGroup(text.value, "mcp_servers.lore") !== null
+  const hasKennenConfig = extractTomlTableGroup(text.value, "mcp_servers.kennen") !== null
   const value = extractTomlKeyValue(text.value, "features", "hooks")
   if (value === undefined) {
-    return { enabled: false, hasLoreConfig, status: "missing" }
+    return { enabled: false, hasKennenConfig, status: "missing" }
   }
-  if (value === "true") return { enabled: true, hasLoreConfig, status: "enabled" }
-  return { enabled: false, hasLoreConfig, status: `not true (${value})` }
+  if (value === "true") return { enabled: true, hasKennenConfig, status: "enabled" }
+  return { enabled: false, hasKennenConfig, status: `not true (${value})` }
 }
 
 function hasHookCommand(
@@ -1217,7 +1224,7 @@ function hasHookCommand(
     return hooks.some((hook) => {
       const command = objectRecord(hook)?.["command"]
       return typeof command === "string"
-        ? shellDispatchesToLore(command, ["hooks", eventName]) ||
+        ? shellDispatchesToKennen(command, ["hooks", eventName]) ||
             command.includes(`/${legacyScript}`)
         : false
     })
@@ -1231,12 +1238,12 @@ function classifyClaudeHookCommand(
   if (!Array.isArray(value)) return "missing"
   const legacyScript = `${eventName}.sh`
   const currentCommands = new Set([
-    `cd "$CLAUDE_PROJECT_DIR" && lore hooks ${eventName}`,
-    `cd "$CLAUDE_PROJECT_DIR" && yarn run -T lore hooks ${eventName}`,
+    `cd "$CLAUDE_PROJECT_DIR" && kennen hooks ${eventName}`,
+    `cd "$CLAUDE_PROJECT_DIR" && yarn run -T kennen hooks ${eventName}`,
   ])
   const anchoredPrefix = `cd "$CLAUDE_PROJECT_DIR" && `
-  const loreBinDispatchPattern = new RegExp(
-    `^(?:cd "\\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?lore hooks ${eventName}$`
+  const kennenBinDispatchPattern = new RegExp(
+    `^(?:cd "\\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks ${eventName}$`
   )
   let stale = false
 
@@ -1249,14 +1256,20 @@ function classifyClaudeHookCommand(
       if (currentCommands.has(command)) return "present"
       if (
         command.startsWith(anchoredPrefix) &&
-        shellDispatchesToLore(command.slice(anchoredPrefix.length), ["hooks", eventName])
+        shellDispatchesToKennen(command.slice(anchoredPrefix.length), [
+          "hooks",
+          eventName,
+        ])
       ) {
         return "present"
       }
-      if (loreBinDispatchPattern.test(command) || command.endsWith(`/${legacyScript}`)) {
+      if (
+        kennenBinDispatchPattern.test(command) ||
+        command.endsWith(`/${legacyScript}`)
+      ) {
         stale = true
       }
-      if (shellDispatchesToLore(command, ["hooks", eventName])) stale = true
+      if (shellDispatchesToKennen(command, ["hooks", eventName])) stale = true
     }
   }
 
@@ -1295,11 +1308,11 @@ async function readJsonIfPresent(
   }
 }
 
-async function jsonMcpFileHasLoreEntry(path: string): Promise<boolean> {
+async function jsonMcpFileHasKennenEntry(path: string): Promise<boolean> {
   const parsed = await readJsonIfPresent(path)
   if (parsed.kind !== "ok") return false
   const mcpServers = objectRecord(parsed.value)?.["mcpServers"]
-  return objectRecord(mcpServers)?.["lore"] !== undefined
+  return objectRecord(mcpServers)?.["kennen"] !== undefined
 }
 
 async function readTextIfPresent(
@@ -1432,36 +1445,36 @@ function canonicalNotionBaseUrlLiteral(value: string | null): string | undefined
   return ntnEnvFromBaseUrl(value) ? value : undefined
 }
 
-function isCustomMcpLauncher(loreEntry: Record<string, unknown>): boolean {
-  const command = stringValue(loreEntry["command"])
-  const args = stringArray(loreEntry["args"])
-  return command !== null && args !== null && dispatchesToLore(command, args, ["mcp"])
+function isCustomMcpLauncher(kennenEntry: Record<string, unknown>): boolean {
+  const command = stringValue(kennenEntry["command"])
+  const args = stringArray(kennenEntry["args"])
+  return command !== null && args !== null && dispatchesToKennen(command, args, ["mcp"])
 }
 
 function isCustomTomlMcpLauncher(block: string): boolean {
   const command = extractTomlStringValue(block, "command")
   const args = extractTomlStringArray(block, "args")
-  return command !== null && args !== null && dispatchesToLore(command, args, ["mcp"])
+  return command !== null && args !== null && dispatchesToKennen(command, args, ["mcp"])
 }
 
-function dispatchesToLore(
+function dispatchesToKennen(
   command: string,
   args: readonly string[],
-  loreArgs: readonly string[]
+  kennenArgs: readonly string[]
 ): boolean {
-  if (argvDispatchesToLore(command, args, loreArgs)) return true
+  if (argvDispatchesToKennen(command, args, kennenArgs)) return true
   const shellCommand = extractShellCommand(command, args)
-  return shellCommand !== null && shellDispatchesToLore(shellCommand, loreArgs)
+  return shellCommand !== null && shellDispatchesToKennen(shellCommand, kennenArgs)
 }
 
-function argvDispatchesToLore(
+function argvDispatchesToKennen(
   command: string,
   args: readonly string[],
-  loreArgs: readonly string[]
+  kennenArgs: readonly string[]
 ): boolean {
-  if (isLoreToken(command)) return argsStartWith(args, loreArgs)
-  if (isYarnToken(command)) return yarnArgsDispatchToLore(args, loreArgs)
-  if (isNtxToken(command)) return argsStartWith(args, ["lore", ...loreArgs])
+  if (isKennenToken(command)) return argsStartWith(args, kennenArgs)
+  if (isYarnToken(command)) return yarnArgsDispatchToKennen(args, kennenArgs)
+  if (isNtxToken(command)) return argsStartWith(args, ["kennen", ...kennenArgs])
   return false
 }
 
@@ -1476,24 +1489,27 @@ function extractShellCommand(command: string, args: readonly string[]): string |
   return null
 }
 
-function shellDispatchesToLore(command: string, loreArgs: readonly string[]): boolean {
-  const loreTail = loreArgs.map(escapeRegExp).join("\\s+")
+function shellDispatchesToKennen(
+  command: string,
+  kennenArgs: readonly string[]
+): boolean {
+  const kennenTail = kennenArgs.map(escapeRegExp).join("\\s+")
   const quotedValue = `(?:"[^"]*"|'[^']*'|\\S+)`
   const cdPrefix = `(?:cd\\s+${quotedValue}\\s+&&\\s+)?`
   const envPrefix = `(?:[A-Z_][A-Z0-9_]*=${quotedValue}\\s+)*`
   const executablePath = `(?:(?:\\.{1,2}|~)?/[^\\s;&|]+)`
-  const loreDispatch = `(?:lore|${executablePath}/lore)\\s+${loreTail}`
-  const yarnDispatch = `yarn\\s+(?:run\\s+-T\\s+)?lore\\s+${loreTail}`
-  const ntxDispatch = `(?:\\./ntx|ntx)\\s+lore\\s+${loreTail}`
+  const kennenDispatch = `(?:kennen|${executablePath}/kennen)\\s+${kennenTail}`
+  const yarnDispatch = `yarn\\s+(?:run\\s+-T\\s+)?kennen\\s+${kennenTail}`
+  const ntxDispatch = `(?:\\./ntx|ntx)\\s+kennen\\s+${kennenTail}`
   const pattern = new RegExp(
-    `^\\s*${cdPrefix}${envPrefix}(?:exec\\s+)?(?:${loreDispatch}|${yarnDispatch}|${ntxDispatch})\\s*$`
+    `^\\s*${cdPrefix}${envPrefix}(?:exec\\s+)?(?:${kennenDispatch}|${yarnDispatch}|${ntxDispatch})\\s*$`
   )
   return pattern.test(command)
 }
 
-function isLoreToken(value: string): boolean {
+function isKennenToken(value: string): boolean {
   const token = stripSurroundingQuotes(value)
-  return token === "lore" || token.endsWith("/lore")
+  return token === "kennen" || token.endsWith("/kennen")
 }
 
 function isYarnToken(value: string): boolean {
@@ -1506,14 +1522,14 @@ function isNtxToken(value: string): boolean {
   return token === "ntx" || token === "./ntx"
 }
 
-function yarnArgsDispatchToLore(
+function yarnArgsDispatchToKennen(
   args: readonly string[],
-  loreArgs: readonly string[]
+  kennenArgs: readonly string[]
 ): boolean {
   if (args[0] === "run" && args[1] === "-T") {
-    return args[2] === "lore" && argsStartWith(args.slice(3), loreArgs)
+    return args[2] === "kennen" && argsStartWith(args.slice(3), kennenArgs)
   }
-  return args[0] === "lore" && argsStartWith(args.slice(1), loreArgs)
+  return args[0] === "kennen" && argsStartWith(args.slice(1), kennenArgs)
 }
 
 function argsStartWith(args: readonly string[], expected: readonly string[]): boolean {

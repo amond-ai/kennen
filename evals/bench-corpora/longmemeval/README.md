@@ -1,6 +1,6 @@
 # LongMemEval corpus
 
-Lore's LongMemEval bench (issue #595) targets the **cleaned** variant of
+Kennen's LongMemEval bench (issue #595) targets the **cleaned** variant of
 the `longmemeval_s` dataset published by Wu et al. and re-hosted under
 `xiaowu0162/longmemeval-cleaned` on HuggingFace. The "cleaned" variant
 removes noisy history sessions that interfere with answer correctness;
@@ -11,7 +11,7 @@ it is the upstream-recommended evaluation set.
 The corpus is gitignored (the JSON itself is ~50–100 MB). Operators run:
 
 ```
-lore eval bench fetch longmemeval
+kennen eval bench fetch longmemeval
 ```
 
 which downloads the pinned revision from HuggingFace, verifies the
@@ -44,7 +44,7 @@ answers were absent from the haystack. If the pinned revision in
 satisfy this assumption (e.g. a future `_qa` set that includes
 abstention-correct examples), the raw-transcript prompt's posture
 will drive false-positive answers when the agent hallucinates
-rather than honestly abstaining. The lore-mine prompt
+rather than honestly abstaining. The kennen-mine prompt
 (`evals/prompts/longmemeval-agent-system.txt`) does NOT carry this
 assumption and is safe under either corpus posture.
 

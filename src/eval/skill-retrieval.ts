@@ -8,8 +8,8 @@ import pLimit from "p-limit"
 import { parse as parseYaml } from "yaml"
 import { z } from "zod"
 import { MemoryService } from "../core/memory.js"
-import { defaultFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
-import { initServices, type LoreServices } from "../services.js"
+import { defaultFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
+import { initServices, type KennenServices } from "../services.js"
 import type { Memory, SearchExplain, Topic } from "../types.js"
 import { averageMetric, scoreRanking, type RankingMetrics } from "./rank-metrics.js"
 
@@ -281,7 +281,7 @@ export interface SkillRetrievalLaneRunnerInput {
   corpus: SkillRetrievalCorpus
   queries: SkillRetQuery[]
   lane: SkillRetrievalLane
-  services?: LoreServices
+  services?: KennenServices
   loadedSuiteRoot: string
   notionSearch?: SkillRetrievalNotionSearch
 }
@@ -294,12 +294,12 @@ export interface RunSkillRetrievalOptions {
   outPath?: string
   now?: Date
   laneRunner?: SkillRetrievalLaneRunner
-  servicesFactory?: () => Promise<LoreServices>
+  servicesFactory?: () => Promise<KennenServices>
   notionSearch?: SkillRetrievalNotionSearch
 }
 
 export interface SkillRetrievalNotionSearchInput {
-  services: LoreServices
+  services: KennenServices
   query: SkillRetQuery
   projectId: string
   topicId?: string
@@ -380,7 +380,7 @@ export interface ImportSkillRetrievalOptions {
   limit?: number
   parallelism?: number
   createProject?: boolean
-  servicesFactory?: () => Promise<LoreServices>
+  servicesFactory?: () => Promise<KennenServices>
 }
 
 export interface SkillRetrievalImportReport {
@@ -549,7 +549,7 @@ export async function importSkillRetrievalCorpusToNotion(
     project = await services.projects.create({
       name: notion.projectName,
       type: "project",
-      description: "Persistent SkillRet corpus import for Lore retrieval evals.",
+      description: "Persistent SkillRet corpus import for Kennen retrieval evals.",
     })
   }
   const topic = await services.topics.getOrCreate(notion.topicName, [project.id], {
@@ -669,7 +669,7 @@ export async function importSkillRetrievalCorpusToNotion(
 async function importSkillRetrievalMemoryWithRetry(input: {
   skill: SkillRetSkill
   fields: SkillRetrievalSuite["document"]["textFields"]
-  services: LoreServices
+  services: KennenServices
   projectId: string
   topic: Topic
   importedAt: string
@@ -698,7 +698,7 @@ function isNonRetryableSkillRetrievalImportError(err: unknown): boolean {
 async function importSkillRetrievalMemory(input: {
   skill: SkillRetSkill
   fields: SkillRetrievalSuite["document"]["textFields"]
-  services: LoreServices
+  services: KennenServices
   projectId: string
   topic: Topic
   importedAt: string
@@ -795,7 +795,7 @@ async function importSkillRetrievalMemory(input: {
 }
 
 async function createSkillRetrievalMemory(input: {
-  services: LoreServices
+  services: KennenServices
   projectId: string
   draft: SkillRetrievalImportDraft
 }): Promise<Memory> {
@@ -909,7 +909,7 @@ function skillRetrievalManifestEntryMatchesDraft(
 
 async function updateSkillRetrievalMemory(input: {
   memoryId: string
-  services: LoreServices
+  services: KennenServices
   projectId: string
   draft: SkillRetrievalImportDraft
 }): Promise<void> {
@@ -935,7 +935,7 @@ async function updateSkillRetrievalMemory(input: {
 }
 
 async function assertSkillRetrievalTopicKeyAvailable(input: {
-  services: LoreServices
+  services: KennenServices
   projectId: string
   topicKey: string
   memoryId?: string
@@ -1022,7 +1022,7 @@ export async function runNotionSkillRetrievalLane(
     throw new Error(`Unsupported skill-retrieval lane "${input.lane}"`)
   }
   if (!input.services) {
-    throw new Error("skill-retrieval notion-ai lane requires initialized Lore services")
+    throw new Error("skill-retrieval notion-ai lane requires initialized Kennen services")
   }
   const notion = requireSkillRetrievalNotionConfig(input.suite)
   assertSkillRetrievalVaultBinding(notion, input.services)
@@ -1248,15 +1248,15 @@ async function defaultSkillRetrievalNotionSearch(
 }
 
 function featuresForSkillRetrievalNotionAi(
-  base: LoreFeatureFlags | undefined
-): LoreFeatureFlags {
+  base: KennenFeatureFlags | undefined
+): KennenFeatureFlags {
   const features = cloneFeatureFlags(base ?? defaultFeatureFlags())
   features.runTool.enabled = true
   features.runTool.search = true
   return features
 }
 
-function cloneFeatureFlags(features: LoreFeatureFlags): LoreFeatureFlags {
+function cloneFeatureFlags(features: KennenFeatureFlags): KennenFeatureFlags {
   return {
     ...features,
     runTool: { ...features.runTool },
@@ -1375,7 +1375,7 @@ function requireSkillRetrievalNotionConfig(
 
 function assertSkillRetrievalVaultBinding(
   notion: SkillRetrievalNotionConfig,
-  services: LoreServices
+  services: KennenServices
 ): void {
   if (notion.expectedVaultPageId === undefined) return
   const expected = normalizeNotionPageId(notion.expectedVaultPageId)
@@ -1383,7 +1383,7 @@ function assertSkillRetrievalVaultBinding(
   if (expected !== actual) {
     throw new Error(
       `SkillRet suite is bound to vault ${notion.expectedVaultPageId}, ` +
-        `but the active Lore config points at ${services.config.vault.pageId}.`
+        `but the active Kennen config points at ${services.config.vault.pageId}.`
     )
   }
 }
@@ -1529,7 +1529,7 @@ function renderSkillRetMemoryContent(
   if (metadata) {
     sections.push(
       [
-        "## Lore Metadata",
+        "## Kennen Metadata",
         "",
         `Topic: ${metadata.topicName}`,
         `Topic Key: ${metadata.topicKey}`,
@@ -1920,14 +1920,14 @@ async function findRepoRoot(start: string): Promise<string> {
       const parsed = JSON.parse(await readFile(packageJsonPath, "utf-8")) as {
         name?: unknown
       }
-      if (parsed.name === "@notionhq/lore") return dir
+      if (parsed.name === "@amond-ai/kennen") return dir
     } catch {
       // Keep walking. Missing and unrelated package.json files are both non-roots.
     }
     const parent = dirname(dir)
     if (parent === dir || dir === parse(dir).root) {
       throw new Error(
-        `Could not find @notionhq/lore package root from ${start}; pass --out to choose an artifact path.`
+        `Could not find @amond-ai/kennen package root from ${start}; pass --out to choose an artifact path.`
       )
     }
     dir = parent

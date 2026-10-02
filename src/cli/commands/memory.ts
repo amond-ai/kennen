@@ -1,5 +1,5 @@
 import { Command } from "commander"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import type {
   CreateMemoryInput,
   Memory,
@@ -218,7 +218,7 @@ export function parseMemoryUpdateCliOptions(
 }
 
 export async function runMemorySave(
-  services: LoreServices,
+  services: KennenServices,
   opts: MemorySaveCliOptions,
   content: string
 ): Promise<MemorySaveCliResult> {
@@ -282,7 +282,7 @@ export async function runMemorySave(
 }
 
 export async function runMemoryUpdate(
-  services: LoreServices,
+  services: KennenServices,
   opts: MemoryUpdateCliOptions
 ): Promise<MemoryUpdateCliResult> {
   const input: UpdateMemoryInput = {}

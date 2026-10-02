@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest"
 import type { Client } from "@notionhq/client"
-import type { LoreConfig } from "./types.js"
+import type { KennenConfig } from "./types.js"
 
 vi.mock("./config.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./config.js")>()
@@ -154,7 +154,7 @@ describe("initServicesFromConfig — required Entities database", () => {
     const config = {
       vault: { pageId: "page-1" },
       projects: [],
-    } as LoreConfig
+    } as KennenConfig
 
     await expect(
       initServicesFromConfig("/tmp/project", "/tmp/project", config)
@@ -162,9 +162,9 @@ describe("initServicesFromConfig — required Entities database", () => {
   })
 
   it("resolves an installed external profile through the config root", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-services-profile-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-services-profile-"))
     scratchRoots.push(root)
-    const profileDir = join(root, ".lore", "profiles", "installed", "sales", "1.0.0")
+    const profileDir = join(root, ".kennen", "profiles", "installed", "sales", "1.0.0")
     writeFiles(profileDir, minimalProfileFiles("sales"))
     vi.mocked(createClient).mockReturnValue(clientWithVault())
 
@@ -173,7 +173,7 @@ describe("initServicesFromConfig — required Entities database", () => {
       profile: "sales@1.0.0",
       features: { autoMentions: false },
       projects: [],
-    } as LoreConfig)
+    } as KennenConfig)
 
     expect(services.profile.selector).toBe("sales@1.0.0")
     expect(services.profile.source).toBe("external")

@@ -12,7 +12,7 @@ import {
 import { MEMORY_PROPS, memoriesProperties } from "../notion/schema.js"
 
 function withProfileDir(files: Record<string, string>, fn: (dir: string) => void): void {
-  const dir = mkdtempSync(join(tmpdir(), "lore-profile-"))
+  const dir = mkdtempSync(join(tmpdir(), "kennen-profile-"))
   try {
     for (const [rel, text] of Object.entries(files)) {
       const path = join(dir, rel)
@@ -71,7 +71,7 @@ describe("profile loader", () => {
 
   it("does not resolve the built-in default profile from the caller cwd", () => {
     const originalCwd = process.cwd()
-    const dir = mkdtempSync(join(tmpdir(), "lore-profile-cwd-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-profile-cwd-"))
     const shadowRoot = join(dir, "profiles", "default")
     const shadowPromptMappings = PROFILE_PROMPT_KEYS.map(
       (key) => `  ${key}: prompts/${key}.txt`

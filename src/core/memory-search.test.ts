@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import type { Client, PageObjectResponse } from "@notionhq/client"
 import { searchViaRunTool } from "../notion/runtool/index.js"
-import { defaultFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { defaultFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
 import type { DatabaseRef, Memory, MemoryKind, MemorySource } from "../types.js"
 import {
@@ -25,11 +25,11 @@ const DB: DatabaseRef = {
   dataSourceId: "memories-ds",
 }
 
-type FeatureOverrides = Partial<Omit<LoreFeatureFlags, "runTool">> & {
-  runTool?: Partial<LoreFeatureFlags["runTool"]>
+type FeatureOverrides = Partial<Omit<KennenFeatureFlags, "runTool">> & {
+  runTool?: Partial<KennenFeatureFlags["runTool"]>
 }
 
-function features(overrides: FeatureOverrides = {}): LoreFeatureFlags {
+function features(overrides: FeatureOverrides = {}): KennenFeatureFlags {
   const defaults = defaultFeatureFlags()
   return {
     ...defaults,

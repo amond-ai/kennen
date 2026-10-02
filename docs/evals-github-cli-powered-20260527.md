@@ -8,7 +8,7 @@ headline benchmark.
 
 - Suite: `evals/task-suites/longitudinal-github-cli-powered-candidates.yaml`
 - OSS target: `cli/cli@9a593ce81b593dee752cc11737d1a3ef768e52b3`
-- Conditions: `no-memory`, `seeded-lore`, `lore-full-loop`
+- Conditions: `no-memory`, `seeded-kennen`, `kennen-full-loop`
 - Current candidate pool: 66 easy, 114 medium, 22 hard scenarios
 - Target no-memory calibration bands:
   - Easy: 80-95% pass
@@ -76,8 +76,8 @@ Raw result, using verifier outcomes directly:
 | Condition        |   Pass rate | Primary agent cost | Phase elapsed sum |
 | ---------------- | ----------: | -----------------: | ----------------: |
 | `no-memory`      | 40/50 (80%) |            $149.00 |            5.34 h |
-| `seeded-lore`    | 41/50 (82%) |            $151.29 |            5.51 h |
-| `lore-full-loop` | 43/50 (86%) |            $149.39 |            6.91 h |
+| `seeded-kennen`    | 41/50 (82%) |            $151.29 |            5.51 h |
+| `kennen-full-loop` | 43/50 (86%) |            $149.39 |            6.91 h |
 
 Adjudicated result, applying the narrow measurement repairs accepted during
 analysis:
@@ -85,19 +85,19 @@ analysis:
 | Condition        |   Pass rate | Delta vs no-memory |
 | ---------------- | ----------: | -----------------: |
 | `no-memory`      | 41/50 (82%) |                  - |
-| `seeded-lore`    | 43/50 (86%) |              +4 pp |
-| `lore-full-loop` | 44/50 (88%) |              +6 pp |
+| `seeded-kennen`    | 43/50 (86%) |              +4 pp |
+| `kennen-full-loop` | 44/50 (88%) |              +6 pp |
 
 Adjudication overrides applied to this sample:
 
-- `gh-cli-pr-checks-display-names|seeded-lore`
+- `gh-cli-pr-checks-display-names|seeded-kennen`
 - `gh-cli-telemetry-send-failure-nonfatal|no-memory`
-- `gh-cli-telemetry-send-failure-nonfatal|seeded-lore`
-- `gh-cli-telemetry-agent-host-type|lore-full-loop`
+- `gh-cli-telemetry-send-failure-nonfatal|seeded-kennen`
+- `gh-cli-telemetry-agent-host-type|kennen-full-loop`
 
 Difficulty breakdown for the adjudicated sample:
 
-| Difficulty |   no-memory | seeded-lore | lore-full-loop | full-loop delta |
+| Difficulty |   no-memory | seeded-kennen | kennen-full-loop | full-loop delta |
 | ---------- | ----------: | ----------: | -------------: | --------------: |
 | Easy       | 23/25 (92%) | 24/25 (96%) |    24/25 (96%) |           +4 pp |
 | Medium     | 12/15 (80%) | 13/15 (87%) |    14/15 (93%) |          +13 pp |
@@ -112,7 +112,7 @@ Paired full-loop vs no-memory discordance:
 
 This is not statistically significant at alpha 0.05.
 
-Lore-owned background model cost for the selected `lore-full-loop` rows was
+Kennen-owned background model cost for the selected `kennen-full-loop` rows was
 approximately $0.59, recorded as prompt-estimated `eval.mining.background_model`
 ledger events. The total selected primary-agent cost across all conditions was
 approximately $449.68.
@@ -121,14 +121,14 @@ approximately $449.68.
 
 The full candidate pool gives the same qualitative result:
 
-| View             |   no-memory | seeded-lore | lore-full-loop | full-loop delta | Exact McNemar p-value |
+| View             |   no-memory | seeded-kennen | kennen-full-loop | full-loop delta | Exact McNemar p-value |
 | ---------------- | ----------: | ----------: | -------------: | --------------: | --------------------: |
 | Raw pool         | 61/75 (81%) | 64/75 (85%) |    64/75 (85%) |           +4 pp |                 0.508 |
 | Adjudicated pool | 62/75 (83%) | 66/75 (88%) |    65/75 (87%) |           +4 pp |                 0.453 |
 
 The current medium and hard strata are still too easy relative to the target
 bands. In the deterministic sample, no-memory passed 80% of medium scenarios
-and 60% of hard scenarios. That leaves too little failure surface for Lore to
+and 60% of hard scenarios. That leaves too little failure surface for Kennen to
 show measurable lift.
 
 ## Frontier Hard Calibration
@@ -183,7 +183,7 @@ Current evidence does not support:
 - A token reduction claim. Primary-agent cost is comparable, and prompt volume
   is not low enough to support a reduction claim from this sample.
 - A speed improvement claim. Summed phase elapsed time is higher for
-  `lore-full-loop`, likely because full-loop includes memory formation and
+  `kennen-full-loop`, likely because full-loop includes memory formation and
   wake-up work.
 
 ## Top-Up Policy

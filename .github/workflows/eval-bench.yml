@@ -2,11 +2,11 @@
 #
 # This workflow is Phase 1 scaffolding. As of the Phase 1 merge it is
 # NOT runnable on its declared `ubuntu-latest` runner: a hosted runner
-# has no `.lore.yaml` at the `LORE_BENCH_CONFIG_ROOT` path, no `codex`
+# has no `.kennen.yaml` at the `KENNEN_BENCH_CONFIG_ROOT` path, no `codex`
 # CLI, and no `claude` CLI installed, and the `longmemeval.yaml` suite
-# it bootstraps uses `lore-mine` ingestion which depends on both. The
+# it bootstraps uses `kennen-mine` ingestion which depends on both. The
 # Phase 1 bench scored 0% across every configured strategy because
-# Lore's retrieval surface depends on agent-curated enrichment that
+# Kennen's retrieval surface depends on agent-curated enrichment that
 # raw-transcript ingestion doesn't populate (see `docs/evals.md`
 # "Agent retrieval strategies"). Until Phase 2 (#604) lands the
 # `simulated-autosave` strategy that produces a meaningful Zep-
@@ -14,7 +14,7 @@
 # gating on — hardening the workflow now is premature work.
 #
 # Phase 2 follow-up: configure a self-hosted runner image (or hosted-
-# runner provisioning script) that supplies `.lore.yaml` from a secret
+# runner provisioning script) that supplies `.kennen.yaml` from a secret
 # payload, pins the `codex` + `claude` CLI versions, and switches the
 # suite path to whichever surface produces the publishable headline
 # (likely `longmemeval-wake-up.yaml` or `longmemeval-simulated-
@@ -93,12 +93,12 @@ jobs:
         if: steps.baseline-mode.outputs.mode == 'bootstrap'
         id: run-bootstrap
         env:
-          LORE_EVAL_BENCH_REAL: "1"
-          LORE_EVAL_BENCH_MAX_USD: "100"
-          LORE_BENCH_NOTION_TOKEN: ${{ secrets.LORE_BENCH_NOTION_TOKEN }}
-          LORE_BENCH_OPENAI_API_KEY: ${{ secrets.LORE_BENCH_OPENAI_API_KEY }}
-          LORE_BENCH_CONFIG_ROOT: ${{ secrets.LORE_BENCH_CONFIG_ROOT }}
-          LORE_BENCH_SANDBOX_PROJECT_NAME: ${{ secrets.LORE_BENCH_SANDBOX_PROJECT_NAME }}
+          KENNEN_EVAL_BENCH_REAL: "1"
+          KENNEN_EVAL_BENCH_MAX_USD: "100"
+          KENNEN_BENCH_NOTION_TOKEN: ${{ secrets.KENNEN_BENCH_NOTION_TOKEN }}
+          KENNEN_BENCH_OPENAI_API_KEY: ${{ secrets.KENNEN_BENCH_OPENAI_API_KEY }}
+          KENNEN_BENCH_CONFIG_ROOT: ${{ secrets.KENNEN_BENCH_CONFIG_ROOT }}
+          KENNEN_BENCH_SANDBOX_PROJECT_NAME: ${{ secrets.KENNEN_BENCH_SANDBOX_PROJECT_NAME }}
           ARTIFACT_OUT: evals/results/bench-${{ github.sha }}.json
         run: |
           node dist/cli.js eval run \
@@ -110,12 +110,12 @@ jobs:
         if: steps.baseline-mode.outputs.mode == 'comparison'
         id: run-comparison
         env:
-          LORE_EVAL_BENCH_REAL: "1"
-          LORE_EVAL_BENCH_MAX_USD: "100"
-          LORE_BENCH_NOTION_TOKEN: ${{ secrets.LORE_BENCH_NOTION_TOKEN }}
-          LORE_BENCH_OPENAI_API_KEY: ${{ secrets.LORE_BENCH_OPENAI_API_KEY }}
-          LORE_BENCH_CONFIG_ROOT: ${{ secrets.LORE_BENCH_CONFIG_ROOT }}
-          LORE_BENCH_SANDBOX_PROJECT_NAME: ${{ secrets.LORE_BENCH_SANDBOX_PROJECT_NAME }}
+          KENNEN_EVAL_BENCH_REAL: "1"
+          KENNEN_EVAL_BENCH_MAX_USD: "100"
+          KENNEN_BENCH_NOTION_TOKEN: ${{ secrets.KENNEN_BENCH_NOTION_TOKEN }}
+          KENNEN_BENCH_OPENAI_API_KEY: ${{ secrets.KENNEN_BENCH_OPENAI_API_KEY }}
+          KENNEN_BENCH_CONFIG_ROOT: ${{ secrets.KENNEN_BENCH_CONFIG_ROOT }}
+          KENNEN_BENCH_SANDBOX_PROJECT_NAME: ${{ secrets.KENNEN_BENCH_SANDBOX_PROJECT_NAME }}
           ARTIFACT_OUT: evals/results/bench-${{ github.sha }}.json
         run: |
           node dist/cli.js eval run \

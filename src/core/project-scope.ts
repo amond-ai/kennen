@@ -4,7 +4,7 @@
 
 import type { Project } from "../types.js"
 import type { ProjectNameResolution } from "./project.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
 
 export interface FormatUnresolvedProjectScopeErrorOptions {
   archivedHint?: string
@@ -83,7 +83,7 @@ export function formatUnresolvedProjectScopeError(
   return messages.join(" ")
 }
 
-export class TransientProjectResolutionError extends LoreError<"transient-project-resolution"> {
+export class TransientProjectResolutionError extends KennenError<"transient-project-resolution"> {
   readonly code = "transient_project_resolution"
   readonly retryable = true
   readonly names: readonly string[]

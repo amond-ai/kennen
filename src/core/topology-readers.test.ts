@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import type { Client } from "@notionhq/client"
 import { buildUpstreamVaultBundles } from "./topology-readers.js"
-import type { LoreConfig, Vault } from "../types.js"
+import type { KennenConfig, Vault } from "../types.js"
 
 // Stub the SDK-touching vault preflight so the per-upstream load
 // path can be exercised without actual Notion calls. Mirrors the
@@ -68,12 +68,12 @@ const fakeClient = makeFakeClient()
 
 describe("buildUpstreamVaultBundles", () => {
   it("returns [] when no upstreams are configured", () => {
-    const config: LoreConfig = { vault: { pageId: "primary" } }
+    const config: KennenConfig = { vault: { pageId: "primary" } }
     expect(buildUpstreamVaultBundles(fakeClient, config)).toEqual([])
   })
 
   it("returns one bundle per upstream, sorted by priority ascending", () => {
-    const config: LoreConfig = {
+    const config: KennenConfig = {
       vault: { pageId: "primary" },
       upstreamVaults: [
         { name: "Slow", pageId: "slow", priority: 100 },
@@ -138,13 +138,13 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(b).toBe(c)
   })
 
-  it("returns null and captures lastError on load failure (LORE_DEBUG=1 stderr emission)", async () => {
+  it("returns null and captures lastError on load failure (KENNEN_DEBUG=1 stderr emission)", async () => {
     verifyVaultDatabasesMock.mockImplementationOnce(async () => {
       throw new Error("upstream page not accessible")
     })
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const originalDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const originalDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
 
     // Use a real UUID-shape page id so the `redactDebugMessage`
     // page-id scrubber actually fires. The previous test used
@@ -166,27 +166,27 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(readers).toBeNull()
     expect(bundle.lastError).toContain("upstream page not accessible")
     // Single stderr emission for the upstream-unavailable warning
-    // (gated on LORE_DEBUG=1 — see the stderr-write call site).
+    // (gated on KENNEN_DEBUG=1 — see the stderr-write call site).
     expect(stderrSpy).toHaveBeenCalledTimes(1)
     const emitted = String(stderrSpy.mock.calls[0]?.[0])
     expect(emitted).toContain("upstream-vault-unavailable")
     expect(emitted).toContain("BrokenTeam")
     // The whole line is routed through `redactDebugMessage` — the
     // configured page id MUST be replaced with the `<page-id>`
-    // sentinel even though `LORE_DEBUG` is set.
+    // sentinel even though `KENNEN_DEBUG` is set.
     expect(emitted).not.toContain("deadbeef-cafe-4abc-9def-123456789abc")
     expect(emitted).toContain("<page-id>")
 
     stderrSpy.mockRestore()
-    if (originalDebug === undefined) delete process.env["LORE_DEBUG"]
-    else process.env["LORE_DEBUG"] = originalDebug
+    if (originalDebug === undefined) delete process.env["KENNEN_DEBUG"]
+    else process.env["KENNEN_DEBUG"] = originalDebug
   })
 
-  it("does not emit to stderr when LORE_DEBUG is unset (recon-class page id gating)", async () => {
+  it("does not emit to stderr when KENNEN_DEBUG is unset (recon-class page id gating)", async () => {
     // PR #589 review nit: wake-up runs on every session start, so
     // the upstream-unavailable stderr line stays silent by default.
-    // Operators retrying triage re-run with `LORE_DEBUG=1`. Note
-    // that even under `LORE_DEBUG=1` the page id itself is
+    // Operators retrying triage re-run with `KENNEN_DEBUG=1`. Note
+    // that even under `KENNEN_DEBUG=1` the page id itself is
     // redacted to `<page-id>` via `redactDebugMessage` — see the
     // matching test above for that assertion. This test pins the
     // outer gate; the inner redaction is asserted separately.
@@ -194,8 +194,8 @@ describe("UpstreamVaultBundle.loadReaders", () => {
       throw new Error("upstream page not accessible")
     })
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const originalDebug = process.env["LORE_DEBUG"]
-    delete process.env["LORE_DEBUG"]
+    const originalDebug = process.env["KENNEN_DEBUG"]
+    delete process.env["KENNEN_DEBUG"]
 
     const bundles = buildUpstreamVaultBundles(fakeClient, {
       vault: { pageId: "primary" },
@@ -210,7 +210,7 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(stderrSpy).not.toHaveBeenCalled()
 
     stderrSpy.mockRestore()
-    if (originalDebug !== undefined) process.env["LORE_DEBUG"] = originalDebug
+    if (originalDebug !== undefined) process.env["KENNEN_DEBUG"] = originalDebug
   })
 
   it("does not re-load or re-emit the stderr warning on subsequent loadReaders calls after a failure (cached failure sentinel)", async () => {
@@ -224,8 +224,8 @@ describe("UpstreamVaultBundle.loadReaders", () => {
       throw new Error("upstream page not accessible")
     })
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const originalDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const originalDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
 
     const bundles = buildUpstreamVaultBundles(fakeClient, {
       vault: { pageId: "primary" },
@@ -242,8 +242,8 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(bundle.lastError).toContain("upstream page not accessible")
 
     stderrSpy.mockRestore()
-    if (originalDebug === undefined) delete process.env["LORE_DEBUG"]
-    else process.env["LORE_DEBUG"] = originalDebug
+    if (originalDebug === undefined) delete process.env["KENNEN_DEBUG"]
+    else process.env["KENNEN_DEBUG"] = originalDebug
     verifyVaultDatabasesMock.mockReset()
   })
 
@@ -328,10 +328,10 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(readers!.memories.getScopeContext()).toEqual({})
   })
 
-  it("emits a LORE_DEBUG=1 stderr line when the scope-column probe fails (post-#591 observability)", async () => {
+  it("emits a KENNEN_DEBUG=1 stderr line when the scope-column probe fails (post-#591 observability)", async () => {
     // PR #591 round-3 review: `probeUpstreamScopeColumns` used to
     // swallow probe errors silently. Surface them under
-    // `LORE_DEBUG=1` so operators triaging
+    // `KENNEN_DEBUG=1` so operators triaging
     // "why does this upstream surface narrow-scope rows" can see
     // whether the probe was bypassed via conservative fall-back.
     const client = makeFakeClient({
@@ -340,8 +340,8 @@ describe("UpstreamVaultBundle.loadReaders", () => {
       },
     })
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const originalDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const originalDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
 
     const bundles = buildUpstreamVaultBundles(client, {
       vault: { pageId: "primary" },
@@ -360,11 +360,11 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(emitted).toContain("transient 503 from notion")
 
     stderrSpy.mockRestore()
-    if (originalDebug === undefined) delete process.env["LORE_DEBUG"]
-    else process.env["LORE_DEBUG"] = originalDebug
+    if (originalDebug === undefined) delete process.env["KENNEN_DEBUG"]
+    else process.env["KENNEN_DEBUG"] = originalDebug
   })
 
-  it("does NOT emit a probe-failure stderr line when LORE_DEBUG is unset", async () => {
+  it("does NOT emit a probe-failure stderr line when KENNEN_DEBUG is unset", async () => {
     // Mirror of the upstream-vault-unavailable gate: probe
     // failures stay silent by default to keep wake-up's hot path
     // quiet. The conservative fall-back posture (filter stays
@@ -376,8 +376,8 @@ describe("UpstreamVaultBundle.loadReaders", () => {
       },
     })
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const originalDebug = process.env["LORE_DEBUG"]
-    delete process.env["LORE_DEBUG"]
+    const originalDebug = process.env["KENNEN_DEBUG"]
+    delete process.env["KENNEN_DEBUG"]
 
     const bundles = buildUpstreamVaultBundles(client, {
       vault: { pageId: "primary" },
@@ -389,6 +389,6 @@ describe("UpstreamVaultBundle.loadReaders", () => {
     expect(stderrSpy).not.toHaveBeenCalled()
 
     stderrSpy.mockRestore()
-    if (originalDebug !== undefined) process.env["LORE_DEBUG"] = originalDebug
+    if (originalDebug !== undefined) process.env["KENNEN_DEBUG"] = originalDebug
   })
 })

@@ -32,7 +32,7 @@ describe("profileCommand", () => {
   let errorSpy: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-profile-cli-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-profile-cli-"))
     vi.mocked(initServices).mockReset()
     logSpy = vi.fn()
     errorSpy = vi.fn()
@@ -46,7 +46,7 @@ describe("profileCommand", () => {
   })
 
   it("resolves a bare profile name through normal priority order", async () => {
-    const localDir = join(workDir, ".lore", "profiles", "local", "default", "1.0.0")
+    const localDir = join(workDir, ".kennen", "profiles", "local", "default", "1.0.0")
     writeFiles(localDir, minimalProfileFiles("default"))
     vi.mocked(initServices).mockResolvedValue({
       configRoot: workDir,
@@ -61,9 +61,16 @@ describe("profileCommand", () => {
   })
 
   it("rejects profile set when the resolved bundle is not loadable", async () => {
-    const configPath = join(workDir, ".lore.yaml")
+    const configPath = join(workDir, ".kennen.yaml")
     writeFileSync(configPath, "vault:\n  pageId: vault-page-id\n")
-    const installedDir = join(workDir, ".lore", "profiles", "installed", "sales", "1.0.0")
+    const installedDir = join(
+      workDir,
+      ".kennen",
+      "profiles",
+      "installed",
+      "sales",
+      "1.0.0"
+    )
     writeFiles(installedDir, minimalProfileFiles("support", "1.0.0"))
     vi.spyOn(process, "cwd").mockReturnValue(workDir)
     const exitTrap = trapProcessExit()

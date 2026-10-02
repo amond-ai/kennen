@@ -1,10 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-# Lore auto-save hook for Claude Code and Codex
+# Kennen auto-save hook for Claude Code and Codex
 #
 # Fires on: Stop event.
-# Registration lives in the assistant-specific config written by `lore install`.
+# Registration lives in the assistant-specific config written by `kennen install`.
 #
 # Stop: sync, stdout passthrough for blocking decisions.
 
@@ -17,7 +17,7 @@ if [ -z "$CONTENT" ]; then
   exit 0
 fi
 
-export LORE_AUTOSAVE_CONTENT="$CONTENT"
+export KENNEN_AUTOSAVE_CONTENT="$CONTENT"
 
 # Sync execution — stdout passthrough for blocking decisions
 node "$SCRIPT_DIR/../dist/hooks/helpers.js" autosave

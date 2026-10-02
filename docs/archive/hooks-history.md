@@ -16,7 +16,7 @@ Background-agent configurability was introduced under issue #194. The historical
 default stayed `claude -p` with the original Claude-shaped args so Claude Code
 installs kept byte-for-byte behavior unless operators opted into another
 background agent. Codex support later used the installer-provided
-`LORE_AGENT_NAME=Codex` marker to select the Codex preset automatically.
+`KENNEN_AGENT_NAME=Codex` marker to select the Codex preset automatically.
 
 The schema drift marker was added during the 0.6.0 line to debounce
 `VaultManager.load` drift checks by config root.
@@ -29,7 +29,7 @@ background process so the user's next turn can start immediately.
 
 ## Auth Forwarding Evolution
 
-The hook env allowlist used to forward only the three Lore-namespaced legacy
+The hook env allowlist used to forward only the three Kennen-namespaced legacy
 keys. The current `RUNTIME_FORWARDED_KEYS` allowlist also forwards canonical
 Notion token, workspace, base-URL, and attribution variables so foreground CLI
 runs, host-spawned MCP children, and hook workers target the same Notion
@@ -64,5 +64,5 @@ wake-up surfaces stay aligned.
 
 Active SessionEnd registration was removed in the 0.6.0 line. The
 `session-end` helper action remains as an exit-0 shim for stale settings that
-still invoke `hooks/session-end.sh`; reinstalling Lore removes those stale
+still invoke `hooks/session-end.sh`; reinstalling Kennen removes those stale
 entries from Claude Code settings.

@@ -216,7 +216,7 @@ describe("searchCommand", () => {
   it("exits non-zero and surfaces stderr when memories.search itself throws (catch-all)", async () => {
     // Distinct from the project-resolution-throws path: this is the bare
     // "Notion call inside the action body raised" branch — operators rely
-    // on a non-zero exit code so `if ! lore search ...; then` shell
+    // on a non-zero exit code so `if ! kennen search ...; then` shell
     // integrations fail fast rather than treat an outage as no-results.
     const search = vi.fn().mockRejectedValue(new Error("notion 503: gateway"))
     vi.mocked(initServices).mockResolvedValue({

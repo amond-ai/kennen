@@ -28,7 +28,7 @@ Each failing row gets exactly one primary bucket:
 - `prompt-ambiguity`: the task wording permits multiple incompatible readings.
 - `infra-error`: checkout, build cache, local trust, network, model invocation,
   or timeout failure prevented a trustworthy implementation attempt.
-- `memory-system-failure`: the lore condition did not make the required memory
+- `memory-system-failure`: the kennen condition did not make the required memory
   available because formation, mining, wake-up, or retrieval failed.
 
 ## Adjudicate As Pass
@@ -58,22 +58,22 @@ Do not adjudicate; rerun or exclude when any are true:
 - The prompt or verifier ambiguity prevents a confident behavior judgment.
 - The repair changes scenario semantics, prompt text, workspace SHA, seeded
   context, or base-vault contents.
-- A `seeded-lore` row did not actually receive its pre-seeded context because of
+- A `seeded-kennen` row did not actually receive its pre-seeded context because of
   setup error.
 - An external Notion, network, auth, or local harness failure prevented
-  `lore-full-loop` from attempting formation or wake-up.
+  `kennen-full-loop` from attempting formation or wake-up.
 - The row would require condition-aware assumptions to score.
 
 Reruns of a scenario replace the previous row for that `scenarioId|condition`;
 they are never counted as independent samples.
 
-Do not exclude `lore-full-loop` rows merely because Lore failed to form,
+Do not exclude `kennen-full-loop` rows merely because Kennen failed to form,
 retrieve, or surface the expected memory. Those misses are product behavior
 under test, but expected-context matching remains diagnostic: it can explain a
 verifier failure, but it does not turn a verifier-passing task into a failure.
-Formation or wake-up phase errors still count as `lore-full-loop` failures
+Formation or wake-up phase errors still count as `kennen-full-loop` failures
 unless they were caused by external infrastructure or harness setup outside
-Lore's normal behavior.
+Kennen's normal behavior.
 
 ## Blinding
 
@@ -100,10 +100,10 @@ no-memory calibration places the scenario in the intended band.
 
 ## Reporting
 
-Primary correctness uses paired `lore-full-loop` vs `no-memory` comparisons
+Primary correctness uses paired `kennen-full-loop` vs `no-memory` comparisons
 with exact McNemar tests on discordant scenario pairs. Token and elapsed-time
 claims use paired deltas with bootstrap confidence intervals and must separate
-primary-agent cost from lore-owned background mining cost.
+primary-agent cost from kennen-owned background mining cost.
 
 Cost-capped or manually stopped runs are incomplete by default. They may be
 reported only as calibration evidence or as a clearly labeled complete-pair

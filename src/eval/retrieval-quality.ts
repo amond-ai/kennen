@@ -6,8 +6,8 @@ import { parse as parseYaml } from "yaml"
 import { z } from "zod"
 import { MemoryService } from "../core/memory.js"
 import { resolveProjectByName } from "../core/project-scope.js"
-import { defaultFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
-import { initServices, type LoreServices } from "../services.js"
+import { defaultFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
+import { initServices, type KennenServices } from "../services.js"
 import type { SearchExplain } from "../types.js"
 import { scoreRanking } from "./rank-metrics.js"
 
@@ -250,7 +250,7 @@ export interface RetrievalQualityLaneRunnerInput {
   suite: RetrievalQualitySuite
   case: RetrievalQualityCase
   lane: RetrievalQualityLane
-  services: LoreServices
+  services: KennenServices
   projectId: string
 }
 
@@ -261,7 +261,7 @@ export type RetrievalQualityLaneRunner = (
 export interface RunRetrievalQualityOptions {
   outPath?: string
   now?: Date
-  servicesFactory?: () => Promise<LoreServices>
+  servicesFactory?: () => Promise<KennenServices>
   laneRunner?: RetrievalQualityLaneRunner
 }
 
@@ -614,9 +614,9 @@ export function validateRetrievalQualityMechanism(
 }
 
 function featuresForRetrievalQualityLane(
-  base: LoreFeatureFlags | undefined,
+  base: KennenFeatureFlags | undefined,
   lane: RetrievalQualityLane
-): LoreFeatureFlags {
+): KennenFeatureFlags {
   const features = cloneFeatureFlags(base ?? defaultFeatureFlags())
   if (lane === "runtool-ai") {
     features.runTool.enabled = true
@@ -628,7 +628,7 @@ function featuresForRetrievalQualityLane(
   return features
 }
 
-function cloneFeatureFlags(features: LoreFeatureFlags): LoreFeatureFlags {
+function cloneFeatureFlags(features: KennenFeatureFlags): KennenFeatureFlags {
   return {
     ...features,
     runTool: { ...features.runTool },
@@ -736,14 +736,14 @@ async function findRepoRoot(start: string): Promise<string> {
       const parsed = JSON.parse(await readFile(packageJsonPath, "utf-8")) as {
         name?: unknown
       }
-      if (parsed.name === "@notionhq/lore") return dir
+      if (parsed.name === "@amond-ai/kennen") return dir
     } catch {
       // Keep walking. Missing and unrelated package.json files are both non-roots.
     }
     const parent = dirname(dir)
     if (parent === dir || dir === parse(dir).root) {
       throw new Error(
-        `Could not find @notionhq/lore package root from ${start}; pass --out to choose an artifact path.`
+        `Could not find @amond-ai/kennen package root from ${start}; pass --out to choose an artifact path.`
       )
     }
     dir = parent

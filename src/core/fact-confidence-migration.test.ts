@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { Fact, Project } from "../types.js"
 import {
   runBuildFactConfidenceScoresMigration,
@@ -92,7 +92,7 @@ function makeServices(args: FakeServicesArgs) {
     projects: {
       findByName: findByNameSpy,
     },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
   return { services, listSpy, applySpy, findByNameSpy }
 }
 

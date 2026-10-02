@@ -3,7 +3,7 @@
  *
  * The lock file records a PID; a "released" lock is one whose PID is no
  * longer running. These tests exercise acquire/overlap/staleness directly
- * against `$TMPDIR/lore-hook-state/` using the current process PID (always
+ * against `$TMPDIR/kennen-hook-state/` using the current process PID (always
  * alive) and a synthetic dead PID.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -21,8 +21,8 @@ import {
 // module imports run before top-level statements, so a plain assignment
 // would pin STATE_DIR before it took effect.
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-lock-test-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-lock-test-${process.pid}-${Date.now()}`
 })
 
 import {

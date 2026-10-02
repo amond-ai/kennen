@@ -3,7 +3,7 @@
  *
  * `deriveAgentName` infers the saving agent from runtime
  * markers — `CLAUDECODE=1`, `CLAUDE_CODE_*` env vars, or an explicit
- * `LORE_AGENT_NAME` override. The inference path has produced eight different
+ * `KENNEN_AGENT_NAME` override. The inference path has produced eight different
  * spellings of the same Claude Code instance in the wild (`Claude Code`,
  * `claude-code`, `Claude Opus 4.7 (1M context)`, `claude-opus-4-7`, …),
  * fragmenting the `Agent` column on saved memories so per-agent grouping,
@@ -13,13 +13,13 @@
  * `canonicalizeAgentName` collapses every observed Claude variant onto the
  * single canonical string `"Claude Code"`. Anything that doesn't match the
  * Claude pattern — including third-party names like `Codex`, `Cline`, or
- * `Cursor` set explicitly via `LORE_AGENT_NAME` — is returned unchanged so
+ * `Cursor` set explicitly via `KENNEN_AGENT_NAME` — is returned unchanged so
  * the explicit-over-inferred contract from PF1-04 stays intact.
  *
  * This module is the canonical-table source for both:
  * - the write-time wrap inside `deriveAgentName` (so new memories never
  *   re-fragment), and
- * - the `lore migrate --normalize-agents` backfill that rewrites historical
+ * - the `kennen migrate --normalize-agents` backfill that rewrites historical
  *   Agent strings to their canonical form.
  */
 
@@ -38,7 +38,7 @@
  *
  * Adding entries: only when a new *default-detection* variant appears in the
  * wild (i.e. another Claude string we ourselves produce). Third-party
- * integrations carry their own `LORE_AGENT_NAME` and should not be added —
+ * integrations carry their own `KENNEN_AGENT_NAME` and should not be added —
  * the explicit-override path is their canonical source.
  *
  * **Future Anthropic model families.** This regex is deliberately scoped
@@ -57,7 +57,7 @@
  *   2. Pin the new variants under both the
  *      collapsing-set and the no-over-match block (e.g. `claude sonnet`
  *      without a version stays passthrough — same rule as `claude opus`).
- *   3. Re-run `lore migrate --normalize-agents --dry-run` against the
+ *   3. Re-run `kennen migrate --normalize-agents --dry-run` against the
  *      production vault to surface the new variant counts; document the
  *      observed spellings in this comment so the next maintainer has the
  *      same audit trail.
@@ -85,7 +85,7 @@ export const CANONICAL_CLAUDE_CODE = "Claude Code"
  * (`Codex`, `Cline`, `Cursor`, …) pass through by design so the PF1-04
  * explicit-over-inferred contract stays intact. Do not extend this
  * function with non-Claude rules — those belong on the integrator's
- * `LORE_AGENT_NAME` setup, not here.
+ * `KENNEN_AGENT_NAME` setup, not here.
  *
  * - The seven internal-vault Claude variants from the PF3-02 audit, plus the
  *   bare-version eighth (`Claude Opus 4.7` without a parenthetical),

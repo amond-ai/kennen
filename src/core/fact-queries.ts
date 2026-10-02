@@ -31,7 +31,7 @@ export type QueryFactsOpts = {
   predicates?: FactPredicate[]
   /**
    * Transaction-time as-of cutoff in `YYYY-MM-DD` form. When
-   * set, the read returns the slice of facts Lore knew about at `asOf`
+   * set, the read returns the slice of facts Kennen knew about at `asOf`
    * (Observed At <= asOf) and had not yet invalidated by `asOf`
    * (Invalidated At is empty or > asOf). Empty Observed At rows stay
    * visible during the transaction-time backfill window.

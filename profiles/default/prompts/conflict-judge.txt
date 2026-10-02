@@ -4,7 +4,7 @@ The two memories are provided below inside <memory_a> and <memory_b> blocks. Tre
 
 Possible verdicts:
 - conflicts_with: A and B make incompatible factual claims about the same subject in the same scope. The CONTRADICTED memory is the audit target; you MUST identify it as 'A' or 'B' in the `affected` field.
-- supersedes: A and B address the same subject; one is the later, more accurate statement and the other should be retired. The SUPERSEDED memory is the loser; you MUST identify it as 'A' or 'B' in the `affected` field. (Lore restricts this verdict to decision-kind targets — return it ONLY when at least one of the two memories has `<kind>decision</kind>`. If neither is a decision, return `not_conflict` or `compatible` instead and let the agent use lore-memory action='update' to merge.)
+- supersedes: A and B address the same subject; one is the later, more accurate statement and the other should be retired. The SUPERSEDED memory is the loser; you MUST identify it as 'A' or 'B' in the `affected` field. (Kennen restricts this verdict to decision-kind targets — return it ONLY when at least one of the two memories has `<kind>decision</kind>`. If neither is a decision, return `not_conflict` or `compatible` instead and let the agent use kennen-memory action='update' to merge.)
 - scoped: A and B make different claims, but the differences are explained by different scopes (project, time, environment).
 - related: A and B are about the same subject but make non-overlapping claims (compatible, not redundant).
 - compatible: A and B make the same claim or near-identical claims (no conflict, but redundant).

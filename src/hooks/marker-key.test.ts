@@ -210,7 +210,7 @@ describe("marker-key", () => {
 
   describe("hook state modes", () => {
     it("creates async hook state dirs and files private even under umask 000", async () => {
-      const root = await mkdtemp(join(tmpdir(), "lore-marker-key-mode-"))
+      const root = await mkdtemp(join(tmpdir(), "kennen-marker-key-mode-"))
       try {
         await withUmask(0o000, async () => {
           const stateDir = join(root, "state")
@@ -228,7 +228,7 @@ describe("marker-key", () => {
     })
 
     it("creates sync hook state dirs and files private even under umask 000", () => {
-      const root = mkdtempSync(join(tmpdir(), "lore-marker-key-mode-"))
+      const root = mkdtempSync(join(tmpdir(), "kennen-marker-key-mode-"))
       try {
         withUmaskSync(0o000, () => {
           const stateDir = join(root, "state")
@@ -248,7 +248,7 @@ describe("marker-key", () => {
     })
 
     it("chmods existing sync-opened hook state files after truncating", () => {
-      const root = mkdtempSync(join(tmpdir(), "lore-marker-key-mode-"))
+      const root = mkdtempSync(join(tmpdir(), "kennen-marker-key-mode-"))
       try {
         const stateDir = join(root, "state")
         ensureHookStateDirSync(stateDir)

@@ -14,7 +14,7 @@ judge:
   recallPrompt: evals/prompts/longmemeval-judge.txt
   abstentionPrompt: evals/prompts/longmemeval-judge-abstention.txt
 ingestion:
-  strategy: lore-mine
+  strategy: kennen-mine
   memoryCaptureMode: conversational
 caps:
   perExampleWrites: 500

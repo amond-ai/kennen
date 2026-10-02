@@ -1,7 +1,7 @@
 /**
  * Fact HTML-entity decode migration.
  *
- * Companion to `topic-merge.ts:fixTopicEncoding` for the Facts DB. `lore migrate
+ * Companion to `topic-merge.ts:fixTopicEncoding` for the Facts DB. `kennen migrate
  * --fix-fact-encoding` uses the functions in this module to scan every fact,
  * flag rows whose `Subject` or `Object` differ from their entity-decoded form,
  * and rewrite both fields (plus `DedupKey`) in a single `pages.update` per row.
@@ -9,7 +9,7 @@
  * The extra beat over the topic flow is the **collision gate**: the decoded
  * triple changes the dedup key, so if another live row already occupies the
  * post-decode key the rewrite would silently introduce a duplicate. The gate
- * refuses to apply until `lore migrate --dedup-keys --merge --yes` has
+ * refuses to apply until `kennen migrate --dedup-keys --merge --yes` has
  * collapsed the pre-existing duplicate, matching the posture
  * `--fix-topic-encoding` / `--merge-duplicate-topics` uses.
  */

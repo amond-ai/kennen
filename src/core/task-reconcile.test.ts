@@ -780,6 +780,6 @@ describe("formatReconcileOutput", () => {
     expect(rendered).toContain('### 1. Task t-abc — "Track PR-1234" [in-progress')
     expect(rendered).toContain("Best match: memory m-xyz")
     expect(rendered).toContain('Cue: "')
-    expect(rendered).toContain("Close: lore-task({ action: 'close', taskId: 't-abc' })")
+    expect(rendered).toContain("Close: kennen-task({ action: 'close', taskId: 't-abc' })")
   })
 })

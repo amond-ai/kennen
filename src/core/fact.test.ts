@@ -1634,7 +1634,7 @@ describe("FactService.createWithDedup", () => {
   })
 
   it("issues no update when caller omits entity ids on a legacy row", async () => {
-    // Legacy `lore-fact action='create'` paths (decision-graph helpers,
+    // Legacy `kennen-fact action='create'` paths (decision-graph helpers,
     // pre-PF3-01 callers) don't pass entity ids. The dedup hit must
     // remain a no-op when nothing else changed.
     client.dataSources.query.mockResolvedValueOnce({
@@ -1881,7 +1881,7 @@ describe("FactService.createWithDedup — SubjectKey write", () => {
   it("computes SubjectKey from the decoded subject so encoded inputs canonicalize consistently", async () => {
     // Pre-PF1-06 inputs sometimes arrive doubly-HTML-encoded. The decode
     // happens at the write boundary, so SubjectKey must be derived from
-    // the post-decode value — otherwise `lore-ask("Foo & Bar")` would
+    // the post-decode value — otherwise `kennen-ask("Foo & Bar")` would
     // miss the row written from `Foo &amp;amp; Bar`.
     const client = createMockClient()
     client.dataSources.query.mockResolvedValueOnce({
@@ -1910,7 +1910,7 @@ describe("FactService.createWithDedup — SubjectKey write", () => {
 describe("FactService.queryBySubject — case-insensitive match", () => {
   it("issues an OR(SubjectKey contains, Subject contains) filter when given a non-empty subject", async () => {
     // The two-clause OR is the migration-period contract: SubjectKey
-    // catches every row backfilled by `lore migrate --dedup-keys` (P3-03
+    // catches every row backfilled by `kennen migrate --dedup-keys` (P3-03
     // Part A's primary path), while the Subject fallback keeps
     // pre-migration rows reachable until the backfill lands. Both
     // clauses must use `contains` so partial-match semantics carry over
@@ -1942,8 +1942,8 @@ describe("FactService.queryBySubject — case-insensitive match", () => {
   })
 
   it("normalizes case-variant queries to the same SubjectKey filter value", async () => {
-    // The bug P3-03 closes: `lore-ask("MemoryService")` and
-    // `lore-ask("memoryservice")` must reach the same fact set. The
+    // The bug P3-03 closes: `kennen-ask("MemoryService")` and
+    // `kennen-ask("memoryservice")` must reach the same fact set. The
     // service-side filter normalizes the input, so both calls hit the
     // same SubjectKey contains value.
     const { client: c1, calls: cs1 } = createClient([{ results: [] }])
@@ -2003,7 +2003,7 @@ describe("FactService.queryBySubject — case-insensitive match", () => {
     // or a whitespace-only string normalizes to `""`. Notion's
     // `rich_text contains ""` matches every populated SubjectKey row, so
     // a naive `OR(SubjectKey contains norm, Subject contains raw)` would
-    // silently turn `lore-ask({entity: "."})` into "every fact in
+    // silently turn `kennen-ask({entity: "."})` into "every fact in
     // scope". Suppressing the SubjectKey clause when the normalized form
     // is empty preserves pre-P3-03 substring semantics — the agent gets
     // the rows whose Subject literally contains the input, not the whole
@@ -2129,7 +2129,7 @@ describe("FactService.pageToFact — historical tracking-predicate filter", () =
 
   it("filters rows whose raw Predicate value is needs_action / waiting_on / blocked_by", async () => {
     // Tracking predicates were removed from `FactPredicate` in 0.6.0
-    // (`lore-task` is the canonical surface for tracked work). Notion
+    // (`kennen-task` is the canonical surface for tracked work). Notion
     // rows still carry those select values on legacy vaults — the
     // schema is additive-only — so the deserialization boundary
     // filters them so no live read path surfaces them as a `Fact`.
@@ -2168,8 +2168,8 @@ describe("FactService.pageToFact — historical tracking-predicate filter", () =
     expect(items.map((f) => f.id)).toEqual(["knowledge-fact"])
   })
 
-  it("filters tracking rows from queryByEntity (lore-query action='ask')", async () => {
-    // `handleAsk` (`lore-query action='ask'`) routes through
+  it("filters tracking rows from queryByEntity (kennen-query action='ask')", async () => {
+    // `handleAsk` (`kennen-query action='ask'`) routes through
     // `queryByEntity`, which fans out to `queryBySubject` +
     // `queryByObject` on the pre-PF3-01 fallback path. A tracking-
     // predicate row pointing at the queried entity must not appear in
@@ -2498,7 +2498,7 @@ describe("FactService.queryByEntity — limit clamp and post-dedup slice (issue 
   // Issue 01 clamped `page_size` on the other three retrieval methods
   // (queryBySubject, queryByObject, queryBySourceMemory). queryByEntity
   // is the fourth in that family and previously had no `limit` knob, so
-  // every `lore-ask` against an entity walked both internal branches to
+  // every `kennen-ask` against an entity walked both internal branches to
   // exhaustion at page_size: 100 even when the surfacing layer rendered
   // only the top N. These tests pin: (1) the per-branch page_size clamp,
   // (2) the post-dedup slice, and (3) that dedup priority is unchanged.
@@ -2768,7 +2768,7 @@ describe("FactService.queryByEntity — predicates option (issue 0.6.0/05)", () 
   it("applies a single-predicate equals clause server-side on the relation branch (entityId resolved)", async () => {
     // The relation branch dispatches both queryByEntityId and the
     // unbackfilled-text companion in parallel. Both must carry the
-    // predicate clause server-side so a downstream `lore-decision-context`
+    // predicate clause server-side so a downstream `kennen-decision-context`
     // doesn't over-fetch unrelated facts touching the same entity.
     const { client, calls } = createClient([{ results: [] }, { results: [] }])
     const service = new FactService(client, db)
@@ -2862,7 +2862,7 @@ describe("FactService.queryByEntity — predicates option (issue 0.6.0/05)", () 
 })
 
 describe("FactService.countByPredicateRaw (issue 0.6.0/24)", () => {
-  // Pre-issue: `lore status` had no signal that a vault still carried
+  // Pre-issue: `kennen status` had no signal that a vault still carried
   // the legacy tracking-predicate facts (`needs_action`, `waiting_on`,
   // `blocked_by`) that #23 will hide from the read path. The preflight
   // probe must keep counting those rows accurately AFTER #23 ships, so
@@ -3052,7 +3052,7 @@ describe("FactService.countByPredicateRaw (issue 0.6.0/24)", () => {
 
 describe("FactService.getById (issue 0.8.0/06)", () => {
   // Single-page lookup feeding the contradiction-decrement path on
-  // `lore-fact action='invalidate'`. Returns `Fact | null` with the
+  // `kennen-fact action='invalidate'`. Returns `Fact | null` with the
   // same null contract as `pageToFact` — historical tracking-predicate
   // rows surface as null so callers don't treat them as live facts.
 

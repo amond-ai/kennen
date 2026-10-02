@@ -9,7 +9,7 @@
  * The service writes only to the Memories DB — it never creates facts or
  * touches other databases. Graph coordination (auto-creating `decided_by` /
  * `supersedes_decision` facts) happens in the MCP tool layer, consistent with
- * how `lore-memory action='save'` orchestrates topics + memories at
+ * how `kennen-memory action='save'` orchestrates topics + memories at
  * the MCP boundary.
  */
 
@@ -41,7 +41,7 @@ import { hydrateMemoryRelationProperties, pageToMemory } from "./memory.js"
 import { LruCache } from "./cache.js"
 import { withEntityRelationLocks } from "./entity-relation-lock.js"
 import { validateRichTextMetadataFields } from "./rich-text-schema.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
 
 /** Days to push `Review By` forward when `reviewCompleted` is called with no explicit date. */
 const DEFAULT_REVIEW_EXTENSION_DAYS = 90
@@ -54,8 +54,8 @@ export interface OverdueDecisionWindow {
 /** Decision id → Decision cache. Shorter TTL than the project/topic
  *  name caches because decisions mutate (supersession, review-completion)
  *  more than project metadata. Cap is generous — decisions are numerous
- *  but access patterns are bursty around `lore-context action='wake-up'`
- *  and `lore-decision action='context'`. */
+ *  but access patterns are bursty around `kennen-context action='wake-up'`
+ *  and `kennen-decision action='context'`. */
 const DECISION_CACHE_TTL_MS = 30_000
 const DECISION_CACHE_MAX = 500
 
@@ -123,7 +123,7 @@ function decodeDecisionTextFields(input: CreateDecisionInput): DecodedDecisionTe
  * archived before this error is thrown; `cleanedUp` reports whether that
  * cleanup landed.
  */
-export class DecisionCreatePartialFailureError extends LoreError<"decision-create-partial"> {
+export class DecisionCreatePartialFailureError extends KennenError<"decision-create-partial"> {
   readonly pageId: string
   readonly cleanedUp: boolean
   readonly bodyWriteError: unknown
@@ -332,8 +332,8 @@ export class DecisionService {
    * markdown body. Archived rows are filtered client-side; when they occupy
    * result slots, the method keeps paginating until `limit` live rows are
    * collected or Notion is exhausted. This is the index tier that decision-path tools
-   * (`lore-decision action='list'`, `lore-context action='wake-up'`'s
-   * decisions section, `lore-query action='audit'`'s overdue decisions)
+   * (`kennen-decision action='list'`, `kennen-context action='wake-up'`'s
+   * decisions section, `kennen-query action='audit'`'s overdue decisions)
    * rely on for agent-ingestion performance.
    */
   async list(
@@ -434,8 +434,8 @@ export class DecisionService {
    * before acquisition, so two callers entering with `[target, loser_a]` and
    * `[target, loser_b]` cannot deadlock.
    *
-   * Lock scope: filesystem-backed under `$HOME/.lore/entity-relation-locks/`,
-   * so it serializes any lore CLI / MCP / hook process running as the same
+   * Lock scope: filesystem-backed under `$HOME/.kennen/entity-relation-locks/`,
+   * so it serializes any kennen CLI / MCP / hook process running as the same
    * user against the same vault on a single machine. Same posture as
    * `entity-merge` and `FactService.createWithDedup` — the same
    * Fact Write-Side Dedup concurrency notes apply here. Writes
@@ -452,7 +452,7 @@ export class DecisionService {
       // Pre-read eviction: `merged` is the writeback base, and a stale
       // cached `supersedesIds` would let us clobber supersessions added
       // elsewhere inside the TTL window. The lock above serializes other
-      // lore-process writers against this same id; this delete protects
+      // kennen-process writers against this same id; this delete protects
       // against an in-process getById cache hit returning a pre-write
       // value.
       this.idCache.delete(newId)
@@ -547,7 +547,7 @@ export class DecisionService {
     /**
      * Opt out of the default-scope filter so audit /
      * migration callers can see narrow-scope and expired rows. Both
-     * MCP `lore-query action='audit'` and the wake-up "Overdue for
+     * MCP `kennen-query action='audit'` and the wake-up "Overdue for
      * Review" section consume this method, so the gate keeps the
      * default `false`: a session-scoped overdue decision must not
      * leak to a different reader through these surfaces any more
@@ -575,7 +575,7 @@ export class DecisionService {
     // server-side narrows to broadcast + reader's narrow kinds (Notion's
     // 2-deep cap), client-side `matchesDefaultScope` threaded as
     // `collectLivePages.extraFilter` enforces the kind+key binding so
-    // a session-scoped overdue decision drops out of `lore-query
+    // a session-scoped overdue decision drops out of `kennen-query
     // action='audit'` and the wake-up "Overdue for Review" surface
     // for readers whose session id differs.
     const filter =

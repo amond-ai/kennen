@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { z } from "zod"
 import { recordNotionRead, recordNotionWrite } from "../core/cost-accounting.js"
 import { readLedgerEvents, resolveCostTracking } from "../core/cost-ledger.js"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { DecisionSummary, Fact, Memory, TaskSummary } from "../types.js"
 import {
   installCostTrackingToolWrapper,
@@ -45,19 +45,19 @@ type ToolConfig = {
 describe("MCP cost tracking", () => {
   const dirs: string[] = []
   const originalEnv = {
-    agentName: process.env["LORE_AGENT_NAME"],
-    sessionId: process.env["LORE_SESSION_ID"],
+    agentName: process.env["KENNEN_AGENT_NAME"],
+    sessionId: process.env["KENNEN_SESSION_ID"],
   }
 
   afterEach(() => {
     for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true })
-    restoreEnv("LORE_AGENT_NAME", originalEnv.agentName)
-    restoreEnv("LORE_SESSION_ID", originalEnv.sessionId)
+    restoreEnv("KENNEN_AGENT_NAME", originalEnv.agentName)
+    restoreEnv("KENNEN_SESSION_ID", originalEnv.sessionId)
     appendCostEventMock.mockClear()
   })
 
   it("runs disabled invocations without appending ledger rows or touching ledger files", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const ledgerPath = join(root, "state", "ledger.jsonl")
     const costTracking = resolveCostTracking(
@@ -67,13 +67,13 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     try {
       const result = await runMcpInvocationWithCostTracking(
         services,
-        "lore-memory",
+        "kennen-memory",
         { action: "save", title: "ignored while disabled" },
         async () => {
           recordNotionRead()
@@ -100,7 +100,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("records every registered MCP action enum value without a separate allowlist", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -109,7 +109,7 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     const mock = createMockServer()
 
     installCostTrackingToolWrapper(mock.server, services)
@@ -150,7 +150,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("logs serialized argument-envelope byte metrics without changing tool results", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -159,9 +159,9 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
-    process.env["LORE_AGENT_NAME"] = "TrustedAgent"
-    process.env["LORE_SESSION_ID"] = "trusted-session"
+    } as unknown as KennenServices
+    process.env["KENNEN_AGENT_NAME"] = "TrustedAgent"
+    process.env["KENNEN_SESSION_ID"] = "trusted-session"
     const args = {
       action: "save",
       projectName: "secret project scope",
@@ -173,7 +173,7 @@ describe("MCP cost tracking", () => {
 
     const result = await runMcpInvocationWithCostTracking(
       services,
-      "lore-memory",
+      "kennen-memory",
       args,
       async () => {
         recordNotionRead()
@@ -183,7 +183,7 @@ describe("MCP cost tracking", () => {
           costOutputs: { memoriesCreated: 1 },
         }
       },
-      actionSets({ "lore-memory": ["save"] })
+      actionSets({ "kennen-memory": ["save"] })
     )
 
     expect(result.content[0]!.text).toBe("visible response")
@@ -192,7 +192,7 @@ describe("MCP cost tracking", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]!.event).toMatchObject({
       eventType: "mcp.invocation",
-      tool: "lore-memory",
+      tool: "kennen-memory",
       action: "save",
       status: "success",
       payload: {
@@ -222,7 +222,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("scrubs and caps env-sourced metadata before writing ledger rows", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -231,13 +231,13 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
-    process.env["LORE_AGENT_NAME"] = `Agent\t${"A".repeat(10_000)}\ntrailing`
-    process.env["LORE_SESSION_ID"] = "\u2028session\tvalue\u009f"
+    } as unknown as KennenServices
+    process.env["KENNEN_AGENT_NAME"] = `Agent\t${"A".repeat(10_000)}\ntrailing`
+    process.env["KENNEN_SESSION_ID"] = "\u2028session\tvalue\u009f"
 
     await runMcpInvocationWithCostTracking(
       services,
-      "lore-context",
+      "kennen-context",
       { action: "status" },
       async () => ({
         content: [{ type: "text", text: "visible response" }],
@@ -256,7 +256,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("omits env-sourced metadata that is empty after sanitization", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -265,13 +265,13 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
-    process.env["LORE_AGENT_NAME"] = "\u0000\t\n\u007f\u009f\u2028"
-    process.env["LORE_SESSION_ID"] = "\r\u2029"
+    } as unknown as KennenServices
+    process.env["KENNEN_AGENT_NAME"] = "\u0000\t\n\u007f\u009f\u2028"
+    process.env["KENNEN_SESSION_ID"] = "\r\u2029"
 
     await runMcpInvocationWithCostTracking(
       services,
-      "lore-context",
+      "kennen-context",
       { action: "status" },
       async () => ({
         content: [{ type: "text", text: "visible response" }],
@@ -285,7 +285,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("records wake-up rendered row counts for every returned row type", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -319,7 +319,7 @@ describe("MCP cost tracking", () => {
     installCostTrackingToolWrapper(mockServer.server, services)
     registerContextTools(mockServer.server, services)
 
-    const result = await mockServer.handler("lore-context")({
+    const result = await mockServer.handler("kennen-context")({
       action: "wake-up",
       limit: 1,
     } as never)
@@ -332,7 +332,7 @@ describe("MCP cost tracking", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]!.event).toMatchObject({
       eventType: "mcp.invocation",
-      tool: "lore-context",
+      tool: "kennen-context",
       action: "wake-up",
       status: "success",
       outputs: {
@@ -345,7 +345,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("records explicit zero wake-up rendered row counts", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -357,7 +357,7 @@ describe("MCP cost tracking", () => {
     installCostTrackingToolWrapper(mockServer.server, services)
     registerContextTools(mockServer.server, services)
 
-    const result = await mockServer.handler("lore-context")({
+    const result = await mockServer.handler("kennen-context")({
       action: "wake-up",
     } as never)
 
@@ -366,7 +366,7 @@ describe("MCP cost tracking", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]!.event).toMatchObject({
       eventType: "mcp.invocation",
-      tool: "lore-context",
+      tool: "kennen-context",
       action: "wake-up",
       status: "success",
       outputs: {
@@ -379,7 +379,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("does not copy raw MCP metadata into error rows", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -388,12 +388,12 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await expect(
       runMcpInvocationWithCostTracking(
         services,
-        "lore-memory",
+        "kennen-memory",
         {
           action: "secret action prompt",
           projectName: "secret project prompt",
@@ -403,7 +403,7 @@ describe("MCP cost tracking", () => {
         async () => {
           throw new Error("validation failed")
         },
-        actionSets({ "lore-memory": ["save"] })
+        actionSets({ "kennen-memory": ["save"] })
       )
     ).rejects.toThrow("validation failed")
 
@@ -411,7 +411,7 @@ describe("MCP cost tracking", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]!.event).toMatchObject({
       eventType: "mcp.invocation",
-      tool: "lore-memory",
+      tool: "kennen-memory",
       status: "error",
       projectName: "Project",
     })
@@ -425,7 +425,7 @@ describe("MCP cost tracking", () => {
   })
 
   it("omits non-string action values from ledger rows", async () => {
-    const root = mkdtempSync(join(tmpdir(), "lore-mcp-cost-"))
+    const root = mkdtempSync(join(tmpdir(), "kennen-mcp-cost-"))
     dirs.push(root)
     const costTracking = resolveCostTracking(
       { costTracking: { enabled: true, ledgerPath: "ledger.jsonl" } },
@@ -434,14 +434,14 @@ describe("MCP cost tracking", () => {
     const services = {
       costTracking,
       context: { project: { name: "Project" } },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await runMcpInvocationWithCostTracking(
       services,
-      "lore-memory",
+      "kennen-memory",
       { action: 123 },
       async () => ({ content: [{ type: "text", text: "visible response" }] }),
-      actionSets({ "lore-memory": ["save"] })
+      actionSets({ "kennen-memory": ["save"] })
     )
 
     const rows = await readLedgerEvents(costTracking)
@@ -540,9 +540,9 @@ function makeTask(overrides: Partial<TaskSummary> & { id: string }): TaskSummary
 }
 
 function makeWakeUpServices(
-  costTracking: LoreServices["costTracking"],
+  costTracking: KennenServices["costTracking"],
   overrides: WakeUpCostFixtureOverrides = {}
-): LoreServices {
+): KennenServices {
   const memories = overrides.memories ?? [
     makeMemory("mem-1", {
       title: "Wake-up cost fixture",
@@ -608,7 +608,7 @@ function makeWakeUpServices(
     },
     scopeContext: {},
     upstreams: [],
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 function restoreEnv(name: string, value: string | undefined): void {

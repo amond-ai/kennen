@@ -6,7 +6,7 @@
  * read-orchestration concept — normal save / update / fact / decision /
  * task tools still write only to the primary vault. The only path that
  * fans out beyond the primary is this helper plus its CLI wrapper
- * (`lore promote`).
+ * (`kennen promote`).
  *
  * The promoted row in the target vault is a NEW memory with an audit
  * block recording where it came from. Cross-vault links are stored as
@@ -26,7 +26,7 @@
  * primary-vault project relation is meaningless in the target vault
  * (the project row lives in a different Projects DB), so the promoted
  * row lands with `projectIds: []` and the operator re-scopes it via
- * `lore-memory action='update'` in the target vault if needed.
+ * `kennen-memory action='update'` in the target vault if needed.
  *
  * Same-vault guard: promoting INTO the primary vault collapses to a
  * regular create with the audit block; the helper rejects that case
@@ -99,14 +99,14 @@ export interface PromoteMemoryServices {
   memories: MemoryService
   /**
    * Primary-vault page id. Promotion INTO the primary vault is
-   * rejected — the operator wants `lore-memory action='update'` or
+   * rejected — the operator wants `kennen-memory action='update'` or
    * a fresh save, not a self-referential cross-vault audit block.
    */
   primaryVaultPageId: string
   /**
    * Display label for the primary vault. Stored verbatim in the audit
    * block as "Source vault" so the operator reading the promoted row
-   * sees the same name they configured in .lore.yaml. Defaults to
+   * sees the same name they configured in .kennen.yaml. Defaults to
    * the literal `Primary` (matches `buildVaultTopology`'s primary
    * label) when omitted.
    */
@@ -251,7 +251,7 @@ export async function promoteMemory(
     content: preview.body,
     // Source URL / id / project taxonomy do NOT cross the vault
     // boundary. The target's Projects DB has different ids; the
-    // operator re-scopes via `lore-memory action='update'` if
+    // operator re-scopes via `kennen-memory action='update'` if
     // needed.
     projectIds: [],
     source: "manual",
@@ -264,7 +264,7 @@ export async function promoteMemory(
     // source's. A copied tag that isn't valid in the target's
     // MCP-boundary Zod schema would commit here and then reject on
     // the operator's next update from the target. Drop tags; the
-    // operator re-tags via `lore-memory action='update'` against the
+    // operator re-tags via `kennen-memory action='update'` against the
     // target-vault MCP boundary if needed.
     tags: [],
     keywords: preview.source.keywords,
@@ -354,7 +354,7 @@ export async function preparePromotion(
       `Cannot promote into the primary vault (target "${input.target.label}" ` +
         `points at the same page id as the primary). Promotion is a cross-vault ` +
         `operation — to retitle, restatus, or otherwise modify the source row ` +
-        `in place, use \`lore-memory action='update'\`.`
+        `in place, use \`kennen-memory action='update'\`.`
     )
   }
 
@@ -362,14 +362,14 @@ export async function preparePromotion(
   if (promoterName.length === 0) {
     throw new Error(
       "Promotion requires a non-empty promoter name so the audit block records " +
-        "who promoted the memory. Set LORE_USER_NAME or pass `--promoter <name>` " +
+        "who promoted the memory. Set KENNEN_USER_NAME or pass `--promoter <name>` " +
         "directly."
     )
   }
 
   // Live-memory gate. `getPropertiesById` rejects archived rows and
   // pages whose parent is not the configured Memories DB via
-  // `requireLiveMemoryPage`. Without this gate, `lore promote <any
+  // `requireLiveMemoryPage`. Without this gate, `kennen promote <any
   // accessible Notion page id>` would copy a page from any
   // database, or an archived Memory row, with the audit block
   // claiming primary-vault provenance — exactly the source/
@@ -446,7 +446,7 @@ async function assertPromotionSourceKeyColumn(
   throw new Error(
     `Target vault "${targetVaultLabel}" is missing the ` +
       `\`${MEMORY_PROPS.PROMOTION_SOURCE_KEY}\` Memories property required ` +
-      `for retry-safe promotion. Run \`lore migrate\` against that target ` +
+      `for retry-safe promotion. Run \`kennen migrate\` against that target ` +
       `vault, then retry the promotion.`
   )
 }

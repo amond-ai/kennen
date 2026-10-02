@@ -835,7 +835,7 @@ async function mergeOneAliasPlan(
   if (canonicalRows.length > 1) {
     throw new Error(
       `Canonical "${plan.canonical}" resolves to ${canonicalRows.length} topic rows. ` +
-        "Run `lore migrate --merge-duplicate-topics` to collapse same-name duplicates first."
+        "Run `kennen migrate --merge-duplicate-topics` to collapse same-name duplicates first."
     )
   }
 

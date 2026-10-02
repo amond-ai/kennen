@@ -4,7 +4,7 @@
  * Autosave and auto-digest work intentionally runs out-of-process, so an
  * operator can miss a spawn/init/gather failure once the foreground hook
  * exits. These markers keep a recent, non-sensitive breadcrumb for
- * `lore status` without turning hook state into a job dashboard. Markers are
+ * `kennen status` without turning hook state into a job dashboard. Markers are
  * local-only by design: Notion-backed health records would make background
  * failures visible cross-machine, but would also require Notion auth on the
  * very paths whose auth failures we need to diagnose.
@@ -24,7 +24,7 @@ import {
 
 export const BACKGROUND_FAILURE_MARKER_VERSION = 1
 // Two weeks gives operators one missed weekly digest window plus slack to run
-// `lore status`, while keeping old local diagnostics short-lived.
+// `kennen status`, while keeping old local diagnostics short-lived.
 export const BACKGROUND_FAILURE_STALE_DAYS = 14
 export const BACKGROUND_FAILURE_LIST_LIMIT = 10
 
@@ -112,7 +112,7 @@ function writeMarkerDiagnostic(err: unknown): void {
     boundedString(err instanceof Error ? err.message : String(err), MAX_MESSAGE) ??
     "unknown error"
   try {
-    process.stderr.write(`[lore] background-failure-marker: write failed: ${message}\n`)
+    process.stderr.write(`[kennen] background-failure-marker: write failed: ${message}\n`)
   } catch {
     // Diagnostics must never make hook failure recording a new failure source.
   }

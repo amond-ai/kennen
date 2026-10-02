@@ -1,10 +1,10 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import type { MemoryTagPlan } from "../../../core/tag-migration.js"
 import { classifyTags, planMemoryMigration } from "../../../core/tag-migration.js"
 import { MEMORY_PROPS } from "../../../notion/schema.js"
 
 export async function runOutOfVocabTagMigration(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     dryRun?: boolean
     diffs: Array<{ database: string; missing: string[] }>
@@ -15,7 +15,7 @@ export async function runOutOfVocabTagMigration(
   if (keywordsMissing && options.dryRun) {
     console.log(
       "\n--tags requires the `Keywords` property, which the live schema is missing. " +
-        "Re-run `lore migrate` (no --dry-run) first to add it, then re-run `lore migrate --tags --dry-run`."
+        "Re-run `kennen migrate` (no --dry-run) first to add it, then re-run `kennen migrate --tags --dry-run`."
     )
     return
   }
@@ -45,7 +45,7 @@ export async function runOutOfVocabTagMigration(
  * (the heuristic is deterministic per tag string).
  */
 async function migrateOutOfVocabTags(
-  services: LoreServices,
+  services: KennenServices,
   options: { dryRun?: boolean }
 ): Promise<void> {
   const PAGE_SIZE = 100

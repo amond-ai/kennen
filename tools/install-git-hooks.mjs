@@ -47,7 +47,7 @@ export function installGitHooks(options = {}) {
   const env = options.env ?? process.env
   const cwd = options.cwd ?? process.cwd()
 
-  if (env["CI"] === "true" || env["LORE_SKIP_GIT_HOOK_INSTALL"] === "1") {
+  if (env["CI"] === "true" || env["KENNEN_SKIP_GIT_HOOK_INSTALL"] === "1") {
     return
   }
 
@@ -79,15 +79,15 @@ export function installGitHooks(options = {}) {
       mkdirSync(currentHooksDir, { recursive: true })
       writeFileSync(currentPreCommit, preCommitWrapper(), { mode: 0o755 })
       process.stderr.write(
-        `[lore] installed committed-config guard wrapper at ${currentPreCommit}.\n`
+        `[kennen] installed committed-config guard wrapper at ${currentPreCommit}.\n`
       )
       return
     }
 
     process.stderr.write(
-      `[lore] core.hooksPath is already set to ${current}; leaving it unchanged. ` +
+      `[kennen] core.hooksPath is already set to ${current}; leaving it unchanged. ` +
         `Chain ${DESIRED_HOOKS_PATH}/pre-commit from ${currentPreCommit} ` +
-        "to enable Lore's committed-config guard.\n"
+        "to enable Kennen's committed-config guard.\n"
     )
     return
   }
@@ -100,15 +100,15 @@ export function installGitHooks(options = {}) {
         mkdirSync(defaultHooksDir, { recursive: true })
         writeFileSync(defaultPreCommit, preCommitWrapper(), { mode: 0o755 })
         process.stderr.write(
-          `[lore] installed committed-config guard wrapper at ${defaultPreCommit}.\n`
+          `[kennen] installed committed-config guard wrapper at ${defaultPreCommit}.\n`
         )
         return
       }
 
       process.stderr.write(
-        "[lore] default Git hooks already exist; leaving core.hooksPath unset. " +
+        "[kennen] default Git hooks already exist; leaving core.hooksPath unset. " +
           `Chain ${DESIRED_HOOKS_PATH}/pre-commit from ${defaultPreCommit} ` +
-          "to enable Lore's committed-config guard.\n"
+          "to enable Kennen's committed-config guard.\n"
       )
       return
     }
@@ -116,7 +116,7 @@ export function installGitHooks(options = {}) {
     git(["config", "--local", "core.hooksPath", DESIRED_HOOKS_PATH], {
       cwd: repoRoot,
     })
-    process.stderr.write(`[lore] installed git hooks from ${DESIRED_HOOKS_PATH}.\n`)
+    process.stderr.write(`[kennen] installed git hooks from ${DESIRED_HOOKS_PATH}.\n`)
   }
 }
 

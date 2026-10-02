@@ -2,9 +2,9 @@
  * Phase 3 profile installer.
  *
  * Installs an external profile bundle into
- * `<configRoot>/.lore/profiles/installed/<name>/<version>/` after staging,
+ * `<configRoot>/.kennen/profiles/installed/<name>/<version>/` after staging,
  * validating, computing the manifest digest, and (in non-interactive
- * mode) requiring an exact allow-list match in `.lore.yaml`.
+ * mode) requiring an exact allow-list match in `.kennen.yaml`.
  *
  * Sources supported in Phase 3:
  *
@@ -16,7 +16,7 @@
  *     resolve to the same commit.
  *
  * Distribution requires immutable, versioned bundles: once an
- * `<configRoot>/.lore/profiles/installed/<name>/<version>/` directory
+ * `<configRoot>/.kennen/profiles/installed/<name>/<version>/` directory
  * exists with a recorded digest, install is either a same-digest no-op
  * or a fail-closed.
  */
@@ -316,7 +316,7 @@ function stageLocalSource(source: InstallSourceLocal): StageResult {
       `Local install source ${source.path} is not a profile bundle root (no profile.yaml found). Phase 3 does not search subdirectories or repo roots.`
     )
   }
-  const tempDir = mkdtempSync(join(tmpdir(), "lore-profile-install-"))
+  const tempDir = mkdtempSync(join(tmpdir(), "kennen-profile-install-"))
   const bundleRoot = join(tempDir, "bundle")
   const cleanup = (): void => {
     try {
@@ -391,7 +391,7 @@ function assertBundleContainsNoSymlinks(bundleRoot: string): void {
 }
 
 function stageGitSource(source: InstallSourceGit): StageResult {
-  const tempDir = mkdtempSync(join(tmpdir(), "lore-profile-install-"))
+  const tempDir = mkdtempSync(join(tmpdir(), "kennen-profile-install-"))
   const cleanup = (): void => {
     try {
       rmSync(tempDir, { recursive: true, force: true })
@@ -561,7 +561,7 @@ function recordLockEntry(configRoot: string, preview: InstallPreview): ProfilesL
 /**
  * Check the operator-authored allow-list against the staged source and
  * digest. Returns the matching entry on success, `null` when no entry
- * matches. Caller decides whether to fail open or closed; `lore profile
+ * matches. Caller decides whether to fail open or closed; `kennen profile
  * install --yes` requires a match.
  */
 export function findAllowedInstallSourceMatch(
@@ -628,7 +628,7 @@ export function findLockNoOpReinstall(
 
 /**
  * Compute the manifest digest for an off-disk profile bundle without
- * loading it. Used by `lore profile validate` to surface the same digest
+ * loading it. Used by `kennen profile validate` to surface the same digest
  * an install run would compute, so an operator can pre-populate the
  * allow-list before automation.
  */

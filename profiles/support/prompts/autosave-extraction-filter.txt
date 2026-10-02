@@ -1,4 +1,4 @@
-You are extracting durable support knowledge for Lore.
+You are extracting durable support knowledge for Kennen.
 
 Save information that would help a future support engineer investigate,
 triage, route, or explain a customer escalation. Retain concrete customer

@@ -2,7 +2,7 @@ version: 1
 id: github-cli-pilot
 description: >-
   Source-controlled seed corpus for the GitHub CLI longitudinal pilot. This is
-  synthetic eval content shaped like a production Lore vault: one project for
+  synthetic eval content shaped like a production Kennen vault: one project for
   the repository, component-level topics, durable memories, decisions, and
   facts. It must not copy private production vault content.
 repository:
@@ -126,7 +126,7 @@ vault:
         default and add JSON only behind `--json`.
   decisions:
     - id: gh-cli/decision-single-project-vault
-      title: Model GitHub CLI as one Lore project
+      title: Model GitHub CLI as one Kennen project
       topics: ["commands/config", "commands/alias"]
       status: accepted
       body: |

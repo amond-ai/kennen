@@ -83,7 +83,7 @@ describe("previewInstall + applyInstall (local path)", () => {
   let bundleDir: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-install-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-install-"))
     configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
     bundleDir = join(workDir, "bundle")
@@ -95,7 +95,7 @@ describe("previewInstall + applyInstall (local path)", () => {
     rmSync(workDir, { recursive: true, force: true })
   })
 
-  it("installs into .lore/profiles/installed/<name>/<version>/ and writes the lock file", () => {
+  it("installs into .kennen/profiles/installed/<name>/<version>/ and writes the lock file", () => {
     const preview = previewInstall({
       configRoot,
       source: { kind: "path", path: bundleDir },
@@ -108,7 +108,7 @@ describe("previewInstall + applyInstall (local path)", () => {
     const result = applyInstall(preview, configRoot)
     expect(result.outcome).toBe("installed")
     expect(result.installTarget).toBe(
-      resolve(configRoot, ".lore", "profiles", "installed", "custom", "1.0.0")
+      resolve(configRoot, ".kennen", "profiles", "installed", "custom", "1.0.0")
     )
     const installed = loadProfileFromRoot(result.installTarget, {
       source: "external",
@@ -183,7 +183,7 @@ describe("previewInstall + applyInstall (local path)", () => {
       })
     ).toThrow(/contains symlink migrations\/1\.0\.0__1\.1\.0\.yaml/)
     expect(
-      existsSync(join(configRoot, ".lore", "profiles", "installed", "custom", "1.0.0"))
+      existsSync(join(configRoot, ".kennen", "profiles", "installed", "custom", "1.0.0"))
     ).toBe(false)
   })
 
@@ -230,7 +230,7 @@ describe("previewInstall + applyInstall (pinned git source)", () => {
   let repoDir: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-install-git-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-install-git-"))
     configRoot = join(workDir, "vault")
     repoDir = join(workDir, "profile.git")
     mkdirSync(configRoot, { recursive: true })
@@ -242,9 +242,9 @@ describe("previewInstall + applyInstall (pinned git source)", () => {
       "git",
       [
         "-c",
-        "user.name=Lore Test",
+        "user.name=Kennen Test",
         "-c",
-        "user.email=lore-test@example.com",
+        "user.email=kennen-test@example.com",
         "commit",
         "--quiet",
         "-m",
@@ -290,7 +290,7 @@ describe("checkInstallShadowing", () => {
   let configRoot: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-shadow-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-shadow-"))
     configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
   })
@@ -300,7 +300,7 @@ describe("checkInstallShadowing", () => {
   })
 
   it("reports a local profile collision when one exists at the same selector", () => {
-    const localDir = join(configRoot, ".lore", "profiles", "local", "custom", "1.0.0")
+    const localDir = join(configRoot, ".kennen", "profiles", "local", "custom", "1.0.0")
     mkdirSync(localDir, { recursive: true })
     makeBundle(localDir, minimalProfileFiles("custom"))
     const profile = loadProfileFromRoot(localDir, { source: "local" })
@@ -336,7 +336,7 @@ describe("checkInstallCollision", () => {
   let configRoot: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-collision-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-collision-"))
     configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
   })
@@ -346,12 +346,12 @@ describe("checkInstallCollision", () => {
   })
 
   it("returns none when the install target does not exist yet", () => {
-    const target = join(configRoot, ".lore", "profiles", "installed", "custom", "1.0.0")
+    const target = join(configRoot, ".kennen", "profiles", "installed", "custom", "1.0.0")
     expect(checkInstallCollision(target, "sha256:" + "a".repeat(64)).kind).toBe("none")
   })
 
   it("treats an existing non-bundle target as a fail-closed collision", () => {
-    const target = join(configRoot, ".lore", "profiles", "installed", "custom", "1.0.0")
+    const target = join(configRoot, ".kennen", "profiles", "installed", "custom", "1.0.0")
     mkdirSync(target, { recursive: true })
     writeFileSync(join(target, "README.md"), "not a profile bundle\n")
 
@@ -365,7 +365,7 @@ describe("checkInstallCollision", () => {
     const bundleDir = join(workDir, "bundle")
     mkdirSync(bundleDir, { recursive: true })
     makeBundle(bundleDir, minimalProfileFiles("custom"))
-    const target = join(configRoot, ".lore", "profiles", "installed", "custom", "1.0.0")
+    const target = join(configRoot, ".kennen", "profiles", "installed", "custom", "1.0.0")
     mkdirSync(target, { recursive: true })
     writeFileSync(join(target, "README.md"), "not a profile bundle\n")
 
@@ -384,7 +384,7 @@ describe("findAllowedInstallSourceMatch", () => {
   let bundleDir: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-allow-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-allow-"))
     configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
     bundleDir = join(workDir, "bundle")
@@ -514,7 +514,7 @@ describe("findLockNoOpReinstall", () => {
   let bundleDir: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-lock-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-lock-"))
     configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
     bundleDir = join(workDir, "bundle")
@@ -559,7 +559,7 @@ describe("findLockNoOpReinstall", () => {
 
 describe("readProfilesLock", () => {
   it("returns an empty lock when the file does not exist", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-lock-read-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-lock-read-"))
     try {
       expect(readProfilesLock(dir).profiles).toEqual({})
     } finally {
@@ -568,7 +568,7 @@ describe("readProfilesLock", () => {
   })
 
   it("throws ProfileInstallError when the file is malformed", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-lock-bad-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-lock-bad-"))
     try {
       const path = profilesLockPath(dir)
       mkdirSync(dirname(path), { recursive: true })

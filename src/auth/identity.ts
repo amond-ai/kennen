@@ -1,12 +1,12 @@
 /**
  * Engineer-identity resolution for the per-user attribution path
  * (DEFERRED-ATTRIBUTION). Resolves a human-readable name to stamp on
- * the `Author` column of every Memory row Lore writes.
+ * the `Author` column of every Memory row Kennen writes.
  *
  * Two sources, in priority order:
  *
- * 1. **`LORE_USER_NAME` env var** — operator-controlled escape hatch,
- *    parallel to `LORE_AGENT_NAME`.
+ * 1. **`KENNEN_USER_NAME` env var** — operator-controlled escape hatch,
+ *    parallel to `KENNEN_AGENT_NAME`.
  *    Synchronous, no API call. Wins over `users.me` so an engineer
  *    who wants a different display name than their Notion identity —
  *    or who is running against a workspace bot whose `users.me`
@@ -16,7 +16,7 @@
  *    the underlying Notion token rotates.
  * 2. **`client.users.me().bot.owner.user.name`** — the engineer's
  *    Notion identity for ntn-issued tokens. Same shape as the OAuth
- *    response and as the bot identity surfaced by `lore auth
+ *    response and as the bot identity surfaced by `kennen auth
  *    --whoami` via `renderWhoamiIdentity`;
  *    we walk to the deeper `bot.owner.user.name` field rather than
  *    short-circuiting on `bot.workspace_name`, because the workspace
@@ -167,7 +167,7 @@ export function createAuthorIdentityResolver(
 }
 
 /**
- * Resolve the engineer-identity to stamp on a Lore-written memory's
+ * Resolve the engineer-identity to stamp on a Kennen-written memory's
  * `Author` column.
  *
  * Best-effort against `users.me` failures; never throws. Production
@@ -201,7 +201,7 @@ async function resolveAuthorFromUsersMe(client: Client): Promise<AuthorIdentityL
     // null. The resolver does not cache thrown failures, so the next
     // unattributed write under the same auth can retry. Operators who
     // want deterministic attribution under unstable network conditions
-    // set LORE_USER_NAME explicitly.
+    // set KENNEN_USER_NAME explicitly.
     return {
       identity: { author: null },
       cacheable: false,
@@ -212,9 +212,9 @@ async function resolveAuthorFromUsersMe(client: Client): Promise<AuthorIdentityL
 
 function envAuthorOverride(): string | null {
   // Env override wins. Synchronous, no API call. Trim defensively so
-  // a `LORE_USER_NAME=" "` shell-rc misconfiguration doesn't stamp
+  // a `KENNEN_USER_NAME=" "` shell-rc misconfiguration doesn't stamp
   // whitespace as the author name.
-  const override = process.env["LORE_USER_NAME"]
+  const override = process.env["KENNEN_USER_NAME"]
   if (override && override.trim()) return override.trim()
   return null
 }
@@ -229,7 +229,7 @@ function authorPresence(author: string | null): "present" | "missing" {
 }
 
 function logIdentityFailure(message: string | undefined): void {
-  // Route the SDK-derived message through the shared `LORE_DEBUG`
+  // Route the SDK-derived message through the shared `KENNEN_DEBUG`
   // redactor before it lands in the operator's stderr.
   // `users.me` failures are exactly the path where the Notion SDK is
   // most likely to interpolate request-scoped detail (per-token
@@ -241,8 +241,8 @@ function logIdentityFailure(message: string | undefined): void {
 }
 
 function logIdentityDebug(message: string): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
-  process.stderr.write(`[lore] identity: ${message}\n`)
+  if (process.env["KENNEN_DEBUG"] !== "1") return
+  process.stderr.write(`[kennen] identity: ${message}\n`)
 }
 
 function errorMessage(err: unknown): string | undefined {

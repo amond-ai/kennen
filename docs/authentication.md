@@ -1,6 +1,6 @@
 # Authentication
 
-Lore is a Notion-backed memory system. Every interaction with Notion (read,
+Kennen is a Notion-backed memory system. Every interaction with Notion (read,
 write, vault preflight, hooks, MCP) requires a bearer token. This document is
 organized by who you are, because that determines which token you should use.
 
@@ -14,7 +14,7 @@ If you don't know which you are, the short answer is: if you have access to
 Notion's internal monorepo and the `ntn` CLI, you're internal. Otherwise
 you're external.
 
-New operators adopting Lore on a team should start at
+New operators adopting Kennen on a team should start at
 [`docs/team-rollout.md`](team-rollout.md), which covers per-engineer onboarding,
 the Entities-database cutover, and shared vault setup. This document is the
 reference for the auth contract itself, including the direct-`ntn login`
@@ -39,7 +39,7 @@ tokens look like bearer tokens on the wire and the API accepts them, but
 they are **integration-level rate-limited** — every engineer on a team that
 shares one integration is in the same rate-limit bucket. This is exactly the
 shared-token deployment the 0.10.0 ntn-first move existed to escape; reusing
-it via a `notion.so/profile/integrations` token re-collapses Lore into one
+it via a `notion.so/profile/integrations` token re-collapses Kennen into one
 bucket. **Use a PAT from `developers/tokens`, not an integration token from
 `profile/integrations`.**
 
@@ -53,8 +53,8 @@ integration identity:
 - PATs: identity is whatever name the operator gave the token at creation
   time (visible at `developers/tokens`).
 
-`lore auth --whoami` prints the token-prefix classification alongside the
-identity so operators can confirm at a glance which kind of token Lore
+`kennen auth --whoami` prints the token-prefix classification alongside the
+identity so operators can confirm at a glance which kind of token Kennen
 resolved.
 
 ## Internal Notion engineers (`ntn`)
@@ -62,19 +62,19 @@ resolved.
 Internal engineers run:
 
 ```bash
-lore install --ntn
+kennen install --ntn
 ```
 
-The `--ntn` flag selects the internal-engineer path: Lore auto-installs
+The `--ntn` flag selects the internal-engineer path: Kennen auto-installs
 `ntn` if missing, runs `ntn login` (forcing `NOTION_KEYRING=0` in the spawn
-so the token lands in `~/.config/notion/auth.json` where Lore can read it),
-and writes MCP config for the installed assistant hosts. Lore resolves the
+so the token lands in `~/.config/notion/auth.json` where Kennen can read it),
+and writes MCP config for the installed assistant hosts. Kennen resolves the
 bearer token at runtime by reading `auth.json`.
 
 For dev-environment vaults, compose with `--dev`:
 
 ```bash
-lore install --ntn --dev
+kennen install --ntn --dev
 ```
 
 The flag forwards `NOTION_ENV=dev` into the `ntn login` spawn so the issued
@@ -82,11 +82,11 @@ token authorizes against the dev deployment.
 
 See [The `auth.json` read is the contract](#the-authjson-read-is-the-contract)
 for the underlying ntn storage contract and
-[Known gotcha: direct ntn login outside Lore](#known-gotcha-direct-ntn-login-outside-lore)
+[Known gotcha: direct ntn login outside Kennen](#known-gotcha-direct-ntn-login-outside-kennen)
 for direct-`ntn login` recovery paths.
 
 Multi-workspace operators select a workspace with `NOTION_WORKSPACE_ID` or
-`auth.workspaceId` in `.lore.yaml`. Single-workspace operators auto-pick.
+`auth.workspaceId` in `.kennen.yaml`. Single-workspace operators auto-pick.
 
 `ntn`-issued tokens inherit the engineer's personal Notion permissions: if
 you can open the vault page in Notion's UI, your token can read it. There
@@ -94,16 +94,16 @@ is no "share this vault page with Notion Workers CLI" step.
 
 ### `ntn` version policy
 
-Lore tests against `MIN_NTN_VERSION` in `src/auth/ntn.ts`, currently
+Kennen tests against `MIN_NTN_VERSION` in `src/auth/ntn.ts`, currently
 `0.12.0`.
 
 - Operators with `ntn` already installed keep their existing version.
 - Versions below the minimum print a non-blocking warning and continue.
 - Operators without `ntn` are offered installation of
   `NTN_INSTALL_VERSION` from a pinned release archive whose sha256 is
-  embedded in Lore. The upstream `curl -fsSL https://ntn.dev | bash`
+  embedded in Kennen. The upstream `curl -fsSL https://ntn.dev | bash`
   path is printed only as a manual fallback.
-- Lore never auto-upgrades `ntn`.
+- Kennen never auto-upgrades `ntn`.
 
 ## External operators (PAT)
 
@@ -125,11 +125,11 @@ by step:
    Add the export to your shell rc (`~/.zshrc`, `~/.bashrc`, etc.) so it
    persists across sessions.
 
-5. Run `lore install` from the project directory. The default install path
-   does not require `ntn`; Lore detects `NOTION_API_TOKEN`, runs the vault
+5. Run `kennen install` from the project directory. The default install path
+   does not require `ntn`; Kennen detects `NOTION_API_TOKEN`, runs the vault
    preflight, and writes MCP config.
 
-6. Confirm with `lore auth --whoami`. Output should resemble:
+6. Confirm with `kennen auth --whoami`. Output should resemble:
 
    ```text
    <Your Notion name>  (personal token — ntn_)
@@ -144,49 +144,49 @@ For dev-environment PATs (created on Notion's dev deployment, prefix
 `development_ntn_`), run install with `--dev`:
 
 ```bash
-lore install --dev
+kennen install --dev
 ```
 
 The flag surfaces dev-PAT guidance and configures the MCP environment so
-Lore's API calls target the dev base URL.
+Kennen's API calls target the dev base URL.
 
-**Do NOT paste your PAT into `auth.token` in `.lore.yaml`.** That file is
+**Do NOT paste your PAT into `auth.token` in `.kennen.yaml`.** That file is
 local config that can still be accidentally backed up, synced, or staged;
 pasting a bearer token there will:
 
 - Land the secret in git history on the next commit.
-- Trigger Lore's config schema, which rejects every `auth.token` value before
+- Trigger Kennen's config schema, which rejects every `auth.token` value before
   resolving auth.
 - Trigger the pre-commit hook (installed by `npm install`) which blocks
   commits adding `auth.token`.
 
 The right home for a PAT is `NOTION_API_TOKEN` in your shell environment.
 
-## Known gotcha: direct ntn login outside Lore
+## Known gotcha: direct ntn login outside Kennen
 
-Lore-spawned ntn invocations (via `lore install --ntn`,
-`lore auth --login`, `lore init` no-arg)
+Kennen-spawned ntn invocations (via `kennen install --ntn`,
+`kennen auth --login`, `kennen init` no-arg)
 force `NOTION_KEYRING=0` in their spawn env, so the resulting
-token lands in `~/.config/notion/auth.json` where Lore can read
+token lands in `~/.config/notion/auth.json` where Kennen can read
 it. **Engineers don't need to set `NOTION_KEYRING=0` in their
-shell rc for the Lore install path.**
+shell rc for the Kennen install path.**
 
 The gotcha: if an engineer later runs `ntn login` _directly_
-(outside Lore — e.g., to switch workspaces or use ntn for other
+(outside Kennen — e.g., to switch workspaces or use ntn for other
 purposes) without `NOTION_KEYRING=0` in their shell, ntn falls
-back to the macOS Keychain (its default). Lore doesn't read
-keychain-mode storage, so subsequent `lore` commands fail to find
+back to the macOS Keychain (its default). Kennen doesn't read
+keychain-mode storage, so subsequent `kennen` commands fail to find
 a token.
 
 Two paths back to a working state:
 
-1. **Run `lore auth --login` again.** This re-spawns ntn login
+1. **Run `kennen auth --login` again.** This re-spawns ntn login
    with `NOTION_KEYRING=0` forced; the new token writes to
-   auth.json; Lore reads it.
+   auth.json; Kennen reads it.
 2. **Add `export NOTION_KEYRING=0` to shell rc and re-run
    `ntn login` directly.** The token writes to auth.json
    permanently; future direct ntn invocations stay
-   Lore-readable. Shell-rc commands:
+   Kennen-readable. Shell-rc commands:
 
    ```bash
    # zsh
@@ -202,10 +202,10 @@ Two paths back to a working state:
    ```
 
    Verify with `echo $NOTION_KEYRING` — should print `0`. After
-   this, both Lore-spawned and direct ntn invocations write to
-   auth.json, and Lore can read either.
+   this, both Kennen-spawned and direct ntn invocations write to
+   auth.json, and Kennen can read either.
 
-Engineers who only run ntn through Lore never hit this gotcha.
+Engineers who only run ntn through Kennen never hit this gotcha.
 Engineers who use ntn for other purposes (workers, page
 management, etc.) and want bidirectional consistency should adopt
 path 2 as a one-time setup.
@@ -213,11 +213,11 @@ path 2 as a one-time setup.
 ## Fallback to PAT auth
 
 If ntn-first auth is blocked for an engineer or team, use
-per-operator PATs in `NOTION_API_TOKEN` with no Lore-side changes.
+per-operator PATs in `NOTION_API_TOKEN` with no Kennen-side changes.
 
 ### Recommended path: `NOTION_API_TOKEN` (highest-priority source, no ntn mutation)
 
-`NOTION_API_TOKEN` is the highest-priority source in Lore's auth
+`NOTION_API_TOKEN` is the highest-priority source in Kennen's auth
 priority chain, ahead of ntn-resolved auth. Setting it takes
 precedence over the ntn `auth.json` without touching ntn's private
 state, which keeps any other ntn-using tooling on the operator's
@@ -230,14 +230,14 @@ token as the fallback path:
 export NOTION_API_TOKEN=ntn_...
 
 # 2. New shell or source rc; verify with:
-lore auth --status
+kennen auth --status
 # Should now show:
 #   Source: NOTION_API_TOKEN (env)
 #   Status: ✓ active
 ```
 
 To restore ntn-first later: unset `NOTION_API_TOKEN`. ntn
-resolves again on the next `lore` invocation. No file moves,
+resolves again on the next `kennen` invocation. No file moves,
 no auth.json surgery.
 
 ## The `auth.json` read is the contract
@@ -245,17 +245,17 @@ no auth.json surgery.
 The public [`ntn` CLI](https://github.com/makenotion/skills) exposes
 only `ntn login` / `ntn logout` for the auth lifecycle and
 `NOTION_API_TOKEN` for injection — no token-export subcommand exists,
-and the maintainers have indicated none will ship. Earlier Lore
+and the maintainers have indicated none will ship. Earlier Kennen
 releases framed the `~/.config/notion/auth.json` read as a "temporary
 coupling pending an official export command"; that framing is
 superseded.
 
-Lore therefore treats the `auth.json` read as the contract for the
+Kennen therefore treats the `auth.json` read as the contract for the
 `ntn login` flow, not a bridge to anything. Operators who'd rather not
 rely on the on-disk read can export `NOTION_API_TOKEN`
 (highest-priority source), which `ntn` itself reads as well.
 
-Open follow-ups that would still benefit Lore if the ntn maintainers
+Open follow-ups that would still benefit Kennen if the ntn maintainers
 take them on later — kept here as a reference rather than a blocking
 ask:
 
@@ -264,7 +264,7 @@ ask:
   reader detect mismatches and surface an upgrade hint instead of
   failing as "malformed".
 - **Engineer-identity exposure**: per-user attribution on saved
-  memories currently requires Lore to round-trip `users.me` against
+  memories currently requires Kennen to round-trip `users.me` against
   the active token. An env handoff like `NOTION_USER_EMAIL` from
   `ntn login` would save the round-trip.
 
@@ -284,30 +284,25 @@ been priority 1.
 
 This is the canonical explicit environment variable. When set, no other
 source supplies the bearer token. Both PATs (`ntn_…` / `development_ntn_…`)
-and integration tokens (`secret_…`) are accepted on the wire; `lore auth
+and integration tokens (`secret_…`) are accepted on the wire; `kennen auth
 --whoami` surfaces the prefix classification so you can spot a wrong-token
 paste.
 
-`LORE_NOTION_TOKEN` is no longer read. If it is still set in your shell,
-move that value to `NOTION_API_TOKEN` only if it is a Personal Access
-Token. Integration tokens from `notion.so/profile/integrations` should be
-rotated to PATs from `notion.so/developers/tokens`.
+`auth.token` in `.kennen.yaml` is rejected at config-load time for every
+value. Move credentials to `NOTION_API_TOKEN` or `kennen auth --login`, then
+remove the field from `.kennen.yaml`.
 
-`auth.token` in `.lore.yaml` is rejected at config-load time for every
-value. Move credentials to `NOTION_API_TOKEN` or `lore auth --login`, then
-remove the field from `.lore.yaml`.
+### `.kennen.yaml` is local-only
 
-### `.lore.yaml` is local-only
-
-`.lore.yaml` is local-only — keep it out of version control. Copy
-`.lore.example.yaml` to `.lore.yaml` per clone, fill in your `vault.pageId`
-(paste the shared team value from your onboarding docs, or let `lore init`
+`.kennen.yaml` is local-only — keep it out of version control. Copy
+`.kennen.example.yaml` to `.kennen.yaml` per clone, fill in your `vault.pageId`
+(paste the shared team value from your onboarding docs, or let `kennen init`
 write it), and rely on `NOTION_API_TOKEN` (external operators, PAT) or
-`lore auth --login` (internal engineers, ntn) for credentials. Distribute
+`kennen auth --login` (internal engineers, ntn) for credentials. Distribute
 shared team values (`vault.pageId`, `auth.workspaceId`) through onboarding
 docs rather than by committing config. Never put `auth.token`, personal
 scratch vault page IDs, or personally identifying values in the file.
-Lore rejects any `auth.token` value before any Notion call is made. The
+Kennen rejects any `auth.token` value before any Notion call is made. The
 local-only posture is the current policy even for credential-free shared vault
 config and supersedes older changelog notes that allowed intentional committed
 config.
@@ -320,10 +315,10 @@ scratch page IDs and accidentally committed private page IDs that land in
 history need owner review; decide with the page owner whether to replace
 the page or rewrite history.
 
-The Lore repo also installs a Git pre-commit guard during `npm install`
-to enforce the gitignore. The guard reads the staged `.lore.yaml` from
+The Kennen repo also installs a Git pre-commit guard during `npm install`
+to enforce the gitignore. The guard reads the staged `.kennen.yaml` from
 the Git index and rejects any committed content with a pointer at
-`.lore.example.yaml`. It returns silently when `.lore.yaml` is not
+`.kennen.example.yaml`. It returns silently when `.kennen.yaml` is not
 tracked (the steady state). Fresh checkouts with only Git's sample hooks
 use `core.hooksPath=.githooks`; checkouts that already have active
 default `.git/hooks` or a custom hook path get a small wrapper installed
@@ -342,13 +337,13 @@ practical consequences:
 - **Integration tokens from `notion.so/profile/integrations` are
   per-integration.** Every operator routing through the same integration
   shares one bucket. A team that distributes one integration token to
-  every engineer re-collapses Lore into a single rate-limit bucket — the
+  every engineer re-collapses Kennen into a single rate-limit bucket — the
   exact deployment the 0.10.0 move existed to escape. **This is the
   headline risk for external operators picking the wrong token type.**
 
 Operational implications:
 
-- Do not route Lore through a shared token for caching; that collapses the
+- Do not route Kennen through a shared token for caching; that collapses the
   isolation back into one bucket.
 - The visible integration identity differs by source:
   - `ntn`-issued tokens: identity is `Notion Workers CLI`.
@@ -363,22 +358,22 @@ Operational implications:
 
 ## Author attribution
 
-Lore resolves the default Memory `Author` lazily. Service initialization,
+Kennen resolves the default Memory `Author` lazily. Service initialization,
 read-only CLI commands, and MCP startup do not call `users.me` for
 attribution. Write paths that create authored Memory rows call the
 identity resolver only when the caller omits an explicit `author`.
 
 Resolution order:
 
-1. `LORE_USER_NAME`, trimmed and used synchronously.
+1. `KENNEN_USER_NAME`, trimmed and used synchronously.
 2. `users.me().bot.owner.user.name`, cached by the active token / base URL.
 3. No author value, when neither source produces a trusted name.
 
 The `users.me` fallback is best-effort. Network failures, 4xx responses,
-and unexpected response shapes do not block writes; Lore omits the Author
+and unexpected response shapes do not block writes; Kennen omits the Author
 property and retries on the next unattributed write. Recognized no-owner
 responses are cached for the current auth snapshot. When `ntn` auth
-refresh changes the active token or base URL, Lore does not reuse a
+refresh changes the active token or base URL, Kennen does not reuse a
 cached author resolved under the prior snapshot; the next unattributed
 write resolves under the new snapshot.
 
@@ -390,13 +385,13 @@ populate `bot.owner.user.name` on `users.me`.
 | Symptom                                            | Where to look                                                                                                                                              |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `No Notion auth configured`                        | Walk the `resolveAuth` priority chain in `src/config.ts`.                                                                                                  |
-| `lore auth --whoami` shows `(integration token — secret_)` | You pasted an integration token from `notion.so/profile/integrations`. Rotate to a PAT from `notion.so/developers/tokens` to escape the shared bucket. |
-| `lore auth --status` shows multiple `ntn` workspaces | Set `NOTION_WORKSPACE_ID` or `auth.workspaceId` in `.lore.yaml`.                                                                                           |
-| 401 mid-session                                    | Run `lore auth --login` (internal) or rotate your PAT (external); the client wrapper re-runs auth resolution after the first 401 and retries once when auth changes. |
-| `auth.json` malformed or wrong root type           | `loadNtnToken` in `src/auth/ntn.ts` returns null with a stderr hint; run `lore auth --login`.                                                              |
-| `auth.json` absent or empty-workspace              | Silent null fallback by design — `resolveAuth` falls through to the unsupported-auth diagnostic. If you expected `ntn` auth to resolve, run `lore auth --login`. |
-| Direct `ntn login` used keychain mode              | Re-run `lore auth --login`, or set `NOTION_KEYRING=0` before direct `ntn login`.                                                                           |
-| Hook-spawned background save cannot read the vault | Check `spawnBackgroundSave` in `src/hooks/background.ts`; the child gets minimal env and discovers `.lore.yaml` by walking upward from the hook event cwd. |
+| `kennen auth --whoami` shows `(integration token — secret_)` | You pasted an integration token from `notion.so/profile/integrations`. Rotate to a PAT from `notion.so/developers/tokens` to escape the shared bucket. |
+| `kennen auth --status` shows multiple `ntn` workspaces | Set `NOTION_WORKSPACE_ID` or `auth.workspaceId` in `.kennen.yaml`.                                                                                           |
+| 401 mid-session                                    | Run `kennen auth --login` (internal) or rotate your PAT (external); the client wrapper re-runs auth resolution after the first 401 and retries once when auth changes. |
+| `auth.json` malformed or wrong root type           | `loadNtnToken` in `src/auth/ntn.ts` returns null with a stderr hint; run `kennen auth --login`.                                                              |
+| `auth.json` absent or empty-workspace              | Silent null fallback by design — `resolveAuth` falls through to the unsupported-auth diagnostic. If you expected `ntn` auth to resolve, run `kennen auth --login`. |
+| Direct `ntn login` used keychain mode              | Re-run `kennen auth --login`, or set `NOTION_KEYRING=0` before direct `ntn login`.                                                                           |
+| Hook-spawned background save cannot read the vault | Check `spawnBackgroundSave` in `src/hooks/background.ts`; the child gets minimal env and discovers `.kennen.yaml` by walking upward from the hook event cwd. |
 
 See [`docs/team-rollout.md`](team-rollout.md) for the operator-facing
 rollout runbook (internal-engineer + external-operator personas both

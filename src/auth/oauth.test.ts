@@ -28,7 +28,7 @@ function mockClient(retrieve: () => unknown | Promise<unknown>): Client {
 describe("verifyVaultAccess", () => {
   it("returns { kind: 'ok', pageTitle } when retrieve succeeds and the page has a title", async () => {
     // The success branch carries the page title back so a caller like
-    // `lore init` can echo "Created vault: <title>" — letting the
+    // `kennen init` can echo "Created vault: <title>" — letting the
     // operator catch a wrong-workspace mistake before it propagates.
     const client = mockClient(() => ({
       object: "page",
@@ -240,7 +240,7 @@ describe("verifyVaultAccess", () => {
     if (result.kind === "unauthorized") {
       expect(result.pageId).toBe("page-id")
       expect(result.message).toMatch(/invalid|expired|revoked/i)
-      expect(result.message).not.toMatch(/lore auth --login|NOTION_API_TOKEN/i)
+      expect(result.message).not.toMatch(/kennen auth --login|NOTION_API_TOKEN/i)
     }
   })
 
@@ -293,7 +293,7 @@ describe("verifyVaultAccess", () => {
       expect(result.message).toMatch(/throttled|wait/i)
       // Specifically NOT a re-auth recommendation — that would
       // mislead operators away from the wait/retry remediation.
-      expect(result.message).not.toMatch(/lore auth --login/)
+      expect(result.message).not.toMatch(/kennen auth --login/)
     }
   })
 
@@ -359,25 +359,25 @@ describe("extractPageTitle", () => {
 })
 
 describe("resolveOperatorBaseUrl", () => {
-  // Lore honors ntn-native base-URL env vars (NOTION_BASE_URL,
-  // NOTION_API_BASE_URL) as fallbacks for LORE_NOTION_BASE_URL so an
+  // Kennen honors ntn-native base-URL env vars (NOTION_BASE_URL,
+  // NOTION_API_BASE_URL) as fallbacks for KENNEN_NOTION_BASE_URL so an
   // operator who sets the ntn-shaped variant (the `ntn --help`-
-  // documented form) gets the same base URL Lore would resolve under
-  // the Lore-namespaced name. Without the fallback chain, install-
+  // documented form) gets the same base URL Kennen would resolve under
+  // the Kennen-namespaced name. Without the fallback chain, install-
   // time preflight would resolve dev but the spawned MCP child would
   // silently default to prod.
 
-  it("returns LORE_NOTION_BASE_URL when set (highest priority)", () => {
+  it("returns KENNEN_NOTION_BASE_URL when set (highest priority)", () => {
     expect(
       resolveOperatorBaseUrl({
-        LORE_NOTION_BASE_URL: "https://lore.dev.notion.com",
+        KENNEN_NOTION_BASE_URL: "https://kennen.dev.notion.com",
         NOTION_BASE_URL: "https://ntn.dev.notion.com",
         NOTION_API_BASE_URL: "https://api.dev.notion.com",
       })
-    ).toBe("https://lore.dev.notion.com")
+    ).toBe("https://kennen.dev.notion.com")
   })
 
-  it("falls back to NOTION_BASE_URL when LORE_NOTION_BASE_URL is unset", () => {
+  it("falls back to NOTION_BASE_URL when KENNEN_NOTION_BASE_URL is unset", () => {
     expect(
       resolveOperatorBaseUrl({
         NOTION_BASE_URL: "https://api-dev.notion.com",
@@ -386,7 +386,7 @@ describe("resolveOperatorBaseUrl", () => {
     ).toBe("https://api-dev.notion.com")
   })
 
-  it("falls back to NOTION_API_BASE_URL when neither Lore nor NOTION_BASE_URL is set", () => {
+  it("falls back to NOTION_API_BASE_URL when neither Kennen nor NOTION_BASE_URL is set", () => {
     expect(
       resolveOperatorBaseUrl({ NOTION_API_BASE_URL: "https://api-stg.notion.com" })
     ).toBe("https://api-stg.notion.com")
@@ -399,7 +399,7 @@ describe("resolveOperatorBaseUrl", () => {
   it("treats empty-string env values as unset (skips to next priority level)", () => {
     expect(
       resolveOperatorBaseUrl({
-        LORE_NOTION_BASE_URL: "",
+        KENNEN_NOTION_BASE_URL: "",
         NOTION_BASE_URL: "https://api-dev.notion.com",
       })
     ).toBe("https://api-dev.notion.com")
@@ -437,13 +437,13 @@ describe("resolveOperatorBaseUrl", () => {
 
   it("explicit URL var still wins over NOTION_ENV mapping", () => {
     // An operator setting both `NOTION_ENV=dev` AND
-    // `LORE_NOTION_BASE_URL=https://my-proxy.example` chose the
+    // `KENNEN_NOTION_BASE_URL=https://my-proxy.example` chose the
     // explicit URL — the proxy takes precedence over the env's
     // canonical mapping.
     expect(
       resolveOperatorBaseUrl({
         NOTION_ENV: "dev",
-        LORE_NOTION_BASE_URL: "https://my-proxy.example",
+        KENNEN_NOTION_BASE_URL: "https://my-proxy.example",
       })
     ).toBe("https://my-proxy.example")
   })
@@ -480,14 +480,14 @@ describe("Notion API base URL validation", () => {
       "ftp://notion.internal.invalid",
       "http://[::1",
     ]) {
-      expect(() => normalizeNotionApiBaseUrl(value, "LORE_NOTION_BASE_URL")).toThrow(
+      expect(() => normalizeNotionApiBaseUrl(value, "KENNEN_NOTION_BASE_URL")).toThrow(
         InvalidNotionBaseUrlError
       )
       try {
-        normalizeNotionApiBaseUrl(value, "LORE_NOTION_BASE_URL")
+        normalizeNotionApiBaseUrl(value, "KENNEN_NOTION_BASE_URL")
       } catch (err) {
         expect(err).toBeInstanceOf(InvalidNotionBaseUrlError)
-        expect((err as Error).message).toContain("LORE_NOTION_BASE_URL")
+        expect((err as Error).message).toContain("KENNEN_NOTION_BASE_URL")
         if (value.trim().length > 0) {
           expect((err as Error).message).not.toContain(value)
         }
@@ -498,12 +498,12 @@ describe("Notion API base URL validation", () => {
   it("resolves operator env with source attribution in priority order", () => {
     expect(
       resolveOperatorBaseUrlWithSource({
-        LORE_NOTION_BASE_URL: "https://lore.example",
+        KENNEN_NOTION_BASE_URL: "https://kennen.example",
         NOTION_BASE_URL: "https://ntn.example",
       })
     ).toEqual({
-      baseUrl: "https://lore.example",
-      source: "LORE_NOTION_BASE_URL",
+      baseUrl: "https://kennen.example",
+      source: "KENNEN_NOTION_BASE_URL",
     })
 
     expect(resolveOperatorBaseUrlWithSource({ NOTION_ENV: "dev" })).toEqual({
@@ -515,10 +515,10 @@ describe("Notion API base URL validation", () => {
   it("rejects invalid operator env instead of falling through to a lower source", () => {
     expect(() =>
       resolveOperatorBaseUrlWithSource({
-        LORE_NOTION_BASE_URL: "",
+        KENNEN_NOTION_BASE_URL: "",
         NOTION_BASE_URL: "https://api-dev.notion.com",
       })
-    ).toThrow(/LORE_NOTION_BASE_URL/)
+    ).toThrow(/KENNEN_NOTION_BASE_URL/)
 
     expect(() => resolveOperatorBaseUrlWithSource({ NOTION_ENV: "qa" })).toThrow(
       /Set NOTION_ENV to "prod", "dev", or "stg"/
@@ -527,8 +527,8 @@ describe("Notion API base URL validation", () => {
 })
 
 describe("ntnEnvFromBaseUrl (URL → ntn env selector)", () => {
-  // Inverse of `ntnEnvBaseUrl`. Used by `lore install` to derive the
-  // ntn-login env target from `.lore.yaml`'s `auth.baseUrl` so a dev
+  // Inverse of `ntnEnvBaseUrl`. Used by `kennen install` to derive the
+  // ntn-login env target from `.kennen.yaml`'s `auth.baseUrl` so a dev
   // project's auto-login mints a dev token instead of ntn's prod
   // default.
 
@@ -538,7 +538,7 @@ describe("ntnEnvFromBaseUrl (URL → ntn env selector)", () => {
 
   it("maps the `.com` prod alias to env=prod", () => {
     // Notion is migrating public surfaces from `.so` to `.com`; both
-    // forms hit prod. A `.lore.yaml` carrying either must infer prod
+    // forms hit prod. A `.kennen.yaml` carrying either must infer prod
     // so a future config update doesn't silently demote prod to
     // "unknown" (which would refuse auto-login on the install path
     // and skip env inference on the auth --login path).
@@ -567,7 +567,7 @@ describe("ntnEnvFromBaseUrl (URL → ntn env selector)", () => {
   })
 
   it("is exact-match — does NOT match a URL with extra trailing path", () => {
-    // Defensive: a `.lore.yaml` carrying
+    // Defensive: a `.kennen.yaml` carrying
     // `auth.baseUrl: https://api-dev.notion.com/v1` would NOT round-
     // trip cleanly through ntn's resolution anyway (ntn appends its
     // own path). Refusing the inference is the right call.

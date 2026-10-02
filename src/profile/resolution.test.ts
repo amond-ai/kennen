@@ -30,7 +30,7 @@ describe("Phase 3 profile resolution priority", () => {
   let configRoot: string
 
   beforeEach(() => {
-    workDir = mkdtempSync(join(tmpdir(), "lore-resolve-"))
+    workDir = mkdtempSync(join(tmpdir(), "kennen-resolve-"))
     configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
   })
@@ -49,7 +49,7 @@ describe("Phase 3 profile resolution priority", () => {
   })
 
   it("prefers a local profile over the built-in version", () => {
-    const localDir = join(configRoot, ".lore", "profiles", "local", "default", "1.0.0")
+    const localDir = join(configRoot, ".kennen", "profiles", "local", "default", "1.0.0")
     writeFiles(localDir, minimalProfileFiles("default"))
 
     const profile = resolveProfileFromConfigAtRoot(
@@ -63,7 +63,7 @@ describe("Phase 3 profile resolution priority", () => {
   it("falls through to installed external when no built-in matches and no local override exists", () => {
     const installedDir = join(
       configRoot,
-      ".lore",
+      ".kennen",
       "profiles",
       "installed",
       "custom",
@@ -88,7 +88,7 @@ describe("Phase 3 profile resolution priority", () => {
   it("never resolves an installed-external bundle when the built-in already wins", () => {
     const installedDir = join(
       configRoot,
-      ".lore",
+      ".kennen",
       "profiles",
       "installed",
       "default",
@@ -106,7 +106,7 @@ describe("Phase 3 profile resolution priority", () => {
 
 describe("resolveProfileSelector", () => {
   it("returns null when nothing matches", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-resolve-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-resolve-"))
     try {
       const parsed = parseProfileSelector("ghost@9.9.9")
       expect(resolveProfileSelector(parsed, dir)).toBeNull()
@@ -118,13 +118,13 @@ describe("resolveProfileSelector", () => {
 
 describe("discoverProfiles", () => {
   it("includes built-in profiles and any installed/local overrides", () => {
-    const workDir = mkdtempSync(join(tmpdir(), "lore-resolve-"))
+    const workDir = mkdtempSync(join(tmpdir(), "kennen-resolve-"))
     const configRoot = join(workDir, "vault")
     mkdirSync(configRoot, { recursive: true })
     try {
       const installedDir = join(
         configRoot,
-        ".lore",
+        ".kennen",
         "profiles",
         "installed",
         "custom",

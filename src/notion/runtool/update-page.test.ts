@@ -33,22 +33,22 @@ function buildClient(
 }
 
 describe("isRunToolBlockEditEnabled", () => {
-  it("inherits from LORE_USE_RUNTOOL when the sub-flag is unset", () => {
-    expect(isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: "1" })).toBe(true)
-    expect(isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: "0" })).toBe(false)
+  it("inherits from KENNEN_USE_RUNTOOL when the sub-flag is unset", () => {
+    expect(isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: "1" })).toBe(true)
+    expect(isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: "0" })).toBe(false)
   })
 
-  it("lets LORE_USE_RUNTOOL_BLOCK_EDIT override the parent flag", () => {
+  it("lets KENNEN_USE_RUNTOOL_BLOCK_EDIT override the parent flag", () => {
     expect(
       isRunToolBlockEditEnabled({
-        LORE_USE_RUNTOOL: "1",
-        LORE_USE_RUNTOOL_BLOCK_EDIT: "0",
+        KENNEN_USE_RUNTOOL: "1",
+        KENNEN_USE_RUNTOOL_BLOCK_EDIT: "0",
       })
     ).toBe(false)
     expect(
       isRunToolBlockEditEnabled({
-        LORE_USE_RUNTOOL: "0",
-        LORE_USE_RUNTOOL_BLOCK_EDIT: "1",
+        KENNEN_USE_RUNTOOL: "0",
+        KENNEN_USE_RUNTOOL_BLOCK_EDIT: "1",
       })
     ).toBe(true)
   })
@@ -59,7 +59,7 @@ describe("isRunToolBlockEditEnabled", () => {
   })
 
   it("ignores unrecognized values, falling through to the default-on parent", () => {
-    expect(isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: "maybe" })).toBe(true)
+    expect(isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: "maybe" })).toBe(true)
   })
 
   // The global `tests/setup-runtool-flag.ts` `beforeEach` resets the
@@ -75,11 +75,11 @@ describe("isRunToolBlockEditEnabled", () => {
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     try {
       // First read: warning fires.
-      expect(isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: "fasle" })).toBe(true)
+      expect(isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: "fasle" })).toBe(true)
       expect(stderrSpy).toHaveBeenCalledTimes(1)
       const firstLine = stderrSpy.mock.calls[0]![0] as string
-      expect(firstLine).toContain("[lore] notion-runtool warn:")
-      expect(firstLine).toContain("LORE_USE_RUNTOOL")
+      expect(firstLine).toContain("[kennen] notion-runtool warn:")
+      expect(firstLine).toContain("KENNEN_USE_RUNTOOL")
       expect(firstLine).toContain('"fasle"')
       // Warning names the documented default so an incident operator
       // can tell which way the typo resolved from the warning alone.
@@ -90,12 +90,12 @@ describe("isRunToolBlockEditEnabled", () => {
       // suppresses — once-per-process posture. The assertion is
       // adjacent to the first read so hook ordering cannot make it
       // vacuous.
-      expect(isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: "fasle" })).toBe(true)
+      expect(isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: "fasle" })).toBe(true)
       expect(stderrSpy).toHaveBeenCalledTimes(1)
 
       // A different unrecognized value on the same name fires
       // independently — different operator typo, independent surfacing.
-      expect(isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: "disabled" })).toBe(true)
+      expect(isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: "disabled" })).toBe(true)
       expect(stderrSpy).toHaveBeenCalledTimes(2)
     } finally {
       stderrSpy.mockRestore()
@@ -106,7 +106,7 @@ describe("isRunToolBlockEditEnabled", () => {
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     try {
       for (const v of ["1", "0", "true", "false", "on", "off", "yes", "no", ""]) {
-        isRunToolBlockEditEnabled({ LORE_USE_RUNTOOL: v })
+        isRunToolBlockEditEnabled({ KENNEN_USE_RUNTOOL: v })
       }
       expect(stderrSpy).not.toHaveBeenCalled()
     } finally {
@@ -230,7 +230,7 @@ describe("updatePageContentViaRunTool", () => {
     // pre-call uniqueness checks cannot detect "this edit removes a
     // child page", only the server can. Falling back lets the existing
     // SDK path apply, where allow_deleting_content semantics are
-    // already well-established for the Lore caller.
+    // already well-established for the Kennen caller.
     const requestSpy = vi.fn(async () => ({
       page_id: "11111111111111111111111111111111",
       deletion_warning: { message: "would remove 1 child page" },

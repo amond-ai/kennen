@@ -24,7 +24,7 @@ export const PINNED_PRIORITY_MIN = -1_000_000
  * Active-pinned-block count above which the wake-up Pinned Context
  * section appends an operator-facing abuse warning.
  *
- * A malicious agent that runs `lore-pinned action='pin'` in a loop
+ * A malicious agent that runs `kennen-pinned action='pin'` in a loop
  * can exhaust the wake-up Pinned Context render budget for every
  * other agent on the same vault — the visible cap renders the
  * highest-priority N rows, so high-priority spam pushes legitimate
@@ -44,7 +44,7 @@ export const PINNED_BLOCKS_ABUSE_THRESHOLD = 100
 
 /**
  * Hard cap on the total active-pinned-block count enforced at the
- * `lore-pinned action='pin'` write boundary.
+ * `kennen-pinned action='pin'` write boundary.
  *
  * The render-time abuse warning above is operator-facing but does
  * not prevent the underlying defense-in-depth gap: a malicious or
@@ -64,8 +64,8 @@ export const PINNED_BLOCKS_ABUSE_THRESHOLD = 100
  * non-matching ones.
  *
  * Pin attempts past the cap reject with a typed error pointing
- * operators at `lore pinned list --all-audiences` and
- * `lore-pinned action='unpin'` so the recovery path is obvious.
+ * operators at `kennen pinned list --all-audiences` and
+ * `kennen-pinned action='unpin'` so the recovery path is obvious.
  * Unpinning is unaffected — operators trying to clear backlog
  * never hit the cap.
  *

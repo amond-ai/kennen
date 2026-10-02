@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-security-v1
+name: kennen-longitudinal-github-cli-security-v1
 description: >-
   GitHub CLI security-hardening longitudinal suite. Each scenario reimplements a
   real security-sensitive surface in cli/cli at the parent of an upstream fix.
@@ -12,8 +12,8 @@ description: >-
 seededCorpus: ../vault-seeds/github-cli-security-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: gh-cli-codespace-ssh-username-arg-injection
     difficulty: hard

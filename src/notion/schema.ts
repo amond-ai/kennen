@@ -1,5 +1,5 @@
 /**
- * Notion database property schemas for Lore's five databases.
+ * Notion database property schemas for Kennen's five databases.
  *
  * These definitions are used by setup.ts to create databases and by
  * core operations to read/write property values.
@@ -289,7 +289,7 @@ export function memoriesProperties(
     // Stable identifier for upsert grouping. Distinct from the `Topic`
     // relation column above (which links to the Topics DB for faceted
     // browsing) — `Topic Key` is *operationally* a per-row identifier
-    // used by `lore-memory action='save'` to dispatch between
+    // used by `kennen-memory action='save'` to dispatch between
     // fresh-create and append-revision. Format constraint is
     // kebab-case path like `decision/jwt-auth`, enforced at the save-
     // path validation; stored verbatim. Empty string and missing
@@ -302,7 +302,7 @@ export function memoriesProperties(
     // `extractNumber` returns null, which `pageToMemory` coalesces to
     // 1 so `formatMemoryListItem` treats legacy rows as single-revision.
     [MEMORY_PROPS.REVISION_COUNT]: { number: { format: "number" } },
-    // Append-only NDJSON audit trail for `lore-memory action='compare'`.
+    // Append-only NDJSON audit trail for `kennen-memory action='compare'`.
     // One JSON line per verdict — `{"verdict": ..., "target": ...,
     // "reason": ..., "judgedAt": ..., "promptVersion": ...}`. Capped
     // via `COMPARE_NOTES_MAX_CHARS`; append-past-cap throws so
@@ -321,7 +321,7 @@ export function memoriesProperties(
     // in the same `pages.update` atom as the state write. Preserved
     // across `update({ state: 'open' })` re-opens as historical fact;
     // null on non-task memories and on tasks that have never reached a
-    // terminal state. Read by `lore status` for closure-rate metrics.
+    // terminal state. Read by `kennen status` for closure-rate metrics.
     [MEMORY_PROPS.DONE_AT]: { date: {} },
     [MEMORY_PROPS.DECIDED_AT]: { date: {} },
     // System-managed read-citation timestamp; distinct from
@@ -456,12 +456,12 @@ export function memoriesSelfRelationProperties(memoriesDsId: string): PropertyCo
       },
     },
     // Pairs a memory with every other memory it has been judged against
-    // by `lore-memory action='compare'`. `single_property` (not
+    // by `kennen-memory action='compare'`. `single_property` (not
     // `dual_property`) matches the existing self-relations — the
     // calling code takes responsibility for symmetric writes (when
     // memory A names B, the helper issues a parallel update so B
     // names A). Set membership encodes "have these two been judged?"
-    // and the `lore conflicts scan` candidate filter consults it to
+    // and the `kennen conflicts scan` candidate filter consults it to
     // skip already-judged pairs.
     [MEMORY_PROPS.COMPARED_WITH]: {
       relation: {
@@ -578,7 +578,7 @@ export const FACT_PROPS = {
   VALID_UNTIL: "Valid Until",
   // Transaction-time provenance. `Valid From` / `Valid Until`
   // model domain truth (when the fact was true in the world); `Observed At`
-  // and `Invalidated At` model what Lore knew and when. Together they
+  // and `Invalidated At` model what Kennen knew and when. Together they
   // implement the bitemporal axis used for as-of recall.
   // `Observed At` is written by `FactService.create` at write time;
   // `Invalidated At` is written by `FactService.invalidate` alongside the
@@ -597,7 +597,7 @@ export const FACT_PROPS = {
   OBJECT_ENTITY: "ObjectEntity",
   // Scope / lifetime. Mirrors the Memories DB columns so
   // facts about a session-scoped piece of work can carry the same
-  // identity slot — `lore-fact action='create'` accepts a scope bundle
+  // identity slot — `kennen-fact action='create'` accepts a scope bundle
   // that matches the source memory's scope.
   SCOPE_KIND: "Scope Kind",
   SCOPE_KEY: "Scope Key",
@@ -642,14 +642,14 @@ export function factsProperties(
                   { name: "waiting_on", color: "orange" },
                   { name: "blocked_by", color: "red" },
                   // Decision-graph predicates. Created exclusively by
-                  // DecisionService / `lore-decision action='create'` — not
-                  // exposed through `lore-fact action='create'`.
+                  // DecisionService / `kennen-decision action='create'` — not
+                  // exposed through `kennen-fact action='create'`.
                   { name: "decided_by", color: "blue" },
                   { name: "supersedes_decision", color: "gray" },
                   { name: "informs", color: "pink" },
-                  // Auto-emitted by `lore-memory action='save'`.
+                  // Auto-emitted by `kennen-memory action='save'`.
                   // System-managed, regex-derived; not exposed through
-                  // `lore-fact action='create'`. Distinguished from the
+                  // `kennen-fact action='create'`. Distinguished from the
                   // agent-curated relationship predicates (uses / depends_on /
                   // is_a / etc.) so retrieval can prefer the higher-quality
                   // explicit edges when both exist.
@@ -670,7 +670,7 @@ export function factsProperties(
       // write boundaries (`FactService.create` seeds `Observed At` from `today`;
       // `FactService.invalidate` writes `Invalidated At` alongside the
       // `Valid Until` flip). Read paths can use these for as-of recall
-      // (`lore-query action='ask'` with `asOf` / `includeHistory`).
+      // (`kennen-query action='ask'` with `asOf` / `includeHistory`).
       [FACT_PROPS.OBSERVED_AT]: { date: {} },
       [FACT_PROPS.INVALIDATED_AT]: { date: {} },
       [FACT_PROPS.INVALIDATED_BY]: {
@@ -700,7 +700,7 @@ export function factsProperties(
       // Bumped on read-citation via `FactService.touchOnRead`; decremented
       // inside `FactService.invalidate` alongside the `Valid Until` flip so the
       // same atomic write closes the contradiction signal. Empty until first
-      // touch — `pageToFact` returns `null` when missing so `lore-ask`
+      // touch — `pageToFact` returns `null` when missing so `kennen-ask`
       // distinguishes "never scored" from "scored zero."
       [FACT_PROPS.CONFIDENCE_SCORE]: { number: { format: "number" } },
       // System-managed read-citation timestamp; distinct from
@@ -715,13 +715,13 @@ export function factsProperties(
       [FACT_PROPS.DEDUP_KEY]: { rich_text: {} },
       // Lowercased + whitespace-collapsed form of `Subject`, used by
       // `FactService.queryBySubject` for case-insensitive matching.
-      // Pre-migration rows have this blank; `lore migrate --dedup-keys`
+      // Pre-migration rows have this blank; `kennen migrate --dedup-keys`
       // backfills it. Distinct from `DedupKey` (a hash) because we need
       // `contains` substring matching, which Notion doesn't run against
       // hashed values.
       [FACT_PROPS.SUBJECT_KEY]: { rich_text: {} },
       // Canonical entity relation columns. Filled by the build-entities
-      // migration and by `lore-fact action='create'` after the resolver
+      // migration and by `kennen-fact action='create'` after the resolver
       // picks an Entity row. Unbackfilled rows have empty relations; queries
       // that filter by entity ID fall back to the SubjectKey path on those
       // rows.
@@ -894,7 +894,7 @@ export function encodeCompareNotesRichText(notes: string): CompareNotesTextChunk
       `Compare Notes overflow: input is ${notes.length} chars, exceeds cap ` +
         `${COMPARE_NOTES_MAX_CHARS}. Use \`appendCompareNote\` to grow the ` +
         `audit trail incrementally with overflow protection, or consolidate ` +
-        `via lore-memory action='archive' on duplicate pairs before writing.`
+        `via kennen-memory action='archive' on duplicate pairs before writing.`
     )
   }
   if (notes.length === 0) return []
@@ -1305,7 +1305,7 @@ export function buildFactProps(input: {
    * `undefined` leaves the column untouched, `null` clears, a string writes
    * verbatim. `FactService.invalidate` writes this alongside `Valid Until`
    * so a single `pages.update` carries both the domain-truth-ended date
-   * and the "Lore learned it stopped being true" date.
+   * and the "Kennen learned it stopped being true" date.
    */
   invalidatedAt?: string | null
   /**

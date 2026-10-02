@@ -86,8 +86,8 @@ export function bumpConfidenceScore(current: number): number {
 }
 
 /**
- * Decrement confidence on a contradiction signal (`lore-correct`,
- * `lore-supersede`). Returns the new score (clamped).
+ * Decrement confidence on a contradiction signal (`kennen-correct`,
+ * `kennen-supersede`). Returns the new score (clamped).
  *
  * Decrement algebra: `next = current * DECREMENT_FACTOR`. Aggressive
  * on purpose: contradiction is high-quality negative evidence (an

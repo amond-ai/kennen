@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { Fact } from "../types.js"
 import { runFactConfidenceAudit } from "./fact-confidence-audit.js"
 
@@ -34,7 +34,7 @@ function makeServices(facts: Fact[]) {
   const listAllForBackfill = vi.fn(() => factsForAudit(facts))
   const services = {
     facts: { listAllForBackfill },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
   return { services, listAllForBackfill }
 }
 

@@ -1,9 +1,9 @@
-// ABOUTME: Owns the lore-memory MCP schema, public tool copy, and action routing.
+// ABOUTME: Owns the kennen-memory MCP schema, public tool copy, and action routing.
 // ABOUTME: Edit when agent-facing memory inputs, validation hints, or dispatched actions change.
 
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import { formatDispatchError, toolError, withWakeUpCacheBump } from "../helpers.js"
 import { RICH_TEXT_PROPERTY_MAX_LEN } from "../../core/rich-text-schema.js"
 import { resolveMemorySynopsisMaxChars } from "../../policy/memory-synopsis.js"
@@ -34,7 +34,7 @@ import { handleUpdate } from "./memory/update.js"
 export { handleExpand } from "./memory/expand.js"
 export { handleRecall, handleSearch } from "./memory/read.js"
 
-export function registerMemoryTools(server: McpServer, services: LoreServices): void {
+export function registerMemoryTools(server: McpServer, services: KennenServices): void {
   const tagsSchema = createTagsSchema(services.profile?.taxonomy.tags)
   const synopsisMaxChars = resolveMemorySynopsisMaxChars(services.config)
   const memoryDispatchSchema = createMemoryDispatchSchema(tagsSchema, {
@@ -42,17 +42,17 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
   })
 
   // -------------------------------------------------------------------------
-  // lore-memory — polymorphic dispatcher
+  // kennen-memory — polymorphic dispatcher
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-memory",
+    "kennen-memory",
     {
       title: "Memory operations",
       description:
         "Memory operations. Action-dispatched:\n\n" +
         "- `action: 'search'` — search memories by contains, semantic, or hybrid retrieval.\n" +
         "- `action: 'save'` — create a memory; duplicate-probes in parallel. With `topicKey`, upserts by key + project-set and appends a revision. With `subject` + `replace: true`, writes current state under `state/<slug>`: one wake-up row, revision history intact.\n" +
-        "- `action: 'update'` — mutate an existing memory's title, body, tags, kind, status, or relations. Any field omitted is left untouched. Rejects with `MemoryReadOnlyError` on read-only pinned blocks; use `lore-pinned action='update'` with `force: true` to override.\n" +
+        "- `action: 'update'` — mutate an existing memory's title, body, tags, kind, status, or relations. Any field omitted is left untouched. Rejects with `MemoryReadOnlyError` on read-only pinned blocks; use `kennen-pinned action='update'` with `force: true` to override.\n" +
         "- `action: 'archive'` — soft-delete a memory by ID (Notion archive flag).\n" +
         "- `action: 'expand'` — batch-fetch full markdown bodies for up to 20 IDs or recall/search result handles.\n" +
         "- `action: 'history'` — read the full revision-chain body for a subject state memory.\n" +
@@ -60,8 +60,8 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
         "- `action: 'compare'` — record a verdict on a memory pair (`conflicts_with` | `supersedes` | `scoped` | `related` | `compatible` | `not_conflict`). Asymmetric verdicts require `affectedMemoryId`. Idempotent on `(pair, verdict, affected)`.\n" +
         "- `action: 'approve'` / `'reject'` — inbox-review a `Status: proposed` memory (#281); flips Status and appends a Reviewed audit block.\n" +
         "- `action: 'promote'` — copy to a `promotionTargets` entry with origin audit; review-required targets create `Status: proposed`; reruns reuse `Promotion Source Key`.\n\n" +
-        "Use `lore-pinned` for pinned context blocks.\n\n" +
-        "For architectural decisions prefer `lore-decision` with `action: 'create'` — it captures structured rationale and supersession chains.\n\n" +
+        "Use `kennen-pinned` for pinned context blocks.\n\n" +
+        "For architectural decisions prefer `kennen-decision` with `action: 'create'` — it captures structured rationale and supersession chains.\n\n" +
         "`tags` is a closed vocabulary; for free-form labels (PR numbers, file paths, IDs) use `keywords`.",
       inputSchema: z.object({
         action: z
@@ -169,7 +169,7 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
           .enum(SUGGEST_KIND_VALUES)
           .optional()
           .describe(
-            "(save | update | suggest-topic-key) Memory kind. Default note on save; use lore-decision/lore-task for those types. Operational rows should expire."
+            "(save | update | suggest-topic-key) Memory kind. Default note on save; use kennen-decision/kennen-task for those types. Operational rows should expire."
           ),
         status: z
           .enum(STATUSES)
@@ -214,7 +214,7 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
           .string()
           .optional()
           .describe(
-            "(action='save') Engineer display name. Defaults to LORE_USER_NAME env or `users.me` on the active token."
+            "(action='save') Engineer display name. Defaults to KENNEN_USER_NAME env or `users.me` on the active token."
           ),
         agent: z
           .string()
@@ -318,20 +318,20 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
           .string()
           .optional()
           .describe(
-            "(action='approve'/'reject') Optional reviewer name. Defaults to the engineer identity resolver (LORE_USER_NAME → users.me)."
+            "(action='approve'/'reject') Optional reviewer name. Defaults to the engineer identity resolver (KENNEN_USER_NAME → users.me)."
           ),
         // promote
         targetName: z
           .string()
           .optional()
           .describe(
-            "(action='promote') Name of the promotion target as configured in `.lore.yaml`'s `promotionTargets`."
+            "(action='promote') Name of the promotion target as configured in `.kennen.yaml`'s `promotionTargets`."
           ),
         dryRun: z
           .boolean()
           .optional()
           .describe(
-            "(action='promote') Preview the audit block + resolved status without writing to the target vault. Mirrors `lore promote --dry-run`. Mis-resolved targets / missing identity / same-vault rejection all surface before the source read so a misconfigured call cannot burn target-vault quota."
+            "(action='promote') Preview the audit block + resolved status without writing to the target vault. Mirrors `kennen promote --dry-run`. Mis-resolved targets / missing identity / same-vault rejection all surface before the source read so a misconfigured call cannot burn target-vault quota."
           ),
         scope: scopeInputSchema,
       }),
@@ -339,7 +339,7 @@ export function registerMemoryTools(server: McpServer, services: LoreServices): 
     async (args) => {
       const parsed = memoryDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-memory", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-memory", parsed.error)))
       }
       const data = parsed.data
       switch (data.action) {

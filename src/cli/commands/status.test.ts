@@ -23,8 +23,8 @@ import {
 } from "../../hooks/background-failure-status.js"
 import { DRIFT_DEBOUNCE_DAYS } from "../../hooks/drift-marker.js"
 import type { BackgroundFailureMarker } from "../../hooks/background-failure-marker.js"
-import type { LoreServices } from "../../services.js"
-import type { LoreConfig, Memory, Project } from "../../types.js"
+import type { KennenServices } from "../../services.js"
+import type { KennenConfig, Memory, Project } from "../../types.js"
 import {
   COST_LEDGER_SCHEMA_VERSION,
   payloadSummary,
@@ -82,10 +82,10 @@ function makeProject(name: string, overrides: Partial<Project> = {}): Project {
 }
 
 function makeServices(opts: {
-  config: LoreConfig
+  config: KennenConfig
   digestMemories?: Memory[]
   projects?: Project[]
-}): LoreServices {
+}): KennenServices {
   const projectsByName = new Map((opts.projects ?? []).map((p) => [p.name, p]))
   return {
     config: opts.config,
@@ -105,7 +105,7 @@ function makeServices(opts: {
         return projectsByName.get(name) ?? null
       },
     },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 function makeBackgroundFailure(
@@ -177,7 +177,7 @@ describe("formatBackgroundFailureStatus", () => {
           sessionId: "sess-123",
           code: "init-failed",
           message: "init failed: unauthorized",
-          logPath: "/tmp/lore-hook-state/digest-Widget_Backend.log",
+          logPath: "/tmp/kennen-hook-state/digest-Widget_Backend.log",
         }),
       ],
     }
@@ -190,8 +190,8 @@ describe("formatBackgroundFailureStatus", () => {
     expect(text).toContain("project Widget Backend")
     expect(text).toContain("session sess-123")
     expect(text).toContain("init-failed: init failed: unauthorized")
-    expect(text).toContain("/tmp/lore-hook-state/digest-Widget_Backend.log")
-    expect(text).toContain("lore auth --status")
+    expect(text).toContain("/tmp/kennen-hook-state/digest-Widget_Backend.log")
+    expect(text).toContain("kennen auth --status")
   })
 
   it("uses digest-specific manual recovery hints for synthesizer failures", () => {
@@ -208,7 +208,7 @@ describe("formatBackgroundFailureStatus", () => {
 
     const text = formatBackgroundFailureStatus(report).join("\n")
     expect(text).toContain("digest synthesizer")
-    expect(text).toContain("lore digest")
+    expect(text).toContain("kennen digest")
   })
 
   it("renders the total count when recent failures are truncated", () => {
@@ -282,12 +282,12 @@ describe("formatDigestStatus", () => {
 
   it("surfaces the env kill-switch in the section header", () => {
     const report: DigestStatusReport = {
-      disabledReason: { source: "env", detail: "LORE_AUTO_DIGEST=false" },
+      disabledReason: { source: "env", detail: "KENNEN_AUTO_DIGEST=false" },
       truncated: false,
       rows: [{ name: "Widget", lastDigest: null, markerAgeDays: null }],
     }
     expect(formatDigestStatus(report)[0]).toBe(
-      "Digests (autoDigest=false via LORE_AUTO_DIGEST=false):"
+      "Digests (autoDigest=false via KENNEN_AUTO_DIGEST=false):"
     )
   })
 
@@ -390,7 +390,7 @@ describe("formatDigestStatus", () => {
 })
 
 describe("loadDigestStatus", () => {
-  const baseConfig: LoreConfig = {
+  const baseConfig: KennenConfig = {
     vault: { pageId: "v" },
     projects: [
       { name: "Widget Backend", path: "services/widget" },
@@ -478,7 +478,7 @@ describe("loadDigestStatus", () => {
     })
   })
 
-  it("flags `LORE_AUTO_DIGEST=false` as an env kill-switch and overrides config", async () => {
+  it("flags `KENNEN_AUTO_DIGEST=false` as an env kill-switch and overrides config", async () => {
     const services = makeServices({
       // Even when config says enabled, env still wins.
       config: { ...baseConfig, hooks: { autoDigest: true } },
@@ -489,7 +489,7 @@ describe("loadDigestStatus", () => {
     })
     expect(report.disabledReason).toEqual({
       source: "env",
-      detail: "LORE_AUTO_DIGEST=false",
+      detail: "KENNEN_AUTO_DIGEST=false",
     })
   })
 
@@ -579,7 +579,7 @@ describe("loadDigestStatus", () => {
           return makeProject(name)
         },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await loadDigestStatus(services, "/repo", {
       markerAge: vi.fn(async () => 1),
@@ -738,24 +738,24 @@ describe("formatTrackingPreflight (issue 0.6.0/24)", () => {
 
   it("names the historical migration command so operators recognize the deleted path", () => {
     // The warning surfaces the (now-deleted) migration command name so an
-    // operator who runs `lore status` after upgrading sees the same
+    // operator who runs `kennen status` after upgrading sees the same
     // command they may have read about previously, alongside the
     // explanation that it's gone.
     const report: TrackingPreflightReport = { count: 1 }
     const text = formatTrackingPreflight(report).join("\n")
-    expect(text).toContain("lore migrate --migrate-tracking-to-tasks")
+    expect(text).toContain("kennen migrate --migrate-tracking-to-tasks")
   })
 
   it("names the consequence of skipping the migration", () => {
     // Acceptance criterion: warning text names the consequence so the
-    // operator understands the urgency. "Invisible to lore" is the
+    // operator understands the urgency. "Invisible to kennen" is the
     // load-bearing phrase — the rows still exist in Notion, but no
     // read path will surface them post-removal.
     const report: TrackingPreflightReport = { count: 1 }
     // Collapse whitespace so the assertion ignores hard line wrapping in
     // the rendered block — render artifact, not a contract change.
     const text = formatTrackingPreflight(report).join(" ").replace(/\s+/g, " ")
-    expect(text).toMatch(/invisible to lore/i)
+    expect(text).toMatch(/invisible to kennen/i)
   })
 
   it("names all three historical predicates so an operator can grep their vault", () => {
@@ -844,7 +844,7 @@ describe("loadTrackingPreflight (issue 0.6.0/24)", () => {
 
 describe("loadCostStatusLines", () => {
   it("skips schema-invalid ledger rows so status still renders costs", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-status-costs-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-status-costs-"))
     try {
       const costTracking = resolveCostTracking(
         {
@@ -876,7 +876,7 @@ describe("loadCostStatusLines", () => {
             eventType: "mcp.invocation",
             source: "host_agent",
             status: "success",
-            tool: "lore-query",
+            tool: "kennen-query",
             action: "search",
             payload: payloadSummary("{}", "ok"),
             notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -904,11 +904,11 @@ describe("loadCostStatusLines", () => {
         ].join("\n") + "\n"
       )
 
-      const lines = await loadCostStatusLines({ costTracking } as LoreServices)
+      const lines = await loadCostStatusLines({ costTracking } as KennenServices)
       const output = lines.join("\n")
       expect(output).toContain("Cost tracking: enabled")
-      expect(output).toContain("~<$0.01 prompt-estimated Lore-owned model")
-      expect(output).toContain("prompt-estimated Lore-owned model")
+      expect(output).toContain("~<$0.01 prompt-estimated Kennen-owned model")
+      expect(output).toContain("prompt-estimated Kennen-owned model")
       expect(output).toContain("skipped 2 malformed cost ledger lines")
       expect(output).toContain("1 MCP calls")
       expect(output).not.toContain("SECRET_INVALID_STATUS_ROW")
@@ -918,7 +918,7 @@ describe("loadCostStatusLines", () => {
   })
 
   it("warns when the append-error marker exists", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-status-costs-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-status-costs-"))
     try {
       const costTracking = resolveCostTracking(
         {
@@ -940,7 +940,7 @@ describe("loadCostStatusLines", () => {
         new Date("2026-05-15T12:00:00.000Z")
       )
 
-      const lines = await loadCostStatusLines({ costTracking } as LoreServices)
+      const lines = await loadCostStatusLines({ costTracking } as KennenServices)
       const output = lines.join("\n")
 
       expect(output).toContain("Cost tracking: enabled")
@@ -956,7 +956,7 @@ describe("loadCostStatusLines", () => {
   })
 
   it("warns when the append-error marker exists and the ledger is unreadable", async () => {
-    const dir = mkdtempSync(join(tmpdir(), "lore-status-costs-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-status-costs-"))
     try {
       const costTracking = resolveCostTracking(
         {
@@ -977,7 +977,7 @@ describe("loadCostStatusLines", () => {
       )
       mkdirSync(costTracking.ledgerPath)
 
-      const lines = await loadCostStatusLines({ costTracking } as LoreServices)
+      const lines = await loadCostStatusLines({ costTracking } as KennenServices)
       const output = lines.join("\n")
 
       expect(output).toContain(

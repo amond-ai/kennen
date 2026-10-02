@@ -35,7 +35,7 @@ vi.mock("../../core/digest.js", async (importOriginal) => {
 
 // Real on-disk fixtures — `resolveSpawnCwd` calls `existsSync` and we want
 // to pin actual filesystem behavior, not a mock of it.
-const SCRATCH = mkdtempSync(join(tmpdir(), "lore-digest-cli-test-"))
+const SCRATCH = mkdtempSync(join(tmpdir(), "kennen-digest-cli-test-"))
 afterAll(() => {
   rmSync(SCRATCH, { recursive: true, force: true })
 })
@@ -72,7 +72,7 @@ describe("resolveSpawnCwd", () => {
   })
 
   it("strips a leading slash on the project path before resolving", () => {
-    // `.lore.yaml` historically allowed `/services/widget` as a project path.
+    // `.kennen.yaml` historically allowed `/services/widget` as a project path.
     // The leading slash must be stripped so `resolve(configRoot, ...)` doesn't
     // jump up to the filesystem root.
     const warn = (): void => {}
@@ -190,7 +190,7 @@ describe("digestCommand", () => {
     // The `lock-path-too-long` branch is structurally distinct from the
     // generic `Failed to spawn digest synthesizer.` path: there's no
     // peer doing the work (so it's NOT a benign race), and the
-    // actionable knob is `LORE_HOOK_STATE_DIR`. Operators grep stderr
+    // actionable knob is `KENNEN_HOOK_STATE_DIR`. Operators grep stderr
     // for `lock path too long` to triage this — pin the wording so a
     // refactor that drops the actionable hint breaks the test loudly.
     //
@@ -225,7 +225,7 @@ describe("digestCommand", () => {
     expect(errorText).toContain("Failed to spawn digest synthesizer:")
     expect(errorText).toContain("lock path too long")
     expect(errorText).toContain("ENAMETOOLONG")
-    expect(errorText).toContain("Shorten LORE_HOOK_STATE_DIR")
+    expect(errorText).toContain("Shorten KENNEN_HOOK_STATE_DIR")
     expect(exitTrap.exitCodes).toEqual([1])
     // `toHaveBeenCalledTimes(1)` is the load-bearing assertion against
     // the doubled-emission failure mode here: without the defensive

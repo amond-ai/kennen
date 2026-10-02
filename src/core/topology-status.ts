@@ -15,7 +15,7 @@ import {
   type PromotionTargetTopologyRef,
   type UpstreamVaultTopologyRef,
 } from "./topology.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 
 export const TOPOLOGY_STATUS_PROBE_CONCURRENCY = 2
 export const TOPOLOGY_STATUS_CACHE_TTL_MS = 60_000
@@ -60,7 +60,7 @@ export interface VaultTopologyStatusDeps {
 }
 
 export interface TopologyStatusServices {
-  config: LoreConfig
+  config: KennenConfig
   configRoot?: string | null
   /**
    * Shared service client from `initServices()`. It already carries auth
@@ -76,7 +76,7 @@ export interface TopologyStatusServices {
  * The primary row is presentational: `initServices()` already loaded the
  * primary vault before callers reach this function, so its health means
  * "the current status request is connected". Every upstream or promotion
- * target is verified by loading its Lore child databases with the shared
+ * target is verified by loading its Kennen child databases with the shared
  * client. That verification costs a child-block walk plus database retrieve
  * calls per configured vault. Results are cached for a short TTL by
  * config-root + page id, and probes are bounded to two concurrent vaults so
@@ -220,7 +220,7 @@ async function safeProbeVault(
 }
 
 /**
- * Operator-facing health string contract for `lore status`'s topology
+ * Operator-facing health string contract for `kennen status`'s topology
  * section. This function and the two it delegates to
  * (`formatVaultHealth`, `formatHealthFreshness`) compose the line
  * shape operators triage by — change either the field separator, field

@@ -44,7 +44,7 @@ jobs:
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.value }}
         run: |
-          if npm dist-tag ls @notionhq/lore | node -e '
+          if npm dist-tag ls @amond-ai/kennen | node -e '
             const fs = require("node:fs");
             const version = process.env.PACKAGE_VERSION;
             const published = fs

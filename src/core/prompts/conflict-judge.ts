@@ -3,7 +3,7 @@
  *
  * INTENTIONALLY FROZEN. This template defines the semantic meaning of
  * stored conflict verdicts (and, downstream, of the
- * `lore-correct` / `lore-supersede` actions a `conflicts_with` /
+ * `kennen-correct` / `kennen-supersede` actions a `conflicts_with` /
  * `supersedes` verdict dispatches into). Editing the wording in place
  * silently changes what a verdict means without bumping its version.
  *
@@ -14,7 +14,7 @@
  *
  * The locked-prompt discipline is borrowed from engram. The version
  * stamp + frozen wording posture is the load-bearing piece; the
- * specific prompt text is Lore's own.
+ * specific prompt text is Kennen's own.
  *
  * The verdict vocabulary `conflicts_with | supersedes | scoped |
  * related | compatible | not_conflict` is **frozen for 0.9.x**. Adding
@@ -97,7 +97,7 @@ export function renderConflictJudgePrompt(
     "",
     "Possible verdicts:",
     "- conflicts_with: A and B make incompatible factual claims about the same subject in the same scope. The CONTRADICTED memory is the audit target; you MUST identify it as 'A' or 'B' in the `affected` field.",
-    "- supersedes: A and B address the same subject; one is the later, more accurate statement and the other should be retired. The SUPERSEDED memory is the loser; you MUST identify it as 'A' or 'B' in the `affected` field. (Lore restricts this verdict to decision-kind targets — return it ONLY when at least one of the two memories has `<kind>decision</kind>`. If neither is a decision, return `not_conflict` or `compatible` instead and let the agent use lore-memory action='update' to merge.)",
+    "- supersedes: A and B address the same subject; one is the later, more accurate statement and the other should be retired. The SUPERSEDED memory is the loser; you MUST identify it as 'A' or 'B' in the `affected` field. (Kennen restricts this verdict to decision-kind targets — return it ONLY when at least one of the two memories has `<kind>decision</kind>`. If neither is a decision, return `not_conflict` or `compatible` instead and let the agent use kennen-memory action='update' to merge.)",
     "- scoped: A and B make different claims, but the differences are explained by different scopes (project, time, environment).",
     "- related: A and B are about the same subject but make non-overlapping claims (compatible, not redundant).",
     "- compatible: A and B make the same claim or near-identical claims (no conflict, but redundant).",

@@ -8,7 +8,7 @@
  *
  * 1. SQL composition (parameter binding, identifier quoting).
  * 2. Result-row narrowing from `Record<string, SqlCellValue>` to
- *    typed Lore page-id arrays.
+ *    typed Kennen page-id arrays.
  * 3. The capability/rate-limit/null-semantics caveats documented
  *    inline next to each query.
  *
@@ -39,7 +39,7 @@ import { dataSourceUrl, type SqlCellValue } from "./types.js"
  * matcher.
  *
  * **Why narrow-then-rematch.** SQLite's `LOWER()` only folds
- * ASCII. Lore's `normalizeEntityKey` runs Unicode NFC + lowercase
+ * ASCII. Kennen's `normalizeEntityKey` runs Unicode NFC + lowercase
  * + whitespace collapse + trailing-punct strip, and the REST
  * fallback in `EntityService.findByName` post-filters with
  * `normalizeEntityKey(rawName) === key` — i.e. it normalizes BOTH
@@ -149,7 +149,7 @@ export async function fetchEntityByNormalizedName(
  * Notion `rich_text` cell storing comma-separated alias strings.
  * SQLite's `LOWER()` is ASCII-only, and even an exact `LIKE
  * '%key%'` substring match would surface false positives — a query
- * for `"User"` would match a stored alias `"UserService"`. Lore's
+ * for `"User"` would match a stored alias `"UserService"`. Kennen's
  * existing REST `findByAlias` uses Notion's `rich_text contains`
  * with the same false-positive risk and post-filters via
  * `parseAliases(...).some((a) => normalizeEntityKey(a) === key)`.
@@ -250,7 +250,7 @@ export async function fetchEntitiesByAliasSubstring(
  * **`LIKE '%<id>%'` decomposition.** Notion's relation column
  * surfaces as a textual representation of the related ids in
  * SQLite. The SQL gateway's exact representation is an open
- * question, but every other relation-column predicate Lore
+ * question, but every other relation-column predicate Kennen
  * issues uses substring matching (the
  * `fetchNearDuplicateCandidatePageIds` `Project LIKE %projectId%`
  * shape is the canonical example). Same posture here: select rows
@@ -359,7 +359,7 @@ export function comparedPairKey(idA: string, idB: string): string {
  * - Optional `Status IN (?, ?, ...)` (decision probe passes
  *   `["accepted", "proposed"]`).
  * - Always-on cleanup-orphan exclusion via `Keywords NOT LIKE
- *   '%__lore-cleanup-orphan%'` (matches the REST path's
+ *   '%__kennen-cleanup-orphan%'` (matches the REST path's
  *   sentinel-substring filter).
  * - Archived rows are filtered by the SQL gateway by default
  *   (verified 2026-05-05: the `archived` column does not exist
@@ -371,7 +371,7 @@ export function comparedPairKey(idA: string, idB: string): string {
  * JSON-quoted form** `Tags LIKE '%"<tag>"%'`. Production-vault
  * verification (2026-05-05) confirmed the SQL gateway stores
  * `Tags` as a JSON array of double-quoted strings (e.g.
- * `["onboarding","lore","secrets"]`); the closing `"` in the
+ * `["onboarding","kennen","secrets"]`); the closing `"` in the
  * `%"<tag>"%` pattern ensures only discrete tokens match —
  * `"refactor"` does NOT match `"refactor-old"` /
  * `"refactor-trade-off"` even though substring `%refactor%`
@@ -649,7 +649,7 @@ export async function fetchNearDuplicateCandidatePageIds(
   // partial result. The thrown error is NOT a `validation_error`
   // — the query composed correctly — so `isSqlValidationError`
   // returns false and `logRunToolFallback` emits the
-  // `LORE_DEBUG=1` line under the same path as a transient 5xx.
+  // `KENNEN_DEBUG=1` line under the same path as a transient 5xx.
   if (response.has_more) {
     throw new SqlPartialResultError("near-duplicate-candidates")
   }
@@ -751,7 +751,7 @@ export async function fetchNearDuplicateCandidatePageIds(
  * workspace below that tier, the call returns 403
  * `RestrictedResource` and the call site falls back to JS — the
  * `logRunToolFallback` helper and the parent
- * `LORE_USE_RUNTOOL_AGGREGATE` flag's docstring carry the recipe.
+ * `KENNEN_USE_RUNTOOL_AGGREGATE` flag's docstring carry the recipe.
  */
 export interface SqlSubjectGroupCount {
   subjectEntityRaw: string | null

@@ -14,7 +14,7 @@ const regexPatternSchema = z
   // throws SyntaxError mid-trial. Synthesizing a per-verifier
   // failure inside `runVerifier` would still leave the rest of
   // the suite running on the bad pattern; failing fast at parse
-  // time matches every other lore validation discipline.
+  // time matches every other kennen validation discipline.
   .refine((p) => {
     try {
       new RegExp(p)
@@ -118,10 +118,10 @@ const taskEvalTaskSchema = z
     agent: z.enum(TASK_EVAL_AGENTS).default("codex"),
     workspace: workspaceSourceSchema,
     /**
-     * Map from memory condition (`no-lore`, `helpful`, `noisy`,
+     * Map from memory condition (`no-kennen`, `helpful`, `noisy`,
      * `stale`) to a fixture path. Each condition listed here runs
      * the task once with that condition's fixture seeded into the
-     * workspace's .lore-memories.json. Empty matrix means the task
+     * workspace's .kennen-memories.json. Empty matrix means the task
      * runs once with no memory seeded — the agent's tools see whatever
      * the workspace fixture itself includes (typically nothing).
      */
@@ -162,7 +162,11 @@ const taskEvalStandardSuiteSchema = z
     }
   })
 
-const longitudinalConditionSchema = z.enum(["no-memory", "seeded-lore", "lore-full-loop"])
+const longitudinalConditionSchema = z.enum([
+  "no-memory",
+  "seeded-kennen",
+  "kennen-full-loop",
+])
 const longitudinalScenarioDifficultySchema = z.enum(["easy", "medium", "hard"])
 
 const longitudinalPhaseSchema = z
@@ -226,7 +230,7 @@ export const longitudinalTaskEvalSuiteSchema = z
     conditions: z
       .array(longitudinalConditionSchema)
       .min(1)
-      .default(["no-memory", "lore-full-loop"]),
+      .default(["no-memory", "kennen-full-loop"]),
     scenarios: z.array(longitudinalTaskScenarioSchema).min(1),
   })
   .strict()
@@ -257,13 +261,13 @@ export const longitudinalTaskEvalSuiteSchema = z
       seenConditions.add(condition)
     }
 
-    if (suite.conditions.includes("seeded-lore")) {
+    if (suite.conditions.includes("seeded-kennen")) {
       for (let i = 0; i < suite.scenarios.length; i++) {
         if (!suite.scenarios[i]!.seededContext) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["scenarios", i, "seededContext"],
-            message: "seededContext is required when conditions include seeded-lore",
+            message: "seededContext is required when conditions include seeded-kennen",
           })
         }
       }
@@ -359,7 +363,7 @@ export interface AgentRunResult {
   timedOut: boolean
   /**
    * Set by an adapter that declined to invoke the underlying agent
-   * (e.g., `CodexAgentAdapter` refusing without `LORE_EVAL_TASK_REAL=1`).
+   * (e.g., `CodexAgentAdapter` refusing without `KENNEN_EVAL_TASK_REAL=1`).
    * The runner reads this directly to set `failureReason: "adapter-refused"`,
    * so future adapters (Claude headless, etc.) get the same refusal
    * semantics without keying off a Codex-specific stderr substring.
@@ -453,7 +457,7 @@ export interface PatchEvidence {
   truncated: boolean
 }
 
-export interface LongitudinalLoreMetrics {
+export interface LongitudinalKennenMetrics {
   hooksEnabled: boolean
   wakeUpEnabled: boolean
   memoriesCreated: number
@@ -488,7 +492,7 @@ export interface LongitudinalPhaseResult {
   verifierResults: VerifierResult[]
   patchStats: PatchStats
   patch: PatchEvidence | null
-  lore: LongitudinalLoreMetrics
+  kennen: LongitudinalKennenMetrics
   cost: LongitudinalCostMetrics | null
   elapsedMs: number
   failureReason: LongitudinalFailureReason | null
@@ -519,7 +523,7 @@ export interface LongitudinalRunTermination {
   limitUsd: number
   observedUsd: number
   primaryAgentUsd: number
-  loreUsd: number | null
+  kennenUsd: number | null
   completedTrials: number
   totalPlannedTrials: number
 }
@@ -619,7 +623,7 @@ export interface LongitudinalScenarioSampleSelection {
   selectedScenarioIds: string[]
 }
 
-export interface LongitudinalLoreFormationResult {
+export interface LongitudinalKennenFormationResult {
   projectId: string | null
   projectName: string | null
   mining: MiningResult | null
@@ -638,7 +642,7 @@ export interface LongitudinalWakeUpResult {
   failureMessage: string | null
 }
 
-export interface LongitudinalLoreRun {
+export interface LongitudinalKennenRun {
   projectId: string | null
   projectName: string | null
   formContext(input: {
@@ -646,7 +650,7 @@ export interface LongitudinalLoreRun {
     transcript: string
     workspace: string
     sessionId: string
-  }): Promise<LongitudinalLoreFormationResult>
+  }): Promise<LongitudinalKennenFormationResult>
   loadContext(input: {
     scenario: LongitudinalTaskScenario
     phaseBPrompt: string
@@ -655,13 +659,13 @@ export interface LongitudinalLoreRun {
   cleanup(): Promise<void>
 }
 
-export interface LongitudinalLoreAdapter {
+export interface LongitudinalKennenAdapter {
   createRun(input: {
     suite: LongitudinalTaskEvalSuite
     scenario: LongitudinalTaskScenario
     runId: string
     workspace: string
-  }): Promise<LongitudinalLoreRun>
+  }): Promise<LongitudinalKennenRun>
 }
 
 export type TaskEvalProgressEvent =
@@ -691,7 +695,7 @@ export type TaskEvalProgressEvent =
       limitUsd: number
       observedUsd: number
       primaryAgentUsd: number
-      loreUsd: number | null
+      kennenUsd: number | null
       completedTrials: number
       totalPlannedTrials: number
     }
@@ -723,7 +727,7 @@ export interface RunTaskEvalOptions {
    * this unset; the runner builds a live Notion-backed adapter only when
    * the longitudinal real-run env gate is enabled.
    */
-  longitudinalLoreAdapter?: LongitudinalLoreAdapter
+  longitudinalKennenAdapter?: LongitudinalKennenAdapter
   /**
    * Overrides a longitudinal suite's `costKillSwitchUsd`. The runner
    * checks observed priced cost between condition runs and stops before

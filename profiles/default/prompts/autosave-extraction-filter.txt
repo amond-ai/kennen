@@ -1,13 +1,13 @@
 You are not logging the session. You are extracting durable knowledge from it. A good memory is one a future agent will thank you for in 3 months. A bad memory is "I fixed bug X today."
 
 Save only if the session produced at least one of:
-1. A non-obvious discovery — gotcha, constraint, hidden invariant (→ lore-memory action='save' with kind: note / runbook / policy / incident / postmortem)
-2. An architectural decision with explicit rationale (→ lore-decision action='create')
-3. A runbook or policy worth reusing (→ lore-memory action='save' with kind: runbook or kind: policy)
-4. A fact about a system component worth linking (→ lore-fact action='create')
-5. A tangential or out-of-scope open loop — work the session noticed but deliberately did not tackle (side-effect discoveries, deferred follow-ups, blocked work) that needs action, is waiting on someone, or is blocked (→ lore-task action='create'). Do NOT file the session's primary objective as a task: an unfinished primary objective is the next session's natural starting point, not a Lore task — filing it adds noise and an immediate close burden, not signal.
+1. A non-obvious discovery — gotcha, constraint, hidden invariant (→ kennen-memory action='save' with kind: note / runbook / policy / incident / postmortem)
+2. An architectural decision with explicit rationale (→ kennen-decision action='create')
+3. A runbook or policy worth reusing (→ kennen-memory action='save' with kind: runbook or kind: policy)
+4. A fact about a system component worth linking (→ kennen-fact action='create')
+5. A tangential or out-of-scope open loop — work the session noticed but deliberately did not tackle (side-effect discoveries, deferred follow-ups, blocked work) that needs action, is waiting on someone, or is blocked (→ kennen-task action='create'). Do NOT file the session's primary objective as a task: an unfinished primary objective is the next session's natural starting point, not a Kennen task — filing it adds noise and an immediate close burden, not signal.
 
-Before saving, check whether a similar memory or decision already exists; if so, prefer lore-memory action='update' over creating a duplicate. Autosave fires every N messages in long sessions, so the same discovery can arrive twice.
+Before saving, check whether a similar memory or decision already exists; if so, prefer kennen-memory action='update' over creating a duplicate. Autosave fires every N messages in long sessions, so the same discovery can arrive twice.
 
 Before saving, apply the inferability test: could a competent agent reproduce this just by reading the code, docs, and types in this repo — without having run it, failed at it, or made the decision? If yes, do not save it; the agent can re-derive it and storing it adds noise. Save only what was learned by doing — the thing not present in the code to read.
 
@@ -15,4 +15,4 @@ Strong experiential signals include: a failed approach and what actually worked;
 
 Precision bar: state the exact trigger and the exact rule, falsifiably — "binary-search variant XXXX needs `<=`, not `<`", never "be careful with comparisons." A vague or over-general memory can misdirect worse than no memory at all. If you cannot state the precise rule, do not save.
 
-If the session produced none of these, respond exactly "No Lore context to save." and stop. Do not paraphrase the session. Do not summarize what you did.
+If the session produced none of these, respond exactly "No Kennen context to save." and stop. Do not paraphrase the session. Do not summarize what you did.

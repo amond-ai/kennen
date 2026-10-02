@@ -18,7 +18,7 @@ describe("eval baseline", () => {
     const artifact = artifactFixture({
       results: [
         passingResult("task-a", "helpful-memory", "wake-up.taskMemories"),
-        passingResult("task-a", "no-lore", "wake-up.taskMemories"),
+        passingResult("task-a", "no-kennen", "wake-up.taskMemories"),
       ],
       summary: { tasks: 1, totalResults: 2, passedResults: 2, failedResults: 0 },
     })
@@ -30,7 +30,7 @@ describe("eval baseline", () => {
 
     expect(snapshot).toMatchObject({
       schemaVersion: 1,
-      suite: "lore-core",
+      suite: "kennen-core",
       capturedAt: "2026-05-03T12:00:00.000Z",
       notes: "first capture",
       summary: {
@@ -42,12 +42,12 @@ describe("eval baseline", () => {
     })
     expect(snapshot.results.map((r) => `${r.taskId}::${r.scenario}`)).toEqual([
       "task-a::helpful-memory",
-      "task-a::no-lore",
+      "task-a::no-kennen",
     ])
   })
 
   it("round-trips through write + read with schema validation", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-baseline-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-baseline-"))
     const path = join(dir, "baseline.json")
     const snapshot = buildEvalBaselineSnapshot(
       artifactFixture({
@@ -118,7 +118,7 @@ describe("eval baseline", () => {
   it("flags any post-baseline memoryHarm bump as regression", () => {
     const baseline: EvalBaselineSnapshot = {
       schemaVersion: 1,
-      suite: "lore-core",
+      suite: "kennen-core",
       runner: "retrieval",
       capturedAt: "2026-05-03T12:00:00.000Z",
       notes: "",
@@ -347,7 +347,7 @@ describe("eval baseline", () => {
       results: [passingResult("task-a", "helpful-memory", "wake-up.taskMemories")],
     })
     const baseline = buildEvalBaselineSnapshot(baselineArtifact)
-    expect(baseline.suite).toBe("lore-core")
+    expect(baseline.suite).toBe("kennen-core")
 
     // A fresh run for a different suite must not compare against this
     // baseline — the row keys would happen to align coincidentally and
@@ -364,7 +364,7 @@ describe("eval baseline", () => {
         baselinePath: "/tmp/baseline.json",
       })
     ).toThrow(
-      /captured for suite "lore-core" but the current run is for suite "other-suite"/
+      /captured for suite "kennen-core" but the current run is for suite "other-suite"/
     )
   })
 
@@ -404,7 +404,7 @@ describe("eval baseline", () => {
   it("rejects baselines whose schemaVersion is not 1", () => {
     const result = evalBaselineSnapshotSchema.safeParse({
       schemaVersion: 2,
-      suite: "lore-core",
+      suite: "kennen-core",
       capturedAt: "2026-05-03T12:00:00.000Z",
       summary: {
         tasks: 0,
@@ -503,7 +503,7 @@ function artifactFixture(input: {
     ...input.summary,
   }
   return {
-    suite: "lore-core",
+    suite: "kennen-core",
     description: "",
     startedAt: "2026-05-03T12:00:00.000Z",
     runner: {

@@ -1,6 +1,6 @@
 import { Command } from "commander"
 import { initServices } from "../../services.js"
-import type { LoreServices } from "../../services.js"
+import type { KennenServices } from "../../services.js"
 import type { FactService } from "../../core/fact.js"
 import {
   formatProposedInboxStatus,
@@ -74,10 +74,10 @@ export const statusCommand = new Command("status")
         opts.project,
         "--project",
         {
-          listHint: "run `lore status projects` to list configured projects",
+          listHint: "run `kennen status projects` to list configured projects",
         }
       )
-      // `lore status` is the canonical operator-facing surface for drift
+      // `kennen status` is the canonical operator-facing surface for drift
       // warnings — always run the check, bypass the debounce marker.
       const services = await initServices(undefined, { driftCheck: true })
       const stats = await services.vault.stats()
@@ -88,7 +88,7 @@ export const statusCommand = new Command("status")
               explicitProjectName,
               "--project",
               {
-                listHint: "run `lore status projects` to list configured projects",
+                listHint: "run `kennen status projects` to list configured projects",
               }
             )
           : services.context.project
@@ -106,7 +106,7 @@ export const statusCommand = new Command("status")
         console.log()
       }
 
-      console.log("Lore Vault Status")
+      console.log("Kennen Vault Status")
       console.log("─".repeat(40))
       console.log(`  Vault page: ${services.context.vault.pageId}`)
       const profileLabel = services.profile
@@ -209,7 +209,7 @@ export const statusCommand = new Command("status")
       }
 
       const digestReport = await loadDigestStatus(services, services.configRoot, {
-        autoDigestEnvOverride: process.env["LORE_AUTO_DIGEST"],
+        autoDigestEnvOverride: process.env["KENNEN_AUTO_DIGEST"],
       })
       const digestLines = formatDigestStatus(digestReport)
       if (digestLines.length > 0) {
@@ -218,7 +218,7 @@ export const statusCommand = new Command("status")
       }
 
       // Drift section reflects what *debounced* callers (MCP server, shell
-      // hooks, digest scheduler) will see on their next fire. `lore status`
+      // hooks, digest scheduler) will see on their next fire. `kennen status`
       // itself runs with `driftCheck: true`, so `resolveDriftCheck` has
       // already touched the marker — the watermark is purely informational
       // on this path.
@@ -285,7 +285,7 @@ const topicsCmd = new Command("topics")
         projectName,
         "project",
         {
-          listHint: "run `lore status projects` to list configured projects",
+          listHint: "run `kennen status projects` to list configured projects",
           omittedScopeLabel: "the current project detected from cwd",
         }
       )
@@ -295,7 +295,7 @@ const topicsCmd = new Command("topics")
           explicitProjectName,
           "project",
           {
-            listHint: "run `lore status projects` to list configured projects",
+            listHint: "run `kennen status projects` to list configured projects",
             omittedScopeLabel: "the current project detected from cwd",
           }
         )
@@ -331,7 +331,7 @@ statusCommand.addCommand(topicsCmd)
 // Cost tracking section
 // ---------------------------------------------------------------------------
 
-export async function loadCostStatusLines(services: LoreServices): Promise<string[]> {
+export async function loadCostStatusLines(services: KennenServices): Promise<string[]> {
   const costTracking = services.costTracking
   if (!costTracking?.enabled) return []
   const todayRange = defaultTodayRange()
@@ -427,15 +427,15 @@ function formatCompactCostLine(
 
 function formatCompactModelCost(summary: ReturnType<typeof summarizeCostEvents>): string {
   if (summary.modelExactUsd > 0 && summary.modelEstimatedUsd > 0) {
-    return `${formatUsd(summary.modelExactUsd)} exact + ~${formatUsd(summary.modelEstimatedUsd)} prompt-estimated Lore-owned model`
+    return `${formatUsd(summary.modelExactUsd)} exact + ~${formatUsd(summary.modelEstimatedUsd)} prompt-estimated Kennen-owned model`
   }
   if (summary.modelEstimatedUsd > 0) {
-    return `~${formatUsd(summary.modelEstimatedUsd)} prompt-estimated Lore-owned model`
+    return `~${formatUsd(summary.modelEstimatedUsd)} prompt-estimated Kennen-owned model`
   }
   if (summary.modelExactUsd > 0) {
-    return `${formatUsd(summary.modelExactUsd)} exact Lore-owned model`
+    return `${formatUsd(summary.modelExactUsd)} exact Kennen-owned model`
   }
-  return `${formatUsd(0)} Lore-owned model`
+  return `${formatUsd(0)} Kennen-owned model`
 }
 
 // ---------------------------------------------------------------------------
@@ -448,7 +448,7 @@ function formatCompactModelCost(summary: ReturnType<typeof summarizeCostEvents>)
  * are independently testable.
  */
 export interface DigestRow {
-  /** Configured project name (matches .lore.yaml and the marker filename). */
+  /** Configured project name (matches .kennen.yaml and the marker filename). */
   name: string
   /**
    * Latest existing `source: digest` memory linked to this project, or null
@@ -468,8 +468,8 @@ export interface DigestStatusReport {
   /**
    * Why auto-digest is disabled, or null when it's enabled. When non-null,
    * the section header surfaces the reason so an operator who set
-   * `LORE_AUTO_DIGEST=false` in their shell rc and forgot sees it on the
-   * first `lore status`.
+   * `KENNEN_AUTO_DIGEST=false` in their shell rc and forgot sees it on the
+   * first `kennen status`.
    */
   disabledReason:
     | { source: "config"; detail: string }
@@ -488,7 +488,7 @@ export interface DigestStatusReport {
 
 export interface DigestStatusDeps {
   /**
-   * Value of `LORE_AUTO_DIGEST` from the environment. Threaded through as a
+   * Value of `KENNEN_AUTO_DIGEST` from the environment. Threaded through as a
    * dep so tests don't have to mutate `process.env` to drive the disabled
    * path. Pass `undefined` when the env var isn't set.
    */
@@ -513,7 +513,7 @@ const DIGEST_LIST_LIMIT = 50
 /**
  * Gather per-project digest watermark data for the Digests section.
  *
- * Issues exactly one extra Notion call beyond what `lore status` already
+ * Issues exactly one extra Notion call beyond what `kennen status` already
  * pays for — a vault-wide `memories.list({ source: digest })` — and groups
  * the result client-side by project ID. Per-project marker stats are pure
  * filesystem work and proportional to the number of configured sub-projects.
@@ -523,7 +523,7 @@ const DIGEST_LIST_LIMIT = 50
  * watermark) — the renderer omits the section entirely in that case.
  */
 export async function loadDigestStatus(
-  services: LoreServices,
+  services: KennenServices,
   configRoot: string,
   deps: DigestStatusDeps = {}
 ): Promise<DigestStatusReport> {
@@ -608,7 +608,7 @@ function deriveDisabledReason(
   envValue: string | undefined
 ): DigestStatusReport["disabledReason"] {
   if (envValue === "false") {
-    return { source: "env", detail: "LORE_AUTO_DIGEST=false" }
+    return { source: "env", detail: "KENNEN_AUTO_DIGEST=false" }
   }
   if (configValue === false) {
     return { source: "config", detail: "hooks.autoDigest: false" }
@@ -698,9 +698,9 @@ export interface DriftStatusReport {
    */
   markerAgeDays: number | null
   /**
-   * False when the loader was called without a .lore.yaml config root —
+   * False when the loader was called without a .kennen.yaml config root —
    * the renderer drops the entire section so the output stays clean. Always
-   * true when called from `lore status`, since `initServices()` requires a
+   * true when called from `kennen status`, since `initServices()` requires a
    * config root to succeed; the seam exists for symmetry with how
    * `loadDigestStatus` suppresses the section on no-sub-projects vaults.
    */
@@ -798,7 +798,7 @@ export interface TrackingPreflightDeps {
 }
 
 /**
- * Subset of `LoreServices` the preflight loader actually reads. Lets
+ * Subset of `KennenServices` the preflight loader actually reads. Lets
  * tests pass a one-method fake instead of the full services object.
  */
 export type TrackingPreflightServices = {
@@ -806,7 +806,7 @@ export type TrackingPreflightServices = {
 }
 
 /**
- * Count live tracking-predicate facts to drive the `lore status`
+ * Count live tracking-predicate facts to drive the `kennen status`
  * preflight warning. One additional vault-wide Notion query beyond the
  * existing status output — paginated server-side via the predicate
  * probe — and zero `pageToFact` round-trips.
@@ -829,9 +829,9 @@ export async function loadTrackingPreflight(
  *
  * Prose: the tracking predicates are removed from
  * `FactPredicate`, the read paths filter historical rows at
- * `pageToFact`, and the migration command (`lore migrate
+ * `pageToFact`, and the migration command (`kennen migrate
  * --migrate-tracking-to-tasks`) has been deleted. Operators who still
- * see this warning are looking at rows lore does not surface;
+ * see this warning are looking at rows kennen does not surface;
  * the only remediation paths left are restoring the migration code from
  * git history or hand-editing the Notion rows.
  *
@@ -844,19 +844,19 @@ export function formatTrackingPreflight(report: TrackingPreflightReport): string
   return [
     `⚠ Tracking-predicate facts detected: ${report.count} live ${noun}.`,
     "  These predicates (`needs_action`, `waiting_on`, `blocked_by`)",
-    "  were removed from lore in version 0.6.0.",
-    "  The migration command (`lore migrate --migrate-tracking-to-tasks`)",
+    "  were removed from kennen in version 0.6.0.",
+    "  The migration command (`kennen migrate --migrate-tracking-to-tasks`)",
     "  is no longer available. Remediation options:",
     "  (a) restore the migration code from git history and run it",
     "      manually against your vault, or",
     "  (b) hand-edit the Notion rows to convert them to tasks.",
-    "  Until remediated, these rows are invisible to lore.",
+    "  Until remediated, these rows are invisible to kennen.",
   ]
 }
 
 // Proposed-memory inbox — `loadProposedInboxStatus` and
 // `formatProposedInboxStatus` live in the core layer so the CLI and
-// MCP `lore-context action='status'` surfaces emit the same line for
+// MCP `kennen-context action='status'` surfaces emit the same line for
 // the same vault state. Same parity contract as `taskStats` /
 // `formatTaskSummary`.
 //

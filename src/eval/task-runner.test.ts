@@ -31,7 +31,7 @@ import {
   resolveExecutableOnPath,
   selectExpectedContextIds,
   type LongitudinalAgentConfigServices,
-  type LongitudinalLoreAdapter,
+  type LongitudinalKennenAdapter,
   loadTaskEvalSuite,
   runTaskEvalSuite,
   taskEvalSuiteSchema,
@@ -59,8 +59,8 @@ describe("task-runner", () => {
     }
     expect(loaded.suite.conditions).toEqual([
       "no-memory",
-      "seeded-lore",
-      "lore-full-loop",
+      "seeded-kennen",
+      "kennen-full-loop",
     ])
     expect(loaded.suite.seededCorpus).toBe("../vault-seeds/github-cli-pilot.yaml")
     expect(loaded.suite.scenarios).toHaveLength(5)
@@ -77,8 +77,8 @@ describe("task-runner", () => {
     }
     expect(loaded.suite.conditions).toEqual([
       "no-memory",
-      "seeded-lore",
-      "lore-full-loop",
+      "seeded-kennen",
+      "kennen-full-loop",
     ])
     expect(loaded.suite.seededCorpus).toBe("../vault-seeds/github-cli-powered.yaml")
     expect(loaded.suite.scenarios).toHaveLength(202)
@@ -145,8 +145,8 @@ describe("task-runner", () => {
 
     expect(loaded.suite.conditions).toEqual([
       "no-memory",
-      "seeded-lore",
-      "lore-full-loop",
+      "seeded-kennen",
+      "kennen-full-loop",
     ])
     expect(loaded.suite.seededCorpus).toBe(
       "../vault-seeds/github-cli-capability-edge-v3.yaml"
@@ -194,7 +194,7 @@ describe("task-runner", () => {
       throw new Error("expected longitudinal suite")
     }
 
-    expect(loaded.suite.name).toBe("lore-longitudinal-github-cli-public-spec-v1")
+    expect(loaded.suite.name).toBe("kennen-longitudinal-github-cli-public-spec-v1")
     expect(loaded.suite.seededCorpus).toBe(
       "../vault-seeds/github-cli-public-spec-v1.yaml"
     )
@@ -231,7 +231,7 @@ describe("task-runner", () => {
         patchedVerifierCount += 1
         expectPatchHunksToMatchLineCounts(verifier.patch, scenario.id)
 
-        const dir = await mkdtemp(join(tmpdir(), "lore-eval-patch-check-"))
+        const dir = await mkdtemp(join(tmpdir(), "kennen-eval-patch-check-"))
         try {
           git(dir, ["init", "--quiet"])
           const patchPath = join(dir, "verifier.patch")
@@ -246,7 +246,7 @@ describe("task-runner", () => {
             cwd: dir,
             stdio: "pipe",
           })
-          execFileSync(process.execPath, ["--check", ".lore-hidden-verify.mjs"], {
+          execFileSync(process.execPath, ["--check", ".kennen-hidden-verify.mjs"], {
             cwd: dir,
             stdio: "pipe",
           })
@@ -288,7 +288,7 @@ tasks:
       return successResult()
     })
 
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-"))
     const outPath = join(dir, "result.json")
     const { artifact } = await runTaskEvalSuite(suitePath, {
       outPath,
@@ -316,7 +316,7 @@ tasks:
   })
 
   it("does not pass verifier answer keys to the task agent prompt or workspace", async () => {
-    const root = await mkdtemp(join(tmpdir(), "lore-task-answer-key-test-"))
+    const root = await mkdtemp(join(tmpdir(), "kennen-task-answer-key-test-"))
     try {
       const suiteDir = join(root, "evals", "task-suites")
       const workspaceDir = join(root, "evals", "workspaces", "answer-key")
@@ -371,17 +371,17 @@ tasks:
   })
 
   it("materializes git workspaces from a pinned SHA and records metadata", async () => {
-    const remoteBase = await mkdtemp(join(tmpdir(), "lore-eval-git-remotes-"))
-    const cacheDir = await mkdtemp(join(tmpdir(), "lore-eval-git-cache-"))
-    const sourceRepo = await mkdtemp(join(tmpdir(), "lore-eval-git-source-"))
+    const remoteBase = await mkdtemp(join(tmpdir(), "kennen-eval-git-remotes-"))
+    const cacheDir = await mkdtemp(join(tmpdir(), "kennen-eval-git-cache-"))
+    const sourceRepo = await mkdtemp(join(tmpdir(), "kennen-eval-git-source-"))
     await writeFile(join(sourceRepo, "README.md"), "# Fixture repo\n", "utf-8")
     git(sourceRepo, ["init", "--quiet"])
     git(sourceRepo, ["add", "README.md"])
     git(sourceRepo, [
       "-c",
-      "user.name=Lore Eval",
+      "user.name=Kennen Eval",
       "-c",
-      "user.email=lore-eval@example.com",
+      "user.email=kennen-eval@example.com",
       "commit",
       "--quiet",
       "-m",
@@ -397,7 +397,7 @@ tasks:
       join(remoteBase, "cli", "cli.git"),
     ])
 
-    const suiteDir = await mkdtemp(join(tmpdir(), "lore-eval-git-suite-"))
+    const suiteDir = await mkdtemp(join(tmpdir(), "kennen-eval-git-suite-"))
     const suitesDir = join(suiteDir, "task-suites")
     await mkdir(suitesDir, { recursive: true })
     const suitePath = join(suitesDir, "suite.yaml")
@@ -422,10 +422,10 @@ tasks:
       "utf-8"
     )
 
-    const priorRemoteBase = process.env["LORE_EVAL_GIT_REMOTE_BASE_URL"]
-    const priorCacheDir = process.env["LORE_EVAL_WORKSPACE_CACHE_DIR"]
-    process.env["LORE_EVAL_GIT_REMOTE_BASE_URL"] = remoteBase
-    process.env["LORE_EVAL_WORKSPACE_CACHE_DIR"] = cacheDir
+    const priorRemoteBase = process.env["KENNEN_EVAL_GIT_REMOTE_BASE_URL"]
+    const priorCacheDir = process.env["KENNEN_EVAL_WORKSPACE_CACHE_DIR"]
+    process.env["KENNEN_EVAL_GIT_REMOTE_BASE_URL"] = remoteBase
+    process.env["KENNEN_EVAL_WORKSPACE_CACHE_DIR"] = cacheDir
     try {
       const adapter = mockAdapter("codex", async ({ workspace }) => {
         expect(await readFile(join(workspace, "README.md"), "utf-8")).toContain(
@@ -436,7 +436,7 @@ tasks:
       })
 
       const { artifact } = await runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       })
 
@@ -450,24 +450,25 @@ tasks:
       })
     } finally {
       if (priorRemoteBase === undefined)
-        delete process.env["LORE_EVAL_GIT_REMOTE_BASE_URL"]
-      else process.env["LORE_EVAL_GIT_REMOTE_BASE_URL"] = priorRemoteBase
-      if (priorCacheDir === undefined) delete process.env["LORE_EVAL_WORKSPACE_CACHE_DIR"]
-      else process.env["LORE_EVAL_WORKSPACE_CACHE_DIR"] = priorCacheDir
+        delete process.env["KENNEN_EVAL_GIT_REMOTE_BASE_URL"]
+      else process.env["KENNEN_EVAL_GIT_REMOTE_BASE_URL"] = priorRemoteBase
+      if (priorCacheDir === undefined)
+        delete process.env["KENNEN_EVAL_WORKSPACE_CACHE_DIR"]
+      else process.env["KENNEN_EVAL_WORKSPACE_CACHE_DIR"] = priorCacheDir
     }
   }, 15_000)
 
   it("writes staged git changes into patch evidence", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-eval-git-patch-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-eval-git-patch-"))
     try {
       git(workspace, ["init", "--quiet"])
       await writeFile(join(workspace, "tracked.txt"), "before\n", "utf-8")
       git(workspace, ["add", "tracked.txt"])
       git(workspace, [
         "-c",
-        "user.name=Lore Eval",
+        "user.name=Kennen Eval",
         "-c",
-        "user.email=lore-eval@example.com",
+        "user.email=kennen-eval@example.com",
         "commit",
         "--quiet",
         "-m",
@@ -492,17 +493,17 @@ tasks:
   })
 
   it("writes committed git changes into patch evidence", async () => {
-    const source = await mkdtemp(join(tmpdir(), "lore-eval-git-source-"))
-    const workspace = await mkdtemp(join(tmpdir(), "lore-eval-git-workspace-"))
+    const source = await mkdtemp(join(tmpdir(), "kennen-eval-git-source-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-eval-git-workspace-"))
     try {
       git(source, ["init", "--quiet"])
       await writeFile(join(source, "tracked.txt"), "before\n", "utf-8")
       git(source, ["add", "tracked.txt"])
       git(source, [
         "-c",
-        "user.name=Lore Eval",
+        "user.name=Kennen Eval",
         "-c",
-        "user.email=lore-eval@example.com",
+        "user.email=kennen-eval@example.com",
         "commit",
         "--quiet",
         "-m",
@@ -514,9 +515,9 @@ tasks:
       git(workspace, ["add", "tracked.txt"])
       git(workspace, [
         "-c",
-        "user.name=Lore Eval",
+        "user.name=Kennen Eval",
         "-c",
-        "user.email=lore-eval@example.com",
+        "user.email=kennen-eval@example.com",
         "commit",
         "--quiet",
         "-m",
@@ -539,16 +540,16 @@ tasks:
   })
 
   it("truncates large patch evidence without dropping the sidecar", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-eval-git-large-patch-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-eval-git-large-patch-"))
     try {
       git(workspace, ["init", "--quiet"])
       await writeFile(join(workspace, "tracked.txt"), "before\n", "utf-8")
       git(workspace, ["add", "tracked.txt"])
       git(workspace, [
         "-c",
-        "user.name=Lore Eval",
+        "user.name=Kennen Eval",
         "-c",
-        "user.email=lore-eval@example.com",
+        "user.email=kennen-eval@example.com",
         "commit",
         "--quiet",
         "-m",
@@ -597,7 +598,7 @@ tasks:
     const adapter = mockAdapter("codex", async () => successResult())
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -629,7 +630,7 @@ tasks:
     const adapter = mockAdapter("codex", async () => successResult())
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -672,7 +673,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -711,7 +712,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -743,7 +744,7 @@ tasks:
     const adapter = mockAdapter("codex", async () => successResult())
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -776,7 +777,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -806,7 +807,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -840,7 +841,7 @@ tasks:
     }))
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -871,7 +872,7 @@ tasks:
 
     // Adapter that flags `refused: true` — same shape as
     // CodexAgentAdapter's cost-guardrail return when
-    // LORE_EVAL_TASK_REAL is unset. The runner reads the structural
+    // KENNEN_EVAL_TASK_REAL is unset. The runner reads the structural
     // field (not a stderr substring) so future adapters get the same
     // discriminator without coupling to Codex-specific messages.
     const adapter = mockAdapter("codex", async () => ({
@@ -883,7 +884,7 @@ tasks:
     }))
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -915,7 +916,7 @@ tasks:
     }))
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -946,7 +947,7 @@ tasks:
     }))
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -972,7 +973,7 @@ tasks:
     const adapter = mockAdapter("codex", async () => successResult())
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -998,7 +999,7 @@ tasks:
 
     await expect(
       runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>(),
       })
     ).rejects.toThrow("No adapter registered")
@@ -1027,7 +1028,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -1057,7 +1058,7 @@ tasks:
     const adapter = mockAdapter("codex", async () => successResult())
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       keepWorkspaces: true,
     })
@@ -1068,7 +1069,7 @@ tasks:
   })
 
   it("seeds the memory condition fixture into the workspace", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-suite-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-suite-"))
     const suitesDir = join(dir, "task-suites")
     const memoryDir = join(dir, "memory")
     const workspaceDir = join(dir, "workspaces", "x")
@@ -1102,7 +1103,7 @@ tasks:
 
     let observedSeed: string | null = null
     const adapter = mockAdapter("codex", async ({ workspace }) => {
-      observedSeed = await readFile(join(workspace, ".lore-memories.json"), "utf-8")
+      observedSeed = await readFile(join(workspace, ".kennen-memories.json"), "utf-8")
       return successResult()
     })
 
@@ -1139,7 +1140,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -1188,7 +1189,7 @@ tasks:
       return successResult()
     })
 
-    const outPath = join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json")
+    const outPath = join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json")
     const { artifact } = await runTaskEvalSuite(suitePath, {
       outPath,
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
@@ -1241,7 +1242,7 @@ tasks:
 `,
     })
 
-    const outPath = join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json")
+    const outPath = join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json")
     const { artifact } = await runTaskEvalSuite(suitePath, {
       outPath,
       adapters: new Map<string, AgentAdapter>([
@@ -1306,7 +1307,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([
         ["codex", mockAdapter("codex", async () => successResult())],
       ]),
@@ -1338,7 +1339,7 @@ tasks:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([
         ["codex", mockAdapter("codex", async () => successResult())],
       ]),
@@ -1405,8 +1406,8 @@ tasks:
     )
   })
 
-  it("runs longitudinal suites across no-memory and lore-full-loop conditions", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-longitudinal-suite-"))
+  it("runs longitudinal suites across no-memory and kennen-full-loop conditions", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-longitudinal-suite-"))
     const suitesDir = join(dir, "task-suites")
     const workspaceDir = join(dir, "workspaces", "result-boundary")
     await mkdir(suitesDir, { recursive: true })
@@ -1426,7 +1427,7 @@ longitudinal: true
 name: longitudinal-smoke
 conditions:
   - no-memory
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: result-boundary
     agent: codex
@@ -1472,7 +1473,7 @@ scenarios:
               transcriptPath,
               [
                 JSON.stringify({
-                  type: "lore.eval.agent_run.started",
+                  type: "kennen.eval.agent_run.started",
                   prompt,
                 }),
                 JSON.stringify({
@@ -1491,7 +1492,7 @@ scenarios:
             )
           }
         }
-        if (prompt.includes("Retrieved Lore context")) {
+        if (prompt.includes("Retrieved Kennen context")) {
           await writeFile(
             servicePath,
             (await readFile(servicePath, "utf-8")) +
@@ -1509,18 +1510,18 @@ scenarios:
     let cleanupCalls = 0
     let formationTranscript = ""
     const progressEvents: string[] = []
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun({ workspace }) {
         await mkdir(join(workspace, ".codex"), { recursive: true })
         await writeFile(join(workspace, ".mcp.json"), "{}\n", "utf-8")
         await writeFile(
-          join(workspace, ".lore.yaml"),
+          join(workspace, ".kennen.yaml"),
           "vault:\n  pageId: test\n",
           "utf-8"
         )
         await writeFile(
           join(workspace, ".codex", "config.toml"),
-          "[mcp_servers.lore]\n",
+          "[mcp_servers.kennen]\n",
           "utf-8"
         )
         return {
@@ -1557,9 +1558,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
       onProgress(event) {
         if (event.type !== "run-stop") {
           progressEvents.push(
@@ -1573,8 +1574,8 @@ scenarios:
     expect(progressEvents).toEqual([
       "trial-start:1/2:no-memory",
       "trial-finish:1/2:no-memory",
-      "trial-start:2/2:lore-full-loop",
-      "trial-finish:2/2:lore-full-loop",
+      "trial-start:2/2:kennen-full-loop",
+      "trial-finish:2/2:kennen-full-loop",
     ])
     expect(phaseWorkspaces[1]?.workspace).not.toBe(phaseWorkspaces[2]?.workspace)
     expect(phaseWorkspaces[0]?.hasCreateUserProfileAtStart).toBe(false)
@@ -1585,13 +1586,13 @@ scenarios:
     if (!isLongitudinalTaskArtifact(artifact)) {
       throw new Error("expected longitudinal artifact")
     }
-    expect(artifact.runner.conditions).toEqual(["no-memory", "lore-full-loop"])
+    expect(artifact.runner.conditions).toEqual(["no-memory", "kennen-full-loop"])
     expect(artifact.summary.conditions["no-memory"]).toMatchObject({
       trials: 1,
       passed: 0,
       failed: 1,
     })
-    expect(artifact.summary.conditions["lore-full-loop"]).toMatchObject({
+    expect(artifact.summary.conditions["kennen-full-loop"]).toMatchObject({
       trials: 1,
       passed: 1,
       failed: 0,
@@ -1603,15 +1604,15 @@ scenarios:
     })
     const fullLoop = artifact.results.find(
       (result) =>
-        result.scenarioId === "result-boundary" && result.condition === "lore-full-loop"
+        result.scenarioId === "result-boundary" && result.condition === "kennen-full-loop"
     )
-    expect(fullLoop?.phases[0]?.lore.decisionsCreated).toBe(1)
-    expect(fullLoop?.phases[1]?.lore.surfacedContextIds).toEqual(["ctx-result"])
+    expect(fullLoop?.phases[0]?.kennen.decisionsCreated).toBe(1)
+    expect(fullLoop?.phases[1]?.kennen.surfacedContextIds).toEqual(["ctx-result"])
     expect(fullLoop?.phases[1]?.patchStats.filesChanged).toBe(1)
   })
 
   it("filters longitudinal runs to selected memory conditions", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-condition-filter-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-condition-filter-"))
     const suitesDir = join(dir, "task-suites")
     const workspaceDir = join(dir, "workspaces", "condition-filter")
     await mkdir(suitesDir, { recursive: true })
@@ -1626,8 +1627,8 @@ longitudinal: true
 name: longitudinal-condition-filter
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: condition-filter
     agent: codex
@@ -1649,7 +1650,7 @@ scenarios:
 
     const progressEvents: string[] = []
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       conditions: ["no-memory"],
       adapters: new Map<string, AgentAdapter>([
         [
@@ -1681,8 +1682,8 @@ scenarios:
     expect(artifact.runner.conditions).toEqual(["no-memory"])
     expect(artifact.results.map((result) => result.condition)).toEqual(["no-memory"])
     expect(artifact.summary.conditions["no-memory"].trials).toBe(1)
-    expect(artifact.summary.conditions["seeded-lore"].trials).toBe(0)
-    expect(artifact.summary.conditions["lore-full-loop"].trials).toBe(0)
+    expect(artifact.summary.conditions["seeded-kennen"].trials).toBe(0)
+    expect(artifact.summary.conditions["kennen-full-loop"].trials).toBe(0)
     expect(artifact.summary.passedTasks).toBe(1)
   })
 
@@ -1694,7 +1695,7 @@ runner: task
 longitudinal: true
 name: longitudinal-transcript-fallback
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: transcript-fallback
     agent: codex
@@ -1721,7 +1722,7 @@ scenarios:
             await writeFile(
               transcriptPath,
               `${JSON.stringify({
-                type: "lore.eval.agent_run.started",
+                type: "kennen.eval.agent_run.started",
                 prompt,
               })}\n`,
               "utf-8"
@@ -1742,7 +1743,7 @@ scenarios:
     )
 
     let formationTranscript = ""
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun() {
         return {
           projectId: "project-1",
@@ -1775,9 +1776,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     expect(formationTranscript).toContain("Assistant found")
@@ -1792,7 +1793,7 @@ runner: task
 longitudinal: true
 name: longitudinal-read-only-formation
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: read-only-formation
     agent: codex
@@ -1821,7 +1822,7 @@ scenarios:
       }
       return successResult()
     })
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun() {
         return {
           projectId: "project-1",
@@ -1854,9 +1855,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     if (!isLongitudinalTaskArtifact(artifact)) {
@@ -1878,7 +1879,7 @@ runner: task
 longitudinal: true
 name: longitudinal-read-only-whitespace
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: read-only-whitespace
     agent: codex
@@ -1912,7 +1913,7 @@ scenarios:
       }
       return successResult()
     })
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun() {
         return {
           projectId: "project-1",
@@ -1945,9 +1946,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     if (!isLongitudinalTaskArtifact(artifact)) {
@@ -2009,7 +2010,7 @@ scenarios:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -2034,7 +2035,7 @@ runner: task
 longitudinal: true
 name: longitudinal-expected-context-diagnostics
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: formation-keyword-miss
     agent: codex
@@ -2087,7 +2088,7 @@ scenarios:
       return successResult()
     })
 
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun({ scenario }) {
         return {
           projectId: "project-1",
@@ -2120,15 +2121,15 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     if (!isLongitudinalTaskArtifact(artifact)) {
       throw new Error("expected longitudinal artifact")
     }
-    expect(artifact.summary.conditions["lore-full-loop"]).toMatchObject({
+    expect(artifact.summary.conditions["kennen-full-loop"]).toMatchObject({
       trials: 2,
       passed: 2,
       failed: 0,
@@ -2140,9 +2141,9 @@ scenarios:
     const wakeupMiss = artifact.results.find(
       (result) => result.scenarioId === "wakeup-surface-miss"
     )
-    expect(formationMiss?.phases[0]?.lore.expectedContextIds).toEqual([])
-    expect(wakeupMiss?.phases[0]?.lore.expectedContextIds).toEqual(["ctx-status"])
-    expect(wakeupMiss?.phases[1]?.lore.surfacedContextIds).toEqual([])
+    expect(formationMiss?.phases[0]?.kennen.expectedContextIds).toEqual([])
+    expect(wakeupMiss?.phases[0]?.kennen.expectedContextIds).toEqual(["ctx-status"])
+    expect(wakeupMiss?.phases[1]?.kennen.surfacedContextIds).toEqual([])
   })
 
   it("stops longitudinal suites on the cost kill-switch and preserves partial results", async () => {
@@ -2197,7 +2198,7 @@ scenarios:
     })
 
     const progressEvents: string[] = []
-    const outPath = join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json")
+    const outPath = join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json")
     const { artifact } = await runTaskEvalSuite(suitePath, {
       outPath,
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
@@ -2270,7 +2271,7 @@ scenarios:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -2286,11 +2287,11 @@ scenarios:
     })
   })
 
-  it("ignores Lore ledger rows when selected conditions do not include full-loop", async () => {
-    const configRoot = await mkdtemp(join(tmpdir(), "lore-eval-cost-root-"))
+  it("ignores Kennen ledger rows when selected conditions do not include full-loop", async () => {
+    const configRoot = await mkdtemp(join(tmpdir(), "kennen-eval-cost-root-"))
     const ledgerPath = join(configRoot, "eval-costs.jsonl")
     await writeFile(
-      join(configRoot, ".lore.yaml"),
+      join(configRoot, ".kennen.yaml"),
       `vault:
   pageId: abc123
 costTracking:
@@ -2324,15 +2325,15 @@ costTracking:
         estimated: true,
       },
     })}\n`
-    const previousConfigRoot = process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
-    process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = configRoot
+    const previousConfigRoot = process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+    process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = configRoot
     try {
       const { suitePath } = await writeTaskSuite({
         workspace: { "README.md": "fixture\n" },
         suite: `version: 1
 runner: task
 longitudinal: true
-name: longitudinal-lore-cost-error
+name: longitudinal-kennen-cost-error
 costKillSwitchUsd: 0.5
 conditions:
   - no-memory
@@ -2375,7 +2376,7 @@ scenarios:
 
       const { artifact } = await runTaskEvalSuite(suitePath, {
         now: new Date("2026-05-27T00:00:00.000Z"),
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       })
 
@@ -2391,18 +2392,18 @@ scenarios:
       })
     } finally {
       if (previousConfigRoot === undefined) {
-        delete process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+        delete process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
       } else {
-        process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = previousConfigRoot
+        process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = previousConfigRoot
       }
     }
   })
 
   it("requires a sandbox project prefix for full-loop cost kill-switch accounting", async () => {
-    const configRoot = await mkdtemp(join(tmpdir(), "lore-eval-cost-root-"))
+    const configRoot = await mkdtemp(join(tmpdir(), "kennen-eval-cost-root-"))
     const ledgerPath = join(configRoot, "eval-costs.jsonl")
     await writeFile(
-      join(configRoot, ".lore.yaml"),
+      join(configRoot, ".kennen.yaml"),
       `vault:
   pageId: abc123
 costTracking:
@@ -2411,20 +2412,20 @@ costTracking:
 `,
       "utf-8"
     )
-    const previousConfigRoot = process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
-    const previousSandbox = process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
-    process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = configRoot
-    delete process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+    const previousConfigRoot = process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+    const previousSandbox = process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+    process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = configRoot
+    delete process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
     try {
       const { suitePath } = await writeTaskSuite({
         workspace: { "README.md": "fixture\n" },
         suite: `version: 1
 runner: task
 longitudinal: true
-name: longitudinal-lore-cost-sandbox-required
+name: longitudinal-kennen-cost-sandbox-required
 costKillSwitchUsd: 10
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: first-task
     agent: codex
@@ -2450,7 +2451,7 @@ scenarios:
 
       const { artifact } = await runTaskEvalSuite(suitePath, {
         now: new Date("2026-05-27T00:00:00.000Z"),
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       })
 
@@ -2465,27 +2466,27 @@ scenarios:
         totalPlannedTrials: 1,
       })
       expect(artifact.termination?.message).toContain(
-        "LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"
+        "KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"
       )
     } finally {
       if (previousConfigRoot === undefined) {
-        delete process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+        delete process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
       } else {
-        process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = previousConfigRoot
+        process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = previousConfigRoot
       }
       if (previousSandbox === undefined) {
-        delete process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+        delete process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
       } else {
-        process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"] = previousSandbox
+        process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"] = previousSandbox
       }
     }
   })
 
-  it("scopes full-loop Lore cost kill-switch accounting to the sandbox project", async () => {
-    const configRoot = await mkdtemp(join(tmpdir(), "lore-eval-cost-root-"))
+  it("scopes full-loop Kennen cost kill-switch accounting to the sandbox project", async () => {
+    const configRoot = await mkdtemp(join(tmpdir(), "kennen-eval-cost-root-"))
     const ledgerPath = join(configRoot, "eval-costs.jsonl")
     await writeFile(
-      join(configRoot, ".lore.yaml"),
+      join(configRoot, ".kennen.yaml"),
       `vault:
   pageId: abc123
 costTracking:
@@ -2528,20 +2529,20 @@ costTracking:
       "utf-8"
     )
 
-    const previousConfigRoot = process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
-    const previousSandbox = process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
-    process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = configRoot
-    process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"] = "Eval Sandbox"
+    const previousConfigRoot = process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+    const previousSandbox = process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+    process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = configRoot
+    process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"] = "Eval Sandbox"
     try {
       const { suitePath } = await writeTaskSuite({
         workspace: { "README.md": "fixture\n" },
         suite: `version: 1
 runner: task
 longitudinal: true
-name: longitudinal-lore-cost-sandbox-scope
+name: longitudinal-kennen-cost-sandbox-scope
 costKillSwitchUsd: 0.5
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: first-task
     agent: codex
@@ -2562,7 +2563,7 @@ scenarios:
       const prompts: string[] = []
       const adapter = mockAdapter("codex", async ({ prompt, workspace }) => {
         prompts.push(prompt)
-        if (prompt.includes("Retrieved Lore context")) {
+        if (prompt.includes("Retrieved Kennen context")) {
           await writeFile(join(workspace, "first.txt"), "done\n", "utf-8")
         }
         return successResultWithUsage({
@@ -2572,7 +2573,7 @@ scenarios:
           reasoningOutputTokens: 0,
         })
       })
-      const loreAdapter: LongitudinalLoreAdapter = {
+      const kennenAdapter: LongitudinalKennenAdapter = {
         async createRun() {
           return {
             projectId: "project-1",
@@ -2605,9 +2606,9 @@ scenarios:
 
       const { artifact } = await runTaskEvalSuite(suitePath, {
         now: new Date("2026-05-27T00:00:00.000Z"),
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-        longitudinalLoreAdapter: loreAdapter,
+        longitudinalKennenAdapter: kennenAdapter,
       })
 
       if (!isLongitudinalTaskArtifact(artifact)) {
@@ -2619,19 +2620,19 @@ scenarios:
       expect(artifact.termination).toBeNull()
     } finally {
       if (previousConfigRoot === undefined) {
-        delete process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+        delete process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
       } else {
-        process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = previousConfigRoot
+        process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = previousConfigRoot
       }
       if (previousSandbox === undefined) {
-        delete process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+        delete process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
       } else {
-        process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"] = previousSandbox
+        process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"] = previousSandbox
       }
     }
   })
 
-  it("injects seeded context for seeded-lore longitudinal runs", async () => {
+  it("injects seeded context for seeded-kennen longitudinal runs", async () => {
     const { suitePath } = await writeTaskSuite({
       workspace: { "cache.js": "export function cacheKey(name) { return name }\n" },
       suite: `version: 1
@@ -2640,7 +2641,7 @@ longitudinal: true
 name: longitudinal-seeded
 conditions:
   - no-memory
-  - seeded-lore
+  - seeded-kennen
 scenarios:
   - id: seeded-cache-prefix
     agent: codex
@@ -2667,7 +2668,7 @@ scenarios:
       "codex",
       async ({ prompt, workspace, transcriptPath }) => {
         transcriptPaths.push(transcriptPath)
-        if (prompt.includes("Retrieved Lore context")) {
+        if (prompt.includes("Retrieved Kennen context")) {
           await writeFile(
             join(workspace, "cache.js"),
             "export function cacheKey(name) { return `gh-cli-pilot:${name}` }\n",
@@ -2679,7 +2680,7 @@ scenarios:
     )
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
     })
 
@@ -2691,28 +2692,28 @@ scenarios:
       passed: 0,
       failed: 1,
     })
-    expect(artifact.summary.conditions["seeded-lore"]).toMatchObject({
+    expect(artifact.summary.conditions["seeded-kennen"]).toMatchObject({
       trials: 1,
       passed: 1,
       failed: 0,
     })
     expect(artifact.summary.lift).toMatchObject({
-      toCondition: "seeded-lore",
+      toCondition: "seeded-kennen",
       successRateDelta: 1,
       liftedScenarioIds: ["seeded-cache-prefix"],
     })
-    const seeded = artifact.results.find((r) => r.condition === "seeded-lore")
-    expect(seeded?.phases[0]?.lore.wakeUpEnabled).toBe(true)
-    expect(seeded?.phases[0]?.lore.surfacedContextIds).toEqual(["ctx-cache"])
+    const seeded = artifact.results.find((r) => r.condition === "seeded-kennen")
+    expect(seeded?.phases[0]?.kennen.wakeUpEnabled).toBe(true)
+    expect(seeded?.phases[0]?.kennen.surfacedContextIds).toEqual(["ctx-cache"])
     expect(seeded?.phases[0]?.patch?.path.split(/[\\/]/u).pop()).toBe(
-      "002-seeded-cache-prefix-seeded-lore-use.patch"
+      "002-seeded-cache-prefix-seeded-kennen-use.patch"
     )
     expect(await readFile(seeded?.phases[0]?.patch?.path ?? "", "utf-8")).toContain(
       "cache.js"
     )
     expect(transcriptPaths.map((p) => p?.split(/[\\/]/u).pop())).toEqual([
       "001-seeded-cache-prefix-no-memory-use.codex.jsonl",
-      "002-seeded-cache-prefix-seeded-lore-use.codex.jsonl",
+      "002-seeded-cache-prefix-seeded-kennen-use.codex.jsonl",
     ])
   })
 
@@ -2748,9 +2749,9 @@ scenarios:
 
     await expect(
       runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         transcriptsDir: join(
-          await mkdtemp(join(tmpdir(), "lore-eval-transcripts-")),
+          await mkdtemp(join(tmpdir(), "kennen-eval-transcripts-")),
           "custom"
         ),
         adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
@@ -2801,7 +2802,7 @@ scenarios:
     })
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       difficulty: "hard",
       scenarioIds: ["hard-one"],
@@ -2891,7 +2892,7 @@ scenarios:
     })
     const run = async () =>
       runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
         sample: {
           seed: "seed-one",
@@ -2919,7 +2920,7 @@ scenarios:
     expect(first.artifact.summary.tasks).toBe(3)
 
     const differentSeed = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       sample: {
         seed: "seed-two",
@@ -2962,7 +2963,7 @@ scenarios:
 
     await expect(
       runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([
           ["codex", mockAdapter("codex", async () => successResult())],
         ]),
@@ -3009,7 +3010,7 @@ scenarios:
 
     await expect(
       runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([
           ["codex", mockAdapter("codex", async () => successResult())],
         ]),
@@ -3028,9 +3029,9 @@ scenarios:
             condition: "no-memory",
           } as never,
         ],
-        expectedConditions: ["no-memory", "seeded-lore", "lore-full-loop"],
+        expectedConditions: ["no-memory", "seeded-kennen", "kennen-full-loop"],
       })
-    ).toThrow("missing=seeded-lore,lore-full-loop")
+    ).toThrow("missing=seeded-kennen,kennen-full-loop")
   })
 
   it("fills missing longitudinal shard condition results with harness-error rows", () => {
@@ -3059,14 +3060,14 @@ scenarios:
           condition: "no-memory",
         } as never,
       ],
-      expectedConditions: ["no-memory", "seeded-lore", "lore-full-loop"],
+      expectedConditions: ["no-memory", "seeded-kennen", "kennen-full-loop"],
       harnessErrorMessage: "shard exited before writing all conditions",
     })
 
     expect(results.map((result) => result.condition)).toEqual([
       "no-memory",
-      "seeded-lore",
-      "lore-full-loop",
+      "seeded-kennen",
+      "kennen-full-loop",
     ])
     expect(results.slice(1).map((result) => result.failureReason)).toEqual([
       "harness-error",
@@ -3084,7 +3085,7 @@ scenarios:
     } as never
     const killedPlaceholder = {
       scenarioId: "first",
-      condition: "seeded-lore",
+      condition: "seeded-kennen",
       failureReason: "harness-error",
       agentRun: null,
       verifiers: [],
@@ -3120,7 +3121,7 @@ longitudinal: true
 name: longitudinal-partial-cost-stop
 conditions:
   - no-memory
-  - seeded-lore
+  - seeded-kennen
 scenarios:
   - id: partial
     agent: codex
@@ -3150,7 +3151,7 @@ scenarios:
     )
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
       costKillSwitchUsd: 0.0001,
     })
@@ -3166,7 +3167,7 @@ scenarios:
     expect(artifact.summary.failedTasks).toBe(1)
   })
 
-  it("does not require Lore cost config when full-loop is not selected", async () => {
+  it("does not require Kennen cost config when full-loop is not selected", async () => {
     const { suitePath } = await writeTaskSuite({
       workspace: { "done.txt": "" },
       suite: `version: 1
@@ -3189,13 +3190,13 @@ scenarios:
 `,
     })
 
-    const prior = process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
-    process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = await mkdtemp(
-      join(tmpdir(), "lore-eval-missing-config-")
+    const prior = process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+    process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = await mkdtemp(
+      join(tmpdir(), "kennen-eval-missing-config-")
     )
     try {
       const { artifact } = await runTaskEvalSuite(suitePath, {
-        outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+        outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
         adapters: new Map<string, AgentAdapter>([
           [
             "codex",
@@ -3219,12 +3220,12 @@ scenarios:
       expect(artifact.results[0]?.success).toBe(true)
       expect(artifact.termination).toBeNull()
     } finally {
-      if (prior === undefined) delete process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
-      else process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"] = prior
+      if (prior === undefined) delete process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+      else process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"] = prior
     }
   })
 
-  it("keeps primary longitudinal agents Lore-tool-free while mining has MCP config", async () => {
+  it("keeps primary longitudinal agents Kennen-tool-free while mining has MCP config", async () => {
     const { suitePath } = await writeTaskSuite({
       workspace: { "status.js": "export function status() { return 'ok' }\n" },
       suite: `version: 1
@@ -3232,7 +3233,7 @@ runner: task
 longitudinal: true
 name: longitudinal-tool-free-primary
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: tool-free-primary
     agent: codex
@@ -3267,19 +3268,19 @@ scenarios:
       return successResult()
     })
 
-    const configRoot = await mkdtemp(join(tmpdir(), "lore-eval-config-"))
+    const configRoot = await mkdtemp(join(tmpdir(), "kennen-eval-config-"))
     const services = {
       authSource: "env-notion-api-token",
       config: { vault: { pageId: "vault-page" }, hooks: {} },
     } as unknown as LongitudinalAgentConfigServices
     let miningSawConfig = false
     let cleanupCalls = 0
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun({ workspace }) {
         await mkdir(join(workspace, ".codex"), { recursive: true })
         await writeFile(
           join(workspace, ".codex", "config.toml"),
-          "[mcp_servers.lore]\n",
+          "[mcp_servers.kennen]\n",
           "utf-8"
         )
         await writeFile(join(workspace, ".mcp.json"), "{}\n", "utf-8")
@@ -3297,10 +3298,10 @@ scenarios:
                   join(phaseWorkspace, ".codex", "config.toml"),
                   "utf-8"
                 )
-                expect(codexConfig).toContain("mcp_servers.lore")
+                expect(codexConfig).toContain("mcp_servers.kennen")
                 expect(codexConfig).toContain('default_tools_approval_mode = "approve"')
-                expect(codexConfig).toContain('"lore-memory"')
-                expect(codexConfig).toContain('"lore-decision"')
+                expect(codexConfig).toContain('"kennen-memory"')
+                expect(codexConfig).toContain('"kennen-decision"')
               }
             )
             return {
@@ -3333,9 +3334,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     expect(cleanupCalls).toBe(1)
@@ -3353,7 +3354,7 @@ scenarios:
     })
   })
 
-  it("records wake-up load failures as lore-full-loop phase failures", async () => {
+  it("records wake-up load failures as kennen-full-loop phase failures", async () => {
     const { suitePath } = await writeTaskSuite({
       workspace: { "status.js": "export function status() { return 'ok' }\n" },
       suite: `version: 1
@@ -3361,7 +3362,7 @@ runner: task
 longitudinal: true
 name: longitudinal-wakeup-failure
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: wakeup-fails-without-keywords
     agent: codex
@@ -3384,7 +3385,7 @@ scenarios:
       agentRuns += 1
       return successResult()
     })
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun() {
         return {
           projectId: "project-1",
@@ -3411,16 +3412,16 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     expect(agentRuns).toBe(1)
     if (!isLongitudinalTaskArtifact(artifact)) {
       throw new Error("expected longitudinal artifact")
     }
-    expect(artifact.summary.conditions["lore-full-loop"]).toMatchObject({
+    expect(artifact.summary.conditions["kennen-full-loop"]).toMatchObject({
       trials: 1,
       passed: 0,
       failed: 1,
@@ -3439,7 +3440,7 @@ scenarios:
     expect(usePhase?.failureMessage).toContain("wake-up prefetch exploded")
   })
 
-  it("does not form or load Lore context after Phase A agent refusal", async () => {
+  it("does not form or load Kennen context after Phase A agent refusal", async () => {
     const { suitePath } = await writeTaskSuite({
       workspace: { "status.js": "export function status() { return 'ok' }\n" },
       suite: `version: 1
@@ -3447,7 +3448,7 @@ runner: task
 longitudinal: true
 name: longitudinal-phase-a-refusal
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: phase-a-refusal
     agent: codex
@@ -3476,7 +3477,7 @@ scenarios:
     })
     let formContextCalls = 0
     let loadContextCalls = 0
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun() {
         return {
           projectId: "project-1",
@@ -3495,9 +3496,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     if (!isLongitudinalTaskArtifact(artifact)) {
@@ -3523,7 +3524,7 @@ scenarios:
     expect(artifact.results[0]!.phases[1]?.failureMessage).toContain("Skipped Phase B")
   })
 
-  it("does not run Phase B after Lore formation refusal", async () => {
+  it("does not run Phase B after Kennen formation refusal", async () => {
     const { suitePath } = await writeTaskSuite({
       workspace: { "status.js": "export function status() { return 'ok' }\n" },
       suite: `version: 1
@@ -3531,7 +3532,7 @@ runner: task
 longitudinal: true
 name: longitudinal-formation-refusal
 conditions:
-  - lore-full-loop
+  - kennen-full-loop
 scenarios:
   - id: formation-refusal
     agent: codex
@@ -3554,7 +3555,7 @@ scenarios:
     })
     let formContextCalls = 0
     let loadContextCalls = 0
-    const loreAdapter: LongitudinalLoreAdapter = {
+    const kennenAdapter: LongitudinalKennenAdapter = {
       async createRun() {
         return {
           projectId: "project-1",
@@ -3573,9 +3574,9 @@ scenarios:
     }
 
     const { artifact } = await runTaskEvalSuite(suitePath, {
-      outPath: join(await mkdtemp(join(tmpdir(), "lore-eval-task-")), "out.json"),
+      outPath: join(await mkdtemp(join(tmpdir(), "kennen-eval-task-")), "out.json"),
       adapters: new Map<string, AgentAdapter>([["codex", adapter]]),
-      longitudinalLoreAdapter: loreAdapter,
+      longitudinalKennenAdapter: kennenAdapter,
     })
 
     if (!isLongitudinalTaskArtifact(artifact)) {
@@ -3602,7 +3603,7 @@ scenarios:
   })
 
   it("rejects task.workspace paths that escape the eval-suite parent", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-suite-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-suite-"))
     const suitesDir = join(dir, "task-suites")
     await mkdir(suitesDir, { recursive: true })
     const suitePath = join(suitesDir, "suite.yaml")
@@ -3635,7 +3636,7 @@ tasks:
   })
 
   it("rejects memoryConditions fixture paths that escape the eval-suite parent", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-suite-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-suite-"))
     const suitesDir = join(dir, "task-suites")
     const workspaceDir = join(dir, "workspaces", "x")
     await mkdir(suitesDir, { recursive: true })
@@ -3902,13 +3903,13 @@ describe("buildCodexChildEnv", () => {
         HOME: "/Users/example",
         CODEX_HOME: "/Users/example/.codex",
       },
-      { codexHome: "/tmp/lore-eval-codex-home-test" }
+      { codexHome: "/tmp/kennen-eval-codex-home-test" }
     )
     expect(env["PATH"]).toBe("/usr/bin")
-    expect(env["HOME"]).toBe("/tmp/lore-eval-codex-home-test")
-    expect(env["CODEX_HOME"]).toBe("/tmp/lore-eval-codex-home-test")
-    expect(env["GOMODCACHE"]).toContain("lore-eval-go-mod-cache")
-    expect(env["GOCACHE"]).toContain("lore-eval-go-build-cache")
+    expect(env["HOME"]).toBe("/tmp/kennen-eval-codex-home-test")
+    expect(env["CODEX_HOME"]).toBe("/tmp/kennen-eval-codex-home-test")
+    expect(env["GOMODCACHE"]).toContain("kennen-eval-go-mod-cache")
+    expect(env["GOCACHE"]).toContain("kennen-eval-go-build-cache")
   })
 
   it("strips mise shims when HOME is isolated for eval subprocesses", () => {
@@ -3923,7 +3924,7 @@ describe("buildCodexChildEnv", () => {
         ].join(delimiter),
         HOME: "/Users/example",
       },
-      { codexHome: "/tmp/lore-eval-codex-home-test" }
+      { codexHome: "/tmp/kennen-eval-codex-home-test" }
     )
 
     expect(env["PATH"]).toBe(
@@ -3932,7 +3933,7 @@ describe("buildCodexChildEnv", () => {
   })
 
   it("resolves codex from a non-mise PATH entry for isolated eval subprocesses", async () => {
-    const root = await mkdtemp(join(tmpdir(), "lore-codex-path-test-"))
+    const root = await mkdtemp(join(tmpdir(), "kennen-codex-path-test-"))
     try {
       const shimDir = join(root, "mise", "shims")
       const binDir = join(root, "bin")
@@ -3953,7 +3954,7 @@ describe("buildCodexChildEnv", () => {
           PATH: pathValue,
           HOME: "/Users/example",
         },
-        { codexHome: "/tmp/lore-eval-codex-home-test" }
+        { codexHome: "/tmp/kennen-eval-codex-home-test" }
       )
       expect(env["PATH"]).toBe(binDir)
       expect(resolveCodexExecutable({ PATH: shimDir })).toBeNull()
@@ -3969,7 +3970,7 @@ describe("buildCodexChildEnv", () => {
         GOMODCACHE: "/tmp/custom-mod-cache",
         GOCACHE: "/tmp/custom-build-cache",
       },
-      { codexHome: "/tmp/lore-eval-codex-home-test" }
+      { codexHome: "/tmp/kennen-eval-codex-home-test" }
     )
 
     expect(env["GOMODCACHE"]).toBe("/tmp/custom-mod-cache")
@@ -3993,7 +3994,7 @@ describe("createIsolatedCodexHome", () => {
   })
 
   it("copies auth and top-level model settings without global MCP or memories", async () => {
-    const sourceHome = await mkdtemp(join(tmpdir(), "lore-codex-source-home-"))
+    const sourceHome = await mkdtemp(join(tmpdir(), "kennen-codex-source-home-"))
     const isolatedHomes: string[] = []
     try {
       await mkdir(join(sourceHome, "memories"), { recursive: true })
@@ -4009,7 +4010,7 @@ describe("createIsolatedCodexHome", () => {
           'model_reasoning_effort = "xhigh"',
           'sandbox_mode = "danger-full-access"',
           "",
-          "[mcp_servers.lore]",
+          "[mcp_servers.kennen]",
           'command = "node"',
           "",
         ].join("\n"),
@@ -4037,7 +4038,7 @@ describe("createIsolatedCodexHome", () => {
   })
 
   it("removes copied auth if isolated setup fails", async () => {
-    const tempRoot = await mkdtemp(join(tmpdir(), "lore-codex-home-fail-"))
+    const tempRoot = await mkdtemp(join(tmpdir(), "kennen-codex-home-fail-"))
     const previousTmpdir = process.env["TMPDIR"]
     process.env["TMPDIR"] = tempRoot
     const sourceHome = await mkdtemp(join(tempRoot, "source-codex-home-"))
@@ -4052,7 +4053,7 @@ describe("createIsolatedCodexHome", () => {
       await expect(createIsolatedCodexHome({ CODEX_HOME: sourceHome })).rejects.toThrow()
 
       const leftovers = (await readdir(tempRoot)).filter((name) =>
-        name.startsWith("lore-eval-codex-home-")
+        name.startsWith("kennen-eval-codex-home-")
       )
       expect(leftovers).toEqual([])
     } finally {
@@ -4242,7 +4243,7 @@ async function writeTaskSuite(input: {
   workspace: Record<string, string>
   suite: string
 }): Promise<{ suitePath: string }> {
-  const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-suite-"))
+  const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-suite-"))
   const suitesDir = join(dir, "task-suites")
   const workspaceDir = join(dir, "workspaces", "x")
   await mkdir(suitesDir, { recursive: true })
@@ -4300,7 +4301,7 @@ describe("bench spawn argv carries NO secrets", () => {
 
   it("buildBenchSpawnArgs does not contain bearer-shaped substrings", () => {
     // Invariant: bench Notion auth is routed outside argv. The spawn
-    // argv carries ZERO bearer-shaped values or `-c mcp_servers.lore.*`
+    // argv carries ZERO bearer-shaped values or `-c mcp_servers.kennen.*`
     // overrides. Any future refactor that re-introduces auth in argv
     // would fail this test loudly.
     //
@@ -4309,11 +4310,11 @@ describe("bench spawn argv carries NO secrets", () => {
     // process.env in the test's setup; `buildBenchSpawnArgs` ignores
     // env entirely (the workspace path and prompt are its only inputs)
     // so the assertion is structural, not env-dependent.
-    process.env["LORE_BENCH_NOTION_TOKEN"] =
+    process.env["KENNEN_BENCH_NOTION_TOKEN"] =
       "ntn_SENTINEL_BENCH_TOKEN_MUST_NEVER_REACH_ARGV"
     process.env["NOTION_API_TOKEN"] = "ntn_OPERATOR_DAY_TO_DAY_MUST_NEVER_REACH_ARGV"
     try {
-      const args = buildBenchSpawnArgs("/tmp/lore-bench-test-workspace", "Q?")
+      const args = buildBenchSpawnArgs("/tmp/kennen-bench-test-workspace", "Q?")
       const joined = args.join(" ")
       expect(joined).not.toMatch(/ntn_/)
       expect(joined).not.toMatch(/secret_/)
@@ -4327,11 +4328,11 @@ describe("bench spawn argv carries NO secrets", () => {
       expect(joined).toContain(
         `-c shell_environment_policy.exclude=${JSON.stringify([...BENCH_SHELL_ENV_EXCLUDES])}`
       )
-      expect(joined).toContain("--cd /tmp/lore-bench-test-workspace")
+      expect(joined).toContain("--cd /tmp/kennen-bench-test-workspace")
       expect(joined).toContain("--sandbox workspace-write")
       expect(joined).toContain("--skip-git-repo-check")
     } finally {
-      delete process.env["LORE_BENCH_NOTION_TOKEN"]
+      delete process.env["KENNEN_BENCH_NOTION_TOKEN"]
       delete process.env["NOTION_API_TOKEN"]
     }
   })
@@ -4349,15 +4350,15 @@ describe("bench spawn argv carries NO secrets", () => {
       CODEX_HOME: "/tmp/home/.codex",
       CODEX_TRACE: "1",
       OPENAI_API_KEY: "sk-operator-day-to-day",
-      LORE_BENCH_OPENAI_API_KEY: "sk-bench-only",
+      KENNEN_BENCH_OPENAI_API_KEY: "sk-bench-only",
       NOTION_API_TOKEN: "ntn_OPERATOR_DAY_TO_DAY_TOKEN_MUST_NOT_LEAK",
       NOTION_DEV_PAT: "development_ntn_OPERATOR_DEV_PAT_MUST_NOT_LEAK",
-      LORE_BENCH_NOTION_TOKEN: "ntn_BENCH_TOKEN_ALSO_NOT_FORWARDED_VIA_ENV",
+      KENNEN_BENCH_NOTION_TOKEN: "ntn_BENCH_TOKEN_ALSO_NOT_FORWARDED_VIA_ENV",
       GITHUB_TOKEN: "ghp_must_not_leak",
       ANTHROPIC_API_KEY: "sk-ant-must-not-leak",
     }
     const childEnv = buildBenchCodexChildEnv(parent)
-    // OPENAI_API_KEY is sourced from LORE_BENCH_OPENAI_API_KEY, not
+    // OPENAI_API_KEY is sourced from KENNEN_BENCH_OPENAI_API_KEY, not
     // the operator's day-to-day value.
     expect(childEnv["OPENAI_API_KEY"]).toBe("sk-bench-only")
     // Every Notion-bearer-shaped key must be absent from the child
@@ -4366,7 +4367,7 @@ describe("bench spawn argv carries NO secrets", () => {
     // Notion-shaped.
     expect(childEnv["NOTION_API_TOKEN"]).toBeUndefined()
     expect(childEnv["NOTION_DEV_PAT"]).toBeUndefined()
-    expect(childEnv["LORE_BENCH_NOTION_TOKEN"]).toBeUndefined()
+    expect(childEnv["KENNEN_BENCH_NOTION_TOKEN"]).toBeUndefined()
     expect(childEnv["GITHUB_TOKEN"]).toBeUndefined()
     expect(childEnv["ANTHROPIC_API_KEY"]).toBeUndefined()
     expect(childEnv["HOME"]).toBeUndefined()
@@ -4394,44 +4395,44 @@ describe("bench spawn argv carries NO secrets", () => {
         HOME: "/Users/example",
         CODEX_HOME: "/Users/example/.codex",
         CODEX_TRACE: "1",
-        LORE_BENCH_OPENAI_API_KEY: "sk-bench-only",
+        KENNEN_BENCH_OPENAI_API_KEY: "sk-bench-only",
       },
       {
         extraEnv: {
           HOME: "/tmp/attacker-home",
           CODEX_HOME: "/tmp/attacker-codex-home",
         },
-        codexHome: "/tmp/lore-eval-codex-home-bench",
+        codexHome: "/tmp/kennen-eval-codex-home-bench",
       }
     )
 
-    expect(childEnv["HOME"]).toBe("/tmp/lore-eval-codex-home-bench")
-    expect(childEnv["CODEX_HOME"]).toBe("/tmp/lore-eval-codex-home-bench")
+    expect(childEnv["HOME"]).toBe("/tmp/kennen-eval-codex-home-bench")
+    expect(childEnv["CODEX_HOME"]).toBe("/tmp/kennen-eval-codex-home-bench")
     expect(childEnv["PATH"]).toBe("/usr/bin")
     expect(childEnv["CODEX_TRACE"]).toBeUndefined()
     expect(childEnv["OPENAI_API_KEY"]).toBe("sk-bench-only")
   })
 
   it("exposes bench tool shims only when the workspace opted into them", async () => {
-    const workspace = await mkdtemp(join(tmpdir(), "lore-bench-env-test-"))
+    const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-env-test-"))
     try {
       const withoutShims = buildBenchCodexChildEnv(
-        { PATH: "/usr/bin", LORE_BENCH_OPENAI_API_KEY: "sk-bench-only" },
+        { PATH: "/usr/bin", KENNEN_BENCH_OPENAI_API_KEY: "sk-bench-only" },
         { workspace }
       )
       expect(withoutShims["PATH"]).toBe("/usr/bin")
-      expect(withoutShims["LORE_BENCH_TOOL_NODE"]).toBeUndefined()
-      expect(withoutShims["LORE_BENCH_TOOL_CLI_JS"]).toBeUndefined()
+      expect(withoutShims["KENNEN_BENCH_TOOL_NODE"]).toBeUndefined()
+      expect(withoutShims["KENNEN_BENCH_TOOL_CLI_JS"]).toBeUndefined()
 
       await mkdir(join(workspace, BENCH_TOOL_SHIM_DIR))
       const withShims = buildBenchCodexChildEnv(
-        { PATH: "/usr/bin", LORE_BENCH_OPENAI_API_KEY: "sk-bench-only" },
+        { PATH: "/usr/bin", KENNEN_BENCH_OPENAI_API_KEY: "sk-bench-only" },
         { workspace }
       )
       expect(withShims["PATH"]?.split(delimiter)[0]).toBe(
         join(workspace, BENCH_TOOL_SHIM_DIR)
       )
-      expect(withShims["LORE_BENCH_TOOL_NODE"]).toBe(process.execPath)
+      expect(withShims["KENNEN_BENCH_TOOL_NODE"]).toBe(process.execPath)
     } finally {
       await rm(workspace, { recursive: true, force: true })
     }

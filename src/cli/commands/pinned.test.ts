@@ -59,7 +59,7 @@ function makeServicesStub(opts: { blocks?: Memory[] } = {}): {
   return { listPinnedBlocks }
 }
 
-describe("lore pinned list", () => {
+describe("kennen pinned list", () => {
   let logSpy: ReturnType<typeof vi.fn>
   let errorSpy: ReturnType<typeof vi.fn>
   let stdoutWriteSpy: ReturnType<typeof vi.fn>

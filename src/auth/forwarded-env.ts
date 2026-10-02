@@ -1,11 +1,11 @@
 /**
- * Canonical list of operator-controlled env vars that Lore-spawned
+ * Canonical list of operator-controlled env vars that Kennen-spawned
  * children must see in order to resolve auth and the target Notion
  * environment identically to the foreground CLI.
  *
  * Two consumers share this list:
  *
- * - `lore install` writes each key as a
+ * - `kennen install` writes each key as a
  *   `${VAR}` placeholder into committed MCP entries (Claude / Cursor
  *   .mcp.json, Codex config.toml). The MCP host substitutes the
  *   placeholders from the operator's environment at MCP-spawn time, so
@@ -30,17 +30,17 @@
  *   bearer-token source `resolveAuth` walks.
  * - **Workspace + environment selectors** (`NOTION_WORKSPACE_ID`,
  *   `NOTION_ENV`, `NOTION_BASE_URL`, `NOTION_API_BASE_URL`,
- *   `LORE_NOTION_BASE_URL`) — every input `loadNtnToken` and
+ *   `KENNEN_NOTION_BASE_URL`) — every input `loadNtnToken` and
  *   `resolveOperatorBaseUrl` honor. `NOTION_WORKSPACE_ID` selects the
  *   right workspace from a multi-workspace auth.json; the four
  *   base-URL names map to the dev / staging / prod environment the
  *   spawned child must talk to.
- * - **Per-user attribution override** (`LORE_USER_NAME`) — engineer
+ * - **Per-user attribution override** (`KENNEN_USER_NAME`) — engineer
  *   display name stamped on Memory `Author` (DEFERRED-ATTRIBUTION).
  *   Forwarded so an operator with the override set keeps the override
  *   on the spawned MCP child without paying a `users.me` round-trip.
  *
- * Static-value forwards (`LORE_CONFIG_ROOT`, `LORE_SUPPRESS_DEPRECATIONS`)
+ * Static-value forwards (`KENNEN_CONFIG_ROOT`, `KENNEN_SUPPRESS_DEPRECATIONS`)
  * do NOT live here — they're literal strings or install-time-derived
  * paths, not references to the operator's env.
  *
@@ -49,7 +49,7 @@
  * processes, because they are process-local runtime selectors rather
  * than MCP environment placeholders.
  *
- * `LORE_AGENT_NAME` is also intentionally absent. The agent-name flow
+ * `KENNEN_AGENT_NAME` is also intentionally absent. The agent-name flow
  * carries the value through prompt text (`Agent: <name>` line +
  * `Pass agent: "..." verbatim` instruction) for the hook-spawned save
  * agent, and the install path threads it through Codex hook-command
@@ -57,7 +57,7 @@
  * double-forward and conflict with the prompt-text path.
  */
 /**
- * Declaration order is observable: `lore install` emits Codex
+ * Declaration order is observable: `kennen install` emits Codex
  * `env_vars = [...]` entries in this order, so a refactor that
  * reorders the array will reorder the committed TOML output. Tests
  * pin the current order; reorder deliberately.
@@ -82,7 +82,7 @@ export const RUNTIME_FORWARDED_KEYS = [
   // *environment* concern (the same way `NOTION_ENV` selects which
   // Notion deployment the child talks to). The four base-URL names
   // follow `resolveOperatorBaseUrl`'s priority order.
-  "LORE_NOTION_BASE_URL",
+  "KENNEN_NOTION_BASE_URL",
   "NOTION_WORKSPACE_ID",
   "NOTION_ENV",
   "NOTION_BASE_URL",
@@ -90,10 +90,10 @@ export const RUNTIME_FORWARDED_KEYS = [
   // Per-user attribution override (DEFERRED-ATTRIBUTION). Last
   // because it's orthogonal to auth + environment — Memory `Author`
   // affects what gets stamped, not whether the call succeeds.
-  "LORE_USER_NAME",
+  "KENNEN_USER_NAME",
   // Bench-mode write-budget pair (#595). Forwarded so the mining
   // child's `claude -p` inherits them, which in turn inherits them
-  // into the `lore mcp` child the agent CLI spawns from `.mcp.json`.
+  // into the `kennen mcp` child the agent CLI spawns from `.mcp.json`.
   // Empty / unset in production runs — non-bench callers see no
   // behavior change.
   //
@@ -104,8 +104,8 @@ export const RUNTIME_FORWARDED_KEYS = [
   // too and bounce real writes once the (operator-mistaken) cap is
   // hit. The bench-runner exports them per-example and restores them
   // in a `finally`; no other code path should set them.
-  "LORE_MCP_WRITE_BUDGET",
-  "LORE_MCP_BUDGET_STATE_FILE",
+  "KENNEN_MCP_WRITE_BUDGET",
+  "KENNEN_MCP_BUDGET_STATE_FILE",
 ] as const
 
 /**
@@ -123,7 +123,7 @@ export type RuntimeForwardedKey = (typeof RUNTIME_FORWARDED_KEYS)[number]
  * ~/.config/notion/auth.json at startup (path 2), so the bearer
  * never needs to cross any fork or land in any committed config.
  *
- * Workspace / base-URL selectors and `LORE_USER_NAME` stay
+ * Workspace / base-URL selectors and `KENNEN_USER_NAME` stay
  * conditionally forwarded regardless of auth source — they're
  * still operator-controlled inputs the spawned child needs
  * visibility into to land on the same workspace and environment.
@@ -146,7 +146,7 @@ export type RuntimeForwardedKey = (typeof RUNTIME_FORWARDED_KEYS)[number]
  *   `process.env` only through the explicit `safeEnv` allowlist,
  *   so dropping the auth-token subset prevents the bearer from
  *   landing in `/proc/<pid>/environ` (Linux) / `ps -wwwE` (macOS)
- *   / debug logs of the third-party agent CLI Lore does not
+ *   / debug logs of the third-party agent CLI Kennen does not
  *   control. The host-validator warning class doesn't apply here
  *   because the hook-spawn path doesn't write committed config.
  * - `scheduleAutoDigestSpawn` (
@@ -167,16 +167,16 @@ export type RuntimeForwardedAuthTokenKey =
 import type { AuthSource } from "../config.js"
 
 /**
- * Build the env block a Lore-spawned child inherits when the parent
+ * Build the env block a Kennen-spawned child inherits when the parent
  * wants the child's `resolveAuth` to land on the same Notion
  * workspace and environment as the foreground process.
  *
  * Always sets the four child-policy keys regardless of `parentEnv`:
  * - `PATH` / `HOME` — minimum POSIX baseline so the child can find
  *   its binary and `os.homedir()` resolves.
- * - `LORE_AUTOSAVE = "false"` — prevents recursive autosave from
+ * - `KENNEN_AUTOSAVE = "false"` — prevents recursive autosave from
  *   the child's own Stop hook firing in turn.
- * - `LORE_BACKGROUND_AGENT = "true"` — opts the child's MCP server
+ * - `KENNEN_BACKGROUND_AGENT = "true"` — opts the child's MCP server
  *   into the fail-fast init mode rather than the diagnostic-stay-up
  *   mode the foreground host wants.
  *
@@ -203,7 +203,7 @@ import type { AuthSource } from "../config.js"
  * other source the partition is a no-op because
  * the auth-token forward is the only resolution path.
  *
- * Single source of truth shared by every Lore-spawned-child path:
+ * Single source of truth shared by every Kennen-spawned-child path:
  * detached fire-and-forget save spawn, synchronous awaitable mining
  * seam, future bench-runner-spawned MCP children. A future addition
  * to `RUNTIME_FORWARDED_KEYS` propagates to every caller through
@@ -221,8 +221,8 @@ export function buildSafeEnv(
   const env: Record<string, string> = {
     PATH: parentEnv["PATH"] ?? "",
     HOME: parentEnv["HOME"] ?? "",
-    LORE_AUTOSAVE: "false",
-    LORE_BACKGROUND_AGENT: "true",
+    KENNEN_AUTOSAVE: "false",
+    KENNEN_BACKGROUND_AGENT: "true",
   }
   for (const key of RUNTIME_FORWARDED_KEYS) {
     if (skipAuthTokens && authTokenKeys.has(key)) continue

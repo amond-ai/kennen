@@ -1,5 +1,5 @@
 /**
- * Shared HTML-entity decoder for text that flows through Lore into Notion
+ * Shared HTML-entity decoder for text that flows through Kennen into Notion
  * properties.
  *
  * An upstream producer somewhere in the autosave path (Claude Code rendering

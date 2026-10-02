@@ -145,7 +145,7 @@ function createMockServer() {
   }
 }
 
-describe("lore-ask", () => {
+describe("kennen-ask", () => {
   it("resolves superseded decision links to the current decision and hides duplicates", async () => {
     const mockServer = createMockServer()
     const oldDecision = makeDecision("old-id", {
@@ -206,9 +206,9 @@ describe("lore-ask", () => {
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "AuthService" } as never)
+    const result = await kennenAsk({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toContain('1 facts about "AuthService"')
@@ -217,7 +217,7 @@ describe("lore-ask", () => {
   })
 })
 
-describe("lore-ask — partial decision resolution", () => {
+describe("kennen-ask — partial decision resolution", () => {
   function servicesWithPartialFailure() {
     const newDecision = makeDecision("new-id", { title: "New decision" })
     return {
@@ -265,9 +265,9 @@ describe("lore-ask — partial decision resolution", () => {
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "AuthService" } as never)
+    const result = await kennenAsk({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     // The resolved decision is still rendered.
@@ -280,7 +280,7 @@ describe("lore-ask — partial decision resolution", () => {
     expect(text).toContain("retry before relying on this result")
   })
 
-  it("emits one stderr line per failing root when LORE_DEBUG=1", async () => {
+  it("emits one stderr line per failing root when KENNEN_DEBUG=1", async () => {
     // Operator-observability gate: when the env var is set, each failure
     // surfaces on stderr in the canonical format so ops can distinguish a
     // routine 429 from a pathological corrupted-page loop. Without this
@@ -290,23 +290,23 @@ describe("lore-ask — partial decision resolution", () => {
     const services = servicesWithPartialFailure()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
 
     try {
-      await loreAsk({ entity: "AuthService" } as never)
+      await kennenAsk({ entity: "AuthService" } as never)
 
       // One line per failing root — single failure in this fixture.
       expect(stderr).toHaveBeenCalledTimes(1)
       const logged = String(stderr.mock.calls[0][0])
-      // Exact canonical format: operators grep on `[lore] partial-failure:`
+      // Exact canonical format: operators grep on `[kennen] partial-failure:`
       // in log aggregators and pin on the field ordering below. A future
       // reshuffle (say, moving `tool=` before `root=`) would silently
       // break downstream filters; pin the full line here instead of a
       // substring set so a reordering trips this test.
       expect(logged).toBe(
-        "[lore] partial-failure: root=bad-root error=notion 5xx tool=lore-query\n"
+        "[kennen] partial-failure: root=bad-root error=notion 5xx tool=kennen-query\n"
       )
     } finally {
       vi.unstubAllEnvs()
@@ -315,7 +315,7 @@ describe("lore-ask — partial decision resolution", () => {
   })
 
   it("collapses embedded newlines and control chars into spaces so one failure = one log line", async () => {
-    // Defensive invariant: `grep "[lore] partial-failure:"` downstream
+    // Defensive invariant: `grep "[kennen] partial-failure:"` downstream
     // expects one event per line. A Notion SDK error that happens to
     // include a multi-line body (or, in the wild, an `InvalidPathParameterError`
     // message containing embedded structure) would otherwise fork a
@@ -353,12 +353,12 @@ describe("lore-ask — partial decision resolution", () => {
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
 
     try {
-      await loreAsk({ entity: "AuthService" } as never)
+      await kennenAsk({ entity: "AuthService" } as never)
 
       expect(stderr).toHaveBeenCalledTimes(1)
       const logged = String(stderr.mock.calls[0][0])
@@ -367,7 +367,7 @@ describe("lore-ask — partial decision resolution", () => {
       // parts: the event and an empty string after the terminator.
       expect(logged.split("\n")).toHaveLength(2)
       expect(logged).toBe(
-        "[lore] partial-failure: root=bad-root error=line one line two tabbed cr tool=lore-query\n"
+        "[kennen] partial-failure: root=bad-root error=line one line two tabbed cr tool=kennen-query\n"
       )
     } finally {
       vi.unstubAllEnvs()
@@ -375,7 +375,7 @@ describe("lore-ask — partial decision resolution", () => {
     }
   })
 
-  it("is silent on stderr when LORE_DEBUG is unset, even with partial failures", async () => {
+  it("is silent on stderr when KENNEN_DEBUG is unset, even with partial failures", async () => {
     // The helper is opt-in by design: silent partial failure is the common
     // case and logging by default would make stderr unreadable. This test
     // pins the default-off posture so a future change that flips the
@@ -384,13 +384,13 @@ describe("lore-ask — partial decision resolution", () => {
     const services = servicesWithPartialFailure()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     // Explicit unset — no lingering env from a parallel test.
-    vi.stubEnv("LORE_DEBUG", "")
+    vi.stubEnv("KENNEN_DEBUG", "")
 
     try {
-      const result = await loreAsk({ entity: "AuthService" } as never)
+      const result = await kennenAsk({ entity: "AuthService" } as never)
       const text = (result as { content: Array<{ text: string }> }).content[0].text
 
       // The agent-facing warning still surfaces — we only suppress stderr.
@@ -403,11 +403,11 @@ describe("lore-ask — partial decision resolution", () => {
   })
 })
 
-describe("lore-ask — parallel decision and title resolution", () => {
+describe("kennen-ask — parallel decision and title resolution", () => {
   it("dispatches resolveCanonicalDecisionLinks and resolveReferencedTitles concurrently", async () => {
     // Pins the parallel `Promise.all` in handleAsk: both passes are
     // data-independent (different fact subsets in, disjoint outputs
-    // out), so serializing them adds wall-clock on every `lore-ask`
+    // out), so serializing them adds wall-clock on every `kennen-ask`
     // call. Mock both underlying loaders with manually-controlled
     // deferreds and prove both are in flight before either resolves.
     // If a future refactor re-serializes the awaits, only
@@ -471,12 +471,12 @@ describe("lore-ask — parallel decision and title resolution", () => {
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const pending = loreAsk({ entity: "AuthService" } as never)
+    const pending = kennenAsk({ entity: "AuthService" } as never)
     // Flush microtasks so any synchronously-dispatched calls land on
     // their mocks. `setImmediate` matches the cadence used by the
-    // sibling parallel-dispatch test in `memory.test.ts` (lore-expand).
+    // sibling parallel-dispatch test in `memory.test.ts` (kennen-expand).
     await new Promise((r) => setImmediate(r))
 
     // Both passes are mid-flight before either deferred resolves. If
@@ -502,7 +502,7 @@ describe("lore-ask — parallel decision and title resolution", () => {
   })
 })
 
-describe("lore-ask grouped display (P2-06)", () => {
+describe("kennen-ask grouped display (P2-06)", () => {
   function services(facts: Fact[], overrides: Record<string, unknown> = {}) {
     return {
       projects: { findByName: vi.fn() },
@@ -512,7 +512,7 @@ describe("lore-ask grouped display (P2-06)", () => {
       },
       decisions: { getById: vi.fn() },
       memories: { getTitleById: vi.fn().mockResolvedValue(null) },
-      // P3-02: lore-ask now also queries tasks.list. Stub returns empty
+      // P3-02: kennen-ask now also queries tasks.list. Stub returns empty
       // by default so existing tests that only assert on facts keep
       // passing; tests that exercise the Tasks bucket override this.
       tasks: { list: vi.fn().mockResolvedValue({ items: [] }) },
@@ -530,7 +530,7 @@ describe("lore-ask grouped display (P2-06)", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services(facts, overrides) as never)
     registerQueryTools(mockServer.server, services(facts, overrides) as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
     const result = await handler({ entity: "AuthService", ...args } as never)
     return (result as { content: Array<{ text: string }> }).content[0].text
   }
@@ -644,7 +644,7 @@ describe("lore-ask grouped display (P2-06)", () => {
   })
 })
 
-describe("lore-ask — confidence trust display and recency ordering", () => {
+describe("kennen-ask — confidence trust display and recency ordering", () => {
   function services(facts: Fact[]) {
     return {
       projects: { findByName: vi.fn() },
@@ -678,7 +678,7 @@ describe("lore-ask — confidence trust display and recency ordering", () => {
     const svc = services(facts)
     registerKnowledgeTools(mockServer.server, svc as never)
     registerQueryTools(mockServer.server, svc as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
     const result = await handler({ entity: "AuthService" } as never)
     return (result as { content: Array<{ text: string }> }).content[0].text
   }
@@ -820,7 +820,7 @@ describe("lore-ask — confidence trust display and recency ordering", () => {
   })
 })
 
-describe("lore-ask — decided_by trust line", () => {
+describe("kennen-ask — decided_by trust line", () => {
   // The governance bucket renders `decided_by` facts via
   // `renderDecidedByLine`. The decision's categorical
   // `[status, confidence]` label and the fact's numeric trust signal
@@ -854,7 +854,7 @@ describe("lore-ask — decided_by trust line", () => {
     const svc = decidedByServices(facts, decision)
     registerKnowledgeTools(mockServer.server, svc as never)
     registerQueryTools(mockServer.server, svc as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
     const result = await handler({ entity: "AuthService" } as never)
     return (result as { content: Array<{ text: string }> }).content[0].text
   }
@@ -922,9 +922,9 @@ describe("lore-ask — decided_by trust line", () => {
   })
 })
 
-describe("lore-ask — fact touch-on-read wiring (DEFERRED-02)", () => {
+describe("kennen-ask — fact touch-on-read wiring (DEFERRED-02)", () => {
   // Pins the citation-as-evidence contract for the fact-side surface:
-  // every fact actually displayed in `lore-query action='ask'` (visible
+  // every fact actually displayed in `kennen-query action='ask'` (visible
   // governance + visible structure, NOT the hidden-overflow tail) bumps
   // `Confidence Score` + `Last Referenced At` via
   // `services.facts.touchOnRead`. Mirror of the memory-side wake-up
@@ -969,7 +969,7 @@ describe("lore-ask — fact touch-on-read wiring (DEFERRED-02)", () => {
     const svc = services(facts, touchSpy)
     registerKnowledgeTools(mockServer.server, svc as never)
     registerQueryTools(mockServer.server, svc as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
     const result = await handler({ entity: "AuthService", ...args } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     const passed =
@@ -1071,7 +1071,7 @@ describe("lore-ask — fact touch-on-read wiring (DEFERRED-02)", () => {
     })
     registerKnowledgeTools(mockServer.server, svc as never)
     registerQueryTools(mockServer.server, svc as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
     const result = await handler({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     // Confirm the handler actually rendered the Tasks section — the
@@ -1092,7 +1092,7 @@ describe("lore-ask — fact touch-on-read wiring (DEFERRED-02)", () => {
     const svc = services(facts, factsTouchOnRead)
     registerKnowledgeTools(mockServer.server, svc as never)
     registerQueryTools(mockServer.server, svc as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
     const result = await handler({ entity: "AuthService" } as never)
     expect((result as { isError?: boolean }).isError).not.toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1100,7 +1100,7 @@ describe("lore-ask — fact touch-on-read wiring (DEFERRED-02)", () => {
   })
 })
 
-describe("lore-ask projectName resolution", () => {
+describe("kennen-ask projectName resolution", () => {
   it("returns an error when projectName does not resolve", async () => {
     const mockServer = createMockServer()
     const queryByEntity = vi.fn().mockResolvedValue([])
@@ -1129,7 +1129,7 @@ describe("lore-ask projectName resolution", () => {
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await handler({ entity: "AuthService", projectName: "Typo" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1141,7 +1141,7 @@ describe("lore-ask projectName resolution", () => {
   })
 })
 
-describe("lore-query action='ask' — issue #284 temporal recall threading", () => {
+describe("kennen-query action='ask' — issue #284 temporal recall threading", () => {
   function mkAskServices(queryByEntity: ReturnType<typeof vi.fn>) {
     return {
       projects: { findByName: vi.fn() },
@@ -1170,7 +1170,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     await handler({
       entity: "AuthService",
@@ -1194,7 +1194,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     await handler({ entity: "AuthService" } as never)
 
@@ -1222,7 +1222,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await handler({
       entity: "AuthService",
@@ -1236,9 +1236,9 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
   it("suppresses the INVALIDATED segment on an asOf recall when the invalidation date is after the cutoff (R3 blocker)", async () => {
     // Server-side filter is "live at asOf" — facts invalidated AFTER
     // asOf are deliberately returned because they were live from
-    // Lore's perspective at the requested date. The renderer must
+    // Kennen's perspective at the requested date. The renderer must
     // NOT leak the post-asOf invalidation date into the answer, or
-    // the as-of mental model breaks (an answer "what did Lore know
+    // the as-of mental model breaks (an answer "what did Kennen know
     // at 2026-04-01?" cannot report invalidations that happened in
     // May).
     const mockServer = createMockServer()
@@ -1256,7 +1256,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await handler({
       entity: "AuthService",
@@ -1264,7 +1264,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
     } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0]!.text
 
-    // The fact surfaces (live from Lore's perspective at 2026-04-01).
+    // The fact surfaces (live from Kennen's perspective at 2026-04-01).
     expect(text).toContain("fact-late-inval")
     // But its post-asOf invalidation date is hidden — the renderer
     // suppresses the segment because invalidatedAt > asOf.
@@ -1273,7 +1273,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
   it("still renders INVALIDATED when the invalidation date is on or before the asOf cutoff (R3 blocker)", async () => {
     // Boundary: an invalidation that landed before or exactly at
-    // asOf was knowable to Lore at the cutoff and should render.
+    // asOf was knowable to Kennen at the cutoff and should render.
     // Combined with `includeHistory: true` the filter surfaces it.
     const mockServer = createMockServer()
     const fact = makeFact("fact-early-inval", {
@@ -1290,7 +1290,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await handler({
       entity: "AuthService",
@@ -1309,7 +1309,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "ask")
+    const handler = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await handler({
       entity: "AuthService",
@@ -1321,7 +1321,7 @@ describe("lore-query action='ask' — issue #284 temporal recall threading", () 
   })
 })
 
-describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading", () => {
+describe("kennen-fact action='invalidate' — issue #284 sourceMemoryId threading", () => {
   function mkInvalidateServices(invalidate: ReturnType<typeof vi.fn>) {
     return {
       projects: { findByName: vi.fn() },
@@ -1365,7 +1365,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
       .mockResolvedValue(makeFact("fact-1", { projectIds: ["proj-a"] }))
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-fact", "invalidate")
+    const handler = mockServer.getActionHandler("kennen-fact", "invalidate")
 
     await handler({
       factId: "fact-1",
@@ -1383,7 +1383,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
     const services = mkInvalidateServices(invalidate)
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-fact", "invalidate")
+    const handler = mockServer.getActionHandler("kennen-fact", "invalidate")
 
     await handler({ factId: "fact-1" } as never)
 
@@ -1403,7 +1403,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
       .mockResolvedValue(makeFact("fact-1", { projectIds: ["proj-a"] }))
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-fact", "invalidate")
+    const handler = mockServer.getActionHandler("kennen-fact", "invalidate")
 
     const result = await handler({
       factId: "fact-1",
@@ -1428,7 +1428,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
       .mockResolvedValue(makeFact("fact-1", { projectIds: ["proj-a"] }))
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-fact", "invalidate")
+    const handler = mockServer.getActionHandler("kennen-fact", "invalidate")
 
     const result = await handler({
       factId: "fact-1",
@@ -1463,7 +1463,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
       .mockResolvedValue(makeFact("fact-1", { projectIds: ["proj-a"] }))
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-fact", "invalidate")
+    const handler = mockServer.getActionHandler("kennen-fact", "invalidate")
 
     const result = await handler({
       factId: "fact-1",
@@ -1491,7 +1491,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
       .mockResolvedValue(makeFact("fact-1", { projectIds: ["proj-a"] }))
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-fact", "invalidate")
+    const handler = mockServer.getActionHandler("kennen-fact", "invalidate")
 
     const result = await handler({
       factId: "fact-1",
@@ -1503,7 +1503,7 @@ describe("lore-fact action='invalidate' — issue #284 sourceMemoryId threading"
   })
 })
 
-describe("lore-fact action='create' — tracking-predicate Zod rejection", () => {
+describe("kennen-fact action='create' — tracking-predicate Zod rejection", () => {
   // Acceptance criterion (#23, line 452-455): the contracted
   // active profile's writable predicate list drives validation at the dispatcher
   // boundary, so each tracking predicate string fails at parse time
@@ -1536,9 +1536,9 @@ describe("lore-fact action='create' — tracking-predicate Zod rejection", () =>
       const mockServer = createMockServer()
       const { services, createWithDedup } = makeServices()
       registerKnowledgeTools(mockServer.server, services as never)
-      const loreFactCreate = mockServer.getActionHandler("lore-fact", "create")
+      const kennenFactCreate = mockServer.getActionHandler("kennen-fact", "create")
 
-      const result = await loreFactCreate({
+      const result = await kennenFactCreate({
         subject: "PR #25700",
         predicate,
         object: "Engineering",
@@ -1554,7 +1554,7 @@ describe("lore-fact action='create' — tracking-predicate Zod rejection", () =>
   }
 })
 
-describe("lore-fact date validation", () => {
+describe("kennen-fact date validation", () => {
   function makeCreateServices() {
     const createWithDedup = vi.fn().mockImplementation(async (input) => ({
       fact: makeFact("fact-created", {
@@ -1594,7 +1594,7 @@ describe("lore-fact date validation", () => {
     const mockServer = createMockServer()
     const { services, createWithDedup } = makeCreateServices()
     registerKnowledgeTools(mockServer.server, services as never)
-    const create = mockServer.getActionHandler("lore-fact", "create")
+    const create = mockServer.getActionHandler("kennen-fact", "create")
 
     const result = await create({
       subject: "AuthService",
@@ -1615,7 +1615,7 @@ describe("lore-fact date validation", () => {
     const mockServer = createMockServer()
     const { services, createWithDedup } = makeCreateServices()
     registerKnowledgeTools(mockServer.server, services as never)
-    const create = mockServer.getActionHandler("lore-fact", "create")
+    const create = mockServer.getActionHandler("kennen-fact", "create")
 
     const result = await create({
       subject: "AuthService",
@@ -1636,7 +1636,7 @@ describe("lore-fact date validation", () => {
     const mockServer = createMockServer()
     const extendReview = vi.fn().mockResolvedValue(undefined)
     registerKnowledgeTools(mockServer.server, { facts: { extendReview } } as never)
-    const extend = mockServer.getActionHandler("lore-fact", "extend")
+    const extend = mockServer.getActionHandler("kennen-fact", "extend")
 
     await extend({ factId: "fact-1", reviewBy: null } as never)
 
@@ -1647,7 +1647,7 @@ describe("lore-fact date validation", () => {
     const mockServer = createMockServer()
     const extendReview = vi.fn().mockResolvedValue(undefined)
     registerKnowledgeTools(mockServer.server, { facts: { extendReview } } as never)
-    const extend = mockServer.getActionHandler("lore-fact", "extend")
+    const extend = mockServer.getActionHandler("kennen-fact", "extend")
 
     await extend({ factId: "fact-1", reviewBy: "" } as never)
 
@@ -1658,7 +1658,7 @@ describe("lore-fact date validation", () => {
     const mockServer = createMockServer()
     const extendReview = vi.fn()
     registerKnowledgeTools(mockServer.server, { facts: { extendReview } } as never)
-    const extend = mockServer.getActionHandler("lore-fact", "extend")
+    const extend = mockServer.getActionHandler("kennen-fact", "extend")
 
     const result = await extend({ factId: "fact-1", reviewBy: "05/03/2026" } as never)
 
@@ -1667,7 +1667,7 @@ describe("lore-fact date validation", () => {
   })
 })
 
-describe("lore-fact action='create' projectName resolution", () => {
+describe("kennen-fact action='create' projectName resolution", () => {
   it("rejects an unresolved explicit projectName before creating a fact", async () => {
     const mockServer = createMockServer()
     const createWithDedup = vi.fn()
@@ -1685,7 +1685,7 @@ describe("lore-fact action='create' projectName resolution", () => {
     }
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const create = mockServer.getActionHandler("lore-fact", "create")
+    const create = mockServer.getActionHandler("kennen-fact", "create")
 
     const result = await create({
       subject: "AuthService",
@@ -1723,7 +1723,7 @@ describe("lore-fact action='create' projectName resolution", () => {
     }
 
     registerKnowledgeTools(mockServer.server, services as never)
-    const create = mockServer.getActionHandler("lore-fact", "create")
+    const create = mockServer.getActionHandler("kennen-fact", "create")
 
     const result = await create({
       subject: "AuthService",
@@ -1743,7 +1743,7 @@ describe("lore-fact action='create' projectName resolution", () => {
   })
 })
 
-describe("lore-learn sourceMemoryId discipline", () => {
+describe("kennen-learn sourceMemoryId discipline", () => {
   const memoriesDb = { databaseId: "memories-db", dataSourceId: "memories-ds" }
 
   function makeSourceMemory(id: string, projectIds: string[] = []) {
@@ -1829,9 +1829,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     const services = makeServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -1839,7 +1839,7 @@ describe("lore-learn sourceMemoryId discipline", () => {
 
     const payload = result as { content: Array<{ text: string }>; isError?: boolean }
     expect(payload.isError).toBe(true)
-    expect(payload.content[0].text).toContain("Error: lore-fact: sourceMemoryId:")
+    expect(payload.content[0].text).toContain("Error: kennen-fact: sourceMemoryId:")
     expect(payload.content[0].text).toContain("provenance-missing")
     expect(services.facts.createWithDedup).not.toHaveBeenCalled()
   })
@@ -1855,9 +1855,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
       const services = makeServices()
       registerKnowledgeTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+      const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-      const result = await loreLearn({
+      const result = await kennenLearn({
         subject: "AuthService",
         predicate: "uses",
         object: "JWT",
@@ -1866,7 +1866,7 @@ describe("lore-learn sourceMemoryId discipline", () => {
 
       const payload = result as { content: Array<{ text: string }>; isError?: boolean }
       expect(payload.isError).toBe(true)
-      expect(payload.content[0].text).toContain("Error: lore-fact: sourceMemoryId:")
+      expect(payload.content[0].text).toContain("Error: kennen-fact: sourceMemoryId:")
       expect(payload.content[0].text).toContain("provenance-missing")
       expect(services.facts.createWithDedup).not.toHaveBeenCalled()
     }
@@ -1877,9 +1877,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     const services = makeServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -1908,9 +1908,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -1939,9 +1939,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -1968,9 +1968,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -2002,9 +2002,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "EventQueue",
       predicate: "uses",
       object: "RMQ",
@@ -2022,7 +2022,7 @@ describe("lore-learn sourceMemoryId discipline", () => {
   })
 
   it("auto-links sourceMemoryId from the session tracker when the caller omits it", async () => {
-    // Core P1-09 auto-link path: a `lore-learn` call that omits
+    // Core P1-09 auto-link path: a `kennen-learn` call that omits
     // sourceMemoryId picks up the memory saved earlier in the same
     // (agent, session). Tracker value includes project scope so the
     // downstream compatibility check gets real data.
@@ -2040,9 +2040,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -2075,9 +2075,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    await loreLearn({
+    await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -2116,9 +2116,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "EventQueue",
       predicate: "uses",
       object: "RMQ",
@@ -2147,9 +2147,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "Framework",
       predicate: "is_a",
       object: "JS lib",
@@ -2178,9 +2178,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "EventQueue",
       predicate: "uses",
       object: "RMQ",
@@ -2209,9 +2209,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "AuthService",
       predicate: "uses",
       object: "JWT",
@@ -2228,9 +2228,9 @@ describe("lore-learn sourceMemoryId discipline", () => {
   })
 })
 
-describe("lore-audit projectName resolution", () => {
+describe("kennen-audit projectName resolution", () => {
   it("returns an explicit error when projectName does not resolve", async () => {
-    // lore-audit surfaces destructive follow-up actions (mark reviewed,
+    // kennen-audit surfaces destructive follow-up actions (mark reviewed,
     // supersede) — silent fallback would let the caller act on the wrong
     // project's overdue queue.
     const mockServer = createMockServer()
@@ -2248,7 +2248,7 @@ describe("lore-audit projectName resolution", () => {
 
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({ projectName: "Typo" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2261,7 +2261,7 @@ describe("lore-audit projectName resolution", () => {
   })
 })
 
-describe("lore-query action='audit' overdue tasks", () => {
+describe("kennen-query action='audit' overdue tasks", () => {
   function auditServices(opts?: {
     facts?: Fact[]
     decisions?: Decision[]
@@ -2299,7 +2299,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2341,7 +2341,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({ projectName: "Named Project" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2367,7 +2367,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2387,7 +2387,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2404,7 +2404,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2428,7 +2428,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2450,7 +2450,7 @@ describe("lore-query action='audit' overdue tasks", () => {
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2465,7 +2465,7 @@ describe("lore-query action='audit' overdue tasks", () => {
   })
 })
 
-describe("lore-learn — PF3-01 entity ambiguity surface", () => {
+describe("kennen-learn — PF3-01 entity ambiguity surface", () => {
   function makeServices(
     entitiesBehavior: {
       subjectAmbiguous?: boolean
@@ -2567,9 +2567,9 @@ describe("lore-learn — PF3-01 entity ambiguity surface", () => {
     const services = makeServices({ subjectAmbiguous: true })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "User",
       predicate: "has_a",
       object: "session",
@@ -2597,9 +2597,9 @@ describe("lore-learn — PF3-01 entity ambiguity surface", () => {
     const services = makeServices({ resolverThrows: true })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreLearn = mockServer.getActionHandler("lore-fact", "create")
+    const kennenLearn = mockServer.getActionHandler("kennen-fact", "create")
 
-    const result = await loreLearn({
+    const result = await kennenLearn({
       subject: "Anything",
       predicate: "uses",
       object: "Else",
@@ -2621,7 +2621,7 @@ describe("lore-learn — PF3-01 entity ambiguity surface", () => {
   })
 })
 
-describe("lore-ask — P3-02 Tasks bucket", () => {
+describe("kennen-ask — P3-02 Tasks bucket", () => {
   function makeAskServices(overrides: Record<string, unknown> = {}) {
     return {
       projects: { findByName: vi.fn() },
@@ -2663,9 +2663,9 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "AuthService" } as never)
+    const result = await kennenAsk({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toContain("### Tasks")
@@ -2680,13 +2680,13 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    await loreAsk({ entity: "AuthService" } as never)
+    await kennenAsk({ entity: "AuthService" } as never)
 
     // Unresolved entities collapse the variant set to the raw input —
     // alias-aware recall is the unique EntityService path, exercised
-    // separately below. The contract here is that `lore-ask` always feeds
+    // separately below. The contract here is that `kennen-ask` always feeds
     // `TaskService.list` through the new `entities` array surface, never
     // the removed `entity` field.
     expect(services.tasks.list).toHaveBeenCalledWith(
@@ -2697,7 +2697,7 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
   })
 
   it("does not pass a `states` override to TaskService.list — service-side ACTIVE_TASK_STATES default applies", async () => {
-    // Pinning the contract: lore-ask renders only active work in its
+    // Pinning the contract: kennen-ask renders only active work in its
     // Tasks bucket. If a future caller starts surfacing closed tasks
     // here, it should be a deliberate spec change with a corresponding
     // bucket rename, not a silent default flip.
@@ -2705,9 +2705,9 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    await loreAsk({ entity: "AuthService" } as never)
+    await kennenAsk({ entity: "AuthService" } as never)
 
     const callArgs = (services.tasks.list as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(callArgs).not.toHaveProperty("states")
@@ -2718,9 +2718,9 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "AuthService" } as never)
+    const result = await kennenAsk({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toContain("No facts or tasks found")
@@ -2747,9 +2747,9 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
     services.facts.queryByObject = vi.fn().mockResolvedValue([])
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "AuthService" } as never)
+    const result = await kennenAsk({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toContain("Tasks lookup failed")
@@ -2759,7 +2759,7 @@ describe("lore-ask — P3-02 Tasks bucket", () => {
   })
 })
 
-describe("lore-ask — task recall honors canonical entity aliases", () => {
+describe("kennen-ask — task recall honors canonical entity aliases", () => {
   function makeAskServicesWithEntity(
     resolution: {
       entity?: { id: string; name: string; aliases: string[] } | null
@@ -2816,12 +2816,12 @@ describe("lore-ask — task recall honors canonical entity aliases", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
     // User typed an alias — variants must include the canonical name
     // and the other registered aliases so a task stored under any of
     // them surfaces.
-    await loreAsk({ entity: "AuthSvc" } as never)
+    await kennenAsk({ entity: "AuthSvc" } as never)
 
     const callArgs = (services.tasks.list as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(callArgs.entities).toEqual(
@@ -2845,9 +2845,9 @@ describe("lore-ask — task recall honors canonical entity aliases", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    await loreAsk({ entity: "AuthService" } as never)
+    await kennenAsk({ entity: "AuthService" } as never)
 
     const callArgs = (services.tasks.list as ReturnType<typeof vi.fn>).mock.calls[0][0]
     // Raw input + canonical name dedupe to one variant; the two
@@ -2867,9 +2867,9 @@ describe("lore-ask — task recall honors canonical entity aliases", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "User" } as never)
+    const result = await kennenAsk({ entity: "User" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     // Ambiguity surfaces but the call doesn't collapse — task lookup
@@ -2885,9 +2885,9 @@ describe("lore-ask — task recall honors canonical entity aliases", () => {
     const services = makeAskServicesWithEntity({})
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    await loreAsk({ entity: "AuthService" } as never)
+    await kennenAsk({ entity: "AuthService" } as never)
 
     const callArgs = (services.tasks.list as ReturnType<typeof vi.fn>).mock.calls[0][0]
     expect(callArgs.entities).toEqual(["AuthService"])
@@ -2909,9 +2909,9 @@ describe("lore-ask — task recall honors canonical entity aliases", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const loreAsk = mockServer.getActionHandler("lore-query", "ask")
+    const kennenAsk = mockServer.getActionHandler("kennen-query", "ask")
 
-    const result = await loreAsk({ entity: "AuthService" } as never)
+    const result = await kennenAsk({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toContain("Task recall capped at 10 alias variants")
@@ -2923,8 +2923,8 @@ describe("lore-ask — task recall honors canonical entity aliases", () => {
   })
 })
 
-// Issue 0.6.0/18: project framing block on lore-query action='ask'.
-describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
+// Issue 0.6.0/18: project framing block on kennen-query action='ask'.
+describe("kennen-ask — project framing block (issue 0.6.0/18)", () => {
   function makeServices(
     opts: {
       project?: {
@@ -2996,7 +2996,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     ])
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3025,7 +3025,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({
       entity: "AuthService",
@@ -3051,7 +3051,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "Unknown" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3078,7 +3078,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3119,7 +3119,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({
       entity: "AuthService",
@@ -3138,7 +3138,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     const services = makeServices({ project: null, configProjects: [] })
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3147,7 +3147,7 @@ describe("lore-ask — project framing block (issue 0.6.0/18)", () => {
     expect(text).not.toContain("Siblings:")
   })
 })
-describe("lore-query action='audit' Overdue Facts trust indicator (0.8.0/DEFERRED-02)", () => {
+describe("kennen-query action='audit' Overdue Facts trust indicator (0.8.0/DEFERRED-02)", () => {
   // Sibling of the Overdue Decisions trust-indicator block above.
   // Pre-DEFERRED-02 the Overdue Facts section carried a TODO placeholder
   // pointing at this surface; once the Facts DB grew a `Confidence Score`
@@ -3177,7 +3177,7 @@ describe("lore-query action='audit' Overdue Facts trust indicator (0.8.0/DEFERRE
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, auditServices([fact]) as never)
     registerQueryTools(mockServer.server, auditServices([fact]) as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3203,7 +3203,7 @@ describe("lore-query action='audit' Overdue Facts trust indicator (0.8.0/DEFERRE
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, auditServices([fact]) as never)
     registerQueryTools(mockServer.server, auditServices([fact]) as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3222,7 +3222,7 @@ describe("lore-query action='audit' Overdue Facts trust indicator (0.8.0/DEFERRE
     const mockServer = createMockServer()
     registerKnowledgeTools(mockServer.server, auditServices([fact]) as never)
     registerQueryTools(mockServer.server, auditServices([fact]) as never)
-    const handler = mockServer.getActionHandler("lore-query", "audit")
+    const handler = mockServer.getActionHandler("kennen-query", "audit")
 
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -3238,7 +3238,7 @@ describe("lore-query action='audit' Overdue Facts trust indicator (0.8.0/DEFERRE
 // reject at the MCP boundary instead.
 // ---------------------------------------------------------------------------
 
-describe("lore-fact action='create' — nonblank subject/object (issue #467)", () => {
+describe("kennen-fact action='create' — nonblank subject/object (issue #467)", () => {
   function harness() {
     const mockServer = createMockServer()
     const createWithDedup = vi.fn().mockResolvedValue({
@@ -3264,7 +3264,7 @@ describe("lore-fact action='create' — nonblank subject/object (issue #467)", (
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-fact", "create"),
+      handler: mockServer.getActionHandler("kennen-fact", "create"),
       createWithDedup,
     }
   }

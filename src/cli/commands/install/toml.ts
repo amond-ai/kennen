@@ -45,12 +45,12 @@ export function containsTomlArrayOfTables(text: string): boolean {
   return splitTomlLines(text).some((line) => /^\s*\[\[/.test(line))
 }
 
-export function assertTomlSupportsLoreRewrite(text: string, filePath: string): void {
+export function assertTomlSupportsKennenRewrite(text: string, filePath: string): void {
   if (!containsTomlArrayOfTables(text)) return
   const displayPath = displayHomePath(filePath)
   throw new Error(
     `${displayPath} contains TOML array-of-tables ([[...]]). ` +
-      "lore install cannot safely rewrite that file yet; update the Lore sections manually instead."
+      "kennen install cannot safely rewrite that file yet; update the Kennen sections manually instead."
   )
 }
 

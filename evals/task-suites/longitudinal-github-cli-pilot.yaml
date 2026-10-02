@@ -1,18 +1,18 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-pilot
+name: kennen-longitudinal-github-cli-pilot
 description: |
   Five-scenario OSS pilot for longitudinal eval direction-setting. Scenarios
-  materialize GitHub CLI from a pinned SHA and run no-memory, seeded-lore, and
-  lore-full-loop conditions. The pilot estimates verifier stability, paired
+  materialize GitHub CLI from a pinned SHA and run no-memory, seeded-kennen, and
+  kennen-full-loop conditions. The pilot estimates verifier stability, paired
   discordance, and cost; it is not the powered benchmark.
 seededCorpus: ../vault-seeds/github-cli-pilot.yaml
 costKillSwitchUsd: 1500
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 
 scenarios:
   - id: gh-cli-config-list-json-continuity

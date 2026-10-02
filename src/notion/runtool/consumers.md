@@ -25,20 +25,20 @@ a separate auth path, base-URL resolver, or rate-limit gate.
 
 ## Flags
 
-| Flag                             | Default | Inherits `LORE_USE_RUNTOOL` | Consumer                              |
-| -------------------------------- | ------- | --------------------------- | ------------------------------------- |
-| `LORE_USE_RUNTOOL_BLOCK_EDIT`    | ON      | yes                         | `update_page` anchored markdown edits |
-| `LORE_USE_RUNTOOL_FILTER_SQL`    | ON      | yes                         | SQL filter helpers                    |
-| `LORE_USE_RUNTOOL_SEARCH`        | ON      | yes                         | Semantic-lane search                  |
-| `LORE_USE_RUNTOOL_AGGREGATE`     | ON      | yes                         | Orphan-rate SQL aggregate             |
-| `LORE_USE_RUNTOOL_BATCH_CREATES` | OFF     | no                          | Fact batch creates                    |
+| Flag                               | Default | Inherits `KENNEN_USE_RUNTOOL` | Consumer                              |
+| ---------------------------------- | ------- | ----------------------------- | ------------------------------------- |
+| `KENNEN_USE_RUNTOOL_BLOCK_EDIT`    | ON      | yes                           | `update_page` anchored markdown edits |
+| `KENNEN_USE_RUNTOOL_FILTER_SQL`    | ON      | yes                           | SQL filter helpers                    |
+| `KENNEN_USE_RUNTOOL_SEARCH`        | ON      | yes                           | Semantic-lane search                  |
+| `KENNEN_USE_RUNTOOL_AGGREGATE`     | ON      | yes                           | Orphan-rate SQL aggregate             |
+| `KENNEN_USE_RUNTOOL_BATCH_CREATES` | OFF     | no                            | Fact batch creates                    |
 
-The test environment pins `LORE_USE_RUNTOOL=0` for the legacy REST/SDK corpus.
+The test environment pins `KENNEN_USE_RUNTOOL=0` for the legacy REST/SDK corpus.
 Consumer tests that exercise RunTool opt back in explicitly.
 
 RunTool-capable auth is a service-init invariant. PATs (`ntn_` /
 `development_ntn_`) and ntn-issued user tokens can use RunTool. `secret_...`
-integration tokens cannot; Lore rejects them while any RunTool surface is
+integration tokens cannot; Kennen rejects them while any RunTool surface is
 enabled instead of allowing every call to degrade to REST.
 
 ## REST Exception Registry
@@ -51,7 +51,7 @@ Remaining REST/SDK use is classified here so the exception set is explicit:
 | Capability gap   | SQL `has_more`, SQL canonicalization/date-column gaps, aggregate `hasAdvancedTools` | Allowed only through documented fallback branches; each branch emits `runtool-fallback=1 used-rest=1`. |
 | Capability limit | Search 25-row window                                                                | Accepted as the semantic AI-search contract; surfaced as `capped: true`, not a REST fallback.          |
 | Capability gap   | `update_page` anchored edit miss/ambiguity/delete warning                           | Falls back to the full-body REST markdown path and emits `runtool-fallback=1 used-rest=1`.             |
-| Security gap     | `create_pages` partial-commit recovery                                              | Kept behind `LORE_USE_RUNTOOL_BATCH_CREATES=1`; fallback preserves per-input idempotency.              |
+| Security gap     | `create_pages` partial-commit recovery                                              | Kept behind `KENNEN_USE_RUNTOOL_BATCH_CREATES=1`; fallback preserves per-input idempotency.            |
 | Historical       | Silent REST fallback for RunTool-disabled or unsupported auth                       | Not allowed; callers either opt out explicitly or surface a fallback/unavailable event.                |
 
 ## Block Edit: `update_page`
@@ -63,7 +63,7 @@ Surface:
 | Wrapper      | `updatePageContentViaRunTool(client, { pageId, updates, allowDeletingContent? })` |
 | Tool command | `update_page` with `command: "update_content"`                                    |
 | Callers      | Memory encoding fixes and topic-key audit append/rekey flows                      |
-| Flag         | `LORE_USE_RUNTOOL_BLOCK_EDIT`                                                     |
+| Flag         | `KENNEN_USE_RUNTOOL_BLOCK_EDIT`                                                   |
 | Tests        | `update-page.test.ts`, memory encoding/topic-key tests                            |
 
 The wrapper validates page id shape, non-empty update batches, non-empty
@@ -90,10 +90,10 @@ Surface:
 | ------- | -------------------------------------------------------------------------------------------- |
 | Wrapper | `createPagesViaRunTool({ client, parentDataSourceId, pages, chunkSize?, relationUrlBase? })` |
 | Caller  | `FactService.createBatchWithDedup` when `useRunToolBatchCreates` is true                     |
-| Flag    | `LORE_USE_RUNTOOL_BATCH_CREATES=1`                                                           |
+| Flag    | `KENNEN_USE_RUNTOOL_BATCH_CREATES=1`                                                         |
 | Tests   | `runtool.test.ts`, `sqlite-properties.test.ts`, `fact-batch.test.ts`                         |
 
-This consumer is default-off and does not inherit from `LORE_USE_RUNTOOL`.
+This consumer is default-off and does not inherit from `KENNEN_USE_RUNTOOL`.
 `create_pages` can partially commit a batch, so the opt-in must be explicit.
 
 Key behavior:
@@ -125,10 +125,10 @@ Surface:
 | `fetchEntityByNormalizedName`        | `EntityService.findByName`            |
 | `fetchEntitiesByAliasSubstring`      | `EntityService.findByAlias`           |
 | `fetchNearDuplicateCandidatePageIds` | `MemoryService.listForNearDuplicates` |
-| `fetchAlreadyComparedPairKeys`       | `lore conflicts scan`                 |
+| `fetchAlreadyComparedPairKeys`       | `kennen conflicts scan`               |
 | `comparedPairKey`                    | Conflict-scan pair normalization      |
 
-Flag: `LORE_USE_RUNTOOL_FILTER_SQL`.
+Flag: `KENNEN_USE_RUNTOOL_FILTER_SQL`.
 
 Tests: `query.test.ts`, `compat.test.ts`, entity/memory/conflict call-site
 coverage.
@@ -138,7 +138,7 @@ Current SQL helper rules:
 | Rule                                                                          | Reason                                                                           |
 | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | Arbitrary SQL stays in `src/notion/runtool/query.ts`, not in domain services. | Keeps the RunTool-specific dialect quarantined.                                  |
-| Name and alias SQL over-fetch, then JS post-filter normalizes exact keys.     | SQLite cannot run Lore's `normalizeEntityKey` semantics.                         |
+| Name and alias SQL over-fetch, then JS post-filter normalizes exact keys.     | SQLite cannot run Kennen's `normalizeEntityKey` semantics.                       |
 | Saturated name/alias windows fall back to REST.                               | Alias/name matches can be non-unique; REST pagination remains authoritative.     |
 | Tag filters use `Tags LIKE '%"<tag>"%'` after tag validation.                 | Matches multi-select tokens exactly instead of substring-matching adjacent tags. |
 | Relation filters use undashed ids in URL-shaped SQL cells.                    | The SQL gateway stores relation columns as JSON arrays of user-facing URLs.      |
@@ -160,12 +160,12 @@ Surface:
 | --------------- | ----------------------------------------------------------------------------- |
 | Helper          | `querySubjectGroupCountsViaRunTool`                                           |
 | Relation parser | `extractFirstRelationId`                                                      |
-| Caller          | `lore migrate --build-entities --report-orphan-rate`                          |
-| Flag            | `LORE_USE_RUNTOOL_AGGREGATE`                                                  |
+| Caller          | `kennen migrate --build-entities --report-orphan-rate`                        |
+| Flag            | `KENNEN_USE_RUNTOOL_AGGREGATE`                                                |
 | Tests           | `query.test.ts`, aggregate section in `compat.test.ts`, migrate command tests |
 
 The aggregate helper groups Facts by `(SubjectEntity, Subject)` and counts each
-group. The JS fold then applies Lore's canonical key expression
+group. The JS fold then applies Kennen's canonical key expression
 `subjectEntityId ?? computeSubjectKey(subject)` so SQL and JS enumeration share
 one metric definition.
 
@@ -209,7 +209,7 @@ Surface:
 | ------- | ------------------------------------------------------------------------- |
 | Wrapper | `searchViaRunTool(client, { query, dataSourceId, pageSize? })`            |
 | Caller  | `MemoryService.fetchSemanticPages` flag-on branch                         |
-| Flag    | `LORE_USE_RUNTOOL_SEARCH`                                                 |
+| Flag    | `KENNEN_USE_RUNTOOL_SEARCH`                                               |
 | Tests   | `search.test.ts`, search section in `compat.test.ts`, memory search tests |
 
 The wrapper builds `data_source_url: collection://<memories-data-source-id>`,

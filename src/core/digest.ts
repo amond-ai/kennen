@@ -1,6 +1,6 @@
 /**
  * Digest data gathering — shared between the
- * `lore-context action='digest'` MCP tool, the `lore digest` CLI
+ * `kennen-context action='digest'` MCP tool, the `kennen digest` CLI
  * command, and the Stop-triggered background synthesizer.
  *
  * Produces a project-scoped, markdown-formatted snapshot of recent activity
@@ -18,7 +18,7 @@ import type { Memory, TaskSummary } from "../types.js"
 /**
  * Default staleness window matching `DEFAULT_DIGEST_FRESHNESS_DAYS`:
  * once a digest ages past this many days,
- * `lore-context action='wake-up'` stops surfacing it on the fast path.
+ * `kennen-context action='wake-up'` stops surfacing it on the fast path.
  * The Stop-triggered auto-digest reuses the same threshold — re-synthesize
  * just in time for the next wake-up to pick it up.
  */
@@ -251,7 +251,7 @@ export async function gatherDigestData(
     }
     if (trulyTruncated) {
       sections.push(
-        `- … and many more open tasks not shown (call \`lore-task action='list'\` for the full picture).`
+        `- … and many more open tasks not shown (call \`kennen-task action='list'\` for the full picture).`
       )
     } else if (localHidden > 0) {
       sections.push(`- … and ${localHidden} more.`)

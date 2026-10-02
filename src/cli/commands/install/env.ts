@@ -25,17 +25,17 @@ export function buildMcpEnv(
   // When `notionBaseUrlLiteral` is set, suppress ALL four base-URL
   // selector placeholders that influence `resolveOperatorBaseUrl`'s
   // priority chain — not just `NOTION_BASE_URL`. The chain is
-  // `LORE_NOTION_BASE_URL || NOTION_BASE_URL || NOTION_API_BASE_URL
-  // || ntnEnvBaseUrl(NOTION_ENV)`, so `LORE_NOTION_BASE_URL`
+  // `KENNEN_NOTION_BASE_URL || NOTION_BASE_URL || NOTION_API_BASE_URL
+  // || ntnEnvBaseUrl(NOTION_ENV)`, so `KENNEN_NOTION_BASE_URL`
   // OUTRANKS the literal `NOTION_BASE_URL` we write into `staticEnv`.
   // Forwarding any of the four placeholders would let the operator's
   // shell at MCP-spawn time override the install-time `--dev` choice
-  // — e.g. `LORE_NOTION_BASE_URL=https://api.notion.so` set later
+  // — e.g. `KENNEN_NOTION_BASE_URL=https://api.notion.so` set later
   // routes the child to prod despite the dev literal. Suppressing
   // all four keeps the literal load-bearing.
   const literalBaseUrl = options.notionBaseUrlLiteral
   const baseUrlSelectorKeys: ReadonlySet<RuntimeForwardedKey> = new Set([
-    "LORE_NOTION_BASE_URL",
+    "KENNEN_NOTION_BASE_URL",
     "NOTION_BASE_URL",
     "NOTION_API_BASE_URL",
     "NOTION_ENV",
@@ -53,14 +53,14 @@ export function buildMcpEnv(
   // Insertion order is observable: `Object.entries(staticEnv)` is
   // what Codex's bash-prefix builder iterates, so the ordering of
   // KEY=value pairs in the launch command tracks this object's
-  // insertion order. `LORE_CONFIG_ROOT` lands first (when present)
+  // insertion order. `KENNEN_CONFIG_ROOT` lands first (when present)
   // so its absence on the PnP path doesn't reshuffle the surviving
   // entries' positions.
   const staticEnv: Record<string, string> = {}
   if (!options.omitConfigRoot) {
-    staticEnv["LORE_CONFIG_ROOT"] = configRoot
+    staticEnv["KENNEN_CONFIG_ROOT"] = configRoot
   }
-  staticEnv["LORE_SUPPRESS_DEPRECATIONS"] = "1"
+  staticEnv["KENNEN_SUPPRESS_DEPRECATIONS"] = "1"
   if (literalBaseUrl) {
     // Literal NOTION_BASE_URL — set when --dev is passed (or when
     // any future flag wants a known dev/staging target). The MCP
@@ -94,10 +94,10 @@ export function resolvePkgRoot(): string {
 /**
  * Detect whether `projectDir` (or any ancestor up to `homedir()`) is a
  * Yarn Berry / Yarn 4 PnP consumer. Yarn PnP installs do NOT populate
- * `node_modules/.bin/lore`, so the bare bin-dispatch shape
- * (`command: "lore"`) cannot resolve at host-launch time. Detection
+ * `node_modules/.bin/kennen`, so the bare bin-dispatch shape
+ * (`command: "kennen"`) cannot resolve at host-launch time. Detection
  * here drives the install runner to emit the yarn-wrapped shape
- * (`command: "yarn", args: ["run", "-T", "lore", "mcp"]`) instead.
+ * (`command: "yarn", args: ["run", "-T", "kennen", "mcp"]`) instead.
  *
  * Marker file: `.pnp.cjs` (Yarn 4's PnP loader). `.pnp.loader.mjs` is
  * an alternate spelling some configurations produce; we accept either.

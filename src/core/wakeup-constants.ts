@@ -15,7 +15,7 @@ export const DEFAULT_WAKEUP_KNOWLEDGE_FACT_LIMIT = 25
 export const DEFAULT_WAKEUP_RELATED_MEMORY_LIMIT = 5
 /**
  * Cap on tasks rendered in wake-up's Tasks section. Mirrors the spec's
- * "Tasks section capped at 10" guidance and the `lore-task action='list'`
+ * "Tasks section capped at 10" guidance and the `kennen-task action='list'`
  * per-section default — a triage list, not an inventory.
  */
 export const DEFAULT_WAKEUP_TASK_LIMIT = 10
@@ -35,7 +35,7 @@ export const DEFAULT_WAKEUP_TASK_MEMORY_LIMIT = 3
  * Mirrors the `proposedDecisions` cap of 20: a
  * triage surface, not an inventory. Operators with deeper inbox depth
  * see the full count surfaced via `WakeUpSectionCounts.proposedMemories`
- * + `lore status`'s Proposed memories line; the wake-up section caps
+ * + `kennen status`'s Proposed memories line; the wake-up section caps
  * to keep the prompt budget bounded.
  */
 export const DEFAULT_WAKEUP_PROPOSED_MEMORY_LIMIT = 20
@@ -57,7 +57,7 @@ export const DEFAULT_WAKEUP_INHERITED_MEMORY_LIMIT = 3
  * better wake-up density. Values come from the relevance-section spec.
  *
  * Shared across both wake-up surfaces (the hook helper and the
- * `lore-context` MCP tool) so the prompt-budget contract stays
+ * `kennen-context` MCP tool) so the prompt-budget contract stays
  * identical regardless of which surface fired wake-up. A caller-supplied
  * value still wins — these are defaults, not ceilings.
  *

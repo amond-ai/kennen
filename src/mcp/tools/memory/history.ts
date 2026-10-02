@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { toolError } from "../../helpers.js"
 import { subjectToTopicKey } from "../../../core/memory-subject.js"
 import { resolveProjectIds } from "../../resolve.js"
@@ -11,7 +11,7 @@ export interface HistoryArgs {
 }
 
 export async function handleHistory(
-  services: LoreServices,
+  services: KennenServices,
   args: HistoryArgs
 ): Promise<ToolResult> {
   try {

@@ -11,24 +11,24 @@ describe("debugLogPartialFailures", () => {
   let stderr: ReturnType<typeof spyStderr>
 
   beforeEach(() => {
-    priorDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    priorDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     stderr = spyStderr()
   })
 
   afterEach(() => {
     stderr.mockRestore()
     if (priorDebug === undefined) {
-      delete process.env["LORE_DEBUG"]
+      delete process.env["KENNEN_DEBUG"]
     } else {
-      process.env["LORE_DEBUG"] = priorDebug
+      process.env["KENNEN_DEBUG"] = priorDebug
     }
   })
 
   it("redacts page-id substrings in error messages but keeps explicit root id intact", () => {
     const id = "abcdef0123456789abcdef0123456789"
     const rootId = "fedcba9876543210fedcba9876543210"
-    debugLogPartialFailures("lore-memory", [
+    debugLogPartialFailures("kennen-memory", [
       { rootId, error: new Error(`Failed to load page ${id}`) },
     ])
     const line = String(stderr.mock.calls[0]![0])
@@ -37,7 +37,7 @@ describe("debugLogPartialFailures", () => {
   })
 
   it("strips forward-compatible SDK body= leaks", () => {
-    debugLogPartialFailures("lore-memory", [
+    debugLogPartialFailures("kennen-memory", [
       {
         rootId: "root-id",
         error: new Error('APIError body={"page":"secret"} status=500'),
@@ -49,18 +49,18 @@ describe("debugLogPartialFailures", () => {
   })
 
   it("preserves root id and tool for clean messages", () => {
-    debugLogPartialFailures("lore-memory", [
+    debugLogPartialFailures("kennen-memory", [
       { rootId: "root-id-1", error: new Error("notion 429") },
     ])
     const line = String(stderr.mock.calls[0]![0])
     expect(line).toBe(
-      "[lore] partial-failure: root=root-id-1 error=notion 429 tool=lore-memory\n"
+      "[kennen] partial-failure: root=root-id-1 error=notion 429 tool=kennen-memory\n"
     )
   })
 
-  it("does not write when LORE_DEBUG is unset", () => {
-    delete process.env["LORE_DEBUG"]
-    debugLogPartialFailures("lore-memory", [
+  it("does not write when KENNEN_DEBUG is unset", () => {
+    delete process.env["KENNEN_DEBUG"]
+    debugLogPartialFailures("kennen-memory", [
       { rootId: "root-id-1", error: new Error("notion 429") },
     ])
     expect(stderr).not.toHaveBeenCalled()

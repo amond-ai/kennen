@@ -2,7 +2,7 @@
  * Baseline backfill for the fact-side dynamic-confidence workstream
  * (DEFERRED-02).
  *
- * `lore migrate --build-fact-confidence-scores` seeds every pre-DEFERRED-02
+ * `kennen migrate --build-fact-confidence-scores` seeds every pre-DEFERRED-02
  * fact's `Confidence Score` from its categorical `Confidence` column and
  * writes `Last Referenced At = created_time`, then realizes any decay
  * accrued since creation. Operator-pulled, plan-then-execute, idempotent
@@ -16,7 +16,7 @@
  * (`FactService` vs `MemoryService`).
  */
 
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { FactConfidence } from "../types.js"
 import { DEFAULT_NOTION_CONCURRENCY } from "../notion/rate-limit.js"
 import {
@@ -40,7 +40,7 @@ function seedFactConfidenceScore(confidence: FactConfidence, factId: string): nu
   const seeded = seedConfidenceScore(confidence)
   if (!Number.isFinite(seeded)) {
     throw new Error(
-      `lore migrate --build-fact-confidence-scores: unsupported Fact.confidence ` +
+      `kennen migrate --build-fact-confidence-scores: unsupported Fact.confidence ` +
         `"${String(confidence)}" on fact id=${factId}; refusing to write an invalid ` +
         `Confidence Score.`
     )
@@ -49,7 +49,7 @@ function seedFactConfidenceScore(confidence: FactConfidence, factId: string): nu
 }
 
 export interface BuildFactConfidenceScoresOptions {
-  services: LoreServices
+  services: KennenServices
   /** When false, builds and prints the plan but does not write. */
   apply: boolean
   /** When true, suppresses writes regardless of `apply`. */
@@ -115,7 +115,7 @@ async function buildPlan(
   // memory-side migration.
   let projectId = opts.projectId
   const explicitProjectName = validateExplicitProjectScopeName(projectName, "--project", {
-    listHint: "run `lore status projects` to list configured projects",
+    listHint: "run `kennen status projects` to list configured projects",
     omittedScopeLabel: "vault-wide scope",
     docsHint: PROJECT_SCOPE_MIGRATION_DOC,
   })
@@ -125,7 +125,7 @@ async function buildPlan(
       explicitProjectName,
       "--project",
       {
-        listHint: "run `lore status projects` to list configured projects",
+        listHint: "run `kennen status projects` to list configured projects",
         omittedScopeLabel: "vault-wide scope",
         docsHint: PROJECT_SCOPE_MIGRATION_DOC,
       }
@@ -156,7 +156,7 @@ async function buildPlan(
     // so a future fixture violation surfaces at the right call site.
     if (fact.createdAt === undefined) {
       throw new Error(
-        `lore migrate --build-fact-confidence-scores: Fact.createdAt is ` +
+        `kennen migrate --build-fact-confidence-scores: Fact.createdAt is ` +
           `unexpectedly undefined (fact id=${fact.id}). listAllForBackfill ` +
           `routes through pageToFact which always populates the field; a ` +
           `missing value indicates a partial Fact reached the migration ` +
@@ -203,7 +203,7 @@ async function executePlan(
     processed += batch.length
     if (processed >= nextProgressMark) {
       process.stderr.write(
-        `[lore] build-fact-confidence-scores: ${processed}/${plan.rowsToSeed.length}\n`
+        `[kennen] build-fact-confidence-scores: ${processed}/${plan.rowsToSeed.length}\n`
       )
       nextProgressMark = Math.floor(processed / 100) * 100 + 100
     }

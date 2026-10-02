@@ -162,7 +162,7 @@ export interface SearchMemoriesInput {
    * whose `scopeKey` does not match the resolved `MemoryScopeContext`,
    * AND skip the expired-row exclusion. Defaults to `false`.
    *
-   * Operator-facing audit paths (`lore status`'s expiring-rows surface,
+   * Operator-facing audit paths (`kennen status`'s expiring-rows surface,
    * triage tooling) opt in. Agent-facing recall paths leave it unset so
    * a session-scoped note from a different session never leaks into
    * default retrieval — the load-bearing acceptance criterion of scope.
@@ -193,7 +193,7 @@ export interface SearchMemoriesInput {
  * - `"contains-only"` — `mode: "contains"`. `semanticRank` is always
  * `null`; `rrfScore` is `null`.
  * - `"semantic-only"` — `mode: "semantic"` (including the
- * `LORE_FORCE_SEMANTIC_SEARCH=1` mode-force case). `containsRank`
+ * `KENNEN_FORCE_SEMANTIC_SEARCH=1` mode-force case). `containsRank`
  * is always `null`; `rrfScore` is `null`.
  * - `"contains-saturated"` — `mode: "hybrid"` and the saturation cutoff
  * fired. `containsRank` reflects the row's position in the contains
@@ -205,7 +205,7 @@ export interface SearchMemoriesInput {
  * only one branch surfaced the row); `rrfScore` is the fused score
  * used for ordering.
  *
- * Field names are canonical to lore (qmd uses `lexRank` for the contains
+ * Field names are canonical to kennen (qmd uses `lexRank` for the contains
  * lane; we keep `containsRank` because the underlying Notion query is
  * a `contains` filter, not a lexical index). A test pins the names so
  * they don't drift toward qmd vocabulary in a future refactor.

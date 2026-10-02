@@ -1,11 +1,11 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { toolError } from "../../helpers.js"
 import { resolveReadProjectScope } from "../../resolve.js"
 import { gatherDigestData } from "../../../core/digest.js"
 import type { ToolResult } from "./types.js"
 
 export async function handleDigest(
-  services: LoreServices,
+  services: KennenServices,
   args: {
     period?: "day" | "week"
     since?: string
@@ -32,7 +32,7 @@ export async function handleDigest(
     parts.push(
       "---\n" +
         "To save this digest, synthesize the above into a concise summary and call " +
-        '`lore-memory` with `action: "save"` and `source: "digest"`.'
+        '`kennen-memory` with `action: "save"` and `source: "digest"`.'
     )
 
     return {

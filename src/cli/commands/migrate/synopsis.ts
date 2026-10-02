@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import type { BackgroundAgentConfig } from "../../../hooks/config.js"
 import type { BackfillReport, SynopsisBackend } from "../../../core/synopsis-backfill.js"
 import { DEFAULT_SYNOPSIS_BATCH_SIZE } from "../../../core/synopsis-backfill.js"
@@ -49,7 +49,7 @@ const SYNOPSIS_BACKFILL_PREVIEW_LIMIT = 5
  * commander's argv plumbing.
  */
 export async function runSynopsisBackfill(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     apply: boolean
     dryRun?: boolean

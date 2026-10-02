@@ -133,25 +133,25 @@ function formatBackgroundFailureKind(kind: BackgroundFailureKind): string {
 
 function backgroundFailureHint(failure: BackgroundFailureMarker): string {
   if (failure.code === "binary-missing") {
-    return "Check hooks.backgroundAgent.command or LORE_BACKGROUND_COMMAND, then trigger the hook again."
+    return "Check hooks.backgroundAgent.command or KENNEN_BACKGROUND_COMMAND, then trigger the hook again."
   }
   if (failure.code === "tempfile-failed") {
     return "Check the temp/state directory permissions and available disk space."
   }
   if (failure.kind === "digest-scheduler" && failure.code === "init-failed") {
-    return "Run `lore auth --status` to verify vault access."
+    return "Run `kennen auth --status` to verify vault access."
   }
   if (failure.kind === "digest-scheduler" && failure.code === "gather-failed") {
-    return "Run `lore digest` manually; if it fails, run `lore auth --status`."
+    return "Run `kennen digest` manually; if it fails, run `kennen auth --status`."
   }
   if (failure.kind === "digest-synthesizer") {
-    return "Run `lore digest` manually after fixing the underlying spawn issue."
+    return "Run `kennen digest` manually after fixing the underlying spawn issue."
   }
   if (failure.kind === "auto-digest-helper-spawn") {
-    return "Check Node/process limits; run `lore digest` manually to produce the digest now."
+    return "Check Node/process limits; run `kennen digest` manually to produce the digest now."
   }
   if (failure.logPath) {
     return "Trigger the hook again after fixing the logged issue."
   }
-  return "Run `lore status` and retry the hook after fixing the underlying issue."
+  return "Run `kennen status` and retry the hook after fixing the underlying issue."
 }

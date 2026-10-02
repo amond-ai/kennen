@@ -10,7 +10,7 @@ import {
   MEMORY_PROPS,
   type CompareNotesTextChunk,
 } from "../notion/schema.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
 
 export { COMPARE_NOTES_MAX_CHARS, encodeCompareNotesRichText }
 export type { CompareNotesTextChunk }
@@ -46,7 +46,7 @@ export interface RecordComparedInput {
  * when exactly one of the symmetric `pages.update` writes rejected and
  * the other landed or was skipped via per-side idempotency.
  */
-export class RecordComparedPartialWriteError extends LoreError<"record-compared-partial-write"> {
+export class RecordComparedPartialWriteError extends KennenError<"record-compared-partial-write"> {
   readonly result: RecordComparedResult
   readonly failedSide: "A" | "B"
   readonly cause: unknown
@@ -106,7 +106,7 @@ function appendCompareNotesEntry(existing: string, entry: unknown): string {
       `Compare Notes overflow: appending this entry would push ` +
         `total length to ${next.length} chars (cap ` +
         `${COMPARE_NOTES_MAX_CHARS}). The memory is over-compared; ` +
-        `consolidate via lore-memory action='archive' on duplicate ` +
+        `consolidate via kennen-memory action='archive' on duplicate ` +
         `pairs or split the topic.`
     )
   }
@@ -268,7 +268,7 @@ export interface CompareDispatchServices {
   }
 }
 
-export class CompareDispatchPartialFailureError extends LoreError<"compare-dispatch-partial"> {
+export class CompareDispatchPartialFailureError extends KennenError<"compare-dispatch-partial"> {
   readonly step: "fact" | "supersede"
   readonly affectedMemoryId: string
   readonly factId: string | undefined
@@ -506,7 +506,7 @@ export async function recordContradiction(
         message:
           "conflicts_with dispatch: fact emitted but compare notes update " +
           "failed (inconsistentState: true). Retry the same " +
-          "lore-memory action='compare' after the transient failure is cleared. " +
+          "kennen-memory action='compare' after the transient failure is cleared. " +
           "Diagnostic fields:\n" +
           `step=fact\n` +
           `affectedMemoryId=${input.contradictedMemory.id}\n` +
@@ -592,9 +592,9 @@ export async function recordSupersedence(
           "supersedes dispatch: decisions.supersede landed (Supersedes " +
           "relation + Status updated) but the supersedes_decision fact " +
           "create failed (inconsistentState: true). The graph edge is " +
-          "missing; lore-query action='ask' won't surface the " +
+          "missing; kennen-query action='ask' won't surface the " +
           "supersession on the affected entity yet. Retry the same " +
-          "lore-memory action='compare' after the transient failure is " +
+          "kennen-memory action='compare' after the transient failure is " +
           "cleared; decisions.supersede is idempotent on relation-set " +
           "semantics, so the retry can complete the fact work safely. " +
           "Diagnostic fields:\n" +
@@ -622,7 +622,7 @@ export async function recordSupersedence(
           "supersedes dispatch: decisions.supersede and the " +
           "supersedes_decision fact landed, but compare notes update on " +
           "the superseded memory failed (inconsistentState: true). Retry " +
-          "the same lore-memory action='compare' after the transient " +
+          "the same kennen-memory action='compare' after the transient " +
           "failure is cleared. Diagnostic fields:\n" +
           `step=fact\n` +
           `affectedMemoryId=${input.supersededMemory.id}\n` +

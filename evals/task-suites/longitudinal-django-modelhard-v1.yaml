@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-django-modelhard-v1
+name: kennen-longitudinal-django-modelhard-v1
 description: >-
   Model-hard Django ORM longitudinal suite. Scenarios pin a stable Django
   revision and ask the agent to implement a small reporting or persistence
@@ -15,8 +15,8 @@ description: >-
 seededCorpus: ../vault-seeds/django-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: django-filter-chained-vs-single-multivalued-v1
     difficulty: hard
@@ -33,13 +33,13 @@ scenarios:
     phaseB:
       promptId: django-filter-chained-vs-single-multivalued-v1-use
       prompt: |
-        Implement a module `lore_solution.py` at the repository root with two query helpers over a `Blog` model that has a reverse one-to-many `entries` relation (each `Entry` has `pub_year` and `headline`).
+        Implement a module `kennen_solution.py` at the repository root with two query helpers over a `Blog` model that has a reverse one-to-many `entries` relation (each `Entry` has `pub_year` and `headline`).
 
         `blogs_with_year_and_keyword_same_entry(Blog, year, keyword)`: return the blogs that have a single entry which is BOTH from `year` AND whose headline contains `keyword`.
 
         `blogs_with_year_and_keyword_any_entries(Blog, year, keyword)`: return the blogs that have an entry from `year` AND (possibly a different) entry whose headline contains `keyword`. No blog may appear more than once in the result.
 
-        Both return lists of `Blog` instances. Do not edit files outside `lore_solution.py`.
+        Both return lists of `Blog` instances. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         Across a multi-valued relation, one `filter(rel__a, rel__b)` requires a single related row to satisfy both conditions, whereas chained `.filter().filter()` allows different related rows per condition and joins repeatedly, which can return duplicate primary rows unless de-duplicated.
@@ -57,11 +57,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_django_multivalued_filter.py b/lore_eval_hidden_django_multivalued_filter.py
+          diff --git a/kennen_eval_hidden_django_multivalued_filter.py b/kennen_eval_hidden_django_multivalued_filter.py
           new file mode 100644
           index 0000000..21e4310
           --- /dev/null
-          +++ b/lore_eval_hidden_django_multivalued_filter.py
+          +++ b/kennen_eval_hidden_django_multivalued_filter.py
           @@ -0,0 +1,88 @@
           +import django
           +from django.conf import settings
@@ -73,7 +73,7 @@ scenarios:
           +        INSTALLED_APPS=[
           +            "django.contrib.contenttypes",
           +            "django.contrib.auth",
-          +            "lore_eval_hidden_django_multivalued_filter",
+          +            "kennen_eval_hidden_django_multivalued_filter",
           +        ],
           +        USE_TZ=True,
           +        DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
@@ -85,7 +85,7 @@ scenarios:
           +import pytest
           +from django.db import connection, models
           +
-          +from lore_solution import (
+          +from kennen_solution import (
           +    blogs_with_year_and_keyword_any_entries,
           +    blogs_with_year_and_keyword_same_entry,
           +)
@@ -162,7 +162,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_django_multivalued_filter.py
+          - kennen_eval_hidden_django_multivalued_filter.py
           - -q
         timeoutMs: 300000
 
@@ -181,9 +181,9 @@ scenarios:
     phaseB:
       promptId: django-annotate-multi-aggregate-fanout-v1-use
       prompt: |
-        Implement a module `lore_solution.py` at the repository root with a single function `book_counts(Book)` over a `Book` model that has two many-to-many relations: `authors` and `stores`.
+        Implement a module `kennen_solution.py` at the repository root with a single function `book_counts(Book)` over a `Book` model that has two many-to-many relations: `authors` and `stores`.
 
-        Return a dict mapping each book's primary key to `{"authors": n, "stores": m}` where `n` is the number of distinct authors of the book and `m` is the number of distinct stores carrying it. Every book must report its true author and store counts. Do not edit files outside `lore_solution.py`.
+        Return a dict mapping each book's primary key to `{"authors": n, "stores": m}` where `n` is the number of distinct authors of the book and `m` is the number of distinct stores carrying it. Every book must report its true author and store counts. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         Two aggregates over two different multi-valued relations in one `annotate()` are computed by JOINs, so the counts multiply each other; for `Count`, each needs `distinct=True`, otherwise a book with 2 authors and 3 stores reports 6 and 6.
@@ -201,11 +201,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_django_multi_aggregate.py b/lore_eval_hidden_django_multi_aggregate.py
+          diff --git a/kennen_eval_hidden_django_multi_aggregate.py b/kennen_eval_hidden_django_multi_aggregate.py
           new file mode 100644
           index 0000000..eb80d2c
           --- /dev/null
-          +++ b/lore_eval_hidden_django_multi_aggregate.py
+          +++ b/kennen_eval_hidden_django_multi_aggregate.py
           @@ -0,0 +1,84 @@
           +import django
           +from django.conf import settings
@@ -217,7 +217,7 @@ scenarios:
           +        INSTALLED_APPS=[
           +            "django.contrib.contenttypes",
           +            "django.contrib.auth",
-          +            "lore_eval_hidden_django_multi_aggregate",
+          +            "kennen_eval_hidden_django_multi_aggregate",
           +        ],
           +        USE_TZ=True,
           +        DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
@@ -227,7 +227,7 @@ scenarios:
           +import pytest
           +from django.db import connection, models
           +
-          +from lore_solution import book_counts
+          +from kennen_solution import book_counts
           +
           +
           +class Author(models.Model):
@@ -302,7 +302,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_django_multi_aggregate.py
+          - kennen_eval_hidden_django_multi_aggregate.py
           - -q
         timeoutMs: 300000
 
@@ -321,13 +321,13 @@ scenarios:
     phaseB:
       promptId: django-annotate-filter-noncommutative-v1-use
       prompt: |
-        Implement a module `lore_solution.py` at the repository root with two helpers over a `Publisher` model that has a reverse one-to-many `books` relation (each `Book` has a `rating`).
+        Implement a module `kennen_solution.py` at the repository root with two helpers over a `Publisher` model that has a reverse one-to-many `books` relation (each `Book` has a `rating`).
 
         `total_books_per_publisher(Publisher, min_rating)`: for every publisher that has at least one book rated strictly greater than `min_rating`, return its TOTAL book count regardless of rating.
 
         `highly_rated_books_per_publisher(Publisher, min_rating)`: for every publisher, return the count of ONLY the books rated strictly greater than `min_rating`.
 
-        Both return dicts mapping publisher name to a count. Do not edit files outside `lore_solution.py`.
+        Both return dicts mapping publisher name to a count. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         `annotate()` and `filter()` are not commutative: annotate-then-filter counts all related rows and only uses the filter to select which parents appear, while filter-then-annotate constrains the rows the aggregate sees; the annotate-first form also needs `distinct=True` to avoid join fanout.
@@ -345,11 +345,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_django_annotate_filter_order.py b/lore_eval_hidden_django_annotate_filter_order.py
+          diff --git a/kennen_eval_hidden_django_annotate_filter_order.py b/kennen_eval_hidden_django_annotate_filter_order.py
           new file mode 100644
           index 0000000..0acf2c7
           --- /dev/null
-          +++ b/lore_eval_hidden_django_annotate_filter_order.py
+          +++ b/kennen_eval_hidden_django_annotate_filter_order.py
           @@ -0,0 +1,81 @@
           +import django
           +from django.conf import settings
@@ -361,7 +361,7 @@ scenarios:
           +        INSTALLED_APPS=[
           +            "django.contrib.contenttypes",
           +            "django.contrib.auth",
-          +            "lore_eval_hidden_django_annotate_filter_order",
+          +            "kennen_eval_hidden_django_annotate_filter_order",
           +        ],
           +        USE_TZ=True,
           +        DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
@@ -371,7 +371,7 @@ scenarios:
           +import pytest
           +from django.db import connection, models
           +
-          +from lore_solution import (
+          +from kennen_solution import (
           +    highly_rated_books_per_publisher,
           +    total_books_per_publisher,
           +)
@@ -443,7 +443,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_django_annotate_filter_order.py
+          - kennen_eval_hidden_django_annotate_filter_order.py
           - -q
         timeoutMs: 300000
 
@@ -462,9 +462,9 @@ scenarios:
     phaseB:
       promptId: django-exclude-multivalued-relation-v1-use
       prompt: |
-        Implement a module `lore_solution.py` at the repository root with a function `authors_without_matching_book(Author, genre, max_year)` over an `Author` model that has a reverse one-to-many `books` relation (each `Book` has `genre` and `year`).
+        Implement a module `kennen_solution.py` at the repository root with a function `authors_without_matching_book(Author, genre, max_year)` over an `Author` model that has a reverse one-to-many `books` relation (each `Book` has `genre` and `year`).
 
-        Return the authors who have NO single book that is BOTH in `genre` AND published before `max_year`. An author whose books each satisfy only one of the two conditions — but where no single book satisfies both — must be INCLUDED in the result. Return a list of `Author` instances. Do not edit files outside `lore_solution.py`.
+        Return the authors who have NO single book that is BOTH in `genre` AND published before `max_year`. An author whose books each satisfy only one of the two conditions — but where no single book satisfies both — must be INCLUDED in the result. Return a list of `Author` instances. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         A multi-kwarg `exclude(rel__a, rel__b)` over a multi-valued relation does not mean "exclude parents with a single related row matching both"; it pushes the conditions into the negation separately, so the correct "no single related row matches both" requires excluding a subquery/`Exists` of the equivalent positive filter.
@@ -482,11 +482,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_django_exclude_multivalued.py b/lore_eval_hidden_django_exclude_multivalued.py
+          diff --git a/kennen_eval_hidden_django_exclude_multivalued.py b/kennen_eval_hidden_django_exclude_multivalued.py
           new file mode 100644
           index 0000000..da6123c
           --- /dev/null
-          +++ b/lore_eval_hidden_django_exclude_multivalued.py
+          +++ b/kennen_eval_hidden_django_exclude_multivalued.py
           @@ -0,0 +1,81 @@
           +import django
           +from django.conf import settings
@@ -498,7 +498,7 @@ scenarios:
           +        INSTALLED_APPS=[
           +            "django.contrib.contenttypes",
           +            "django.contrib.auth",
-          +            "lore_eval_hidden_django_exclude_multivalued",
+          +            "kennen_eval_hidden_django_exclude_multivalued",
           +        ],
           +        USE_TZ=True,
           +        DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
@@ -508,7 +508,7 @@ scenarios:
           +import pytest
           +from django.db import connection, models
           +
-          +from lore_solution import authors_without_matching_book
+          +from kennen_solution import authors_without_matching_book
           +
           +
           +class Author(models.Model):
@@ -580,7 +580,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_django_exclude_multivalued.py
+          - kennen_eval_hidden_django_exclude_multivalued.py
           - -q
         timeoutMs: 300000
 
@@ -599,9 +599,9 @@ scenarios:
     phaseB:
       promptId: django-bulk-create-save-side-effects-v1-use
       prompt: |
-        Implement a module `lore_solution.py` at the repository root with a function `import_items(Item, codes)` that persists one `Item` per entry in `codes`.
+        Implement a module `kennen_solution.py` at the repository root with a function `import_items(Item, codes)` that persists one `Item` per entry in `codes`.
 
-        The `Item` model defines its own `save()` that normalizes the `code` field, and the application registers a `post_save` receiver that must run once per created row. Each row must be persisted so that the model's `save()` normalization runs and every `post_save` receiver fires once per created row, exactly as if each row had been created individually. Return the list of created `Item` instances. Do not edit files outside `lore_solution.py`.
+        The `Item` model defines its own `save()` that normalizes the `code` field, and the application registers a `post_save` receiver that must run once per created row. Each row must be persisted so that the model's `save()` normalization runs and every `post_save` receiver fires once per created row, exactly as if each row had been created individually. Return the list of created `Item` instances. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         `QuerySet.bulk_create()` issues raw inserts and does not call `Model.save()` or send `pre_save`/`post_save` signals, so per-row `save()` normalization and signal receivers are silently skipped; preserving them requires looping `save()`.
@@ -619,11 +619,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_django_save_side_effects.py b/lore_eval_hidden_django_save_side_effects.py
+          diff --git a/kennen_eval_hidden_django_save_side_effects.py b/kennen_eval_hidden_django_save_side_effects.py
           new file mode 100644
           index 0000000..b931b1c
           --- /dev/null
-          +++ b/lore_eval_hidden_django_save_side_effects.py
+          +++ b/kennen_eval_hidden_django_save_side_effects.py
           @@ -0,0 +1,68 @@
           +import django
           +from django.conf import settings
@@ -635,7 +635,7 @@ scenarios:
           +        INSTALLED_APPS=[
           +            "django.contrib.contenttypes",
           +            "django.contrib.auth",
-          +            "lore_eval_hidden_django_save_side_effects",
+          +            "kennen_eval_hidden_django_save_side_effects",
           +        ],
           +        USE_TZ=True,
           +        DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
@@ -647,7 +647,7 @@ scenarios:
           +from django.db.models.signals import post_save
           +from django.dispatch import receiver
           +
-          +from lore_solution import import_items
+          +from kennen_solution import import_items
           +
           +
           +class Item(models.Model):
@@ -704,7 +704,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_django_save_side_effects.py
+          - kennen_eval_hidden_django_save_side_effects.py
           - -q
         timeoutMs: 300000
 
@@ -723,9 +723,9 @@ scenarios:
     phaseB:
       promptId: django-modelform-commit-false-save-m2m-v1-use
       prompt: |
-        Implement a module `lore_solution.py` at the repository root with a function `create_author(form, owner_label)` that persists a validated `Author` `ModelForm`. The `Author` model has a `ManyToManyField` named `topics` and a plain `owner` field the form does not expose.
+        Implement a module `kennen_solution.py` at the repository root with a function `create_author(form, owner_label)` that persists a validated `Author` `ModelForm`. The `Author` model has a `ManyToManyField` named `topics` and a plain `owner` field the form does not expose.
 
-        The handler must set `owner` on the instance to `owner_label` BEFORE the row is written, then persist the instance together with every many-to-many selection the form collected. Return the saved `Author` instance. Do not edit files outside `lore_solution.py`.
+        The handler must set `owner` on the instance to `owner_label` BEFORE the row is written, then persist the instance together with every many-to-many selection the form collected. Return the saved `Author` instance. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         `ModelForm.save(commit=False)` cannot persist `ManyToManyField` data because the instance has no primary key yet; it attaches a `save_m2m()` method that must be called after `instance.save()`, or the M2M selections are silently dropped.
@@ -743,11 +743,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_django_modelform_m2m.py b/lore_eval_hidden_django_modelform_m2m.py
+          diff --git a/kennen_eval_hidden_django_modelform_m2m.py b/kennen_eval_hidden_django_modelform_m2m.py
           new file mode 100644
           index 0000000..e900b8c
           --- /dev/null
-          +++ b/lore_eval_hidden_django_modelform_m2m.py
+          +++ b/kennen_eval_hidden_django_modelform_m2m.py
           @@ -0,0 +1,79 @@
           +import django
           +from django.conf import settings
@@ -759,7 +759,7 @@ scenarios:
           +        INSTALLED_APPS=[
           +            "django.contrib.contenttypes",
           +            "django.contrib.auth",
-          +            "lore_eval_hidden_django_modelform_m2m",
+          +            "kennen_eval_hidden_django_modelform_m2m",
           +        ],
           +        USE_TZ=True,
           +        DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
@@ -770,7 +770,7 @@ scenarios:
           +from django import forms
           +from django.db import connection, models
           +
-          +from lore_solution import create_author
+          +from kennen_solution import create_author
           +
           +
           +class Topic(models.Model):
@@ -839,6 +839,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_django_modelform_m2m.py
+          - kennen_eval_hidden_django_modelform_m2m.py
           - -q
         timeoutMs: 300000

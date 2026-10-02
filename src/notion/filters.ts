@@ -247,8 +247,8 @@ export function withDefaultScopeFilter(
 
 /**
  * Filter clause selecting rows whose `Expires At` falls in the
- * inclusive window `[today, until]`. Used by the `lore status`
- * expiring-rows surface (the contract: "`lore status` or audit
+ * inclusive window `[today, until]`. Used by the `kennen status`
+ * expiring-rows surface (the contract: "`kennen status` or audit
  * surfaces expired/expiring scoped memories for cleanup").
  */
 export function expiringWithinFilter(
@@ -266,8 +266,8 @@ export function expiringWithinFilter(
 
 /**
  * Filter clause selecting rows whose `Expires At` is strictly before
- * `today` — the row is expired but still present (Lore never deletes,
- * just stops surfacing). Used by `lore status` to surface expired
+ * `today` — the row is expired but still present (Kennen never deletes,
+ * just stops surfacing). Used by `kennen status` to surface expired
  * rows for cleanup.
  */
 export function expiredBeforeFilter(

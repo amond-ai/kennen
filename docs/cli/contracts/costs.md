@@ -2,7 +2,7 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore costs` is a local-only inspection surface for the opt-in cost ledger. It
+`kennen costs` is a local-only inspection surface for the opt-in cost ledger. It
 does not initialize Notion services and must never require vault reachability to
 summarize or export existing local usage rows.
 

@@ -9,7 +9,7 @@
  *  2. Run `fixFactEncoding` / `fixMemoryEncoding`.
  *  3. Re-scan — the encoded-rows list is empty (idempotent).
  *  4. Verify the stored `DedupKey` matches `computeFactDedupKey(decoded)`
- *     — i.e. a subsequent `lore-learn` with the decoded triple would
+ *     — i.e. a subsequent `kennen-learn` with the decoded triple would
  *     probe-hit the migrated row instead of creating a duplicate.
  *  5. For memories, verify both Title property and body markdown are
  *     persisted in decoded form.
@@ -277,7 +277,7 @@ describe("fact encoding migration — end-to-end", () => {
   it("rewrites encoded rows, makes DedupKey match decoded triple, and a re-run is a true no-op", async () => {
     // Known-encoded starting state. Pre-migration DedupKey matches the
     // RAW (still-encoded) triple — which is exactly the pathology P2-10
-    // fixes: a `lore-learn` call with the naturally-decoded triple would
+    // fixes: a `kennen-learn` call with the naturally-decoded triple would
     // hash to a different key and miss the probe, creating a duplicate.
     const vault = new FixtureVault()
     const encodedSubject = "Build &amp; Tooling"

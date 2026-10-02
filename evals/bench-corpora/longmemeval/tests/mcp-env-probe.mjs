@@ -20,7 +20,7 @@
  *   1. **Output path containment.** `argv[2]` must be an absolute path
  *      under either `os.tmpdir()` (resolved via `realpathSync.native`
  *      to defeat symlink escapes) or an explicit
- *      `LORE_BENCH_ENV_DUMP_DIR` allow-rooted directory the caller
+ *      `KENNEN_BENCH_ENV_DUMP_DIR` allow-rooted directory the caller
  *      controls. The probe rejects paths that fail containment and
  *      paths that contain `..` segments. A future bench-runner bug,
  *      malformed YAML, or hostile fixture cannot redirect the dump
@@ -37,11 +37,11 @@
  *      `"<redacted>"` regardless
  *      of contents. The discovery harness inspects key presence /
  *      absence and a separate sentinel key it sets specifically for
- *      the probe (e.g., `LORE_BENCH_ROUTING_SENTINEL`) — never a real
+ *      the probe (e.g., `KENNEN_BENCH_ROUTING_SENTINEL`) — never a real
  *      bearer's value.
  *
  *   4. **Insecure raw-dump opt-in.** Setting
- *      `LORE_EVAL_BENCH_INSECURE_KEEP=1` in the probe's env (NOT the
+ *      `KENNEN_EVAL_BENCH_INSECURE_KEEP=1` in the probe's env (NOT the
  *      caller's shell, since Codex sandboxes the MCP-child env) bypasses
  *      redaction and writes the raw env. This exists for one purpose:
  *      direct shell invocation of the probe by an engineer who has
@@ -68,7 +68,7 @@ const outPath = process.argv[2]
 if (!outPath) {
   process.stderr.write(
     "mcp-env-probe: missing output path argument. " +
-      "Usage: mcp-env-probe.mjs <absolute-path-under-tmpdir-or-LORE_BENCH_ENV_DUMP_DIR>\n",
+      "Usage: mcp-env-probe.mjs <absolute-path-under-tmpdir-or-KENNEN_BENCH_ENV_DUMP_DIR>\n",
   )
   process.exit(2)
 }
@@ -79,7 +79,7 @@ if (!outPath) {
 if (!isAbsolute(outPath)) {
   process.stderr.write(
     `mcp-env-probe: outPath "${outPath}" is not absolute. ` +
-      `Absolute paths under TMPDIR or LORE_BENCH_ENV_DUMP_DIR are required.\n`,
+      `Absolute paths under TMPDIR or KENNEN_BENCH_ENV_DUMP_DIR are required.\n`,
   )
   process.exit(2)
 }
@@ -108,11 +108,11 @@ function realpathOrSelf(path) {
 }
 
 const allowedRoots = [realpathOrSelf(tmpdir())]
-const explicitRoot = process.env["LORE_BENCH_ENV_DUMP_DIR"]
+const explicitRoot = process.env["KENNEN_BENCH_ENV_DUMP_DIR"]
 if (typeof explicitRoot === "string" && explicitRoot.length > 0) {
   if (!isAbsolute(explicitRoot)) {
     process.stderr.write(
-      `mcp-env-probe: LORE_BENCH_ENV_DUMP_DIR "${explicitRoot}" is not absolute; ignoring.\n`,
+      `mcp-env-probe: KENNEN_BENCH_ENV_DUMP_DIR "${explicitRoot}" is not absolute; ignoring.\n`,
     )
   } else {
     allowedRoots.push(realpathOrSelf(explicitRoot))
@@ -155,7 +155,7 @@ if (!contained) {
  */
 const BEARER_KEYS = new Set(["NOTION_API_TOKEN"])
 const BEARER_VALUE_PREFIXES = ["ntn_", "development_ntn_", "secret_"]
-const INSECURE_KEEP = process.env["LORE_EVAL_BENCH_INSECURE_KEEP"] === "1"
+const INSECURE_KEEP = process.env["KENNEN_EVAL_BENCH_INSECURE_KEEP"] === "1"
 
 function redactEnv(rawEnv) {
   const out = {}
@@ -223,7 +223,7 @@ rl.on("line", (line) => {
       result: {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "lore-bench-env-probe", version: "0.0.1" },
+        serverInfo: { name: "kennen-bench-env-probe", version: "0.0.1" },
       },
     })
   } else if (req.method === "tools/list") {

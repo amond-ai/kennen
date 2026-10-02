@@ -36,7 +36,7 @@ describe("confirmPrompt", () => {
 
   it("on non-TTY without yesFlag: returns false and emits the 'pass --yes' stderr hint", async () => {
     // The review flagged this branch as the practical CI-failure
-    // case: an automation runs `lore init` with neither a token nor
+    // case: an automation runs `kennen init` with neither a token nor
     // `--yes` and the prompt blocks waiting on a stdin that isn't
     // there. The right behavior is to fail fast with an actionable
     // message — pin it.

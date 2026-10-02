@@ -1,7 +1,7 @@
 /**
  * Memory debt scanner.
  *
- * Read-only inventory of maintainability problems across a Lore vault.
+ * Read-only inventory of maintainability problems across a Kennen vault.
  * Walks the same services the conflict scan / wake-up / overdue surfaces
  * already use — `queryOrphans`, `queryOverdue`,
  * `expiringScopedStats`, `findSimilarTopicGroups`, `findConflictCandidates` —
@@ -9,7 +9,7 @@
  * category-specific reasons and suggested remediation commands.
  *
  * The scanner itself is strictly read-only: this module does not mutate
- * any Notion row. `lore debt create-tasks` layers idempotent task
+ * any Notion row. `kennen debt create-tasks` layers idempotent task
  * creation on top of this report; a future safe-autofix surface is
  * deliberately deferred.
  *
@@ -23,7 +23,7 @@
  * across runs over the same vault state.
  */
 
-import { probeScopeColumnsPresent, type LoreServices } from "../services.js"
+import { probeScopeColumnsPresent, type KennenServices } from "../services.js"
 import { isMissingPropertyError } from "../notion/errors.js"
 import type {
   DecisionSummary,
@@ -69,20 +69,20 @@ export type DebtPriority = "P1" | "P2" | "P3"
 
 /**
  * Stable marker token written into a debt-derived task's `keywords`
- * (and body) so a subsequent `lore debt create-tasks` run can locate
+ * (and body) so a subsequent `kennen debt create-tasks` run can locate
  * the existing row via a contains search and skip recreation
- * (the `lore debt create-tasks` idempotency contract).
+ * (the `kennen debt create-tasks` idempotency contract).
  *
- * Format: `lore-debt-id-<debt-id-with-double-colons-flattened>`. The
+ * Format: `kennen-debt-id-<debt-id-with-double-colons-flattened>`. The
  * `::` separators in raw debt ids (e.g. `duplicate_cluster::<lo>::<hi>`)
  * would tokenize awkwardly under Notion contains; flattening to `-`
  * keeps the marker a single search-friendly token. The prefix
- * `lore-debt-id-` is deliberately unique enough that the contains
+ * `kennen-debt-id-` is deliberately unique enough that the contains
  * search has near-zero false-positive risk against unrelated task
  * titles, keywords, or synopses.
  */
 export function debtTaskMarker(debtId: string): string {
-  return `lore-debt-id-${debtId.replace(/::/g, "-")}`
+  return `kennen-debt-id-${debtId.replace(/::/g, "-")}`
 }
 
 export const DEBT_CATEGORIES: DebtCategory[] = [
@@ -211,7 +211,7 @@ export interface DebtStats {
    *    anomalies found").
    *  - **`null`** — probe was attempted AND degraded against a
    *    vault without scope columns (Scope Kind / Expires At missing).
-   *    The renderer surfaces a `lore migrate` prompt in this case.
+   *    The renderer surfaces a `kennen migrate` prompt in this case.
    *  - **`0` with `scopeAnomalyProbeSkipped: true`** — probe was
    *    skipped by a category filter (e.g.
    *    `--category orphan_fact`); the `null` value would collide
@@ -221,7 +221,7 @@ export interface DebtStats {
    * Old code initialized this to `null` and only mutated inside the
    * `wantCategory("scope_anomaly")` branch — a `--category orphan_fact`
    * scan never entered the branch and silently surfaced a bogus
-   * `lore migrate` prompt for vaults that had already migrated.
+   * `kennen migrate` prompt for vaults that had already migrated.
    */
   scopeAnomalies: number | null
   /**
@@ -306,7 +306,7 @@ const HIGH_RETRIEVAL_KINDS = new Set<MemoryKind>([
 ])
 
 export async function scanDebt(
-  services: LoreServices,
+  services: KennenServices,
   opts: ScanDebtOpts = {}
 ): Promise<DebtReport> {
   const today = opts.today ?? todayUtc()
@@ -330,7 +330,7 @@ export async function scanDebt(
     similarTopicGroups: 0,
     // Default to `0` (probe not run, no anomalies observed) rather
     // than `null`. Only the explicit "probe ran and degraded" path
-    // below sets `null` so the renderer's `lore migrate` prompt
+    // below sets `null` so the renderer's `kennen migrate` prompt
     // never fires on a category-filtered scan that excluded
     // `scope_anomaly`.
     scopeAnomalies: 0,
@@ -540,9 +540,9 @@ export async function scanDebt(
   if (wantCategory("topic_sprawl")) {
     // Thread `projectId` so a project-scoped audit does not surface
     // similar-topic groups from unrelated projects. When the operator
-    // runs `lore debt scan --project Mail`,
+    // runs `kennen debt scan --project Mail`,
     // a Calendar-only topic group must not appear; otherwise a
-    // subsequent `lore debt create-tasks --project Mail` would mint a
+    // subsequent `kennen debt create-tasks --project Mail` would mint a
     // Mail-scoped audit task for Calendar debt.
     const topicGroups = await findSimilarTopicGroups(
       services.client,
@@ -561,7 +561,7 @@ export async function scanDebt(
   //    narrow-scope-out-of-context counters. We synthesize one debt
   //    item per non-zero counter (not per-row, because the counters
   //    return numbers rather than ids — the row-level surface lives
-  //    in `lore status` already).
+  //    in `kennen status` already).
   // ---------------------------------------------------------------
   if (wantCategory("scope_anomaly")) {
     const scope = await safeLoadExpiringScopedStatus(services, opts.projectId)
@@ -1140,7 +1140,7 @@ function buildOwnerlessItem(memory: Memory, today: string): DebtItem {
 }
 
 async function operationalExpiryIssue(
-  services: LoreServices,
+  services: KennenServices,
   memory: Memory,
   today: string
 ): Promise<OperationalExpiryIssue | null> {
@@ -1183,7 +1183,7 @@ async function operationalExpiryIssue(
 }
 
 async function collectSummaryQualityCandidates(
-  services: LoreServices,
+  services: KennenServices,
   opts: ScanDebtOpts,
   perCategoryLimit: number
 ): Promise<Memory[]> {
@@ -1269,7 +1269,7 @@ async function fetchGitHubPullRequestClosure(
 
   const headers: Record<string, string> = {
     accept: "application/vnd.github+json",
-    "user-agent": "lore-memory-debt-scan",
+    "user-agent": "kennen-memory-debt-scan",
   }
   const token = process.env["GITHUB_TOKEN"] || process.env["GH_TOKEN"]
   if (token && token.trim().length > 0) {
@@ -1402,12 +1402,12 @@ function daysBetween(iso: string | null | undefined, today: string): number | nu
  * schema probe.
  */
 async function safeLoadExpiringScopedStatus(
-  services: LoreServices,
+  services: KennenServices,
   projectId: string | undefined
 ): Promise<Awaited<ReturnType<typeof loadExpiringScopedStatus>> | null> {
   // Transient `dataSources.retrieve` failures (5xx, rate-limit blip)
   // MUST NOT silently degrade to "vault needs migration" — that
-  // would print bogus `lore migrate` guidance on a healthy vault
+  // would print bogus `kennen migrate` guidance on a healthy vault
   // during an outage. We deliberately do NOT wrap this in
   // try/catch: errors propagate to the scanner's outer catch and
   // bubble to the operator. Schema-shape errors (missing scope

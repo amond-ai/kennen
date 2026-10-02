@@ -58,7 +58,7 @@ describe("cost ledger", () => {
   })
 
   function tempDir(): string {
-    const dir = mkdtempSync(join(tmpdir(), "lore-cost-ledger-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-cost-ledger-"))
     dirs.push(dir)
     return dir
   }
@@ -70,7 +70,7 @@ describe("cost ledger", () => {
       eventType: "mcp.invocation",
       source: "host_agent",
       status: "success",
-      tool: "lore-query",
+      tool: "kennen-query",
       action,
       payload: payloadSummary("{}", "ok"),
       notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -137,7 +137,7 @@ describe("cost ledger", () => {
       eventType: "mcp.invocation",
       source: "host_agent",
       status: "success",
-      tool: "lore-memory",
+      tool: "kennen-memory",
       action: "save",
       payload: payloadSummary('{"action":"save"}', "Saved memory"),
       notion: { reads: 1, writes: 2, failures: 0, rateLimitBackoffs: 0 },
@@ -200,7 +200,7 @@ describe("cost ledger", () => {
       eventType: "mcp.invocation",
       source: "host_agent",
       status: "success",
-      tool: "lore-memory",
+      tool: "kennen-memory",
       action: "save",
       payload: payloadSummary('{"action":"save"}', "Saved memory"),
       notion: { reads: 1, writes: 2, failures: 0, rateLimitBackoffs: 0 },
@@ -217,7 +217,7 @@ describe("cost ledger", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]!.event).toMatchObject({
       eventType: "mcp.invocation",
-      tool: "lore-memory",
+      tool: "kennen-memory",
       action: "save",
       outputs: { memoriesCreated: 1 },
     })
@@ -328,7 +328,7 @@ describe("cost ledger", () => {
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "before-range",
           payload: payloadSummary("{}", "old"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -339,7 +339,7 @@ describe("cost ledger", () => {
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "in-range",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -459,7 +459,7 @@ describe("cost ledger", () => {
         eventType: "mcp.invocation" as const,
         source: "host_agent" as const,
         status: "success" as const,
-        tool: "lore-query",
+        tool: "kennen-query",
         action: "search",
         payload: payloadSummary("{}", "result"),
         notion: { reads: 2, writes: 0, failures: 0, rateLimitBackoffs: 1 },
@@ -481,7 +481,7 @@ describe("cost ledger", () => {
     expect(summary.wakeupEstimatedTokens).toBeGreaterThan(0)
     expect(summary.notion.rateLimitBackoffs).toBe(1)
     expect(eventsToCsv(events)).toContain("timestamp,eventType,source,status")
-    expect(eventsToCsv(events)).toContain("lore-query,search")
+    expect(eventsToCsv(events)).toContain("kennen-query,search")
   })
 
   it("skips schema-invalid JSON rows and sanitizes exported JSONL rows", async () => {
@@ -515,7 +515,7 @@ describe("cost ledger", () => {
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -528,14 +528,14 @@ describe("cost ledger", () => {
     expect(rows).toHaveLength(1)
     expect(rows[0]!.event).toMatchObject({
       eventType: "mcp.invocation",
-      tool: "lore-query",
+      tool: "kennen-query",
       action: "search",
     })
     expect(rows[0]!.line).not.toContain("SECRET")
 
     const events = rows.map((row) => row.event)
     expect(summarizeCostEvents(events, "today").mcpTotal).toBe(1)
-    expect(eventsToCsv(events)).toContain("lore-query,search")
+    expect(eventsToCsv(events)).toContain("kennen-query,search")
     expect(eventsToCsv(events)).not.toContain("SECRET")
   })
 
@@ -564,7 +564,7 @@ describe("cost ledger", () => {
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -576,7 +576,7 @@ describe("cost ledger", () => {
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
         }),
@@ -726,7 +726,7 @@ describe("cost ledger", () => {
     expect(summary.modelEstimatedUsd).toBe(0.02)
     expect(summary.modelExactUsd).toBe(0.01)
     expect(formatCostSummary(summary)).toContain(
-      "Lore-owned model cost: $0.01 exact agent usage, ~$0.02 background prompt estimates"
+      "Kennen-owned model cost: $0.01 exact agent usage, ~$0.02 background prompt estimates"
     )
   })
 

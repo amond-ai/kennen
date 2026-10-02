@@ -3,7 +3,7 @@ runner: skill-retrieval
 name: skillret-test
 description: >
   SkillRet public test split for offline memory-as-skill retrieval ranking.
-  Run `lore eval skill-retrieval fetch skillret` before running this suite.
+  Run `kennen eval skill-retrieval fetch skillret` before running this suite.
 corpus:
   kind: skillret
   root: corpora/skillret

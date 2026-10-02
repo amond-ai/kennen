@@ -279,7 +279,7 @@ describe("TopicService.findByName", () => {
     const service = new TopicService(client, DB)
 
     await expect(service.findByName("auth")).rejects.toThrow(
-      /Multiple topics named "auth" found \(t1, t2\)\. Run `lore migrate --merge-duplicate-topics`/
+      /Multiple topics named "auth" found \(t1, t2\)\. Run `kennen migrate --merge-duplicate-topics`/
     )
   })
 

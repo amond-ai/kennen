@@ -7,9 +7,11 @@ dist/
 .env
 .env.local
 
-# .lore.yaml is ignored to keep personal vault page IDs and tokens out of
-# version control. Copy .lore.example.yaml to .lore.yaml locally and fill
-# in your own pageId; the pre-commit guard rejects any staged .lore.yaml.
+# .kennen.yaml is ignored to keep personal vault page IDs and tokens out of
+# version control. Copy .kennen.example.yaml to .kennen.yaml locally and fill
+# in your own pageId; the pre-commit guard rejects any staged .kennen.yaml.
+.kennen.yaml
+# .lore.yaml holds the same per-user vault values as .kennen.yaml; never commit it.
 .lore.yaml
 
 # OS
@@ -21,7 +23,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# Per-developer Claude Code state. `lore install` writes hooks under
+# Per-developer Claude Code state. `kennen install` writes hooks under
 # `~/.claude/projects/<encoded>/settings.json` (the per-user-per-project
 # location), so a project-scoped `.claude/settings.json` here is whatever
 # Claude Code itself generates locally for the operator and is not part of
@@ -46,7 +48,7 @@ evals/skill-retrieval/corpora/
 evals/skill-retrieval/manifests/
 
 # Defensive: the autosave-learning dedup lock dir lives under
-# `LORE_HOOK_STATE_DIR` (default: tmpdir). An interim version of the dedup
+# `KENNEN_HOOK_STATE_DIR` (default: tmpdir). An interim version of the dedup
 # code wrote into cwd; this guard keeps any future regression from
 # leaking lock state into the repo.
 autosave-learning-locks/

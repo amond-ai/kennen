@@ -41,7 +41,7 @@ export async function prepareWorkspace(input: {
       `Workspace fixture path "${input.declaredPath}" escapes the eval-suite parent directory`
     )
   }
-  const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-"))
+  const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-"))
   // `fs.cp` (Node 16.7+) preserves modes and handles symlinks/dotfiles
   // out of the box. The recursive flag walks subdirectories; verbatim
   // mode preservation matters when a fixture commits an executable
@@ -56,7 +56,7 @@ export async function prepareWorkspace(input: {
 }
 
 export async function rematerializeWorkspace(source: string): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-"))
+  const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-"))
   await cp(source, dir, { recursive: true, preserveTimestamps: true })
   return dir
 }
@@ -86,9 +86,9 @@ export async function seedMemoryCondition(input: {
     )
   }
   const contents = await readFile(absolute, "utf-8")
-  // Conventional drop point: .lore-memories.json at the workspace
+  // Conventional drop point: .kennen-memories.json at the workspace
   // root. Agent prompts that are matrix-aware reference this path.
-  await writeFile(join(input.workspace, ".lore-memories.json"), contents, "utf-8")
+  await writeFile(join(input.workspace, ".kennen-memories.json"), contents, "utf-8")
 }
 
 export interface PreparedWorkspace {
@@ -105,7 +105,7 @@ async function prepareGitWorkspace(
   if (!(await pathExists(cachePath))) {
     await populateGitCache(source, cachePath)
   }
-  const dir = await mkdtemp(join(tmpdir(), "lore-eval-task-"))
+  const dir = await mkdtemp(join(tmpdir(), "kennen-eval-task-"))
   await cp(cachePath, dir, { recursive: true, preserveTimestamps: true })
   return {
     workspace: dir,
@@ -131,13 +131,13 @@ function gitWorkspaceCachePath(source: GitWorkspaceSource): string {
 }
 
 function resolveEvalWorkspaceCacheRoot(): string {
-  const explicit = process.env["LORE_EVAL_WORKSPACE_CACHE_DIR"]
+  const explicit = process.env["KENNEN_EVAL_WORKSPACE_CACHE_DIR"]
   if (explicit) return resolve(explicit)
   const xdg = process.env["XDG_CACHE_HOME"]
-  if (xdg) return join(xdg, "lore", "eval-workspaces")
+  if (xdg) return join(xdg, "kennen", "eval-workspaces")
   const home = process.env["HOME"]
-  if (home) return join(home, ".cache", "lore", "eval-workspaces")
-  return join(tmpdir(), "lore-eval-workspaces")
+  if (home) return join(home, ".cache", "kennen", "eval-workspaces")
+  return join(tmpdir(), "kennen-eval-workspaces")
 }
 
 async function populateGitCache(
@@ -180,7 +180,7 @@ async function populateGitCache(
 }
 
 function resolveGitRemoteUrl(repo: string): string {
-  const base = process.env["LORE_EVAL_GIT_REMOTE_BASE_URL"] ?? "https://github.com"
+  const base = process.env["KENNEN_EVAL_GIT_REMOTE_BASE_URL"] ?? "https://github.com"
   if (base.startsWith("file://")) return `${base.replace(/\/$/u, "")}/${repo}.git`
   if (base.startsWith("/")) return join(base, `${repo}.git`)
   return `${base.replace(/\/$/u, "")}/${repo}.git`

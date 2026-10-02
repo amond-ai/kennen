@@ -19,8 +19,8 @@ import { safeFilenameSegment } from "../../hooks/marker-key.js"
 import { recordBackgroundModelCostEvent } from "../../hooks/cost-events.js"
 
 /**
- * Resolve the absolute path configured for a project in .lore.yaml. When
- * the operator runs `lore digest --project Widget` from outside the Widget
+ * Resolve the absolute path configured for a project in .kennen.yaml. When
+ * the operator runs `kennen digest --project Widget` from outside the Widget
  * subtree, we'd rather spawn the synthesizer inside Widget's configured path
  * so the child's own cwd-based context resolution agrees with the prompt's
  * explicit `projectName`. Falls back to `process.cwd()` when we can't find
@@ -38,7 +38,7 @@ export function resolveSpawnCwd(
   if (normalized === "") return configRoot
   const absolute = resolve(configRoot, normalized)
   if (existsSync(absolute)) return absolute
-  // Stale .lore.yaml entry — the configured project path doesn't exist on
+  // Stale .kennen.yaml entry — the configured project path doesn't exist on
   // disk anymore. Surface the misconfig instead of silently falling back,
   // because the synthesizer's own cwd-based project resolution will then
   // diverge from the prompt's explicit projectName.
@@ -73,7 +73,7 @@ export const digestCommand = new Command("digest")
           opts.project,
           "--project",
           {
-            listHint: "run `lore status projects` to list configured projects",
+            listHint: "run `kennen status projects` to list configured projects",
           }
         )
         const services = await initServices()
@@ -88,12 +88,12 @@ export const digestCommand = new Command("digest")
             explicitProjectName,
             "--project",
             {
-              listHint: "run `lore status projects` to list configured projects",
+              listHint: "run `kennen status projects` to list configured projects",
             }
           )
           projectId = found.id
           projectLabel = found.name
-          // Find the matching .lore.yaml entry so we can spawn from the
+          // Find the matching .kennen.yaml entry so we can spawn from the
           // project's configured path rather than whatever cwd the operator
           // happens to be in.
           projectConfigPath = services.config.projects?.find(
@@ -159,7 +159,7 @@ export const digestCommand = new Command("digest")
         // Two parallel `digest-` lock builders inlining the regex
         // would drift the moment one is tweaked; this CLI surface and
         // the auto-digest scheduler must produce byte-identical lock
-        // keys for the same `projectLabel` so a manual `lore digest`
+        // keys for the same `projectLabel` so a manual `kennen digest`
         // and a Stop-fired auto-digest race through the same
         // `MAX_CONCURRENT_SAVES` gate.
         const lockKey = `digest-${safeFilenameSegment(projectLabel)}`
@@ -181,8 +181,8 @@ export const digestCommand = new Command("digest")
           prompt,
           result,
           projectName: projectLabel,
-          agentName: process.env["LORE_AGENT_NAME"],
-          sessionId: process.env["LORE_SESSION_ID"],
+          agentName: process.env["KENNEN_AGENT_NAME"],
+          sessionId: process.env["KENNEN_SESSION_ID"],
           agent: hookConfig.backgroundAgent,
         })
         if (result.kind !== "spawned") {
@@ -198,11 +198,11 @@ export const digestCommand = new Command("digest")
           }
           if (result.kind === "lock-path-too-long") {
             // Distinct from "Digest already in flight": there is no peer
-            // doing the work. Pointing the operator at LORE_HOOK_STATE_DIR
+            // doing the work. Pointing the operator at KENNEN_HOOK_STATE_DIR
             // is the actionable knob.
             console.error(
               `Failed to spawn digest synthesizer: lock path too long (${result.code}). ` +
-                `Shorten LORE_HOOK_STATE_DIR.`
+                `Shorten KENNEN_HOOK_STATE_DIR.`
             )
             process.exit(1)
             // Defensive `return` so the no-throw `trapProcessExit`

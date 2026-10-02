@@ -1,9 +1,9 @@
 /**
  * Bounded, defensively-scrubbed redaction for SDK error messages and
- * structured SDK-logger payloads routed to `LORE_DEBUG=1`-gated stderr
+ * structured SDK-logger payloads routed to `KENNEN_DEBUG=1`-gated stderr
  * emitters.
  *
- * Lore documents `LORE_DEBUG=1` as a recommended diagnostic flag for
+ * Kennen documents `KENNEN_DEBUG=1` as a recommended diagnostic flag for
  * wake-up failures, partial-write failures, and identity-resolution
  * blips. Those are exactly the conditions under which the underlying
  * Notion SDK error carries the most request-scoped detail — page IDs
@@ -409,7 +409,7 @@ function isWhitespace(c: string): boolean {
 
 /**
  * Scrub an SDK-or-internal error message before routing it to a
- * `LORE_DEBUG=1`-gated stderr emitter. See module docstring for the
+ * `KENNEN_DEBUG=1`-gated stderr emitter. See module docstring for the
  * threat model and per-defense rationale.
  *
  * Callers that surface user-facing recovery guidance can disable truncation;
@@ -438,7 +438,7 @@ export function redactDebugMessage(
 /**
  * Convenience wrapper that coerces an unknown thrown value to a
  * scrubbed string. Mirrors the `error instanceof Error ? error.message
- * : String(error)` shape every existing `LORE_DEBUG`-gated emitter
+ * : String(error)` shape every existing `KENNEN_DEBUG`-gated emitter
  * already uses, with the redaction step folded in.
  *
  * The fallback path uses `String(...)`, which invokes `toString()` and
@@ -447,7 +447,7 @@ export function redactDebugMessage(
  * coerced to a string. A `toString` that throws will propagate the
  * throw, which is acceptable: a logger taking down the caller is
  * strictly worse than a logger surfacing an unrecognized rejection
- * shape, and any LORE_DEBUG emitter routing through here is already
+ * shape, and any KENNEN_DEBUG emitter routing through here is already
  * inside a debug-only branch the caller controls.
  */
 export function redactDebugError(error: unknown): string {

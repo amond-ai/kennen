@@ -7,28 +7,28 @@ cleanup. Start with [`evals.md`](evals.md) for the runner overview and
 schema and baseline rules.
 
 LongMemEval remains a conversation-memory reference runner. It is not the
-comparison point for SkillRet/Lore read-only agent use, and it should not be
-used as the general quality benchmark for Lore's memory system.
+comparison point for SkillRet/Kennen read-only agent use, and it should not be
+used as the general quality benchmark for Kennen's memory system.
 
 ## Temporal-Fidelity Caveat
 
 Any LongMemEval bench number on the `temporal-reasoning` and
 `knowledge-update` categories does not measure the same behavior as systems
-that rank by session event time. Two facts about Lore's schema explain why, and
+that rank by session event time. Two facts about Kennen's schema explain why, and
 the caveat must travel with every reported number on those two categories.
 
-Lore's Memories schema has no caller-writable session-timestamp column.
+Kennen's Memories schema has no caller-writable session-timestamp column.
 `Memory.createdAt` maps to Notion's `page.created_time` (server-set, not
 caller-settable); `Last Referenced At` is the read-decay anchor; `Decided At`
 and `Done At` are domain-specific to the decision and task surfaces; `Session`
-is `rich_text` carrying a session id, not a date. Lore's retrieval ranks by
+is `rich_text` carrying a session id, not a date. Kennen's retrieval ranks by
 ingestion-time recency, not by event time embedded in the conversation.
 
 Consequence on those two categories: a LongMemEval score measures **whether the
 agent recovers temporal context from the memory body's free text**, not whether
-Lore's retrieval ranks by event time. The agent can still answer correctly when
+Kennen's retrieval ranks by event time. The agent can still answer correctly when
 the body's prose carries the session timestamp explicitly -- the bench is
-therefore a measurement of an agent capability composed with Lore's ingestion
+therefore a measurement of an agent capability composed with Kennen's ingestion
 shape, not a direct comparison to systems that rank by event time. Do not
 compare those category numbers directly against systems whose LongMemEval
 implementations preserve event-time ordering.
@@ -38,17 +38,17 @@ disclaimer verbatim so downstream consumers (CI logs, dashboards, public posts)
 cannot strip it from artifact output. A different schema that preserved
 caller-supplied session event time would change what this LongMemEval runner
 measures, but the runner would still be conversation-memory evidence rather
-than the SkillRet/Lore read-only agent metric.
+than the SkillRet/Kennen read-only agent metric.
 
 ## LongMemEval Bench Runner
 
 The `bench` runner targets the LongMemEval `s_cleaned` corpus. Each example is
 a haystack of 30-40 multi-turn sessions plus one target question; the runner
-replays the haystack through Lore's production mining seam
+replays the haystack through Kennen's production mining seam
 (`runConversationMining`), invokes a Codex-driven agent to answer through
-`lore-context` / `lore-query` / `lore-memory`, and scores the answer with a
+`kennen-context` / `kennen-query` / `kennen-memory`, and scores the answer with a
 snapshot-pinned OpenAI judge. Treat the output as LongMemEval-specific
-conversation-memory evidence, not as the representative Lore product metric.
+conversation-memory evidence, not as the representative Kennen product metric.
 
 ### One-Time Setup
 
@@ -64,12 +64,12 @@ Re-running is idempotent (sha-matched file is left in place).
 
 | Variable                          | Purpose                                                                                                                                                                              |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `LORE_EVAL_BENCH_REAL=1`          | Master gate -- without it every bench-mode adapter refuses to spawn.                                                                                                                 |
-| `LORE_BENCH_NOTION_TOKEN`         | Per-run Notion token; the bench-runner keeps it in runner-owned process state for tool-driven retrieval. Use a revocable bench-scoped token, not your day-to-day `NOTION_API_TOKEN`. |
-| `LORE_BENCH_OPENAI_API_KEY`       | OpenAI key for both the agent (Codex shells out) and the judge.                                                                                                                      |
-| `LORE_BENCH_CONFIG_ROOT`          | Path to a `.lore.yaml` directory targeting the sandbox vault.                                                                                                                        |
-| `LORE_BENCH_SANDBOX_PROJECT_NAME` | Parent sandbox project name; per-example sub-projects are created under it.                                                                                                          |
-| `LORE_EVAL_BENCH_MAX_USD`         | Optional cost cap (default 75). The runner aborts between examples if the projected total exceeds it.                                                                                |
+| `KENNEN_EVAL_BENCH_REAL=1`          | Master gate -- without it every bench-mode adapter refuses to spawn.                                                                                                                 |
+| `KENNEN_BENCH_NOTION_TOKEN`         | Per-run Notion token; the bench-runner keeps it in runner-owned process state for tool-driven retrieval. Use a revocable bench-scoped token, not your day-to-day `NOTION_API_TOKEN`. |
+| `KENNEN_BENCH_OPENAI_API_KEY`       | OpenAI key for both the agent (Codex shells out) and the judge.                                                                                                                      |
+| `KENNEN_BENCH_CONFIG_ROOT`          | Path to a `.kennen.yaml` directory targeting the sandbox vault.                                                                                                                        |
+| `KENNEN_BENCH_SANDBOX_PROJECT_NAME` | Parent sandbox project name; per-example sub-projects are created under it.                                                                                                          |
+| `KENNEN_EVAL_BENCH_MAX_USD`         | Optional cost cap (default 75). The runner aborts between examples if the projected total exceeds it.                                                                                |
 
 ### Running
 
@@ -91,23 +91,23 @@ cost + drift gate are trusted.
 ### Ingestion Strategies
 
 Three strategies ship; the suite YAML's `ingestion.strategy` chooses between
-them. `lore-mine` can also set `ingestion.memoryCaptureMode:
+them. `kennen-mine` can also set `ingestion.memoryCaptureMode:
 conversational` to compare production autosave's durable filter with the
 opt-in conversational recall filter on the same corpus. All produce the same
 artifact shape; the `config.ingestion.strategy` and `config.ingestion.seam`
 fields record which path produced the numbers.
 
-- **`lore-mine`** (V1 default,
+- **`kennen-mine`** (V1 default,
   [`longmemeval.yaml`](../evals/bench-suites/longmemeval.yaml)) -- each session
   is mined through the production Stop-hook autosave pipeline:
-  `runConversationMining` spawns `claude -p`, which calls Lore MCP tools, which
-  run the autosave's "durable knowledge" filter. Faithful to Lore's production
+  `runConversationMining` spawns `claude -p`, which calls Kennen MCP tools, which
+  run the autosave's "durable knowledge" filter. Faithful to Kennen's production
   write path. The autosave filter intentionally rejects casual conversational
   facts, so on LongMemEval's synthetic-conversation corpus mining produces ~1
   memory per ~30-session haystack and the agent recalls little. This number
-  measures "Lore's production filter against the LongMemEval workload" -- honest
+  measures "Kennen's production filter against the LongMemEval workload" -- honest
   but not directly comparable to memory systems that ingest every token.
-- **`lore-mine` + `memoryCaptureMode: conversational`**
+- **`kennen-mine` + `memoryCaptureMode: conversational`**
   ([`longmemeval-conversational-autosave.yaml`](../evals/bench-suites/longmemeval-conversational-autosave.yaml))
   -- each session still runs through `runConversationMining` and the hook-native
   background-agent path, but the autosave prompt uses the opt-in conversational
@@ -120,26 +120,26 @@ fields record which path produced the numbers.
   ([`longmemeval-raw-transcript.yaml`](../evals/bench-suites/longmemeval-raw-transcript.yaml))
   -- each haystack session is stored verbatim as one memory (title
   `Session <i>: <session-id>`, body = the rendered transcript). The agent's
-  `lore-query` / `lore-context` retrieves transcript memories by question
-  relevance and reads the body via `lore-memory action='expand'`. Bypasses
+  `kennen-query` / `kennen-context` retrieves transcript memories by question
+  relevance and reads the body via `kennen-memory action='expand'`. Bypasses
   `runConversationMining` entirely -- no `claude -p`, no autosave-prompt
   filter. This is the lane for comparing full-fidelity LongMemEval ingestion
   choices within that benchmark.
 - **`simulated-autosave`**
   ([`longmemeval-simulated-autosave.yaml`](../evals/bench-suites/longmemeval-simulated-autosave.yaml))
   -- each haystack session is sent through a deterministic structured
-  extraction prompt, then written as Lore-shaped memory rows with title,
+  extraction prompt, then written as Kennen-shaped memory rows with title,
   synopsis, keywords, closed-vocabulary tags, body content, and explicit
   `mentions` facts for extracted entities. This bypasses the production
-  autosave durability filter, so it is not a measurement of what Lore writes
+  autosave durability filter, so it is not a measurement of what Kennen writes
   during normal Stop-hook autosave. It is an enriched-ingestion reference
   surface: the full conversational signal is retained, but the vault shape is
-  closer to production Lore recall than raw transcript dumps.
+  closer to production Kennen recall than raw transcript dumps.
 
 All strategies share the same per-example / per-suite write caps and the same
 retrieval surface (the agent does not know which path populated the vault). If
 reporting LongMemEval numbers, choose `raw-transcript` for the full-fidelity
-corpus reference, `lore-mine` for default Lore production autosave, or
+corpus reference, `kennen-mine` for default Kennen production autosave, or
 `longmemeval-conversational-autosave.yaml` for the opt-in conversational
 product path. Use `simulated-autosave` when studying enriched conversation-turn
 ingestion, and report the production-filter bypass trade-off with the result.
@@ -168,7 +168,7 @@ comparable fields.
 
 ### Profile Suites
 
-Profile suites are deterministic `lore eval run` suites for profile-owned
+Profile suites are deterministic `kennen eval run` suites for profile-owned
 taxonomy quality. They run without Notion, model credentials, or live vault
 access and emit profile artifacts with the active profile selector, profile
 version, manifest digest, prompt hashes, per-case metrics, aggregate metrics,
@@ -208,9 +208,9 @@ The bench supports two retrieval surfaces, selected via the suite YAML's
 `config.agent.retrieval` records which surface produced the numbers.
 
 - **`tool-driven`** (V1 default) -- the agent decides during the answer attempt
-  when to retrieve from Lore. Codex bench runs expose live read tools through
-  runner-installed `lore-query` and `lore-memory` command shims in the
-  workspace `PATH`; those shims call Lore services against the just-seeded
+  when to retrieve from Kennen. Codex bench runs expose live read tools through
+  runner-installed `kennen-query` and `kennen-memory` command shims in the
+  workspace `PATH`; those shims call Kennen services against the just-seeded
   example project and append a JSONL retrieval trace. This is not wake-up
   prefetch: no retrieved memory body is injected into the initial prompt.
 - **`wake-up-prefetch`**
@@ -220,7 +220,7 @@ userQuery: <question>, includeMemoryContent: true })` BEFORE invoking the
   agent, then injects the top-10 matching memory bodies into the user prompt as
   a "Retrieved context" block. The agent answers from the injected context --
   no live tool calls required. This uses the same narrow wake-up shape as
-  `lore-context action='wake-up' mode='task-only' userQuery=<task>`: for a
+  `kennen-context action='wake-up' mode='task-only' userQuery=<task>`: for a
   one-shot bench question the relevance-ranked taskMemories section is the
   load-bearing part, while digest / recent / active-tasks sections of full
   wake-up are noise.
@@ -236,8 +236,8 @@ The two strategies compose with `ingestion.strategy` independently:
 
 | `ingestion.strategy` | `agent.retrieval`  | What it measures                                   | Currently runnable |
 | -------------------- | ------------------ | -------------------------------------------------- | ------------------ |
-| `lore-mine`          | `tool-driven`      | Production write path x agent tool-call propensity | Yes                |
-| `lore-mine`          | `wake-up-prefetch` | Production write path x isolated retrieval surface | Yes                |
+| `kennen-mine`          | `tool-driven`      | Production write path x agent tool-call propensity | Yes                |
+| `kennen-mine`          | `wake-up-prefetch` | Production write path x isolated retrieval surface | Yes                |
 | `raw-transcript`     | `tool-driven`      | Full corpus fidelity x agent tool-call propensity  | Yes                |
 | `raw-transcript`     | `wake-up-prefetch` | Full corpus fidelity x isolated retrieval surface  | Yes                |
 | `simulated-autosave` | `tool-driven`      | Enriched ingest x agent tool-call propensity       | Yes                |
@@ -252,7 +252,7 @@ the retrieval ranker from tool-choice behavior.
 - **Sandbox-name discipline.** Sub-project names match `lme-<id>-<ulid>`; the
   runner refuses any name containing `production` / `prod` and requires a
   sandbox marker in the parent project name.
-- **Per-example write cap.** `lore mcp` with `--write-budget 500` and
+- **Per-example write cap.** `kennen mcp` with `--write-budget 500` and
   `--budget-state-file <path>` installs a Proxy on the Notion client between
   the rate-limit gate and the SDK. Once successful mutations exceed 500, every
   subsequent mutation tool returns the `WriteBudgetExceeded:` MCP error envelope
@@ -266,7 +266,7 @@ the retrieval ranker from tool-choice behavior.
   exceeds the cap.
 - **Secrets posture.** Per-example workspaces are created via `mkdtemp` at mode
   `0700` (owner traverse only). Agent-readable workspaces carry only the
-  `.lore-bench-mode` sentinel and a `.codex/config.toml` with non-secret model
+  `.kennen-bench-mode` sentinel and a `.codex/config.toml` with non-secret model
   config; tool-driven retrieval additionally installs command shims. The agent
   gets a Unix socket path for live tools; the bench-runner-owned broker process
   keeps the Notion token, config root, project id, and trace path fixed outside
@@ -276,8 +276,8 @@ the retrieval ranker from tool-choice behavior.
   sets `shell_environment_policy.exclude` so model-generated shell commands do
   not inherit bearer env keys such as `OPENAI_API_KEY`. Cancellation or
   `--keep-workspaces` can leave non-secret workspace files behind; operators may
-  clean up with `rm -rf /tmp/lore-bench-*`. Use a per-run revocable bench-scoped
-  token (`LORE_BENCH_NOTION_TOKEN` is deliberately distinct from
+  clean up with `rm -rf /tmp/kennen-bench-*`. Use a per-run revocable bench-scoped
+  token (`KENNEN_BENCH_NOTION_TOKEN` is deliberately distinct from
   `NOTION_API_TOKEN` for this reason). `redactBearerTokens` strips verbatim
   bearer-shaped substrings from answer, judge, broker stderr, and wake-up
   retrieval errors before artifact write as defense-in-depth.
@@ -293,10 +293,10 @@ The model-version coupling is by design.
 
 ### Caveats Baked Into Every Artifact
 
-- **`summary.temporalFidelityCaveat`** -- Lore's Memory schema has no
+- **`summary.temporalFidelityCaveat`** -- Kennen's Memory schema has no
   caller-writable session-timestamp column today. The `temporal-reasoning` and
   `knowledge-update` scores measure temporal context recovered from body text,
-  not Lore-ranked event time.
+  not Kennen-ranked event time.
 - **`summary.diagnosticCountCaveat`** -- `ingestion.memoriesCreated` and
   `ingestion.factsCreated` come from `listAllForBackfill({ projectId })`, which
   may include vault-wide unscoped rows. The authoritative per-example write
@@ -305,7 +305,7 @@ The model-version coupling is by design.
 
 ### Cleanup
 
-`lore eval bench cleanup-orphans --older-than 24` archives any
+`kennen eval bench cleanup-orphans --older-than 24` archives any
 `lme-<id>-<ulid>` sub-project under the sandbox vault whose ULID-embedded
 timestamp is older than 24 hours. ULIDs decode without a Notion round-trip;
 idempotent.

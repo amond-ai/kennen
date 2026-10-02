@@ -8,11 +8,11 @@
  * trigram + tag-overlap helpers that back the near-duplicate probe.
  * The *semantic* half — judging whether a pair actually conflicts,
  * supersedes, or is just related — happens in the calling agent's
- * context and is recorded via `lore-memory action='compare'`. Kept
+ * context and is recorded via `kennen-memory action='compare'`. Kept
  * honest in the framing: the system surfaces *candidates*, the agent
  * provides the *verdict*.
  *
- * Engram seeds the same role with FTS5 over an SQLite catalog; lore
+ * Engram seeds the same role with FTS5 over an SQLite catalog; kennen
  * reuses the in-memory `trigramJaccard` / `tagOverlap` helpers because
  * the candidate set fits in memory and the one-off scan is amortized
  * across the agent's reasoning step that follows.
@@ -55,12 +55,12 @@ export const CONFLICT_TAG_OVERLAP_THRESHOLD = 0.5
 /**
  * Default cap on pairs returned per call. Applied when the caller omits
  * `pairLimit`. Engram's FTS5 candidate set is implicitly bounded by query
- * selectivity; lore is explicit so a thousand-memory vault doesn't return
+ * selectivity; kennen is explicit so a thousand-memory vault doesn't return
  * half a million pairs by accident.
  *
  * To opt OUT of any cap, callers pass `pairLimit:
  * Number.POSITIVE_INFINITY` (or its alias `Infinity`) explicitly. The
- * `lore conflicts scan --exhaustive` flag uses this exact path. The
+ * `kennen conflicts scan --exhaustive` flag uses this exact path. The
  * two-axis design (default
  * 50 OR explicit Infinity) is deliberate: an engineer reading the
  * signature should never have to guess what "unbounded" means; passing
@@ -86,14 +86,14 @@ export interface FindConflictCandidatesOptions {
    * Maximum pairs to return. When omitted, defaults to
    * `CONFLICT_PAIR_LIMIT` (50). Pass `Number.POSITIVE_INFINITY`
    * (or `Infinity`) to skip truncation entirely — used by
-   * `lore conflicts scan --exhaustive`.
+   * `kennen conflicts scan --exhaustive`.
    */
   pairLimit?: number
 }
 
 /**
  * Generate lexical conflict candidates from a memory set. Pure function;
- * no Notion access. The caller (the `lore conflicts scan` CLI) provides
+ * no Notion access. The caller (the `kennen conflicts scan` CLI) provides
  * the memory list AND is responsible for any post-filtering (e.g.,
  * dropping pairs already in `comparedWith`). Keeping this module's
  * scope to candidate *generation* — not state-aware filtering —
@@ -130,7 +130,7 @@ export function findConflictCandidates(
   //   work is O(log cap). Total: O(N² · log cap) CPU, O(cap) memory.
   //
   // - **Unbounded** (`pairLimit: Number.POSITIVE_INFINITY`, used only
-  //   by `lore conflicts scan --exhaustive`): push every passing
+  //   by `kennen conflicts scan --exhaustive`): push every passing
   //   candidate, sort once at the end. Per-pair work is O(1); the
   //   final sort is O(M log M) where M is the count of passing pairs.
   //   Total: O(N² + M log M) CPU, O(M) memory.
@@ -139,7 +139,7 @@ export function findConflictCandidates(
   // insert is O(log cap) for the search but the `splice` at the
   // chosen index is O(cap) — so per-insertion is O(cap), not
   // O(log cap). Under finite `cap`, that's fine: cap is small
-  // (50 default; 500 in `lore conflicts scan`). Under unbounded
+  // (50 default; 500 in `kennen conflicts scan`). Under unbounded
   // `cap`, the accumulator grows to M = O(N²) and the per-insert
   // splice walks the full prefix on average — total work degrades
   // to O(N² · M) = O(N⁴), which is dramatically worse than the
@@ -289,7 +289,7 @@ function walkPairs(
       const b = memories[j]
 
       // Self-pair guard: if the caller hands us a list with the same
-      // memory referenced twice (paginated branches in `lore conflicts
+      // memory referenced twice (paginated branches in `kennen conflicts
       // scan`'s loader returning a row twice, a defensive dedup miss,
       // etc.), the
       // index-based loop would emit a `(m, m)` pair at similarity 1.0

@@ -1,5 +1,5 @@
 {
-  "name": "lore-longitudinal-esm-cli",
+  "name": "kennen-longitudinal-esm-cli",
   "type": "module",
   "scripts": {
     "test": "node cli.check.mjs"

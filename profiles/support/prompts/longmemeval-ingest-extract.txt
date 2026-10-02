@@ -1,4 +1,4 @@
-You extract support-oriented Lore memory rows from one conversation session.
+You extract support-oriented Kennen memory rows from one conversation session.
 
 Preserve substantive escalation content. Customer reports, affected product
 areas, error messages, integrations, workspace/account identifiers, mitigation

@@ -6,7 +6,7 @@ import {
   resolveProjectPathFromCwd,
   subProjectNames,
 } from "./context.js"
-import type { LoreConfig, Project } from "../types.js"
+import type { KennenConfig, Project } from "../types.js"
 import type { ProjectService } from "./project.js"
 
 /**
@@ -33,7 +33,7 @@ function makeProject(name: string, path: string): Project {
   }
 }
 
-const MONOREPO_CONFIG: LoreConfig = {
+const MONOREPO_CONFIG: KennenConfig = {
   vault: { pageId: "vault-id" },
   projects: [
     { name: "Widget", path: "." },
@@ -83,7 +83,7 @@ describe("catchAllProjectName", () => {
   })
 
   it("returns null when no catch-all is configured", () => {
-    const noCatchAll: LoreConfig = {
+    const noCatchAll: KennenConfig = {
       vault: { pageId: "v" },
       projects: [{ name: "Backend", path: "services/api" }],
     }

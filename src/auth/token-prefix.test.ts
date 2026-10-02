@@ -36,7 +36,7 @@ describe("classifyTokenPrefix", () => {
   it("does NOT match ntn_ inside a larger string (anchoring contract)", () => {
     // `startsWith` is start-anchored; a token like `Bearer ntn_...`
     // is rejected as unknown rather than misclassified as personal-prod.
-    // Lore's redactor and bearer-shape guard handle the `Bearer `
+    // Kennen's redactor and bearer-shape guard handle the `Bearer `
     // prefix separately; the classifier sees raw tokens only.
     expect(classifyTokenPrefix("xntn_abc")).toBe("unknown")
     expect(classifyTokenPrefix("Bearer secret_abc")).toBe("unknown")

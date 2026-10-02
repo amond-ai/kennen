@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { composeProjectContext, renderProjectContextLines } from "./project-context.js"
-import type { LoreConfig, Project } from "../types.js"
+import type { KennenConfig, Project } from "../types.js"
 
 function makeProject(overrides: Partial<Project> = {}): Project {
   return {
@@ -14,7 +14,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
   }
 }
 
-function makeConfig(overrides: Partial<LoreConfig> = {}): LoreConfig {
+function makeConfig(overrides: Partial<KennenConfig> = {}): KennenConfig {
   return {
     vault: { pageId: "vault-1" },
     projects: [
@@ -143,7 +143,7 @@ describe("composeProjectContext", () => {
     const hostileConfig = new Proxy(makeConfig(), {
       get(target, prop) {
         if (typeof prop === "string" && allowed.has(prop)) {
-          return target[prop as keyof LoreConfig]
+          return target[prop as keyof KennenConfig]
         }
         // Symbol-keyed inspector access (Symbol.toPrimitive,
         // Symbol.toStringTag) is engine-internal, not contributor-facing
@@ -162,7 +162,7 @@ describe("composeProjectContext", () => {
     // `Function.prototype.length` counts required parameters before the
     // first default value, rest parameter, or destructured param. This
     // pins the arity so a 4th positional non-optional argument
-    // (e.g. `services: LoreServices`) trips the test. A future
+    // (e.g. `services: KennenServices`) trips the test. A future
     // contributor adding `services?` as an *optional* 4th parameter
     // would still report length 3 — the type system catches that case
     // (no production caller would pass a 4th arg) but the

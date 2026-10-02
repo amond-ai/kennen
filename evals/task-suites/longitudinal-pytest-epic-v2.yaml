@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-pytest-epic-v2
+name: kennen-longitudinal-pytest-epic-v2
 description: >-
   Hard cross-boundary pytest longitudinal suite. The single scenario is pinned
   before a real upstream-style feature that spans marker-expression parsing,
@@ -11,8 +11,8 @@ description: >-
 seededCorpus: ../vault-seeds/pytest-epic-v2.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: pytest-config-collection-cache-epic-v2
     difficulty: hard

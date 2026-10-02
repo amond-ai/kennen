@@ -33,7 +33,7 @@ import {
   findEvalVault,
   loadEvalVaultRegistry,
   renderEvalVaultEnv,
-  renderEvalVaultLoreConfig,
+  renderEvalVaultKennenConfig,
   type EvalVault,
 } from "../../eval/vaults.js"
 import { parsePositiveDecimalInteger, type CliParseResult } from "../parse.js"
@@ -331,7 +331,7 @@ export function validateEvalRunRunnerCompatibility(
       if (value !== undefined) {
         return {
           ok: false,
-          message: `${flag} is not supported with --runner skill-agent; skill-agent suites score read-only Lore tool use and skill application with runner-specific conditions.`,
+          message: `${flag} is not supported with --runner skill-agent; skill-agent suites score read-only Kennen tool use and skill application with runner-specific conditions.`,
         }
       }
     }
@@ -370,10 +370,10 @@ export function hasLongitudinalTaskGateFailures(
   artifact: LongitudinalTaskArtifact
 ): boolean {
   if (artifact.termination) return true
-  const fullLoop = artifact.summary.conditions["lore-full-loop"]
+  const fullLoop = artifact.summary.conditions["kennen-full-loop"]
   if (fullLoop.trials > 0) return fullLoop.failed > 0
-  const seededLore = artifact.summary.conditions["seeded-lore"]
-  if (seededLore && seededLore.trials > 0) return seededLore.failed > 0
+  const seededKennen = artifact.summary.conditions["seeded-kennen"]
+  if (seededKennen && seededKennen.trials > 0) return seededKennen.failed > 0
   return artifact.summary.failedTrials > 0
 }
 
@@ -442,7 +442,7 @@ export function validateBaselineRunnerSupport(
     return {
       ok: false,
       message:
-        "--runner skill-agent is not supported by the baseline subcommand. Skill-agent artifacts score read-only Lore tool use and task application, not generic retrieval drift.",
+        "--runner skill-agent is not supported by the baseline subcommand. Skill-agent artifacts score read-only Kennen tool use and task application, not generic retrieval drift.",
     }
   }
   return { ok: true, value: undefined }
@@ -485,17 +485,17 @@ function parseOptionalUnitInterval(
  * accepted markers are the conventional internal sandbox names.
  *
  * @throws when the project name lacks a sandbox marker and the
- *   `LORE_EVAL_NOTION_ALLOW_PRODUCTION` env var is unset.
+ *   `KENNEN_EVAL_NOTION_ALLOW_PRODUCTION` env var is unset.
  */
 const SANDBOX_NAME_MARKERS = /\b(?:sandbox|eval|test|scratch|staging|dev|playground)\b/i
 
 export function assertSandboxProjectName(projectName: string): void {
   if (SANDBOX_NAME_MARKERS.test(projectName)) return
-  const allowProd = process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"]
+  const allowProd = process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"]
   if (allowProd === "1" || allowProd === "true") return
   throw new Error(
     `Project "${projectName}" does not look like a sandbox (no word-bounded match for sandbox/eval/test/scratch/staging/dev/playground). ` +
-      `Set LORE_EVAL_NOTION_ALLOW_PRODUCTION=1 to confirm pointing notion-mode at this project on purpose.`
+      `Set KENNEN_EVAL_NOTION_ALLOW_PRODUCTION=1 to confirm pointing notion-mode at this project on purpose.`
   )
 }
 
@@ -507,7 +507,7 @@ export function assertSandboxProjectName(projectName: string): void {
  * `--runner notion` flag) gets the factory it needs. `runEvalSuite`
  * ignores the factory when the resolved runner is `retrieval`, so the
  * sandbox-name check is moved INTO the async factory body — that way
- * `lore eval baseline suite.yaml --project Widget` for a retrieval-mode
+ * `kennen eval baseline suite.yaml --project Widget` for a retrieval-mode
  * suite does not surprise the operator with a sandbox-name throw on a
  * factory that's never invoked.
  */
@@ -571,7 +571,7 @@ function parseOptionalLongitudinalConditions(
   raw: string[] | undefined
 ): CliParseResult<LongitudinalTaskCondition[] | undefined> {
   if (raw === undefined || raw.length === 0) return { ok: true, value: undefined }
-  const valid = new Set(["no-memory", "seeded-lore", "lore-full-loop"])
+  const valid = new Set(["no-memory", "seeded-kennen", "kennen-full-loop"])
   const seen = new Set<string>()
   const conditions: LongitudinalTaskCondition[] = []
   for (const condition of raw) {
@@ -579,7 +579,7 @@ function parseOptionalLongitudinalConditions(
       return {
         ok: false,
         message:
-          '--condition must be one of: no-memory, seeded-lore, lore-full-loop; got "' +
+          '--condition must be one of: no-memory, seeded-kennen, kennen-full-loop; got "' +
           condition +
           '"',
       }
@@ -645,13 +645,13 @@ function parseLongitudinalToCondition(
   raw: string | undefined
 ): CliParseResult<Exclude<LongitudinalTaskCondition, "no-memory"> | undefined> {
   if (raw === undefined) return { ok: true, value: undefined }
-  if (raw === "seeded-lore" || raw === "lore-full-loop") {
+  if (raw === "seeded-kennen" || raw === "kennen-full-loop") {
     return { ok: true, value: raw }
   }
   return {
     ok: false,
     message:
-      '--to-condition must be one of: seeded-lore, lore-full-loop; got "' + raw + '"',
+      '--to-condition must be one of: seeded-kennen, kennen-full-loop; got "' + raw + '"',
   }
 }
 
@@ -698,20 +698,20 @@ function collectCondition(value: string, previous: string[]): string[] {
 
 export function formatTaskProgressEvent(event: TaskEvalProgressEvent): string {
   if (event.type === "run-stop") {
-    const loreCost =
-      event.loreUsd === null
-        ? "lore cost unavailable"
-        : `lore ${formatUsd(event.loreUsd)}`
+    const kennenCost =
+      event.kennenUsd === null
+        ? "kennen cost unavailable"
+        : `kennen ${formatUsd(event.kennenUsd)}`
     if (event.reason === "cost-unknown") {
       return (
         `  stopped after ${event.completedTrials}/${event.totalPlannedTrials}: ` +
-        `cost unknown (${formatUsd(event.primaryAgentUsd)} known agent, ${loreCost})`
+        `cost unknown (${formatUsd(event.primaryAgentUsd)} known agent, ${kennenCost})`
       )
     }
     return (
       `  stopped after ${event.completedTrials}/${event.totalPlannedTrials}: ` +
       `cost kill-switch observed ${formatUsd(event.observedUsd)} / ` +
-      `${formatUsd(event.limitUsd)} (${formatUsd(event.primaryAgentUsd)} agent, ${loreCost})`
+      `${formatUsd(event.limitUsd)} (${formatUsd(event.primaryAgentUsd)} agent, ${kennenCost})`
     )
   }
   const condition = event.condition ? ` [${event.condition}]` : ""
@@ -723,7 +723,7 @@ export function formatTaskProgressEvent(event: TaskEvalProgressEvent): string {
   return `  finished ${event.index}/${event.total}: ${target}${condition} ${status}`
 }
 
-export const evalCommand = new Command("eval").description("Run Lore evaluation suites")
+export const evalCommand = new Command("eval").description("Run Kennen evaluation suites")
 
 evalCommand.addCommand(
   new Command("run")
@@ -936,7 +936,7 @@ evalCommand.addCommand(
               console.log(
                 `Skill-retrieval candidate-recall diagnostic completed: ` +
                   `${artifact.summary.queries} queries, ${artifact.summary.skills} skills, ` +
-                  `${artifact.summary.qrels} qrels. Not a representative Lore agent-use measurement.`
+                  `${artifact.summary.qrels} qrels. Not a representative Kennen agent-use measurement.`
               )
               for (const lane of artifact.runner.lanes) {
                 const summary = artifact.summary.lanes[lane]
@@ -1033,7 +1033,7 @@ evalCommand.addCommand(
               const status = hasSkillAgentGateFailures(artifact) ? "failed" : "passed"
               console.log(
                 `Skill-agent eval ${status}: ` +
-                  `${artifact.summary.passedRequiredResults}/${artifact.summary.requiredResults} required read-only Lore trials passed.`
+                  `${artifact.summary.passedRequiredResults}/${artifact.summary.requiredResults} required read-only Kennen trials passed.`
               )
               for (const condition of artifact.runner.conditions) {
                 const summary = artifact.summary.conditions[condition]
@@ -1082,16 +1082,16 @@ evalCommand.addCommand(
               console.log(JSON.stringify(artifact, null, 2))
             } else {
               if (isLongitudinalTaskArtifact(artifact)) {
-                const seededLore = artifact.summary.conditions["seeded-lore"]
-                const fullLoop = artifact.summary.conditions["lore-full-loop"]
+                const seededKennen = artifact.summary.conditions["seeded-kennen"]
+                const fullLoop = artifact.summary.conditions["kennen-full-loop"]
                 const status = hasLongitudinalTaskGateFailures(artifact)
                   ? "failed"
                   : "passed"
                 const headline =
                   fullLoop.trials > 0
-                    ? `lore-full-loop ${fullLoop.passed}/${fullLoop.trials} passed; overall ${artifact.summary.passedTrials}/${artifact.summary.totalTrials} condition runs passed`
-                    : seededLore && seededLore.trials > 0
-                      ? `seeded-lore ${seededLore.passed}/${seededLore.trials} passed; overall ${artifact.summary.passedTrials}/${artifact.summary.totalTrials} condition runs passed`
+                    ? `kennen-full-loop ${fullLoop.passed}/${fullLoop.trials} passed; overall ${artifact.summary.passedTrials}/${artifact.summary.totalTrials} condition runs passed`
+                    : seededKennen && seededKennen.trials > 0
+                      ? `seeded-kennen ${seededKennen.passed}/${seededKennen.trials} passed; overall ${artifact.summary.passedTrials}/${artifact.summary.totalTrials} condition runs passed`
                       : `${artifact.summary.passedTrials}/${artifact.summary.totalTrials} condition runs passed`
                 console.log(`Longitudinal task eval ${status}: ${headline}.`)
                 if (artifact.termination) {
@@ -1143,7 +1143,7 @@ evalCommand.addCommand(
                     if (result.agentRun.exitCode !== 0) {
                       console.log(`    agent exit code: ${result.agentRun.exitCode}`)
                       // Surface the first stderr line so the cost-guardrail
-                      // refusal ("set LORE_EVAL_TASK_REAL=1 to opt in...")
+                      // refusal ("set KENNEN_EVAL_TASK_REAL=1 to opt in...")
                       // and other adapter-side messages reach the operator
                       // instead of disappearing into the artifact.
                       const firstStderrLine = result.agentRun.stderr
@@ -1173,10 +1173,10 @@ evalCommand.addCommand(
             const { buildBenchSandbox } = await import("../../eval/bench-sandbox.js")
             const { compareBenchBaseline, readBenchBaselineSnapshot } =
               await import("../../eval/bench-baseline.js")
-            // Run the bench env preflight + LORE_BENCH_* → standard
-            // Lore env remap BEFORE `buildBenchSandbox` calls
+            // Run the bench env preflight + KENNEN_BENCH_* → standard
+            // Kennen env remap BEFORE `buildBenchSandbox` calls
             // `initServices`, so the in-process service init sees
-            // the remapped `NOTION_API_TOKEN` / `LORE_CONFIG_ROOT`.
+            // the remapped `NOTION_API_TOKEN` / `KENNEN_CONFIG_ROOT`.
             // Capture the snapshot here and restore in a `finally`
             // so an imported / test CLI execution doesn't leave env
             // mutated past the command's lifetime. `runBenchSuite`
@@ -1401,7 +1401,7 @@ evalCommand.addCommand(
         try {
           // When `--runner` was omitted on the CLI, peek the suite
           // YAML's `runner` field and route accordingly. Mirrors the
-          // `lore eval run` dispatch path so a YAML-declared
+          // `kennen eval run` dispatch path so a YAML-declared
           // `runner: bench` lands in the bench-baseline branch
           // without an explicit `--runner bench` flag.
           if (parsed.value.runner === undefined) {
@@ -1482,7 +1482,7 @@ longitudinalCommand.addCommand(
     .argument("<artifact>", "Path to a longitudinal task artifact JSON file")
     .option(
       "--to-condition <condition>",
-      "Memory condition to compare against no-memory (seeded-lore|lore-full-loop)"
+      "Memory condition to compare against no-memory (seeded-kennen|kennen-full-loop)"
     )
     .option("--mde <n>", "Minimum detectable effect as a 0..1 lift", "0.15")
     .option("--power <n>", "Target statistical power as a 0..1 probability", "0.8")
@@ -1666,7 +1666,10 @@ vaultsCommand
         }
       }
     } catch (err) {
-      console.error("lore eval vaults failed:", err instanceof Error ? err.message : err)
+      console.error(
+        "kennen eval vaults failed:",
+        err instanceof Error ? err.message : err
+      )
       process.exit(1)
     }
   })
@@ -1676,7 +1679,7 @@ vaultsCommand.addCommand(
     .description("Show a committed evaluation vault by id")
     .argument("<id>", "Eval vault id from evals/vaults.yaml")
     .option("--json", "Print the vault entry as JSON")
-    .option("--config", "Print a local .lore.yaml snippet for this vault")
+    .option("--config", "Print a local .kennen.yaml snippet for this vault")
     .option("--env", "Print shell exports for this vault")
     .option("--registry <path>", "Override the eval vault registry YAML path")
     .action(
@@ -1688,7 +1691,7 @@ vaultsCommand.addCommand(
           const registry = await loadEvalVaultRegistry(opts.registry)
           const vault = findEvalVault(registry, id)
           if (!vault) {
-            console.error(`lore eval vaults show failed: unknown vault "${id}".`)
+            console.error(`kennen eval vaults show failed: unknown vault "${id}".`)
             process.exit(1)
             return
           }
@@ -1697,7 +1700,7 @@ vaultsCommand.addCommand(
             return
           }
           if (opts.config) {
-            process.stdout.write(renderEvalVaultLoreConfig(vault))
+            process.stdout.write(renderEvalVaultKennenConfig(vault))
           }
           if (opts.env) {
             process.stdout.write(renderEvalVaultEnv(vault))
@@ -1707,7 +1710,7 @@ vaultsCommand.addCommand(
           }
         } catch (err) {
           console.error(
-            "lore eval vaults show failed:",
+            "kennen eval vaults show failed:",
             err instanceof Error ? err.message : err
           )
           process.exit(1)
@@ -1739,7 +1742,7 @@ function printEvalVaultSummary(vault: EvalVault): void {
       `  Last validation: ${validation.date} ${validation.kind}, ` +
         `${validation.scenarios} scenarios / ${validation.conditionRuns} condition runs, ` +
         `no-memory ${validation.noMemory.passed}/${validation.noMemory.trials}, ` +
-        `lore-full-loop ${validation.loreFullLoop.passed}/${validation.loreFullLoop.trials}, ` +
+        `kennen-full-loop ${validation.kennenFullLoop.passed}/${validation.kennenFullLoop.trials}, ` +
         `lift ${(validation.successRateDelta * 100).toFixed(1)} pp`
     )
   }
@@ -1764,7 +1767,7 @@ skillRetrievalCommand.addCommand(
     .action(async (benchmark: string, opts: { outRoot?: string }) => {
       if (benchmark !== "skillret") {
         console.error(
-          `lore eval skill-retrieval fetch: only "skillret" is supported (got "${benchmark}").`
+          `kennen eval skill-retrieval fetch: only "skillret" is supported (got "${benchmark}").`
         )
         process.exit(1)
         return
@@ -1786,7 +1789,7 @@ skillRetrievalCommand.addCommand(
         }
       } catch (err) {
         console.error(
-          "lore eval skill-retrieval fetch failed:",
+          "kennen eval skill-retrieval fetch failed:",
           err instanceof Error ? err.message : err
         )
         process.exit(1)
@@ -1797,7 +1800,7 @@ skillRetrievalCommand.addCommand(
 skillRetrievalCommand.addCommand(
   new Command("import")
     .description(
-      "Import the SkillRet corpus declared by a skill-retrieval suite into a persistent Lore eval vault."
+      "Import the SkillRet corpus declared by a skill-retrieval suite into a persistent Kennen eval vault."
     )
     .argument("<suite>", "Path to a skill-retrieval suite YAML file with notion config")
     .option(
@@ -1827,7 +1830,7 @@ skillRetrievalCommand.addCommand(
       ) => {
         if (opts.yes !== true) {
           console.error(
-            "lore eval skill-retrieval import failed: pass --yes to confirm persistent Notion writes."
+            "kennen eval skill-retrieval import failed: pass --yes to confirm persistent Notion writes."
           )
           process.exit(1)
           return
@@ -1837,7 +1840,7 @@ skillRetrievalCommand.addCommand(
             ? { ok: true as const, value: undefined }
             : parsePositiveDecimalInteger("--limit", opts.limit)
         if (!parsedLimit.ok) {
-          console.error("lore eval skill-retrieval import failed:", parsedLimit.message)
+          console.error("kennen eval skill-retrieval import failed:", parsedLimit.message)
           process.exit(1)
           return
         }
@@ -1847,7 +1850,7 @@ skillRetrievalCommand.addCommand(
             : parsePositiveDecimalInteger("--parallel", opts.parallel)
         if (!parsedParallel.ok) {
           console.error(
-            "lore eval skill-retrieval import failed:",
+            "kennen eval skill-retrieval import failed:",
             parsedParallel.message
           )
           process.exit(1)
@@ -1880,7 +1883,7 @@ skillRetrievalCommand.addCommand(
           console.log(`Topic: ${report.manifest.topicName} (${report.manifest.topicId})`)
         } catch (err) {
           console.error(
-            "lore eval skill-retrieval import failed:",
+            "kennen eval skill-retrieval import failed:",
             err instanceof Error ? err.message : err
           )
           process.exit(1)
@@ -1892,9 +1895,9 @@ skillRetrievalCommand.addCommand(
 evalCommand.addCommand(skillRetrievalCommand)
 
 // ---------------------------------------------------------------------------
-// `lore eval bench` — LongMemEval bench-runner CLI surface (issue #595).
+// `kennen eval bench` — LongMemEval bench-runner CLI surface (issue #595).
 // Sub-actions: `fetch`, `cleanup-orphans`. The `run` and `baseline` entries
-// reuse the top-level `lore eval run` / `lore eval baseline` commands with
+// reuse the top-level `kennen eval run` / `kennen eval baseline` commands with
 // `--runner bench`; this group hosts only the bench-specific helpers.
 // ---------------------------------------------------------------------------
 
@@ -1915,7 +1918,7 @@ benchCommand.addCommand(
     .action(async (benchmark: string, opts: { out?: string }) => {
       if (benchmark !== "longmemeval") {
         console.error(
-          `lore eval bench fetch: only "longmemeval" is supported (got "${benchmark}").`
+          `kennen eval bench fetch: only "longmemeval" is supported (got "${benchmark}").`
         )
         process.exit(1)
         return
@@ -1934,7 +1937,7 @@ benchCommand.addCommand(
         )
       } catch (err) {
         console.error(
-          "lore eval bench fetch failed:",
+          "kennen eval bench fetch failed:",
           err instanceof Error ? err.message : err
         )
         process.exit(1)
@@ -1945,7 +1948,7 @@ benchCommand.addCommand(
 benchCommand.addCommand(
   new Command("cleanup-orphans")
     .description(
-      "Archive bench sub-projects under the sandbox vault whose ULID-embedded timestamp is older than --older-than hours. Idempotent. Requires LORE_EVAL_BENCH_REAL=1."
+      "Archive bench sub-projects under the sandbox vault whose ULID-embedded timestamp is older than --older-than hours. Idempotent. Requires KENNEN_EVAL_BENCH_REAL=1."
     )
     .option("--dry-run", "List matching projects without archiving")
     .option("--older-than <hours>", "Minimum age in hours; defaults to 24", "24")
@@ -1957,7 +1960,7 @@ benchCommand.addCommand(
         )
         if (!parsedOlderThan.ok) {
           console.error(
-            "lore eval bench cleanup-orphans failed:",
+            "kennen eval bench cleanup-orphans failed:",
             parsedOlderThan.message
           )
           process.exit(1)
@@ -1976,7 +1979,7 @@ benchCommand.addCommand(
         }
       } catch (err) {
         console.error(
-          "lore eval bench cleanup-orphans failed:",
+          "kennen eval bench cleanup-orphans failed:",
           err instanceof Error ? err.message : err
         )
         process.exit(1)
@@ -1986,8 +1989,8 @@ benchCommand.addCommand(
 
 benchCommand.addCommand(
   new Command("tool")
-    .description("Internal bench-only Lore tool shim")
-    .argument("<tool>", "Tool name, e.g. lore-query or lore-memory")
+    .description("Internal bench-only Kennen tool shim")
+    .argument("<tool>", "Tool name, e.g. kennen-query or kennen-memory")
     .allowUnknownOption(true)
     .allowExcessArguments(true)
     .action(async (tool: string) => {
@@ -1999,7 +2002,7 @@ benchCommand.addCommand(
         if (exitCode !== 0) process.exit(exitCode)
       } catch (err) {
         console.error(
-          "lore eval bench tool failed:",
+          "kennen eval bench tool failed:",
           err instanceof Error ? err.message : err
         )
         process.exit(1)

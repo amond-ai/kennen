@@ -69,7 +69,7 @@ export const migrateCommand = new Command("migrate")
   )
   .option(
     "--fix-memory-encoding",
-    "Decode HTML entities in memory Title and body markdown for every non-archived memory. Body rewrite is skipped by default for pages larger than 100 KB; under LORE_USE_RUNTOOL_BLOCK_EDIT=1 those bodies route through RunTool's anchored `update_content` per-entity substitutions when the row's local guards predict success (single-pass entity body with non-empty substitutions — issue #534 AC #5). Multi-pass entity bodies fall back to the canonical path. Title is always fixed, because Title is the value driver for downstream near-duplicate / embedding surfaces. Plan-only by default — re-run with `--yes` to apply. Combine with `--dry-run` for a plan preview."
+    "Decode HTML entities in memory Title and body markdown for every non-archived memory. Body rewrite is skipped by default for pages larger than 100 KB; under KENNEN_USE_RUNTOOL_BLOCK_EDIT=1 those bodies route through RunTool's anchored `update_content` per-entity substitutions when the row's local guards predict success (single-pass entity body with non-empty substitutions — issue #534 AC #5). Multi-pass entity bodies fall back to the canonical path. Title is always fixed, because Title is the value driver for downstream near-duplicate / embedding surfaces. Plan-only by default — re-run with `--yes` to apply. Combine with `--dry-run` for a plan preview."
   )
   .option(
     "--merge-topics <file>",
@@ -81,7 +81,7 @@ export const migrateCommand = new Command("migrate")
   )
   .option(
     "--backfill-fact-sources",
-    "Find facts with empty Source relations, propose supporting memories via conservative title-word-boundary match. Prints a report; add --apply to write. A wrong Source distorts `lore-query action='ask'` outputs for the lifetime of the fact, so matching is deliberately narrow — unmatched orphans stay orphan until an operator reviews."
+    "Find facts with empty Source relations, propose supporting memories via conservative title-word-boundary match. Prints a report; add --apply to write. A wrong Source distorts `kennen-query action='ask'` outputs for the lifetime of the fact, so matching is deliberately narrow — unmatched orphans stay orphan until an operator reviews."
   )
   .option(
     "--apply",
@@ -101,7 +101,7 @@ export const migrateCommand = new Command("migrate")
   )
   .option(
     "--report-orphan-rate",
-    "Pair with `--build-entities` to print the PF3-01 orphan-rate metric (`subjects appearing in exactly 1 fact`). On `--build-entities --yes` (apply) the report measures the post-pass fact graph; on bare `--build-entities` (plan-only) or `--dry-run` it measures the pre-pass graph and labels the output `pre-pass` accordingly so the operator can read the canonicalization baseline before committing. Routes through RunTool's server-side `GROUP BY` aggregate by default (#543 Phase 4: `LORE_USE_RUNTOOL_AGGREGATE` defaults ON, inheriting from the parent `LORE_USE_RUNTOOL` kill-switch); set either env var to `0` to force JS enumeration. Falls back per-call to the JS path on capability gate (403), saturated `has_more: true` aggregate windows, malformed responses, or transient transport-class failures. Read-only — does not affect plan/apply behavior."
+    "Pair with `--build-entities` to print the PF3-01 orphan-rate metric (`subjects appearing in exactly 1 fact`). On `--build-entities --yes` (apply) the report measures the post-pass fact graph; on bare `--build-entities` (plan-only) or `--dry-run` it measures the pre-pass graph and labels the output `pre-pass` accordingly so the operator can read the canonicalization baseline before committing. Routes through RunTool's server-side `GROUP BY` aggregate by default (#543 Phase 4: `KENNEN_USE_RUNTOOL_AGGREGATE` defaults ON, inheriting from the parent `KENNEN_USE_RUNTOOL` kill-switch); set either env var to `0` to force JS enumeration. Falls back per-call to the JS path on capability gate (403), saturated `has_more: true` aggregate windows, malformed responses, or transient transport-class failures. Read-only — does not affect plan/apply behavior."
   )
   .option(
     "--normalize-agents",
@@ -264,7 +264,7 @@ export const migrateCommand = new Command("migrate")
           aliasMergePlans = await loadTopicAliasMerges(opts.mergeTopics)
         }
 
-        // `lore migrate` is an operator-facing drift surface — always run
+        // `kennen migrate` is an operator-facing drift surface — always run
         // the read-only drift check on init, bypassing the debounce, even
         // though the migrate logic itself re-runs the same diff. The
         // stderr nudge is informational; the foreground migrate report is

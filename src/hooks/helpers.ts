@@ -4,13 +4,13 @@
 /**
  * Hook helper utilities.
  *
- * Invoked by host-assistant hook scripts to interact with Lore. The
+ * Invoked by host-assistant hook scripts to interact with Kennen. The
  * runner receives the hook action as `argv[2]` and reads the hook
  * event from stdin or environment variables, depending on the action.
  *
  * Autosave flow:
  *   - Stop hook: count-based trigger → spawns a detached `claude -p`
- *     sub-agent in the background that writes structured content via lore-*
+ *     sub-agent in the background that writes structured content via kennen-*
  *     MCP tools. The main agent is never blocked.
  *   - Stop also schedules an auto-digest helper as a separate detached node
  *     child (the `auto-digest` action below) so digest synthesis never runs
@@ -41,7 +41,7 @@ import {
   type TranscriptInspection,
 } from "./transcript.js"
 import { initServicesFromConfig } from "../services.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 import { resolveProjectPathFromCwd } from "../core/context.js"
 import { mergeHookDefaults, type HookConfig } from "./config.js"
 import { buildBackgroundSavePrompt } from "./prompts.js"
@@ -95,10 +95,10 @@ interface HookEvent {
  *
  * Claude Code sets CLAUDECODE=1 and CLAUDE_CODE_* env vars when it spawns
  * hooks; no equivalent fingerprint exists for Codex or other agents. When
- * neither Claude Code's markers nor an explicit LORE_AGENT_NAME override
+ * neither Claude Code's markers nor an explicit KENNEN_AGENT_NAME override
  * are present, return undefined — callers omit the Agent line rather than
  * stamping a confident-but-wrong guess onto the memory. The Codex installer
- * should inject `LORE_AGENT_NAME=Codex` into .codex/hooks.json's env so
+ * should inject `KENNEN_AGENT_NAME=Codex` into .codex/hooks.json's env so
  * Codex sessions resolve here; other integrations do the same.
  *
  * Both resolution paths route through `canonicalizeAgentName` so the eight
@@ -110,7 +110,7 @@ interface HookEvent {
  * for production callers.
  */
 export function deriveAgentName(_event: HookEvent): string | undefined {
-  const override = process.env["LORE_AGENT_NAME"]
+  const override = process.env["KENNEN_AGENT_NAME"]
   if (override && override.trim()) return canonicalizeAgentName(override)
 
   const claudeCodeMarkers = Object.keys(process.env).some((k) =>
@@ -133,7 +133,7 @@ export function deriveAgentName(_event: HookEvent): string | undefined {
  * writes that omit `author`. We *also* surface the env-override here at
  * prompt-build time so the spawned sub-agent's prompt can carry the
  * canonical `Author: ...` line for textual context — and so an engineer
- * who set `LORE_USER_NAME` in their shell rc gets attribution without
+ * who set `KENNEN_USER_NAME` in their shell rc gets attribution without
  * asking the MCP child to call `users.me`.
  *
  * Returns undefined when no override is set; callers omit the Author
@@ -146,7 +146,7 @@ export function deriveAgentName(_event: HookEvent): string | undefined {
  * surface for production callers.
  */
 export function deriveAuthorName(_event: HookEvent): string | undefined {
-  const override = process.env["LORE_USER_NAME"]
+  const override = process.env["KENNEN_USER_NAME"]
   if (override && override.trim()) return override.trim()
   return undefined
 }
@@ -218,7 +218,7 @@ async function tryMarkWakeupRun(sessionId: string | undefined): Promise<boolean>
 // ---------------------------------------------------------------------------
 
 /**
- * Lightweight project context resolution from .lore.yaml — no Notion API
+ * Lightweight project context resolution from .kennen.yaml — no Notion API
  * calls. Mirrors `resolveProject`'s longest-prefix logic and
  * additionally surfaces the sub-project list and catch-all name so the
  * save prompts can enumerate alternatives.
@@ -256,7 +256,7 @@ function resolveProjectContext(
 
 interface HookState {
   hookConfig: HookConfig
-  config: LoreConfig | null
+  config: KennenConfig | null
   configRoot: string | null
 }
 
@@ -264,10 +264,10 @@ function reportHookConfigWarnings(configPath: string, warnings: string[]): void 
   if (warnings.length === 0) return
 
   const displayPath = configPath.replace(homedir(), "~")
-  process.stderr.write(`[lore] Recovered ${displayPath} with hook defaults.\n`)
+  process.stderr.write(`[kennen] Recovered ${displayPath} with hook defaults.\n`)
   for (const warning of warnings) {
-    const formatted = warning.trimEnd().split("\n").join("\n[lore]   ")
-    process.stderr.write(`[lore]   ${formatted}\n`)
+    const formatted = warning.trimEnd().split("\n").join("\n[kennen]   ")
+    process.stderr.write(`[kennen]   ${formatted}\n`)
   }
 }
 
@@ -331,7 +331,7 @@ async function loadHookState(): Promise<HookState> {
     }
   } catch (err) {
     process.stderr.write(
-      `[lore] Failed to load ${found.path}: ${redactDebugError(err)}. Using hook defaults.\n`
+      `[kennen] Failed to load ${found.path}: ${redactDebugError(err)}. Using hook defaults.\n`
     )
     return {
       hookConfig: mergeHookDefaults(undefined),
@@ -359,7 +359,7 @@ async function main(): Promise<void> {
       break
     case "session-end":
       // Exit-0 compatibility action for stale Claude Code settings
-      // registrations. `lore install --client claude` strips the
+      // registrations. `kennen install --client claude` strips the
       // registration on reinstall; this case lets any stale settings
       // exit cleanly without side effects.
       await handleSessionEnd()
@@ -392,29 +392,29 @@ function isEntryPoint(): boolean {
 
 /**
  * Stop / autosave entry point. Two callers:
- *   - Legacy shell shim: forwards stdin via `LORE_AUTOSAVE_CONTENT`
+ *   - Legacy shell shim: forwards stdin via `KENNEN_AUTOSAVE_CONTENT`
  *     (no `event` argument); the env var path is preserved for
  *     compatibility with legacy installs.
- *   - `lore hooks autosave`: reads stdin in the CLI subcommand and
+ *   - `kennen hooks autosave`: reads stdin in the CLI subcommand and
  *     passes it through `opts.event`. Skips the env var entirely.
  *
  * `opts.event` wins when both are set so a CLI caller can override a
  * stale env var inherited from a parent process.
  */
 export async function runAutosave(opts: { event?: string } = {}): Promise<void> {
-  // Env var opt-out: LORE_AUTOSAVE=false disables for this session
-  if (process.env["LORE_AUTOSAVE"] === "false") {
+  // Env var opt-out: KENNEN_AUTOSAVE=false disables for this session
+  if (process.env["KENNEN_AUTOSAVE"] === "false") {
     process.stdout.write("{}\n")
     return
   }
 
-  const raw = opts.event ?? process.env["LORE_AUTOSAVE_CONTENT"]
+  const raw = opts.event ?? process.env["KENNEN_AUTOSAVE_CONTENT"]
   if (!raw) {
-    process.stderr.write("LORE_AUTOSAVE_CONTENT not set, skipping.\n")
+    process.stderr.write("KENNEN_AUTOSAVE_CONTENT not set, skipping.\n")
     return
   }
 
-  // Config opt-out: hooks.autoSave: false in .lore.yaml
+  // Config opt-out: hooks.autoSave: false in .kennen.yaml
   const { hookConfig, config, configRoot } = await loadHookState()
   if (!hookConfig.autoSave) {
     process.stdout.write("{}\n")
@@ -441,7 +441,7 @@ interface TranscriptForSave {
 }
 
 export interface StopFailureContext {
-  config: LoreConfig | null
+  config: KennenConfig | null
   configRoot: string | null
 }
 
@@ -468,7 +468,7 @@ function spawnFailureMessage(result: SpawnResult, command: string): string | nul
     case "spawn-error":
       return `spawn failed: ${result.error instanceof Error ? result.error.message : String(result.error)}`
     case "lock-path-too-long":
-      return `lock path too long (${result.code}); shorten LORE_HOOK_STATE_DIR`
+      return `lock path too long (${result.code}); shorten KENNEN_HOOK_STATE_DIR`
     default:
       return null
   }
@@ -502,7 +502,7 @@ async function clearStopFailure(
  * `readFile` plus a dynamic import of the ntn-token loader. Only
  * the `NOTION_API_TOKEN` path avoids any I/O. `loadNtnToken`'s
  * dynamic import is cached after the first call (rarely matters
- * since `lore hooks autosave` is a fresh process per Stop), and the
+ * since `kennen hooks autosave` is a fresh process per Stop), and the
  * read itself is a single small-file `readFile` — negligible for
  * the Stop hot path's "in-the-millisecond" budget. The hook-agent
  * doc carries the "Two-process split is load-bearing" addendum; if
@@ -541,7 +541,7 @@ async function readTranscriptForSave(
     raw = await readFile(event.transcript_path, "utf-8")
   } catch (err) {
     process.stderr.write(
-      `[lore] ${label}: failed to read transcript: ${redactDebugError(err)}\n`
+      `[kennen] ${label}: failed to read transcript: ${redactDebugError(err)}\n`
     )
     return null
   }
@@ -552,7 +552,7 @@ async function readTranscriptForSave(
     (transcript.malformedLineCount > 0 || transcript.ignoredLineCount > 0)
   ) {
     process.stderr.write(
-      `[lore] ${label} could not read any transcript messages ` +
+      `[kennen] ${label} could not read any transcript messages ` +
         `(${transcript.malformedLineCount} malformed, ${transcript.ignoredLineCount} ignored).\n`
     )
   }
@@ -563,7 +563,7 @@ async function readTranscriptForSave(
 /**
  * Stop handler: counts real user messages and, when the save interval is
  * reached, spawns a detached `claude -p` sub-agent that writes structured
- * content via Lore's MCP tools. The main agent is never blocked — the Stop
+ * content via Kennen's MCP tools. The main agent is never blocked — the Stop
  * hook always emits `{}` so the user's next turn starts immediately.
  *
  * Save work is gated by a per-session lock so two overlapping hook fires
@@ -701,7 +701,7 @@ export async function handleStop(
     }
     process.stdout.write("{}\n")
     // Auto-digest scheduling runs in a detached child so the parent Stop
-    // hook never pays the cost of .lore.yaml parse + Notion init + digest
+    // hook never pays the cost of .kennen.yaml parse + Notion init + digest
     // gather. The marker debounce inside the helper guarantees ≤ 1 digest
     // per project per 7 days regardless of how often Stop fires.
     scheduleAutoDigestSpawn(event.cwd ?? process.cwd(), {
@@ -716,7 +716,7 @@ export async function handleStop(
     // the Stop path means we don't know what state we're in (transcript
     // corruption, lock-state inconsistency, fs errors), and the marker
     // debounce will let the next clean Stop hook fire the digest anyway.
-    process.stderr.write(`[lore] Stop hook error: ${redactDebugError(err)}\n`)
+    process.stderr.write(`[kennen] Stop hook error: ${redactDebugError(err)}\n`)
     process.stdout.write("{}\n")
   }
 }
@@ -734,7 +734,7 @@ export async function handleStop(
 
 /**
  * Parse the JSON payload host `UserPromptSubmit` hooks deliver
- * on stdin (forwarded by `wakeup.sh` via `LORE_WAKEUP_EVENT`). Returns
+ * on stdin (forwarded by `wakeup.sh` via `KENNEN_WAKEUP_EVENT`). Returns
  * the user's prompt text when present, `undefined` otherwise. The
  * `undefined` return is the fallback signal — wake-up degrades to
  * unranked output without needing a user query.
@@ -845,8 +845,8 @@ export function parseWakeupEventMetadata(raw: string | undefined): {
  * Hook-generated structural labels (`Project:`, `Siblings:`, the
  * blockquote `>` marker, and the catch-all warning's surrounding wording)
  * stay inside the indented line by design: the entire visual block is
- * the quoted region. The MCP surfaces (`lore-context action='wake-up'`,
- * `lore-query action='ask'`) keep using the shared renderer because
+ * the quoted region. The MCP surfaces (`kennen-context action='wake-up'`,
+ * `kennen-query action='ask'`) keep using the shared renderer because
  * their callers consume the framing as structured tool output, not as
  * a session-start LLM prompt.
  */
@@ -881,9 +881,9 @@ const HOOK_WAKEUP_TASK_INVENTORY_LIMIT = 0
 const HOOK_WAKEUP_ACTIVE_TASK_RELATED_MEMORY_LIMIT = 0
 
 export async function wakeup(opts: { event?: string } = {}): Promise<void> {
-  const rawEvent = opts.event ?? process.env["LORE_WAKEUP_EVENT"]
+  const rawEvent = opts.event ?? process.env["KENNEN_WAKEUP_EVENT"]
   const eventMeta = parseWakeupEventMetadata(rawEvent)
-  const debug = process.env["LORE_DEBUG"] === "1"
+  const debug = process.env["KENNEN_DEBUG"] === "1"
   const userQuery = parseUserQueryFromEvent(rawEvent)
 
   // Config opt-out: hooks.wakeUp: false suppresses context injection.
@@ -898,7 +898,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
     await recordWakeupContextCostEvent({
       costTracking: hookCostTracking,
       status: "skipped",
-      agentName: process.env["LORE_AGENT_NAME"],
+      agentName: process.env["KENNEN_AGENT_NAME"],
       sessionId: eventMeta.sessionId,
     })
     return
@@ -911,7 +911,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
       marked = await tryMarkWakeupRun(eventMeta.sessionId)
     } catch (err) {
       process.stderr.write(
-        `[lore] wakeup: debounce mark failed — ${redactDebugError(err)}.\n`
+        `[kennen] wakeup: debounce mark failed — ${redactDebugError(err)}.\n`
       )
     }
     if (!marked) {
@@ -925,7 +925,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
       await recordWakeupContextCostEvent({
         costTracking: hookCostTracking,
         status: "skipped",
-        agentName: process.env["LORE_AGENT_NAME"],
+        agentName: process.env["KENNEN_AGENT_NAME"],
         sessionId: eventMeta.sessionId,
       })
       return
@@ -948,15 +948,15 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
   } catch (err) {
     // Init failures may carry SDK-interpolated request-scoped detail
     // (vault page id, base URL, partial query text). Route through the
-    // shared `LORE_DEBUG` redactor so the centralized stderr surface
+    // shared `KENNEN_DEBUG` redactor so the centralized stderr surface
     // doesn't leak vault locators to a log aggregator.
     process.stderr.write(
-      `[lore] wakeup: init failed — ${redactDebugError(err)}. Run \`lore status\` or \`lore migrate\` to diagnose.\n`
+      `[kennen] wakeup: init failed — ${redactDebugError(err)}. Run \`kennen status\` or \`kennen migrate\` to diagnose.\n`
     )
     await recordWakeupContextCostEvent({
       costTracking: hookCostTracking,
       status: "error",
-      agentName: process.env["LORE_AGENT_NAME"],
+      agentName: process.env["KENNEN_AGENT_NAME"],
       sessionId: eventMeta.sessionId,
     })
     return
@@ -1003,7 +1003,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
         // round-trips so the session-start hot path doesn't pay
         // two extra `dataSources.query` calls per launch. Same
         // posture as `includeInheritedMemories: false` above. The
-        // MCP `lore-context action='wake-up'` surface still renders
+        // MCP `kennen-context action='wake-up'` surface still renders
         // pinned blocks at default; agents that need pinned
         // context call the MCP surface explicitly.
         includePinnedBlocks: false,
@@ -1029,16 +1029,16 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
     // Load failures are exactly the path the Notion SDK is most likely
     // to interpolate request-scoped detail into `Error.message` (page
     // ids, partial query fragments, sometimes echoed bodies). Route
-    // through the shared `LORE_DEBUG` redactor before the message lands
+    // through the shared `KENNEN_DEBUG` redactor before the message lands
     // on stderr.
     process.stderr.write(
-      `[lore] wakeup: load failed — ${redactDebugError(err)}. Skipping context injection.\n`
+      `[kennen] wakeup: load failed — ${redactDebugError(err)}. Skipping context injection.\n`
     )
     await recordWakeupContextCostEvent({
       costTracking: services.costTracking,
       status: "error",
       projectName: project?.name,
-      agentName: process.env["LORE_AGENT_NAME"],
+      agentName: process.env["KENNEN_AGENT_NAME"],
       sessionId: eventMeta.sessionId,
     })
     return
@@ -1163,7 +1163,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
     // autosave/digest writer-side framing: one preamble per surface,
     // applied once at the top, never re-emitted per section.
     sections.unshift(UNTRUSTED_VAULT_PREAMBLE)
-    sections.unshift("# Lore Context")
+    sections.unshift("# Kennen Context")
     const output = sections.join("\n")
     console.log(output)
     await recordWakeupContextCostEvent({
@@ -1171,7 +1171,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
       status: "success",
       output,
       projectName: project?.name,
-      agentName: process.env["LORE_AGENT_NAME"],
+      agentName: process.env["KENNEN_AGENT_NAME"],
       sessionId: eventMeta.sessionId,
     })
   } else {
@@ -1179,7 +1179,7 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
       costTracking: services.costTracking,
       status: "skipped",
       projectName: project?.name,
-      agentName: process.env["LORE_AGENT_NAME"],
+      agentName: process.env["KENNEN_AGENT_NAME"],
       sessionId: eventMeta.sessionId,
     })
   }
@@ -1192,19 +1192,19 @@ export async function wakeup(opts: { event?: string } = {}): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
- * True when `LORE_AUTO_DIGEST=false` is set. Env overrides .lore.yaml —
- * consistent with how `LORE_AUTOSAVE=false` overrides `hooks.autoSave`.
+ * True when `KENNEN_AUTO_DIGEST=false` is set. Env overrides .kennen.yaml —
+ * consistent with how `KENNEN_AUTOSAVE=false` overrides `hooks.autoSave`.
  */
 function autoDigestEnvDisabled(): boolean {
-  return process.env["LORE_AUTO_DIGEST"] === "false"
+  return process.env["KENNEN_AUTO_DIGEST"] === "false"
 }
 
 /**
  * Auto-digest action handler. Runs in the detached node child spawned by
  * the Stop hook (via `scheduleAutoDigestSpawn`).
  *
- * Loads .lore.yaml, honors `hooks.autoDigest: false` plus
- * `LORE_AUTO_DIGEST=false`, then delegates to `fireDigestIfStale` whose
+ * Loads .kennen.yaml, honors `hooks.autoDigest: false` plus
+ * `KENNEN_AUTO_DIGEST=false`, then delegates to `fireDigestIfStale` whose
  * marker debounce guarantees ≤ 1 digest per project per 7 days regardless
  * of how often the Stop hook fires.
  *
@@ -1234,13 +1234,13 @@ export async function handleAutoDigest(): Promise<void> {
       message: `unexpected failure: ${err instanceof Error ? err.message : String(err)}`,
     })
     process.stderr.write(
-      `[lore] digest scheduler: unexpected failure — ${redactDebugError(err)}\n`
+      `[kennen] digest scheduler: unexpected failure — ${redactDebugError(err)}\n`
     )
   }
 }
 
 // ---------------------------------------------------------------------------
-// SessionEnd — exit-0 compatibility shim. Lore does not register a
+// SessionEnd — exit-0 compatibility shim. Kennen does not register a
 // SessionEnd hook on current installs; this handler exists so any
 // stale host-assistant settings invoking the legacy session-end shim
 // exit cleanly with no work.
@@ -1267,7 +1267,7 @@ export async function handleSessionEnd(): Promise<void> {
 if (isEntryPoint()) {
   main().catch((err) => {
     const action = process.argv[2]
-    process.stderr.write(`[lore] Hook error [${action}]: ${redactDebugError(err)}\n`)
+    process.stderr.write(`[kennen] Hook error [${action}]: ${redactDebugError(err)}\n`)
     if (action === "autosave") {
       process.stdout.write("{}\n")
       process.exit(0)

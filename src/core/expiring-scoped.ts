@@ -1,5 +1,5 @@
 /**
- * Aggregator + renderer for the `lore status` and `lore-context
+ * Aggregator + renderer for the `kennen status` and `kennen-context
  * action='status'` "expiring scoped rows" surface.
  *
  * Lives in the core layer rather than the CLI layer so both the MCP
@@ -91,7 +91,7 @@ export function formatExpiringScopedSummary(report: ExpiringScopedReport): strin
     lines.push(
       `Expired scoped rows: ${expired} ` +
         `(memories: ${report.expiredMemories}, facts: ${report.expiredFacts}) — ` +
-        "consider archiving via `lore-memory action='archive'` or `lore-fact action='invalidate'`"
+        "consider archiving via `kennen-memory action='archive'` or `kennen-fact action='invalidate'`"
     )
   }
   if (expiringSoon > 0) {

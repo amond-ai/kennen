@@ -23,7 +23,7 @@ import {
 } from "./migration-lock.js"
 
 const DEAD_PID = 4_000_001
-const TEST_STATE_DIR = `${process.env["TMPDIR"] ?? "/tmp"}/lore-migration-lock-test-${process.pid}-${Date.now()}`
+const TEST_STATE_DIR = `${process.env["TMPDIR"] ?? "/tmp"}/kennen-migration-lock-test-${process.pid}-${Date.now()}`
 const RACE_TEST_TIMEOUT_MS = 90_000
 let originalStateDir: string | undefined
 
@@ -36,7 +36,7 @@ type WorkerRaceResult = {
 function scope(overrides: Partial<MigrationLockScope> = {}): MigrationLockScope {
   return {
     name: "build-entities",
-    configRoot: "/tmp/lore-repo",
+    configRoot: "/tmp/kennen-repo",
     vaultPageId: "vault-page-123",
     ...overrides,
   }
@@ -207,7 +207,7 @@ async function runWorkerRace(lockScope: MigrationLockScope): Promise<WorkerRaceR
       cwd: process.cwd(),
       env: {
         ...process.env,
-        LORE_HOOK_STATE_DIR: TEST_STATE_DIR,
+        KENNEN_HOOK_STATE_DIR: TEST_STATE_DIR,
         LOCK_SCOPE: JSON.stringify(lockScope),
         LOCK_START_FILE: startFile,
         LOCK_RELEASE_PATH: releasePath,
@@ -242,17 +242,17 @@ async function runWorkerRace(lockScope: MigrationLockScope): Promise<WorkerRaceR
 
 describe("tryAcquireMigrationLock", () => {
   beforeEach(() => {
-    originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
-    process.env["LORE_HOOK_STATE_DIR"] = TEST_STATE_DIR
+    originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+    process.env["KENNEN_HOOK_STATE_DIR"] = TEST_STATE_DIR
     cleanStateDir()
   })
 
   afterEach(() => {
     cleanStateDir()
     if (originalStateDir === undefined) {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     } else {
-      process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
     }
   })
 
@@ -377,17 +377,17 @@ describe("tryAcquireMigrationLock", () => {
 
 describe("releaseMigrationLock", () => {
   beforeEach(() => {
-    originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
-    process.env["LORE_HOOK_STATE_DIR"] = TEST_STATE_DIR
+    originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+    process.env["KENNEN_HOOK_STATE_DIR"] = TEST_STATE_DIR
     cleanStateDir()
   })
 
   afterEach(() => {
     cleanStateDir()
     if (originalStateDir === undefined) {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     } else {
-      process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
     }
   })
 

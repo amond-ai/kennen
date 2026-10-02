@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import {
   BODY_SIZE_CAP_BYTES,
   type EncodedMemoryRow,
@@ -31,7 +31,7 @@ function formatBytes(bytes: number): string {
  * `--fix-topic-encoding` / `--merge-duplicate-topics` established.
  */
 export async function runFactEncodingFix(
-  services: LoreServices,
+  services: KennenServices,
   options: { apply: boolean; dryRun?: boolean; projectId?: string }
 ): Promise<void> {
   // Direct helper callers can pass both `apply` and `dryRun`; dry-run
@@ -84,7 +84,7 @@ export async function runFactEncodingFix(
       )
     }
     console.log(
-      "\nRun `lore migrate --dedup-keys --merge --yes` to collapse the duplicates first, then re-run `lore migrate --fix-fact-encoding --yes`."
+      "\nRun `kennen migrate --dedup-keys --merge --yes` to collapse the duplicates first, then re-run `kennen migrate --fix-fact-encoding --yes`."
     )
   }
 
@@ -106,7 +106,7 @@ export async function runFactEncodingFix(
  *
  * - **Default-off / flag-on within 100 KB cap**:
  *   `pages.updateMarkdown` full-body `replace_content`.
- * - **Flag-on (`LORE_USE_RUNTOOL_BLOCK_EDIT=1`) above the cap, row
+ * - **Flag-on (`KENNEN_USE_RUNTOOL_BLOCK_EDIT=1`) above the cap, row
  *   eligible**: RunTool `update_content` with deterministic
  *   per-entity substitutions. Multi-pass /
  *   no-substitutions oversized rows still surface in
@@ -119,7 +119,7 @@ export async function runFactEncodingFix(
  * predict/apply parity contract.
  */
 export async function runMemoryEncodingFix(
-  services: LoreServices,
+  services: KennenServices,
   options: { apply: boolean; dryRun?: boolean; projectId?: string }
 ): Promise<void> {
   const planOnly = !options.apply || options.dryRun === true
@@ -143,7 +143,7 @@ export async function runMemoryEncodingFix(
   // predict the anchored path will land. Without this gate, plan
   // output would say "body fixes: 0 (1 skipped)" while apply mode
   // would actually fix the row — breaking the plan-then-execute
-  // contract under `LORE_USE_RUNTOOL_BLOCK_EDIT`.
+  // contract under `KENNEN_USE_RUNTOOL_BLOCK_EDIT`.
   const isBodyFixablePlanned = (r: EncodedMemoryRow): boolean =>
     r.contentNeedsFix && (!r.contentTooLargeToFix || r.anchoredPathPlanned)
   const fixableRows = planOnly
@@ -213,7 +213,7 @@ export async function runMemoryEncodingFix(
   }
 
   if (report.oversizedAnchoredPlanned.length > 0) {
-    // New section under `LORE_USE_RUNTOOL_BLOCK_EDIT`: oversized
+    // New section under `KENNEN_USE_RUNTOOL_BLOCK_EDIT`: oversized
     // rows that DO get fixed via RunTool's
     // anchored `update_content` path. Distinguishing them from
     // `oversizedSkipped` is what keeps plan output truthful — the

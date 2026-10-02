@@ -1,7 +1,7 @@
 /**
  * ntn integration module — auth.json reader + interactive shell-out helpers.
  *
- * The auth.json read is the contract. Lore reads ntn's on-disk
+ * The auth.json read is the contract. Kennen reads ntn's on-disk
  * storage at ~/.config/notion/auth.json because the public `ntn`
  * CLI (github.com/makenotion/skills) does not expose a token-export
  * surface — only `ntn login` / `ntn logout` for the auth lifecycle
@@ -11,7 +11,7 @@
  * which `resolveAuth` honors as the highest-priority source.
  *
  * The file format is undocumented but has been stable across the
- * `ntn` versions Lore supports (`MIN_NTN_VERSION` onward). Auth.json
+ * `ntn` versions Kennen supports (`MIN_NTN_VERSION` onward). Auth.json
  * read failures return null rather than throwing, but an invalid
  * operator-selected API base URL throws a targeted setup error after
  * token selection so the SDK never receives a malformed host. The
@@ -39,7 +39,7 @@ export interface NtnTokenRecord {
    *   prod: https://api.notion.so
    *   dev:  https://api-dev.notion.com
    *   stg:  https://api-stg.notion.com (verify if used)
-   * Resolves from `LORE_NOTION_BASE_URL` first, then a best-effort
+   * Resolves from `KENNEN_NOTION_BASE_URL` first, then a best-effort
    * read of ntn's config.json, with a final fallback to undefined
    * (SDK default = prod).
    */
@@ -87,14 +87,14 @@ export async function loadNtnToken(
         result.reason === "malformed"
           ? "is malformed; ignoring"
           : "has unexpected shape (expected an object)"
-      // Recovery copy points at `lore auth --login`, the canonical
+      // Recovery copy points at `kennen auth --login`, the canonical
       // Phase-2 wrapper that auto-installs ntn (if missing), forces
       // `NOTION_KEYRING=0` inside the spawn, and runs the post-login
       // vault preflight. Operators who'd rather drive ntn directly
       // can still run `NOTION_KEYRING=0 ntn login` manually.
       process.stderr.write(
-        `[lore] auth.json at ${result.path} ${reason}. ` +
-          `Run \`lore auth --login\` to refresh ` +
+        `[kennen] auth.json at ${result.path} ${reason}. ` +
+          `Run \`kennen auth --login\` to refresh ` +
           `(or \`NOTION_KEYRING=0 ntn login\` to drive ntn directly).\n`
       )
     }
@@ -117,14 +117,14 @@ export async function loadNtnToken(
       // stderr hint so the operator knows.
       if (!quiet) {
         process.stderr.write(
-          `[lore] ntn auth.json carries ${workspaceEntries.length} ` +
+          `[kennen] ntn auth.json carries ${workspaceEntries.length} ` +
             `workspace(s), but the requested workspaceId ` +
             `(${input.workspaceId}) is not among them. ` +
             `Available: ${workspaceEntries.map(([ws]) => ws).join(", ")}.\n` +
-            `[lore] Run \`lore auth --login\` against the right workspace, ` +
-            `or update auth.workspaceId in .lore.yaml. (\`lore auth --login\` ` +
+            `[kennen] Run \`kennen auth --login\` against the right workspace, ` +
+            `or update auth.workspaceId in .kennen.yaml. (\`kennen auth --login\` ` +
             `forces NOTION_KEYRING=0 inside the spawn so the resulting ` +
-            `token lands in auth.json where Lore can read it; bare ` +
+            `token lands in auth.json where Kennen can read it; bare ` +
             `\`ntn login\` on macOS defaults to keychain mode.)\n`
         )
       }
@@ -136,10 +136,10 @@ export async function loadNtnToken(
     // Multiple workspaces, no selector. Surface the choice.
     if (!quiet) {
       process.stderr.write(
-        `[lore] ntn auth.json carries ${workspaceEntries.length} ` +
+        `[kennen] ntn auth.json carries ${workspaceEntries.length} ` +
           `workspaces; specify one via NOTION_WORKSPACE_ID env or ` +
-          `auth.workspaceId in .lore.yaml.\n` +
-          `[lore] Available: ${workspaceEntries.map(([ws]) => ws).join(", ")}.\n`
+          `auth.workspaceId in .kennen.yaml.\n` +
+          `[kennen] Available: ${workspaceEntries.map(([ws]) => ws).join(", ")}.\n`
       )
     }
     return null
@@ -212,9 +212,9 @@ async function readWorkspaceEntries(): Promise<WorkspaceEntriesResult> {
 }
 
 /**
- * Enumerate workspace ids in ntn's auth.json. Used by `lore auth
+ * Enumerate workspace ids in ntn's auth.json. Used by `kennen auth
  * --status` in the no-vault-context branch to surface the
- * operator's auth.json footprint without requiring a .lore.yaml.
+ * operator's auth.json footprint without requiring a .kennen.yaml.
  *
  * Returns empty array on every "no usable file" failure mode so
  * consumers can treat empty as "nothing to show" without
@@ -242,7 +242,7 @@ function ntnAuthJsonPath(): string {
  * environment.
  *
  * Priority order:
- *   1. Operator env override (`LORE_NOTION_BASE_URL` →
+ *   1. Operator env override (`KENNEN_NOTION_BASE_URL` →
  *      `NOTION_BASE_URL` → `NOTION_API_BASE_URL`, see
  *      `resolveOperatorBaseUrlWithSource`).
  *   2. ntn's ~/.config/notion/config.json `env` field
@@ -252,7 +252,7 @@ function ntnAuthJsonPath(): string {
  * The config.json shape is undocumented. Best-effort read with a
  * hard fallback to `undefined` (SDK default = prod) when the file
  * is missing or unparseable. Operators on dev / staging who want a
- * deterministic override set `LORE_NOTION_BASE_URL` rather than
+ * deterministic override set `KENNEN_NOTION_BASE_URL` rather than
  * relying on the config.json read.
  */
 async function resolveNtnBaseUrl(): Promise<{ baseUrl: string } | undefined> {
@@ -291,16 +291,16 @@ async function resolveNtnBaseUrl(): Promise<{ baseUrl: string } | undefined> {
 }
 
 /**
- * Probe whether `ntn` is installed on PATH. Used by `lore install`
- * and `lore auth --status` to surface clear messaging
+ * Probe whether `ntn` is installed on PATH. Used by `kennen install`
+ * and `kennen auth --status` to surface clear messaging
  * when the operator hasn't installed ntn yet.
  *
  * Cheap synchronous probe with a 1-second timeout. Returns false on
  * any error (not-found, permission denied, etc.) — never throws.
  *
  * Memoized per-process — the result is cached after the first call and
- * reused by subsequent calls in the same Lore invocation. Operator
- * surfaces (`lore install`, `lore auth --status`) call this multiple
+ * reused by subsequent calls in the same Kennen invocation. Operator
+ * surfaces (`kennen install`, `kennen auth --status`) call this multiple
  * times within one CLI invocation; without the cache each call would
  * pay another `execFileSync`. `installNtn` resets the cache on success
  * so a follow-up probe sees the freshly installed binary.
@@ -320,20 +320,20 @@ let cachedInstalled: boolean | null = null
 let cachedVersion: string | null | undefined = undefined
 
 /**
- * Lore's tested-against minimum `ntn` version. Below this, Lore warns
+ * Kennen's tested-against minimum `ntn` version. Below this, Kennen warns
  * but does not block — operators preferring an older version for
  * other reasons keep using it; their auth.json shape may differ
  * but the reader degrades gracefully (returns null).
  *
  * Bumped only when a new ntn version ships an auth.json shape
- * change Lore needs to handle.
+ * change Kennen needs to handle.
  */
 export const MIN_NTN_VERSION = "0.12.0"
 
 /**
- * Release Lore installs when ntn is missing. The installer pins both
+ * Release Kennen installs when ntn is missing. The installer pins both
  * the release URL and the per-platform archive hash in this module so
- * a Lore package upgrade is the authority boundary for a new ntn
+ * a Kennen package upgrade is the authority boundary for a new ntn
  * binary.
  */
 export const NTN_INSTALL_VERSION = "v0.13.2"
@@ -343,22 +343,22 @@ export const NTN_INSTALL_BASE_URL = "https://ntn.dev"
 export const NTN_VERIFIED_INSTALL_DESCRIPTION =
   `ntn ${NTN_INSTALL_VERSION} from ` +
   `${NTN_INSTALL_BASE_URL}/releases/${NTN_INSTALL_VERSION} ` +
-  "(sha256 pinned by Lore)"
+  "(sha256 pinned by Kennen)"
 
 /**
  * Operator-driven fallback command from ntn's upstream installer
- * surface. Lore's auto-install path uses `installNtn()` instead,
+ * surface. Kennen's auto-install path uses `installNtn()` instead,
  * which verifies the release archive against the hashes below.
  */
 export const NTN_MANUAL_INSTALL_COMMAND = "curl -fsSL https://ntn.dev | bash"
 
 /**
- * Compatibility alias for consumers that import Lore's manual install
+ * Compatibility alias for consumers that import Kennen's manual install
  * string. CLI code should prefer `NTN_MANUAL_INSTALL_COMMAND` when
  * it is specifically printing the upstream fallback.
  *
  * @deprecated Use `NTN_MANUAL_INSTALL_COMMAND` for manual fallback
- * copy. `installNtn()` uses Lore's verified installer.
+ * copy. `installNtn()` uses Kennen's verified installer.
  */
 export const NTN_INSTALL_COMMAND = NTN_MANUAL_INSTALL_COMMAND
 
@@ -465,7 +465,7 @@ function detect_target() {
 function expected_sha256() {
   case "$1" in
 ${buildPinnedChecksumCases()}
-  *) fail "Lore does not ship a checksum for target $1" ;;
+  *) fail "Kennen does not ship a checksum for target $1" ;;
   esac
 }
 
@@ -593,8 +593,8 @@ export function resetNtnProbeCache(): void {
  * - `"ok"` — installed version >= MIN_NTN_VERSION
  *
  * Per the "prefer existing version" rollout policy, `"too-old"` is
- * informational — Lore never auto-upgrades. Consumers (`lore auth
- * --login`, `lore install`) print a warning and proceed.
+ * informational — Kennen never auto-upgrades. Consumers (`kennen auth
+ * --login`, `kennen install`) print a warning and proceed.
  */
 export function checkNtnVersion(): "unknown" | "too-old" | "ok" {
   const installed = getNtnVersion()
@@ -641,8 +641,8 @@ export type NtnLoginResult =
  * - `dev`  → `api-dev.notion.com`
  * - `stg`  → `api-stg.notion.com`
  *
- * Single source of truth for consumers (`lore init --ntn-env`,
- * `lore install --ntn-env`, `lore auth --login --ntn-env`) so a typo
+ * Single source of truth for consumers (`kennen init --ntn-env`,
+ * `kennen install --ntn-env`, `kennen auth --login --ntn-env`) so a typo
  * in one surface can't drift away from another. The literal strings
  * match ntn's accepted values verbatim — the type is functionally an
  * enum but expressed as a string union so it round-trips through
@@ -663,7 +663,7 @@ export interface RunNtnLoginOpts {
    * sees that value flow through naturally. The omit-vs-explicit
    * distinction is load-bearing: writing `NOTION_ENV=prod` always
    * would clobber an inherited `dev` value from shell rc, surprising
-   * operators who already opted into dev outside Lore.
+   * operators who already opted into dev outside Kennen.
    */
   env?: NtnEnv
 }
@@ -677,9 +677,9 @@ export interface RunNtnLoginOpts {
  * token lands in ~/.config/notion/auth.json (file mode) where
  * `loadNtnToken` can read it. This is the load-bearing piece of the
  * "Option A" seamless-onboarding posture — engineers don't have to
- * set the env var in their shell rc; Lore handles it at the boundary
+ * set the env var in their shell rc; Kennen handles it at the boundary
  * for any ntn invocation it triggers. Operators who later run
- * `ntn login` directly (outside Lore) without the env var fall
+ * `ntn login` directly (outside Kennen) without the env var fall
  * through to ntn's default keychain mode; the operator runbook
  * documents this gotcha and the recovery paths.
  *
@@ -689,7 +689,7 @@ export interface RunNtnLoginOpts {
  * "set when caller asks for it" surface, not a "default to prod"
  * surface.
  *
- * Used by `lore install`, `lore init` no-arg, and `lore auth --login`
+ * Used by `kennen install`, `kennen init` no-arg, and `kennen auth --login`
  * when the operator confirms they want to log in.
  *
  * The function does NOT prompt the operator — it just runs the
@@ -754,7 +754,7 @@ export type NtnInstallResult =
   | { kind: "spawn-error"; error: unknown }
 
 /**
- * Install `ntn` from the Lore-pinned release archive.
+ * Install `ntn` from the Kennen-pinned release archive.
  *
  * Inherits stdio so the operator sees the install progress and can
  * interrupt if needed. Blocks until completion. Sets

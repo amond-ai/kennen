@@ -126,14 +126,16 @@ const DB: DatabaseRef = {
 
 // Every `supersede()` callsite in this file now goes through
 // `withEntityRelationLocks`, which writes `.lock` files into
-// `$HOME/.lore/entity-relation-locks/`. Stub HOME to a per-test temp
+// `$HOME/.kennen/entity-relation-locks/`. Stub HOME to a per-test temp
 // directory so tests do not leave artifacts in the developer's real
 // home directory and so a crash-mid-test stale lock cannot pollute the
 // next run. Mirrors the pattern in `entity-relation-lock.test.ts`.
 let testHomeDir: string
 
 beforeEach(() => {
-  testHomeDir = mkdtempSync(join(process.env["TMPDIR"] ?? "/tmp", "lore-decision-test-"))
+  testHomeDir = mkdtempSync(
+    join(process.env["TMPDIR"] ?? "/tmp", "kennen-decision-test-")
+  )
   vi.stubEnv("HOME", testHomeDir)
 })
 
@@ -1030,7 +1032,7 @@ describe("DecisionService.queryOverdue", () => {
     // and no cursor loop silently truncated at Notion's default 100-row
     // page. A vault with > 100 overdue decisions lost the tail. The
     // sort is `Review By asc` so truncation drops the *least* overdue
-    // rows — but the gap is real: an operator running `lore-audit`
+    // rows — but the gap is real: an operator running `kennen-audit`
     // and counting visible rows would believe that's the complete set.
     const page1 = Array.from({ length: 100 }, (_, i) =>
       decisionPage(`d1-${i}`, { reviewBy: "2026-01-01" })
@@ -1350,7 +1352,7 @@ describe("DecisionService.getById — stampede dedup", () => {
     // Mirror of the topic-side concurrent-delete regression. A
     // `decision-graph.ts` walker calls `getById(newId)` with a slow
     // loader in flight. Between the loader's dispatch and its
-    // resolution, some external actor (another Lore session, manual
+    // resolution, some external actor (another Kennen session, manual
     // Notion edit, migration script) adds `external-prior` to the
     // decision's `Supersedes` relation. Then `supersede(newId, oldId)`
     // fires — its pre-read `idCache.delete(newId)` must force its

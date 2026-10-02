@@ -71,7 +71,7 @@ describe("skill-use runner", () => {
   })
 
   it("runs all context conditions and writes a skill-use artifact", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-use-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-use-"))
     const outPath = join(dir, "artifact.json")
 
     const { artifact, outPath: writtenPath } = await runSkillUseSuite(
@@ -125,7 +125,7 @@ describe("skill-use runner", () => {
   })
 
   it("surfaces no-context answer leakage as a threshold failure", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-use-leak-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-use-leak-"))
     const { artifact } = await runSkillUseSuite("evals/skill-use/smoke.yaml", {
       outPath: join(dir, "artifact.json"),
       now: new Date("2026-06-03T12:00:00.000Z"),
@@ -144,7 +144,7 @@ describe("skill-use runner", () => {
   })
 
   it("fails when support sets point at missing documents", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skill-use-bad-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skill-use-bad-"))
     await writeFile(
       join(dir, "documents.jsonl"),
       '{"id":"memory-one","title":"One","content":"Answer yes."}\n',

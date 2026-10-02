@@ -57,7 +57,7 @@ export function buildPrintConfigOutput(
       authSource,
       notionBaseUrlLiteral
     )
-    return JSON.stringify({ mcpServers: { lore: entry } }, null, 2) + "\n"
+    return JSON.stringify({ mcpServers: { kennen: entry } }, null, 2) + "\n"
   }
 
   const section = buildCodexMcpSection(
@@ -76,8 +76,8 @@ export function buildPrintConfigOutput(
  * exists (the printed `args[0]` would otherwise point at a non-existent
  * file), and writes the snippet to stdout. No filesystem writes — but
  * `--project` (when present) resolves the configRoot embedded in the
- * snippet's `LORE_CONFIG_ROOT` static so the printed entry points the
- * spawned MCP server at the right .lore.yaml.
+ * snippet's `KENNEN_CONFIG_ROOT` static so the printed entry points the
+ * spawned MCP server at the right .kennen.yaml.
  *
  */
 export async function runPrintConfig(
@@ -98,10 +98,10 @@ export async function runPrintConfig(
   // set AND the operator's shell carries a base-URL signal that
   // does NOT resolve to dev, abort. The print-config path is itself
   // an MCP-config generation path — under this PR's contract,
-  // `lore install --dev` makes dev runtime-effective; without the
+  // `kennen install --dev` makes dev runtime-effective; without the
   // same guard here, `--print-config --dev` would emit a snippet
   // whose runtime MCP child silently routes to prod via the
-  // operator's stale shell signal (and `LORE_NOTION_BASE_URL`
+  // operator's stale shell signal (and `KENNEN_NOTION_BASE_URL`
   // outranks the literal `NOTION_BASE_URL` we'd write into the
   // printed entry's `env` block, so even when we plant the literal
   // the operator's shell would still win at MCP-spawn time).
@@ -113,7 +113,7 @@ export async function runPrintConfig(
         `--dev was passed but ${conflicting} routes auth to ${operatorBaseUrl}`
       )
       console.error(
-        "(not the dev base URL). Lore cannot print a coherent --dev snippet while"
+        "(not the dev base URL). Kennen cannot print a coherent --dev snippet while"
       )
       console.error("the shell carries a conflicting signal — the printed env would be")
       console.error(

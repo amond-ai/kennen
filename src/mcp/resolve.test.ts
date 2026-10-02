@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { resolveProjectIds, resolveReadProjectScope } from "./resolve.js"
-import type { LoreServices } from "../services.js"
-import type { Project, LoreConfig, ResolvedContext } from "../types.js"
+import type { KennenServices } from "../services.js"
+import type { Project, KennenConfig, ResolvedContext } from "../types.js"
 
 function makeProject(name: string, id = `proj-${name.toLowerCase()}`): Project {
   return {
@@ -14,7 +14,7 @@ function makeProject(name: string, id = `proj-${name.toLowerCase()}`): Project {
   }
 }
 
-const MONOREPO_CONFIG: LoreConfig = {
+const MONOREPO_CONFIG: KennenConfig = {
   vault: { pageId: "v" },
   projects: [
     { name: "Repo", path: "." },
@@ -28,10 +28,10 @@ interface StubOpts {
   isCatchAllFallback?: boolean
   findByName?: Record<string, Project | null>
   transientNames?: string[]
-  config?: LoreConfig
+  config?: KennenConfig
 }
 
-function makeServices(opts: StubOpts = {}): LoreServices {
+function makeServices(opts: StubOpts = {}): KennenServices {
   const findByName = vi.fn(async (name: string) => opts.findByName?.[name] ?? null)
   const resolveByName = vi.fn(async (name: string) => {
     if (opts.transientNames?.includes(name)) {
@@ -52,10 +52,10 @@ function makeServices(opts: StubOpts = {}): LoreServices {
   }
 
   return {
-    projects: { findByName, resolveByName } as unknown as LoreServices["projects"],
+    projects: { findByName, resolveByName } as unknown as KennenServices["projects"],
     context,
     config: opts.config ?? MONOREPO_CONFIG,
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("resolveProjectIds", () => {
@@ -198,12 +198,12 @@ describe("resolveProjectIds", () => {
     expect(result.warnings[0]).toMatch(/catch-all "Repo"/)
     expect(result.warnings[0]).toMatch(/Widget Backend/)
     expect(result.warnings[0]).toMatch(/Widget Web/)
-    expect(result.warnings[0]).not.toMatch(/lore-update/)
+    expect(result.warnings[0]).not.toMatch(/kennen-update/)
   })
 
   it("does not warn on catch-all when no sub-projects are configured", async () => {
     const repo = makeProject("Repo")
-    const soloConfig: LoreConfig = {
+    const soloConfig: KennenConfig = {
       vault: { pageId: "v" },
       projects: [{ name: "Repo", path: "." }],
     }

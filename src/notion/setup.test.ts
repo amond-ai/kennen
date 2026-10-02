@@ -396,22 +396,22 @@ describe("computeRelationConfigDiff", () => {
 
 describe("MissingVaultDatabasesError", () => {
   it("redacts long vault page ids unless debug output is enabled", () => {
-    const previous = process.env["LORE_DEBUG"]
-    delete process.env["LORE_DEBUG"]
+    const previous = process.env["KENNEN_DEBUG"]
+    delete process.env["KENNEN_DEBUG"]
     try {
       const pageId = "0123456789abcdef0123456789abcdef"
       const redacted = new MissingVaultDatabasesError(pageId, ["Entities"], ["Projects"])
       expect(redacted.message).toContain("0123...cdef")
       expect(redacted.message).not.toContain(pageId)
 
-      process.env["LORE_DEBUG"] = "1"
+      process.env["KENNEN_DEBUG"] = "1"
       const debug = new MissingVaultDatabasesError(pageId, ["Entities"], ["Projects"])
       expect(debug.message).toContain(pageId)
     } finally {
       if (previous === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = previous
+        process.env["KENNEN_DEBUG"] = previous
       }
     }
   })
@@ -631,7 +631,7 @@ describe("verifyVaultDatabases child block pagination", () => {
     })
   })
 
-  it("detects a renamed Lore database by schema fingerprint", async () => {
+  it("detects a renamed Kennen database by schema fingerprint", async () => {
     const childDatabases = [
       { id: "block-projects", title: PROJECTS_DB_TITLE },
       { id: "block-topics", title: TOPICS_DB_TITLE },
@@ -659,7 +659,7 @@ describe("verifyVaultDatabases child block pagination", () => {
     )
   })
 
-  it("treats renamed Lore databases as present when refusing partial init", async () => {
+  it("treats renamed Kennen databases as present when refusing partial init", async () => {
     const { client } = makeStartupStub({
       childDatabases: [{ id: "block-memories", title: "Memory" }],
       databaseProperties: {
@@ -680,7 +680,7 @@ describe("verifyVaultDatabases child block pagination", () => {
     expect(thrown).toMatchObject({
       present: ["Memories"],
     })
-    expect(String(thrown)).toContain("do not run 'lore init'")
+    expect(String(thrown)).toContain("do not run 'kennen init'")
   })
 
   it("fails when a paginated vault has no Entities DB", async () => {
@@ -717,7 +717,7 @@ describe("verifyVaultDatabases child block pagination", () => {
       present: ["Projects", "Topics", "Memories", "Facts"],
     })
     expect(String(thrown)).toContain("missing databases: Entities")
-    expect(String(thrown)).toContain("do not run 'lore init'")
+    expect(String(thrown)).toContain("do not run 'kennen init'")
 
     expect(blocksChildrenListCalls()).toEqual([
       { block_id: "page-1", page_size: 100 },
@@ -1095,7 +1095,7 @@ describe("migrateVaultSchema parallel retrieves", () => {
   it("reports Synopsis as a missing property on a pre-0.7.0 Memories DB", async () => {
     // A vault upgraded from <0.7.0 has no Synopsis column on Memories.
     // The drift detector must surface the column by name so an operator
-    // running `lore status` / `lore migrate` sees the nudge — and a
+    // running `kennen status` / `kennen migrate` sees the nudge — and a
     // future contributor can't silently rename or drop the property
     // without this fixture failing first.
     const { client } = makeStartupStub({
@@ -1155,9 +1155,9 @@ describe("migrateVaultSchema parallel retrieves", () => {
   it("surfaces Last Referenced At as a missing property on a pre-0.8.0 Memories DB", async () => {
     // A legacy vault retrieved through dataSources.retrieve returns the
     // pre-0.8.0 Memories shape — Review By / Done At / Decided At present,
-    // Last Referenced At absent. The first `lore status` against an
+    // Last Referenced At absent. The first `kennen status` against an
     // upgraded vault must surface `Last Referenced At` in the missing
-    // list so the operator's `lore migrate` adds it.
+    // list so the operator's `kennen migrate` adds it.
     const memoriesLive: Record<string, Record<string, unknown>> = {
       "Review By": { type: "date", date: {} },
       "Done At": { type: "date", date: {} },
@@ -1188,7 +1188,7 @@ describe("migrateVaultSchema parallel retrieves", () => {
   it("surfaces Topic Key as a missing property on a pre-0.9.0 Memories DB", async () => {
     // A vault upgraded from <0.9.0 has no `Topic Key` column on its
     // Memories DB. The drift detector must surface the column by name
-    // so an operator running `lore status` / `lore migrate` sees the
+    // so an operator running `kennen status` / `kennen migrate` sees the
     // nudge — and a future contributor can't silently rename or drop
     // the property without this fixture failing first.
     const { client } = makeStartupStub({
@@ -1215,8 +1215,8 @@ describe("migrateVaultSchema parallel retrieves", () => {
   it("surfaces Done At as a missing property on a pre-#07 Memories DB", async () => {
     // A legacy vault retrieved through dataSources.retrieve returns the
     // pre-#07 Memories shape — Review By and Decided At present, Done At
-    // absent. The first `lore status` against an upgraded vault must
-    // surface `Done At` in the missing list so the operator's `lore
+    // absent. The first `kennen status` against an upgraded vault must
+    // surface `Done At` in the missing list so the operator's `kennen
     // migrate` adds it. Pinning the property name here keeps the spec
     // stable across schema refactors (issue 0.7.0/07).
     const memoriesLive: Record<string, Record<string, unknown>> = {
@@ -1247,7 +1247,7 @@ describe("migrateVaultSchema parallel retrieves", () => {
 
   it("surfaces Compare Notes as a missing property on a pre-0.9.0 Memories DB", async () => {
     // A vault upgraded from <0.9.0 has no Compare Notes column. Drift
-    // detection must surface it by name so `lore migrate` adds it. Same
+    // detection must surface it by name so `kennen migrate` adds it. Same
     // posture as the Done At / Last Referenced At pins.
     const { client } = makeStartupStub({
       childDatabases: [],

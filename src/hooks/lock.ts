@@ -20,22 +20,22 @@ import {
   safeFilenameSegment,
   writeHookStateFileSync,
 } from "./marker-key.js"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 
 /**
  * Where per-session lock files and stderr logs live. Defaults to a fixed
  * path under `tmpdir()` so hook runs across shells converge on the same
  * directory. Resolved on every call so test harnesses can override
- * `LORE_HOOK_STATE_DIR` at runtime and have each parallel test file see
+ * `KENNEN_HOOK_STATE_DIR` at runtime and have each parallel test file see
  * its own directory.
  */
 export function getStateDir(): string {
   // `join` normalizes whatever the env var contains (e.g. collapsing macOS's
   // trailing-slash `TMPDIR`) so `path.startsWith()` comparisons against
   // return values of `lockPath` / `logPath` stay consistent.
-  return process.env["LORE_HOOK_STATE_DIR"]
-    ? join(process.env["LORE_HOOK_STATE_DIR"])
-    : join(tmpdir(), "lore-hook-state")
+  return process.env["KENNEN_HOOK_STATE_DIR"]
+    ? join(process.env["KENNEN_HOOK_STATE_DIR"])
+    : join(tmpdir(), "kennen-hook-state")
 }
 
 /**
@@ -143,12 +143,12 @@ export function activeSaveCount(): number {
  *
  * The `safeFilenameSegment` cap keeps NAME_MAX safe for
  * hostile session ids on its own, but an unusually long
- * `LORE_HOOK_STATE_DIR` close to `PATH_MAX` (≈1024 bytes on darwin, 4096
+ * `KENNEN_HOOK_STATE_DIR` close to `PATH_MAX` (≈1024 bytes on darwin, 4096
  * on Linux) can still push the full path over the syscall limit. Without
  * this classified throw, the underlying `ENAMETOOLONG` propagates out of
  * every Stop hook for the affected session and indefinitely skips autosave.
  */
-export class LockPathTooLongError extends LoreError<"lock-path-too-long"> {
+export class LockPathTooLongError extends KennenError<"lock-path-too-long"> {
   readonly code: "ENAMETOOLONG" | "ENOENT"
   readonly lockKey: string
 
@@ -215,7 +215,7 @@ export function tryAcquireSessionLock(
     ensureStateDirSync()
   } catch (err) {
     // `ensureStateDirSync` itself can trip ENAMETOOLONG when the operator
-    // configured a `LORE_HOOK_STATE_DIR` deeper than `PATH_MAX` minus
+    // configured a `KENNEN_HOOK_STATE_DIR` deeper than `PATH_MAX` minus
     // intermediate `mkdirSync` segments. Reclassify as `LockPathTooLongError`
     // so the caller can roll back marker state and record a failure marker.
     const code = (err as NodeJS.ErrnoException).code

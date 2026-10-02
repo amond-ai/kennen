@@ -31,7 +31,7 @@ const NEAR_DUP_OPTS = {
   statusProperty: "Status",
   sourceProperty: "Source",
   keywordsProperty: "Keywords",
-  cleanupOrphanSentinel: "__lore-cleanup-orphan",
+  cleanupOrphanSentinel: "__kennen-cleanup-orphan",
   projectId: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
 }
 
@@ -255,22 +255,22 @@ describe("fetchAlreadyComparedPairKeys", () => {
 })
 
 describe("isRunToolAggregateEnabled", () => {
-  it("inherits from LORE_USE_RUNTOOL when the sub-flag is unset", () => {
-    expect(isRunToolAggregateEnabled({ LORE_USE_RUNTOOL: "1" })).toBe(true)
-    expect(isRunToolAggregateEnabled({ LORE_USE_RUNTOOL: "0" })).toBe(false)
+  it("inherits from KENNEN_USE_RUNTOOL when the sub-flag is unset", () => {
+    expect(isRunToolAggregateEnabled({ KENNEN_USE_RUNTOOL: "1" })).toBe(true)
+    expect(isRunToolAggregateEnabled({ KENNEN_USE_RUNTOOL: "0" })).toBe(false)
   })
 
-  it("lets LORE_USE_RUNTOOL_AGGREGATE override the parent flag", () => {
+  it("lets KENNEN_USE_RUNTOOL_AGGREGATE override the parent flag", () => {
     expect(
       isRunToolAggregateEnabled({
-        LORE_USE_RUNTOOL: "1",
-        LORE_USE_RUNTOOL_AGGREGATE: "0",
+        KENNEN_USE_RUNTOOL: "1",
+        KENNEN_USE_RUNTOOL_AGGREGATE: "0",
       })
     ).toBe(false)
     expect(
       isRunToolAggregateEnabled({
-        LORE_USE_RUNTOOL: "0",
-        LORE_USE_RUNTOOL_AGGREGATE: "1",
+        KENNEN_USE_RUNTOOL: "0",
+        KENNEN_USE_RUNTOOL_AGGREGATE: "1",
       })
     ).toBe(true)
   })
@@ -281,7 +281,9 @@ describe("isRunToolAggregateEnabled", () => {
   })
 
   it("ignores unrecognized values, falling through to the default-on parent", () => {
-    expect(isRunToolAggregateEnabled({ LORE_USE_RUNTOOL_AGGREGATE: "maybe" })).toBe(true)
+    expect(isRunToolAggregateEnabled({ KENNEN_USE_RUNTOOL_AGGREGATE: "maybe" })).toBe(
+      true
+    )
   })
 })
 

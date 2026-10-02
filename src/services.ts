@@ -4,7 +4,7 @@
 /**
  * Shared service initialization.
  *
- * The LoreServices interface and initServices() function are used by both
+ * The KennenServices interface and initServices() function are used by both
  * the MCP server and CLI commands. Extracted here to avoid a dependency
  * from CLI → MCP layer.
  */
@@ -61,10 +61,10 @@ import {
 import { SessionMemoryTracker } from "./session-memory-tracker.js"
 import { MemoryResultHandleStore } from "./memory-result-handles.js"
 import { resolveProfileFromConfigAtRoot, type ResolvedProfile } from "./profile/index.js"
-import { resolveFeatureFlags, type LoreFeatureFlags } from "./feature-flags.js"
+import { resolveFeatureFlags, type KennenFeatureFlags } from "./feature-flags.js"
 import { resolveMemorySynopsisMaxChars } from "./policy/memory-synopsis.js"
 import type {
-  LoreConfig,
+  KennenConfig,
   MemoryScopeContext,
   ResolvedContext,
   VaultDatabases,
@@ -77,22 +77,22 @@ import { FACT_PROPS, MEMORY_PROPS } from "./notion/schema.js"
  *
  * Slots are populated from environment variables exported by the
  * caller — the same env-driven posture as the existing
- * `LORE_AGENT_NAME` / `LORE_USER_NAME` resolution. Slots not exported
+ * `KENNEN_AGENT_NAME` / `KENNEN_USER_NAME` resolution. Slots not exported
  * remain undefined, which means "no narrow-scope row of that kind
  * surfaces in default retrieval" — consistent with the no-identity
  * branch of the scope filter.
  *
  * | Env var               | Slot          |
  * | --------------------- | ------------- |
- * | `LORE_USER_NAME`      | `userId`      |
- * | `LORE_AGENT_NAME`     | `agent`       |
- * | `LORE_ROLE`           | `role`        |
- * | `LORE_SESSION_ID`     | `session`     |
- * | `LORE_RUN_ID`         | `run`         |
- * | `LORE_ENVIRONMENT`    | `environment` |
+ * | `KENNEN_USER_NAME`      | `userId`      |
+ * | `KENNEN_AGENT_NAME`     | `agent`       |
+ * | `KENNEN_ROLE`           | `role`        |
+ * | `KENNEN_SESSION_ID`     | `session`     |
+ * | `KENNEN_RUN_ID`         | `run`         |
+ * | `KENNEN_ENVIRONMENT`    | `environment` |
  *
  * Empty / whitespace-only env values normalize to undefined so a
- * caller that exports `LORE_SESSION_ID=""` doesn't accidentally
+ * caller that exports `KENNEN_SESSION_ID=""` doesn't accidentally
  * surface every session-scoped row whose `Scope Key` is also empty.
  *
  * Pure function over `process.env` — no Notion calls, no async work.
@@ -107,7 +107,7 @@ import { FACT_PROPS, MEMORY_PROPS } from "./notion/schema.js"
  * either DB.
  *
  * Used at services init to decide whether the default scope filter
- * is safe to enable. A vault that hasn't yet run `lore migrate` has
+ * is safe to enable. A vault that hasn't yet run `kennen migrate` has
  * no scope columns, so threading the filter through every read would
  * fail with `validation_error` on the first call; the probe lets us
  * gracefully degrade to unscoped retrieval shape until migration
@@ -148,26 +148,26 @@ export async function probeScopeColumnsPresent(
  * environment.
  *
  * **The write-path flag does NOT inherit from the parent
- * `LORE_USE_RUNTOOL` quarantine knob.** Parity with the read-path
+ * `KENNEN_USE_RUNTOOL` quarantine knob.** Parity with the read-path
  * sub-flags (search / aggregate) would be a footgun: an operator
- * setting `LORE_USE_RUNTOOL=1` to dogfood a future read path would
+ * setting `KENNEN_USE_RUNTOOL=1` to dogfood a future read path would
  * silently enable a write-path experiment with a partial-commit
  * failure mode. The runtool quarantine framing also paints the
  * parent flag as a read-path knob ("two read-path cleanup wins"),
  * which is at odds with implicit write-path enablement. Write-path
  * sub-flags should be loud — operators must opt in explicitly with
- * `LORE_USE_RUNTOOL_BATCH_CREATES=1`.
+ * `KENNEN_USE_RUNTOOL_BATCH_CREATES=1`.
  *
  * Resolution table:
  *
- * | `LORE_USE_RUNTOOL_BATCH_CREATES` | `LORE_USE_RUNTOOL` | Result |
+ * | `KENNEN_USE_RUNTOOL_BATCH_CREATES` | `KENNEN_USE_RUNTOOL` | Result |
  * | -------------------------------- | ------------------ | ------ |
  * | `"1"`                            | (any)              | true   |
  * | (anything else)                  | (any)              | false  |
  *
  * Default-off is the safety contract: an operator with no env vars
  * set sees the non-batched auto-mention emission path, and
- * `lore migrate --dedup-keys --merge` is the authoritative collapse
+ * `kennen migrate --dedup-keys --merge` is the authoritative collapse
  * path for any duplicates a future flag-on rollout might leak.
  *
  * The fail-loud-on-typo posture matters here because malformed
@@ -208,7 +208,7 @@ export function resolveRunToolBatchCreatesFlag(
  * RunTool validates relation URL hosts against the workspace
  * domain, and a wrong base creates confusing validation errors.
  * Operators on bespoke configurations should keep
- * `LORE_USE_RUNTOOL_BATCH_CREATES=0` and use the per-input REST
+ * `KENNEN_USE_RUNTOOL_BATCH_CREATES=0` and use the per-input REST
  * `pages.create` path, which accepts plain page ids regardless of
  * host.
  */
@@ -235,7 +235,7 @@ export function deriveRelationUrlBase(apiBaseUrl: string | undefined): string {
   }
   throw new Error(
     `Unsupported Notion API host for RunTool relation URLs: ${host}. ` +
-      "Set LORE_USE_RUNTOOL_BATCH_CREATES=0 or use a supported " +
+      "Set KENNEN_USE_RUNTOOL_BATCH_CREATES=0 or use a supported " +
       "production/dev API host."
   )
 }
@@ -248,7 +248,7 @@ function deriveRelationUrlBaseForRunToolBatchCreates(
   return deriveRelationUrlBase(apiBaseUrl)
 }
 
-function hasRunToolSurfaceEnabled(features: LoreFeatureFlags): boolean {
+function hasRunToolSurfaceEnabled(features: KennenFeatureFlags): boolean {
   return (
     features.runTool.blockEdit ||
     features.runTool.filterSql ||
@@ -260,7 +260,7 @@ function hasRunToolSurfaceEnabled(features: LoreFeatureFlags): boolean {
 
 function assertRunToolAuthSupported(
   auth: Pick<ResolvedAuth, "token">,
-  features: LoreFeatureFlags
+  features: KennenFeatureFlags
 ): void {
   if (!hasRunToolSurfaceEnabled(features)) return
   if (classifyTokenPrefix(auth.token) !== "integration") return
@@ -269,17 +269,17 @@ function assertRunToolAuthSupported(
       "or an ntn-issued user token. Integration tokens (`secret_...`) " +
       "are unsupported because RunTool rejects them with 403 " +
       "RestrictedResource. Create a PAT at https://www.notion.so/developers/tokens, " +
-      "use `lore auth --login`, or disable RunTool with `LORE_USE_RUNTOOL=0` " +
-      "and `LORE_USE_RUNTOOL_BATCH_CREATES=0`."
+      "use `kennen auth --login`, or disable RunTool with `KENNEN_USE_RUNTOOL=0` " +
+      "and `KENNEN_USE_RUNTOOL_BATCH_CREATES=0`."
   )
 }
 
 /**
  * Read the bench-mode write-budget env vars and validate them.
  *
- * The CLI's `lore mcp --write-budget <N> --budget-state-file <path>`
- * flags export `LORE_MCP_WRITE_BUDGET` and
- * `LORE_MCP_BUDGET_STATE_FILE` before `startServer` is imported. When
+ * The CLI's `kennen mcp --write-budget <N> --budget-state-file <path>`
+ * flags export `KENNEN_MCP_WRITE_BUDGET` and
+ * `KENNEN_MCP_BUDGET_STATE_FILE` before `startServer` is imported. When
  * both are present and valid, `initServices` wraps the Notion client
  * with `wrapWithWriteBudget` between the rate-limit Proxy and the SDK
  * so every successful mutation counts against the cap. Missing vars
@@ -339,7 +339,7 @@ export function installWriteBudgetShutdownHooks(): void {
   process.on("exit", flushOnce)
   // SIGTERM / SIGINT handlers MUST exit after the synchronous flush
   // — adding a signal listener otherwise overrides Node's default
-  // termination behavior, and a write-budgeted `lore mcp` child
+  // termination behavior, and a write-budgeted `kennen mcp` child
   // would survive its parent's graceful timeout. POSIX exit codes
   // for fatal signals are `128 + signal-number`.
   process.on("SIGTERM", () => {
@@ -356,19 +356,21 @@ export function readWriteBudgetEnv(): {
   limit: number
   stateFilePath: string
 } | null {
-  const limitRaw = process.env["LORE_MCP_WRITE_BUDGET"]?.trim()
-  const pathRaw = process.env["LORE_MCP_BUDGET_STATE_FILE"]?.trim()
+  const limitRaw = process.env["KENNEN_MCP_WRITE_BUDGET"]?.trim()
+  const pathRaw = process.env["KENNEN_MCP_BUDGET_STATE_FILE"]?.trim()
   if (!limitRaw && !pathRaw) return null
   if (!limitRaw || !pathRaw) {
     throw new Error(
-      "LORE_MCP_WRITE_BUDGET and LORE_MCP_BUDGET_STATE_FILE must be " +
+      "KENNEN_MCP_WRITE_BUDGET and KENNEN_MCP_BUDGET_STATE_FILE must be " +
         "set together. Set both env vars (or none) before starting the " +
         "MCP server."
     )
   }
   const limit = Number.parseInt(limitRaw, 10)
   if (!Number.isInteger(limit) || limit <= 0 || String(limit) !== limitRaw) {
-    throw new Error(`LORE_MCP_WRITE_BUDGET must be a positive integer, got "${limitRaw}"`)
+    throw new Error(
+      `KENNEN_MCP_WRITE_BUDGET must be a positive integer, got "${limitRaw}"`
+    )
   }
   return { limit, stateFilePath: pathRaw }
 }
@@ -381,17 +383,17 @@ export function resolveMemoryScopeContext(): MemoryScopeContext {
     const trimmed = raw.trim()
     return trimmed.length > 0 ? trimmed : undefined
   }
-  const userId = slot("LORE_USER_NAME")
+  const userId = slot("KENNEN_USER_NAME")
   if (userId !== undefined) ctx.userId = userId
-  const agent = slot("LORE_AGENT_NAME")
+  const agent = slot("KENNEN_AGENT_NAME")
   if (agent !== undefined) ctx.agent = agent
-  const role = slot("LORE_ROLE")
+  const role = slot("KENNEN_ROLE")
   if (role !== undefined) ctx.role = role
-  const session = slot("LORE_SESSION_ID")
+  const session = slot("KENNEN_SESSION_ID")
   if (session !== undefined) ctx.session = session
-  const run = slot("LORE_RUN_ID")
+  const run = slot("KENNEN_RUN_ID")
   if (run !== undefined) ctx.run = run
-  const environment = slot("LORE_ENVIRONMENT")
+  const environment = slot("KENNEN_ENVIRONMENT")
   if (environment !== undefined) ctx.environment = environment
   return ctx
 }
@@ -401,9 +403,9 @@ export function resolveMemoryScopeContext(): MemoryScopeContext {
  *
  * - `true` — run the schema drift check unconditionally; bypass the
  *   per-config-root debounce. Use for explicit operator-facing surfaces
- *   (`lore status`, `lore migrate`) where the user expects drift output.
+ *   (`kennen status`, `kennen migrate`) where the user expects drift output.
  * - `false` (default) — skip the drift check entirely. Use for narrow
- *   CLI commands (`lore search`, `lore mine`, `lore digest`) and any
+ *   CLI commands (`kennen search`, `kennen mine`, `kennen digest`) and any
  *   path that does not surface drift; this also applies when no policy
  *   is provided, to keep the safest default.
  * - `"debounced"` — run the drift check at most once per config root per
@@ -422,15 +424,15 @@ export interface InitServicesOptions {
   driftCheck?: DriftCheckMode
 }
 
-export interface LoreServices {
+export interface KennenServices {
   profile: ResolvedProfile
   /**
-   * Per-process runtime feature flags resolved once from .lore.yaml and
+   * Per-process runtime feature flags resolved once from .kennen.yaml and
    * backward-compatible environment inputs. Services read this snapshot
    * instead of consulting process.env at call sites so behavior cannot
    * drift mid-process.
    */
-  features: LoreFeatureFlags
+  features: KennenFeatureFlags
   /**
    * Resolved local cost-tracking ledger config. Disabled by default; when
    * enabled, interface layers append local identifiers plus redacted usage
@@ -458,11 +460,11 @@ export interface LoreServices {
    */
   entities: EntityService
   context: ResolvedContext
-  config: LoreConfig
+  config: KennenConfig
   configRoot: string
   /**
    * Per-process map of session_id → last-created memory id. MCP save tools
-   * record into it; `lore-fact action='create'` reads it to auto-link
+   * record into it; `kennen-fact action='create'` reads it to auto-link
    * `sourceMemoryId` when the caller omits it. Empty (and unused) in
    * one-shot CLI/hook contexts.
    */
@@ -476,7 +478,7 @@ export interface LoreServices {
   /**
    * Lazy engineer identity resolver for Memory `Author` attribution
    * (DEFERRED-ATTRIBUTION). Write paths call it only when the caller
-   * omitted an explicit author. `LORE_USER_NAME` resolves synchronously;
+   * omitted an explicit author. `KENNEN_USER_NAME` resolves synchronously;
    * otherwise it falls back to `users.me().bot.owner.user.name` and
    * caches that best-effort result by the active Notion token/base URL.
    *
@@ -524,16 +526,16 @@ export interface LoreServices {
    * Resolved scope context for the current process.
    * `MemoryService` and `FactService` already hold their own copies
    * via `setScopeContext`; this snapshot is exposed on the services
-   * bundle so MCP audit responses, the `lore status` rendering, and
+   * bundle so MCP audit responses, the `kennen status` rendering, and
    * a future operator-facing CLI can surface "which identity slots
-   * are populated for this session." Empty when no `LORE_*` env vars
+   * are populated for this session." Empty when no `KENNEN_*` env vars
    * are set.
    */
   scopeContext: MemoryScopeContext
   /**
    * Per-upstream read-only service bundles ("Read
    * inheritance"). One entry per configured `upstreamVaults` row in
-   * .lore.yaml, sorted by priority ascending. `[]` on single-vault
+   * .kennen.yaml, sorted by priority ascending. `[]` on single-vault
    * configs — single-vault behavior collapses to the unchanged
    * single-vault read path because no fan-out branch reaches this
    * surface when the list is empty.
@@ -549,7 +551,7 @@ export interface LoreServices {
    * the surviving upstreams.
    *
    * Promotion targets are NOT exposed here. Promotion is a deliberate
-   * write surface (`lore promote`, `lore-memory action='promote'`),
+   * write surface (`kennen promote`, `kennen-memory action='promote'`),
    * not a read-orchestration surface. Including promotion targets in
    * `upstreams` would let read paths silently fan out to vaults the
    * operator designated for review-gated writes only.
@@ -566,9 +568,9 @@ export const AUTH_REFRESH_UNAVAILABLE_CACHE_MS = 1_000
 export async function initServicesFromConfig(
   cwd: string,
   configRoot: string,
-  config: LoreConfig,
+  config: KennenConfig,
   options: InitServicesOptions = {}
-): Promise<LoreServices> {
+): Promise<KennenServices> {
   const profile = resolveProfileFromConfigAtRoot(config, configRoot)
   const features = resolveFeatureFlags(process.env, config)
   const memorySynopsisMaxChars = resolveMemorySynopsisMaxChars(config)
@@ -676,13 +678,13 @@ export async function initServicesFromConfig(
   //
   // Migration safety: the scope filter references `Scope Kind` and
   // `Expires At` columns. If those columns are missing on a legacy
-  // vault that hasn't yet run `lore migrate`, every default read
+  // vault that hasn't yet run `kennen migrate`, every default read
   // would fail with a `validation_error`. We probe the live schema
   // once at startup and disable the filter when the columns are
   // absent — recall on legacy vaults stays byte-identical to the
   // non-scoped retrieval shape until the operator runs migration. A
   // one-line stderr notice surfaces the gap so the operator knows to
-  // run `lore migrate`.
+  // run `kennen migrate`.
   const scopeCtx = resolveMemoryScopeContext()
   const scopeColumnsReady = await probeScopeColumnsPresent(client, db).catch(() => {
     // Probe failure (transient 5xx, rate-limit blip) is the
@@ -695,8 +697,8 @@ export async function initServicesFromConfig(
   })
   if (!scopeColumnsReady) {
     process.stderr.write(
-      "[lore] scope/lifetime columns missing on this vault — recall " +
-        "is using pre-#283 retrieval shape. Run `lore migrate` " +
+      "[kennen] scope/lifetime columns missing on this vault — recall " +
+        "is using pre-#283 retrieval shape. Run `kennen migrate` " +
         "to add Scope Kind / Scope Key / Audience / Lifetime / Expires " +
         "At and enable scope-aware retrieval.\n"
     )
@@ -719,13 +721,13 @@ export async function initServicesFromConfig(
   // Decisions are backed by the Memories DB — same DatabaseRef, different
   // business logic (Kind = decision discriminator, supersession chains,
   // index-tier listings without body fetch). Scope context threads
-  // through so `lore-decision action='list'` and the wake-up
+  // through so `kennen-decision action='list'` and the wake-up
   // Decisions Requiring Attention section apply the same default
-  // scope filter as `lore-memory` reads.
+  // scope filter as `kennen-memory` reads.
   const decisions = new DecisionService(client, db.memories, effectiveScopeCtx)
   // Tasks are likewise Memories-DB backed via the `Kind = task`
   // discriminator. Tasks are the canonical surface for tracked work.
-  // Scope context threads through so `lore-task action='list'`
+  // Scope context threads through so `kennen-task action='list'`
   // applies the same default scope filter.
   const tasks = new TaskService(client, db.memories, effectiveScopeCtx)
   const entities = new EntityService(client, db.entities, { features })
@@ -773,7 +775,7 @@ export async function initServicesFromConfig(
 export function createNtnAuthRefresh(
   initialAuth: ResolvedAuth,
   configRoot: string,
-  config: LoreConfig
+  config: KennenConfig
 ): RefreshClientAuth | undefined {
   if (initialAuth.source !== "ntn-auth-json") return undefined
 
@@ -840,37 +842,37 @@ function errorMessage(err: unknown): string | undefined {
 export async function initServices(
   cwd?: string,
   options: InitServicesOptions = {}
-): Promise<LoreServices> {
+): Promise<KennenServices> {
   const workDir = cwd ?? process.cwd()
 
-  // 0.10.0: honor LORE_CONFIG_ROOT for MCP-spawned children.
+  // 0.10.0: honor KENNEN_CONFIG_ROOT for MCP-spawned children.
   // The install path (`buildMcpEnv`)
   // forwards this static value into the MCP entry so the spawned
-  // child resolves the right .lore.yaml without re-walking up
+  // child resolves the right .kennen.yaml without re-walking up
   // from the host's spawn-time cwd (which may not match the
   // operator's vault directory). Falls back to the upward search
   // when the env var is unset, preserving the original CLI /
   // hooks paths.
   //
   // Surface a friendly error when the env var points at a
-  // directory that lacks .lore.yaml so the operator sees
+  // directory that lacks .kennen.yaml so the operator sees
   // guidance rather than the raw `ENOENT` from `loadConfig`.
   //
-  // Whitespace-only values (e.g., `LORE_CONFIG_ROOT="   "` from a
+  // Whitespace-only values (e.g., `KENNEN_CONFIG_ROOT="   "` from a
   // shell-rc misconfiguration) fall through to the upward search
   // rather than `resolve("   ")` producing cwd-prefix garbage.
-  const rawRoot = process.env["LORE_CONFIG_ROOT"]
+  const rawRoot = process.env["KENNEN_CONFIG_ROOT"]
   const explicitRoot = rawRoot?.trim() ? rawRoot.trim() : undefined
   if (explicitRoot) {
     const root = resolve(explicitRoot)
-    const configPath = resolve(root, ".lore.yaml")
+    const configPath = resolve(root, ".kennen.yaml")
     try {
       await access(configPath)
     } catch {
       throw new Error(
-        `LORE_CONFIG_ROOT=${root} but no .lore.yaml exists there. ` +
-          "Re-run `lore install` from the project directory or unset " +
-          "LORE_CONFIG_ROOT to fall back to the upward search."
+        `KENNEN_CONFIG_ROOT=${root} but no .kennen.yaml exists there. ` +
+          "Re-run `kennen install` from the project directory or unset " +
+          "KENNEN_CONFIG_ROOT to fall back to the upward search."
       )
     }
     const config = await loadConfig(configPath)
@@ -879,7 +881,7 @@ export async function initServices(
 
   const found = await findConfigFile(workDir)
   if (!found) {
-    throw new Error("No .lore.yaml found. Run `lore init` to set up a vault.")
+    throw new Error("No .kennen.yaml found. Run `kennen init` to set up a vault.")
   }
 
   const config = await loadConfig(found.path)
@@ -929,7 +931,7 @@ export async function resolveDriftCheck(
  * call this to force-fresh reads between fixtures; production code
  * leaves the caches alone and lets TTLs do the work.
  */
-export function clearServiceCaches(services: LoreServices): void {
+export function clearServiceCaches(services: KennenServices): void {
   services.projects.clearNameCache()
   services.topics.clearNameCache()
   services.memories.clearTitleCache()

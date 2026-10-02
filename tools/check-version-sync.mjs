@@ -131,8 +131,8 @@ export function extractCliVersion(raw) {
 export function extractUserAgentVersion(raw) {
   return extractMatch(
     raw,
-    /const\s+USER_AGENT\s*=\s*["']lore\/([^"']+)["']/,
-    'USER_AGENT = "lore/..."'
+    /const\s+USER_AGENT\s*=\s*["']kennen\/([^"']+)["']/,
+    'USER_AGENT = "kennen/..."'
   )
 }
 
@@ -223,7 +223,7 @@ export function validateVersionSync(options = {}) {
 }
 
 function fail(errors) {
-  process.stderr.write("[lore] version literals are out of sync:\n")
+  process.stderr.write("[kennen] version literals are out of sync:\n")
   for (const error of errors) process.stderr.write(`- ${error}\n`)
   process.exit(1)
 }

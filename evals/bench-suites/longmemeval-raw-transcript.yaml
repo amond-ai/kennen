@@ -21,10 +21,10 @@ notes: |
   Raw-transcript ingestion variant: each haystack session is stored
   verbatim as one memory, bypassing the Stop-hook autosave's "durable
   knowledge" filter. Every conversational token is stored, and retrieval
-  reads it back through lore-query / lore-context.
+  reads it back through kennen-query / kennen-context.
 
   The sibling longmemeval.yaml runs the same corpus through
-  `runConversationMining` (Lore's production write path). The two
+  `runConversationMining` (Kennen's production write path). The two
   numbers measure different things: this suite measures retrieval
   quality with full corpus fidelity; the sibling measures the
   production write path's signal-extraction behavior on a synthetic

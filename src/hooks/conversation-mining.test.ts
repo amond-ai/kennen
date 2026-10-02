@@ -128,7 +128,7 @@ describe("runConversationMining", () => {
     closeSyncMock.mockReset()
     fchmodSyncMock.mockReset()
     fchmodSyncMock.mockImplementation(() => undefined)
-    tmpDir = mkdtempSync(join(tmpdir(), "lore-mining-test-"))
+    tmpDir = mkdtempSync(join(tmpdir(), "kennen-mining-test-"))
   })
 
   afterEach(() => {
@@ -155,11 +155,11 @@ describe("runConversationMining", () => {
     ).rejects.toThrow(/binary "\/nonexistent\/path\/to\/binary" not found/)
 
     // Operator-debug hint matches the hook path's shape so engineers
-    // triaging "lore can't find my agent" see one surface across paths.
+    // triaging "kennen can't find my agent" see one surface across paths.
     expect(stderrSpy).toHaveBeenCalled()
     const hintCall = stderrSpy.mock.calls
       .map((c) => String(c[0]))
-      .find((s) => s.includes("[lore] conversation-mining:"))
+      .find((s) => s.includes("[kennen] conversation-mining:"))
     expect(hintCall).toBeDefined()
     expect(hintCall).toContain(
       'background command "/nonexistent/path/to/binary" not found on PATH'

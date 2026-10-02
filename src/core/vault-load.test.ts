@@ -143,7 +143,7 @@ describe("VaultManager.load — drift-check gate (0.6.0 issue 02)", () => {
       // and the catch handler runs.
       await new Promise<void>((r) => setTimeout(r, 0))
       expect(errSpy).toHaveBeenCalledWith(
-        "[lore] Schema drift check failed:",
+        "[kennen] Schema drift check failed:",
         expect.any(String)
       )
     } finally {

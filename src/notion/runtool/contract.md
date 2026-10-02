@@ -1,23 +1,23 @@
 # RunTool Contract
 
-This document is the current contract for Lore's use of Notion's internal
+This document is the current contract for Kennen's use of Notion's internal
 RunTool API. Historical phase notes and manual run evidence live in
 [`../../../docs/archive/runtool-evidence.md`](../../../docs/archive/runtool-evidence.md).
 
 ## Scope
 
-Lore vendors a pinned subset of RunTool. Code in this repo must not import the
+Kennen vendors a pinned subset of RunTool. Code in this repo must not import the
 internal upstream source at build or runtime, and must not extend the tool set
 without an explicit issue.
 
 Supported tool names use the RunTool API names, not MCP-facing aliases:
 
-| RunTool API name     | MCP alias not used in Lore  | Lore status                                  |
-| -------------------- | --------------------------- | -------------------------------------------- |
-| `search`             | `notion-search`             | Semantic-lane candidate fetch                |
-| `query_data_sources` | `notion-query-data-sources` | SQL filters and aggregate helper             |
-| `create_pages`       | `notion-create-pages`       | Explicit opt-in batch create                 |
-| `update_page`        | `notion-update-page`        | Anchored markdown edits via `update_content` |
+| RunTool API name     | MCP alias not used in Kennen | Kennen status                                |
+| -------------------- | ---------------------------- | -------------------------------------------- |
+| `search`             | `notion-search`              | Semantic-lane candidate fetch                |
+| `query_data_sources` | `notion-query-data-sources`  | SQL filters and aggregate helper             |
+| `create_pages`       | `notion-create-pages`        | Explicit opt-in batch create                 |
+| `update_page`        | `notion-update-page`         | Anchored markdown edits via `update_content` |
 
 Other tools present in the pinned upstream `RunToolParams.ALL_TOOLS` list are
 out of scope until a separate issue adds a consumer.
@@ -60,10 +60,10 @@ POST /v1/tools/run
 ```
 
 The endpoint is registered upstream with `isEndpointDocumented: false` and is
-server-gated by the `ai_tools_public_api` Statsig flag. Lore therefore treats
+server-gated by the `ai_tools_public_api` Statsig flag. Kennen therefore treats
 it as a quarantined, pinned-schema integration.
 
-Base URL is the same Notion REST host Lore already targets: `LORE_NOTION_BASE_URL`
+Base URL is the same Notion REST host Kennen already targets: `KENNEN_NOTION_BASE_URL`
 when set, otherwise the SDK default. The wrapper must not introduce a second
 base-URL knob.
 
@@ -94,11 +94,11 @@ runTool(client, "search", params)
 The response body is the bare per-tool resource shape. There is no outer
 `{ type, [tool_name]: ... }` wrapper mirroring the request.
 
-| Tool                 | Response shape Lore expects                                                                          |
+| Tool                 | Response shape Kennen expects                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------------------------- |
 | `create_pages`       | `{ pages: Array<{ id: string }> }`                                                                   |
 | `update_page`        | `UpdatePageResource.Value`; the `update_content` wrapper only exposes success/deletion-warning state |
-| `search`             | `InternalSearchResource.Value` for Lore's `internal` search use case                                 |
+| `search`             | `InternalSearchResource.Value` for Kennen's `internal` search use case                               |
 | `query_data_sources` | `{ results, has_more, data_source_ids? }`                                                            |
 
 A wrapper that types responses as `{ type, [tool]: ... }` will fail on the
@@ -107,7 +107,7 @@ first real call.
 ## Auth And Capability
 
 The Notion SDK sends the resolved token as `Authorization: Bearer <token>` for
-RunTool just as it does for every REST call. Lore's auth priority remains:
+RunTool just as it does for every REST call. Kennen's auth priority remains:
 
 1. `NOTION_API_TOKEN`
 2. ntn-resolved `~/.config/notion/auth.json`
@@ -145,7 +145,7 @@ RunTool calls go through two server-side checks:
 | Per-tool, per-actor RunTool quota | All RunTool tools                                                               | Keyed on `(actorId, toolName)`; failures surface as HTTP 429 with `Retry-After`. |
 | Block-write quota                 | `create_pages`, `update_page`, `move_pages`, `duplicate_page`, `create_comment` | Counts blocks written; read tools skip this gate.                                |
 
-On the Lore side, RunTool must dispatch through the same `Client` instance as
+On the Kennen side, RunTool must dispatch through the same `Client` instance as
 REST/SDK calls. That keeps RunTool under `createLimitedClient`'s token bucket
 and lets the shared 401 refresh and 429 `Retry-After` backoff remain the only
 auth/rate-limit mechanisms in the process.
@@ -177,24 +177,24 @@ propagate unless a consumer explicitly documents a safe fallback branch.
 
 ## `search`
 
-Lore issues internal search requests scoped to the Memories data source:
+Kennen issues internal search requests scoped to the Memories data source:
 
-| Field                               | Type                            | Lore use                                   |
-| ----------------------------------- | ------------------------------- | ------------------------------------------ |
-| `query`                             | `string`, min length 1          | Required semantic query string             |
-| `data_source_url`                   | `collection://<data_source_id>` | Scopes to the Memories data source         |
-| `page_size`                         | 1-25                            | Wrapper clamps to 25                       |
-| `max_highlight_length`              | 0-500                           | Lore sets `0`; highlights are not surfaced |
-| `query_type`, `content_search_mode` | optional upstream fields        | Omitted for workflow-bot compatibility     |
+| Field                               | Type                            | Kennen use                                   |
+| ----------------------------------- | ------------------------------- | -------------------------------------------- |
+| `query`                             | `string`, min length 1          | Required semantic query string               |
+| `data_source_url`                   | `collection://<data_source_id>` | Scopes to the Memories data source           |
+| `page_size`                         | 1-25                            | Wrapper clamps to 25                         |
+| `max_highlight_length`              | 0-500                           | Kennen sets `0`; highlights are not surfaced |
+| `query_type`, `content_search_mode` | optional upstream fields        | Omitted for workflow-bot compatibility       |
 
 RunTool `search` has no request cursor and no response `next_cursor`. It cannot
-represent REST search's paginated `page_size: 100` path. Lore treats RunTool
+represent REST search's paginated `page_size: 100` path. Kennen treats RunTool
 AI search as the authoritative semantic transport for non-empty queries and
 surfaces saturated candidate windows as `capped` metadata instead of silently
-switching to REST. Operators can use `LORE_USE_RUNTOOL_SEARCH=0` or
-`LORE_USE_RUNTOOL=0` when they need the REST search transport.
+switching to REST. Operators can use `KENNEN_USE_RUNTOOL_SEARCH=0` or
+`KENNEN_USE_RUNTOOL=0` when they need the REST search transport.
 
-Lore consumes `InternalSearchResource.Value`:
+Kennen consumes `InternalSearchResource.Value`:
 
 ```ts
 type InternalSearchResource = {
@@ -216,7 +216,7 @@ results carry full URLs and are dropped by the wrapper.
 
 ## `query_data_sources`
 
-Lore uses SQL mode. The request data is wrapped under the tool envelope:
+Kennen uses SQL mode. The request data is wrapped under the tool envelope:
 
 ```jsonc
 {
@@ -236,10 +236,10 @@ Lore uses SQL mode. The request data is wrapped under the tool envelope:
 | ------------------ | -------- | --------------------------------------------------------------- |
 | `data_source_urls` | yes      | `collection://<data_source_id>` for each referenced data source |
 | `query`            | yes      | SQLite; quote the data-source URL as the table name             |
-| `mode`             | no       | Defaults to `sql`; Lore sets SQL mode explicitly where useful   |
+| `mode`             | no       | Defaults to `sql`; Kennen sets SQL mode explicitly where useful |
 | `params`           | no       | String values for `?` placeholders                              |
 
-View mode (`mode: "view"`, `view_url`) exists upstream but is not used by Lore.
+View mode (`mode: "view"`, `view_url`) exists upstream but is not used by Kennen.
 
 Response shape:
 
@@ -252,7 +252,7 @@ type QueryDataSourcesResource = {
 ```
 
 There is no documented cursor, offset, or page-size input. When `has_more` is
-true, Lore treats the SQL result as partial and falls back rather than consuming
+true, Kennen treats the SQL result as partial and falls back rather than consuming
 an incomplete result.
 
 Known SQL gateway constraints that are load-bearing for current helpers:

@@ -43,8 +43,8 @@ describe("mcp command", () => {
   it("redacts fatal startup failures on the bin-dispatch path", async () => {
     const pageId = "abcdef0123456789abcdef0123456789"
     const token = "development_ntn_abcdefghijklmnopqrstuvwxyz"
-    const previousBackgroundAgent = process.env["LORE_BACKGROUND_AGENT"]
-    process.env["LORE_BACKGROUND_AGENT"] = "true"
+    const previousBackgroundAgent = process.env["KENNEN_BACKGROUND_AGENT"]
+    process.env["KENNEN_BACKGROUND_AGENT"] = "true"
     const err = new Error(`background init failed for ${pageId} with ${token}\nretry`)
     err.stack =
       `Error: background init failed for ${pageId} with ${token}\n` +
@@ -59,7 +59,7 @@ describe("mcp command", () => {
       expect(stderrSpy).toHaveBeenCalledTimes(1)
       const line = String(stderrSpy.mock.calls[0][0])
       expect(line).toBe(
-        "[lore] Fatal error: background init failed for <page-id> with <redacted-token> retry\n"
+        "[kennen] Fatal error: background init failed for <page-id> with <redacted-token> retry\n"
       )
       expect(line).not.toContain(pageId)
       expect(line).not.toContain(token)
@@ -67,9 +67,9 @@ describe("mcp command", () => {
       expect(line.match(/\n/g)).toHaveLength(1)
     } finally {
       if (previousBackgroundAgent === undefined) {
-        delete process.env["LORE_BACKGROUND_AGENT"]
+        delete process.env["KENNEN_BACKGROUND_AGENT"]
       } else {
-        process.env["LORE_BACKGROUND_AGENT"] = previousBackgroundAgent
+        process.env["KENNEN_BACKGROUND_AGENT"] = previousBackgroundAgent
       }
     }
   })

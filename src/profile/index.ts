@@ -34,18 +34,18 @@ export type ProfileSource = "built-in" | "local" | "external"
  * Phase 3 resolution priority for a `<name>@<version>` selector when a
  * `configRoot` is known:
  *
- *   1. Project-local: `<configRoot>/.lore/profiles/local/<name>/<version>/`
- *   2. Built-in: bundled in the Lore release at `profiles/<name>/`
- *   3. Installed external: `<configRoot>/.lore/profiles/installed/<name>/<version>/`
+ *   1. Project-local: `<configRoot>/.kennen/profiles/local/<name>/<version>/`
+ *   2. Built-in: bundled in the Kennen release at `profiles/<name>/`
+ *   3. Installed external: `<configRoot>/.kennen/profiles/installed/<name>/<version>/`
  *
  * Selectors without a known `configRoot` (the bare `resolveProfileFromConfig`
  * entrypoint used by built-in tests and startup-before-config paths) only
  * resolve against the built-in directory.
  */
-export const LOCAL_PROFILES_REL = ".lore/profiles/local"
-export const INSTALLED_PROFILES_REL = ".lore/profiles/installed"
+export const LOCAL_PROFILES_REL = ".kennen/profiles/local"
+export const INSTALLED_PROFILES_REL = ".kennen/profiles/installed"
 export const INSTALLED_PROFILES_LOCK_FILENAME = "profiles.lock.json"
-export const PROFILE_MIGRATIONS_LEDGER_REL = ".lore/profile-migrations"
+export const PROFILE_MIGRATIONS_LEDGER_REL = ".kennen/profile-migrations"
 
 export interface ProfileManifest {
   name: string
@@ -352,7 +352,7 @@ export function resolveProfileFromConfig(config: { profile?: string }): Resolved
   } catch (err) {
     if (!(err instanceof ProfileLoadError)) throw err
     throw new ProfileLoadError(
-      `Unknown built-in profile "${parsed.name}". Expected profiles/${parsed.name}/profile.yaml to exist in this Lore release.`
+      `Unknown built-in profile "${parsed.name}". Expected profiles/${parsed.name}/profile.yaml to exist in this Kennen release.`
     )
   }
   return loadProfileFromRoot(root, { source: "built-in", selector: parsed.selector })
@@ -366,7 +366,7 @@ export function resolveProfileFromConfig(config: { profile?: string }): Resolved
  * The `configRoot` form differs from bare `resolveProfileFromConfig`
  * because only this entrypoint knows where to look for local /
  * installed-external bundles. Callers without a config root (built-in
- * tests, no-vault `lore profile validate <path>` flows) keep using the
+ * tests, no-vault `kennen profile validate <path>` flows) keep using the
  * bare form.
  */
 export function resolveProfileFromConfigAtRoot(
@@ -452,11 +452,11 @@ export interface DiscoveredProfile {
  * Enumerate every profile resolvable from a config root:
  *
  *   - all built-in profiles (one per directory under repo `profiles/`)
- *   - local overrides under `<configRoot>/.lore/profiles/local/<name>/<version>/`
+ *   - local overrides under `<configRoot>/.kennen/profiles/local/<name>/<version>/`
  *   - installed external profiles under
- *     `<configRoot>/.lore/profiles/installed/<name>/<version>/`
+ *     `<configRoot>/.kennen/profiles/installed/<name>/<version>/`
  *
- * The result is unsorted; callers (e.g., `lore profile list`) sort and
+ * The result is unsorted; callers (e.g., `kennen profile list`) sort and
  * compute shadowing relationships using the canonical priority.
  */
 export function discoverProfiles(configRoot: string): DiscoveredProfile[] {

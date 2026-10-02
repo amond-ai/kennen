@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { debugLogAutoFactFailure, toolError } from "../../helpers.js"
 import { debugLogPartialFailures } from "../../../observability/partial-failure.js"
 import { resolveProjectIds } from "../../resolve.js"
@@ -29,7 +29,7 @@ import type { ToolResult } from "./types.js"
 import { KINDS, SOURCES, STATUSES } from "./types.js"
 
 /**
- * Trigram threshold for the `lore-memory action='save'` near-duplicate
+ * Trigram threshold for the `kennen-memory action='save'` near-duplicate
  * probe. Initial guess — tune after rollout if
  * we see false positives flooding the response footer on legitimately-
  * distinct memories sharing boilerplate title wording.
@@ -62,7 +62,7 @@ function formatNearDuplicateMatches(matches: NearDuplicateMatch[]): string[] {
     lines.push(`  - …and ${matches.length - shown.length} more`)
   }
   lines.push(
-    "Consider `lore-memory` with `action: 'update'` on the existing row, or `lore-decision` with `action: 'create'` and `supersedesIds` if this is a formal replacement."
+    "Consider `kennen-memory` with `action: 'update'` on the existing row, or `kennen-decision` with `action: 'create'` and `supersedesIds` if this is a formal replacement."
   )
   return lines
 }
@@ -78,7 +78,7 @@ function isAutosaveLearningSave(
   resolvedSource: MemorySource
 ): boolean {
   return (
-    process.env["LORE_BACKGROUND_AGENT"] === "true" &&
+    process.env["KENNEN_BACKGROUND_AGENT"] === "true" &&
     resolvedSource === "autosave_learning" &&
     resolvedKind === "note" &&
     typeof args.session === "string" &&
@@ -107,7 +107,7 @@ function formatAutosaveLearningDuplicate(
       `token containment ${match.tokenContainment.toFixed(2)}` +
       (match.semanticRank !== null ? `, semantic rank ${match.semanticRank + 1}` : ""),
     "No new memory was created. The existing memory stays available for this session.",
-    "Recovery: set LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1 before autosave to force a separate row.",
+    "Recovery: set KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1 before autosave to force a separate row.",
   ]
   // Any reuse scope drops candidate-only metadata because no new row is
   // created, so surface the footer for same-session and cross-session hits.
@@ -152,7 +152,7 @@ function sameProjectSet(left: readonly string[], right: readonly string[]): bool
 }
 
 async function findSameDayDigest(
-  services: LoreServices,
+  services: KennenServices,
   title: string,
   projectIds: readonly string[]
 ): Promise<{ memory: Memory; date: string } | null> {
@@ -220,7 +220,7 @@ function buildDigestUpdateInput(
 }
 
 async function createMemoryWithResult(
-  services: LoreServices,
+  services: KennenServices,
   input: CreateMemoryInput
 ): Promise<MemoryCreateResult> {
   const memories = services.memories as typeof services.memories & {
@@ -280,7 +280,7 @@ function applyExpiryArgs(
   }
 }
 export async function handleSave(
-  services: LoreServices,
+  services: KennenServices,
   args: SaveArgs
 ): Promise<ToolResult> {
   try {
@@ -306,7 +306,7 @@ export async function handleSave(
     }
     if (!subject && args.kind === "state") {
       throw new Error(
-        "kind='state' saves must use subject with replace=true so Lore can derive the canonical state topic key."
+        "kind='state' saves must use subject with replace=true so Kennen can derive the canonical state topic key."
       )
     }
     if (!subject && args.topicKey?.startsWith("state/")) {
@@ -323,7 +323,7 @@ export async function handleSave(
     // machinery, but its key is derived from `subject` above rather than
     // accepted as a direct `topicKey` input. Notes are the catch-all
     // default and tasks are
-    // lifecycle records owned by `lore-task`, so neither forms a
+    // lifecycle records owned by `kennen-task`, so neither forms a
     // recurring topic — the suggester (`action='suggest-topic-key'`)
     // returns null for `kind: 'note'` and `kind: 'task'` for the same
     // reason.
@@ -356,7 +356,7 @@ export async function handleSave(
         resolvedKind === "note"
           ? "notes are the catch-all default"
           : resolvedKind === "task"
-            ? "tasks are lifecycle records owned by lore-task"
+            ? "tasks are lifecycle records owned by kennen-task"
             : "operational rows are temporary coordination receipts"
 
       throw new Error(
@@ -366,11 +366,11 @@ export async function handleSave(
           "Either omit topicKey, or set kind to one of: decision, " +
           "runbook, incident, postmortem, policy. " +
           "For current-state rows, use subject with replace=true. " +
-          "Procedures are not written through lore-memory action='save' — " +
-          "use lore-procedure action='propose' instead."
+          "Procedures are not written through kennen-memory action='save' — " +
+          "use kennen-procedure action='propose' instead."
       )
     }
-    // Procedure writes route through `lore-procedure action='propose'`
+    // Procedure writes route through `kennen-procedure action='propose'`
     // exclusively. The propose path enforces source-memory live-row
     // validation (`resolveProcedureSources`), the
     // `PROCEDURE_MIN_SOURCES` threshold, the
@@ -382,12 +382,12 @@ export async function handleSave(
     // fleet-wide procedures silently.
     if (resolvedKind === "procedure") {
       throw new Error(
-        "lore-memory action='save' does not accept kind: 'procedure'. " +
-          "Procedures must route through lore-procedure action='propose', " +
+        "kennen-memory action='save' does not accept kind: 'procedure'. " +
+          "Procedures must route through kennen-procedure action='propose', " +
           "which validates supporting source memories, enforces the " +
           "minimum-sources gate, probes the topic-key slot for idempotency, " +
           "and lands the row at Status: proposed for inbox review. " +
-          "Use lore-procedure action='propose' instead."
+          "Use kennen-procedure action='propose' instead."
       )
     }
 
@@ -408,7 +408,7 @@ export async function handleSave(
           limit: NEAR_DUPLICATE_POOL_LIMIT,
           features,
           onError: (err) =>
-            debugLogPartialFailures("lore-memory", [
+            debugLogPartialFailures("kennen-memory", [
               { rootId: "near-duplicate-probe", error: err },
             ]),
         })
@@ -448,7 +448,7 @@ export async function handleSave(
         limit: AUTOSAVE_LEARNING_DUPLICATE_POOL_LIMIT,
         features,
         onError: (err) =>
-          debugLogPartialFailures("lore-memory", [
+          debugLogPartialFailures("kennen-memory", [
             { rootId: "autosave-learning-dedup", error: err },
           ]),
       })
@@ -493,7 +493,9 @@ export async function handleSave(
       projectId: probeProjectId,
       features,
       onError: (err) =>
-        debugLogPartialFailures("lore-memory", [{ rootId: "task-crossref", error: err }]),
+        debugLogPartialFailures("kennen-memory", [
+          { rootId: "task-crossref", error: err },
+        ]),
     })
 
     let topicId: string | undefined
@@ -712,8 +714,8 @@ export async function handleSave(
     //    ALSO runs inside `findRelatedActiveTasks` above. Coupling
     //    the two probes onto a single tokenizer pass would re-couple
     //    their failure domains and force a shared kill switch —
-    //    keeping them independent lets `LORE_DISABLE_TASK_CROSSREF=1`
-    //    and `LORE_DISABLE_AUTO_MENTIONS=1` toggle separately. The
+    //    keeping them independent lets `KENNEN_DISABLE_TASK_CROSSREF=1`
+    //    and `KENNEN_DISABLE_AUTO_MENTIONS=1` toggle separately. The
     //    extractor is regex-only; the duplicate call is cheap.
     const autoMentions = await emitAutoMentions({
       facts: services.facts,
@@ -758,8 +760,8 @@ export async function handleSave(
     // least one candidate, so an operator inspecting a save with
     // entities ALWAYS sees a signal whether the work actually landed
     // (count == attempted), partially landed (count < attempted,
-    // failures logged under LORE_DEBUG=1), or fully failed (count =
-    // 0/N). A kill-switched run (LORE_DISABLE_AUTO_MENTIONS=1) and a
+    // failures logged under KENNEN_DEBUG=1), or fully failed (count =
+    // 0/N). A kill-switched run (KENNEN_DISABLE_AUTO_MENTIONS=1) and a
     // run with no extractable entities both stay silent (no
     // attempted count to surface).
     if (autoMentionsAttempted > 0) {
@@ -833,7 +835,7 @@ function formatPromotionAdvisory(
 /**
  * Render the active-task cross-reference footer.
  *
- * Matches the duplicate-task footer on `lore-task action='create'` —
+ * Matches the duplicate-task footer on `kennen-task action='create'` —
  * heading line + one bulleted line per task with
  * title, state, and a copy-paste closure CTA. Heading wording differs
  * deliberately: the duplicate-task footer says "close any that are
@@ -849,7 +851,7 @@ function formatRelatedTaskCrossref(tasks: TaskSummary[]): string[] {
     const stateLabel = task.taskState ?? "open"
     lines.push(
       `  - "${task.title}" [${stateLabel}] — ` +
-        `lore-task({ action: 'close', taskId: '${task.id}' })`
+        `kennen-task({ action: 'close', taskId: '${task.id}' })`
     )
   }
   return lines

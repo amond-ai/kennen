@@ -6,11 +6,11 @@ or troubleshooting detail.
 
 ## Architecture
 
-Lore stores knowledge in Notion and exposes it through the MCP server, CLI, and
+Kennen stores knowledge in Notion and exposes it through the MCP server, CLI, and
 assistant hooks. `services.ts` is the shared initialization path for all three.
 
 ```text
-.lore.yaml -> config.ts -> services.ts
+.kennen.yaml -> config.ts -> services.ts
                               |
                  +------------+------------+
                  |            |            |
@@ -66,9 +66,9 @@ and migration differences.
 
 ## Configuration
 
-- Config lives in `.lore.yaml` with upward directory search from cwd.
-- `.lore.yaml` is local-only — keep it out of version control. Copy
-  `.lore.example.yaml` to `.lore.yaml` per clone, and distribute shared team
+- Config lives in `.kennen.yaml` with upward directory search from cwd.
+- `.kennen.yaml` is local-only — keep it out of version control. Copy
+  `.kennen.example.yaml` to `.kennen.yaml` per clone, and distribute shared team
   values (`vault.pageId`, `auth.workspaceId`) via onboarding docs rather than
   by committing config. The current policy also applies to credential-free
   shared vault config and supersedes older changelog guidance that allowed
@@ -81,30 +81,30 @@ and migration differences.
 - Token resolution is handled by `resolveAuth` in `src/config.ts`; see
   [`docs/authentication.md`](authentication.md).
 - Config is validated with Zod at load time, including refusal of
-  bearer-shaped `auth.token` values in `.lore.yaml`.
-- `profile` is optional in `.lore.yaml`; omission resolves in memory to the
+  bearer-shaped `auth.token` values in `.kennen.yaml`.
+- `profile` is optional in `.kennen.yaml`; omission resolves in memory to the
   runtime default selector from `profiles/default/profile.yaml`. New
-  `lore init` configs write that selector explicitly. See
+  `kennen init` configs write that selector explicitly. See
   [`profiles.md`](profiles.md).
-- `configRoot`, the directory containing `.lore.yaml`, is the base for relative
+- `configRoot`, the directory containing `.kennen.yaml`, is the base for relative
   project paths.
 - `upstreamVaults` and `promotionTargets` describe optional multi-vault
   topology. They are explicit, bounded status/read orchestration inputs; normal
   memory/fact/decision/task writes still target only `vault.pageId`. See
-  [`topology.md`](topology.md) for the `lore status` topology section, every
+  [`topology.md`](topology.md) for the `kennen status` topology section, every
   health state the surface emits, and the recovery workflow for each;
   [`topology-inheritance.md`](topology-inheritance.md) for read-upstream
   wake-up behavior; and [`topology-promotion.md`](topology-promotion.md) for
   promotion targets.
 - Runtime feature flags resolve once in `src/feature-flags.ts` from
-  `.lore.yaml` `features:` plus backward-compatible env vars for existing
+  `.kennen.yaml` `features:` plus backward-compatible env vars for existing
   env-backed flags. The feature taxonomy is: duplicate/advisory gates
   (`nearDuplicateProbe`, `autosaveLearningDedup`, `taskReuse`, `taskCrossref`),
   write/read behavior gates (`autoMentions`, `learningExtraction`, YAML-only
   `queryPlanning`, `forceSemanticSearch`), and the `runTool` family (`enabled`,
   `blockEdit`, `filterSql`, `search`, `aggregate`, `batchCreates`). Env
-  rollback switches such as `LORE_DISABLE_AUTO_MENTIONS=1` and
-  `LORE_USE_RUNTOOL=0` still win over their corresponding env-backed config
+  rollback switches such as `KENNEN_DISABLE_AUTO_MENTIONS=1` and
+  `KENNEN_USE_RUNTOOL=0` still win over their corresponding env-backed config
   values. Confidence-score ranking weight is disabled in code and is not a
   runtime feature flag.
 
@@ -222,8 +222,8 @@ instructions.
 | `pages.retrieveMarkdown is not a function` | Notion SDK before v5                          | Ensure `@notionhq/client` is `^5.1.0`                                                                |
 | `initial_data_source` type error           | Missing cast or wrong create shape            | Use `createDbArgs()` and the database-create shape in [`docs/notion-sdk-v5.md`](notion-sdk-v5.md)    |
 | Import without `.js` extension             | ESM requires explicit extensions              | Add `.js` to relative imports                                                                        |
-| `No .lore.yaml found`                      | Config search failed                          | Ensure `.lore.yaml` exists in cwd or an ancestor                                                     |
+| `No .kennen.yaml found`                      | Config search failed                          | Ensure `.kennen.yaml` exists in cwd or an ancestor                                                     |
 | `filter` type errors in queries            | Complex filter needs cast                     | Cast as described in [`docs/notion-sdk-v5.md`](notion-sdk-v5.md)                                     |
-| `Vault already initialized`                | Running `lore init` twice                     | Use `lore status` to verify, or `VaultManager.load()`                                                |
-| Codex does not load Lore tools             | Project not trusted or hooks feature disabled | Trust the project and ensure `.codex/config.toml` sets `features.hooks = true`                       |
-| `No Notion auth configured`                | Every auth source returned empty              | Run `lore auth --login` or set `NOTION_API_TOKEN`; see [`docs/authentication.md`](authentication.md) |
+| `Vault already initialized`                | Running `kennen init` twice                     | Use `kennen status` to verify, or `VaultManager.load()`                                                |
+| Codex does not load Kennen tools             | Project not trusted or hooks feature disabled | Trust the project and ensure `.codex/config.toml` sets `features.hooks = true`                       |
+| `No Notion auth configured`                | Every auth source returned empty              | Run `kennen auth --login` or set `NOTION_API_TOKEN`; see [`docs/authentication.md`](authentication.md) |

@@ -1,7 +1,7 @@
 /**
  * Production `BenchSandbox` factory — wires the bench-runner's
  * Notion-side hooks (`createSubProject` / `archiveProject` / row
- * counters) into the live Lore services.
+ * counters) into the live Kennen services.
  *
  * Lazily imported by the CLI so the bench-runner module graph
  * (corpus loader, fetch, etc.) does not need to drag in the full
@@ -18,7 +18,7 @@ import type { BenchSandbox } from "./bench-runner.js"
 /**
  * Per-example wake-up prefetch caps. The bench renders a single
  * relevance-ranked context block, so these are tighter than the
- * production `lore-context action='wake-up'` defaults — small,
+ * production `kennen-context action='wake-up'` defaults — small,
  * focused, fits well within the agent's prompt budget.
  */
 const WAKE_UP_PREFETCH_LIMIT = 10
@@ -33,10 +33,10 @@ const WAKE_UP_PREFETCH_FETCH_LIMIT = WAKE_UP_PREFETCH_LIMIT * 3
 const WAKE_UP_PREFETCH_BODY_CAP = 4000
 
 export async function buildBenchSandbox(): Promise<BenchSandbox> {
-  const sandboxName = process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"]
+  const sandboxName = process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"]
   if (!sandboxName) {
     throw new Error(
-      "LORE_BENCH_SANDBOX_PROJECT_NAME must be set to a sandbox project NAME (the bench-runner resolves it to an id at startup)."
+      "KENNEN_BENCH_SANDBOX_PROJECT_NAME must be set to a sandbox project NAME (the bench-runner resolves it to an id at startup)."
     )
   }
   const services = await initServices(undefined, { driftCheck: false })
@@ -118,7 +118,7 @@ export async function buildBenchSandbox(): Promise<BenchSandbox> {
         renderedContext: [
           "## Retrieved context (relevance-ranked for your current question)",
           "",
-          "The memories below were retrieved by Lore's hybrid search seeded",
+          "The memories below were retrieved by Kennen's hybrid search seeded",
           "with your question. Answer from these contents.",
           "",
           ...blocks,

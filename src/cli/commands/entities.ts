@@ -1,5 +1,5 @@
 import { Command } from "commander"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { mergeEntities, type EntityMergeResult } from "../../core/entity-merge.js"
 import type { Entity } from "../../types.js"
 
@@ -75,7 +75,7 @@ export function parseEntityMergeCliOptions(
 }
 
 export async function runEntityMerge(
-  services: LoreServices,
+  services: KennenServices,
   options: EntityMergeCliOptions
 ): Promise<EntityMergeResult> {
   return mergeEntities(services.entities, services.facts, {

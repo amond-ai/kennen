@@ -1,6 +1,6 @@
 # Search CLI Contract
 
-`lore search <query>` is a read-only memory lookup surface for operators and
+`kennen search <query>` is a read-only memory lookup surface for operators and
 scripts.
 
 ## Scope and Filters

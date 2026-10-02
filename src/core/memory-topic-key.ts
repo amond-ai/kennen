@@ -9,7 +9,7 @@
  * ## Topic-key upsert (`MemoryService.upsertByTopicKey`)
  *
  * `upsertByTopicKey` is the save-time upsert path. When an agent passes
- * `topicKey` to `lore-memory action='save'`, the handler dispatches here
+ * `topicKey` to `kennen-memory action='save'`, the handler dispatches here
  * instead of the ordinary create path. The match key is `(Topic Key,
  * Project-set)`, and project equality is set-equal: `[A]` does not match
  * `[A, B]`. `findByTopicKey` is the shared lookup helper that resolves the
@@ -49,7 +49,7 @@
  * - Throw on mismatch: Kind. Project-set is handled by the lookup contract, not
  *   as a separate throw here.
  * - Preserve silently: Status and Topic relation. State transitions belong on
- *   `lore-memory action='update'`; the upsert path treats these as
+ *   `kennen-memory action='update'`; the upsert path treats these as
  *   forgotten-to-omit envelope fields.
  * - Replace on every save: Title, Synopsis, Keywords, Source.
  * - Leave untouched: Last Referenced At. It is a read-citation signal; bumping
@@ -74,7 +74,7 @@
  * contract; the kind vocabulary gate lives at the agent boundary.
  *
  * An upsert with `projectIds: []` is structurally undefined. Set-equality on
- * the empty set matches every other empty-project memory in the vault. Lore
+ * the empty set matches every other empty-project memory in the vault. Kennen
  * allows projectless saves through the create path, but those saves must not
  * participate in topic-key upsert. `findByTopicKey` returns null for empty
  * projects; `upsertByTopicKey` throws for a clearer caller error.
@@ -141,7 +141,7 @@
  * Promotion-advisory suggestion wording is kind-aware. Topic-key chains are
  * valid for `decision`, `runbook`, `incident`, `postmortem`, `policy`,
  * and `state`.
- * Only decision memories can be referenced by `lore-decision action='create'`
+ * Only decision memories can be referenced by `kennen-decision action='create'`
  * with `supersedesIds`, because the decision service resolver rejects
  * non-decision kinds. Decision chains get supersede-and-split wording with a
  * `<this-memory-id>` placeholder for boundary rendering. Non-decision chains
@@ -186,7 +186,7 @@
  *    in the same project set. The check delegates to `findByTopicKey`, which
  *    is deliberately kind-agnostic, so a re-key onto a slot held by another
  *    task or decision is rejected. The error names the colliding memory id so
- *    the operator can act directly. Lore does not auto-merge topic chains; the
+ *    the operator can act directly. Kennen does not auto-merge topic chains; the
  *    surviving revision count, title, and audit policy are
  *    operator decisions.
  *
@@ -281,8 +281,8 @@ import {
 } from "../notion/runtool/index.js"
 import { logRunToolFallback } from "../notion/runtool/error-helpers.js"
 import { redactDebugMessage } from "../debug-redact.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
-import type { LoreFeatureFlags } from "../feature-flags.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
+import type { KennenFeatureFlags } from "../feature-flags.js"
 import { validateRichTextMetadataFields } from "./rich-text-schema.js"
 import { todayUtc } from "./task.js"
 import { withCleanupOrphanExclusion } from "./memory-filters.js"
@@ -301,7 +301,7 @@ interface MemoryTopicKeyDependencies {
   titleCache: TitleCacheWriter
 }
 
-export class RekeyAuditError extends LoreError<"rekey-audit-failed"> {
+export class RekeyAuditError extends KennenError<"rekey-audit-failed"> {
   readonly memoryId: string
   readonly oldTopicKey: string
   readonly newTopicKey: string
@@ -400,7 +400,7 @@ interface TopicUpsertAnalysis {
   bodyAheadOfProperties: boolean
 }
 
-const TOPIC_UPSERT_FINGERPRINT_PREFIX = "<!-- lore-topic-upsert-sha256: "
+const TOPIC_UPSERT_FINGERPRINT_PREFIX = "<!-- kennen-topic-upsert-sha256: "
 
 function topicUpsertFingerprint(input: TopicUpsertSnapshot): string {
   return createHash("sha256")
@@ -637,12 +637,12 @@ function buildRekeyAuditError(
   )
 }
 
-/** Emit one stderr line under `LORE_DEBUG=1` when `rekeyTopicKey`'s
+/** Emit one stderr line under `KENNEN_DEBUG=1` when `rekeyTopicKey`'s
  * RunTool branch is enabled but the body's tail anchor is not unique
  * (typically because the body has accumulated repetitive structures
  * like multiple `## Re-keyed (...)` audit blocks).
  *
- * Same posture as the existing `[lore] semantic-search-cap-fired`
+ * Same posture as the existing `[kennen] semantic-search-cap-fired`
  * emission — silent under default logging, observable when the
  * operator is debugging. Without this signal an operator running
  * flag-on against a corpus with repetitive tails would see RunTool
@@ -651,9 +651,9 @@ function buildRekeyAuditError(
  * Bodies for which the anchor IS unique (the common case) emit
  * nothing; this is strictly the no-anchor diagnostic surface. */
 function debugLogRekeyAnchorMiss(memoryId: string, bodyLength: number): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] rekey-anchor-miss: memory=${memoryId} body-length=${bodyLength} ` +
+    `[kennen] rekey-anchor-miss: memory=${memoryId} body-length=${bodyLength} ` +
       `source=pickRekeyAuditAnchor\n`
   )
 }
@@ -709,7 +709,7 @@ function analyzeLatestTopicUpsert(
  * **Suggestion wording is kind-aware.** Topic-key chains are valid
  * for `decision`, `runbook`, `incident`, `postmortem`, `policy`, and `state`
  * kinds. Only `kind: 'decision'` memories can be superseded via
- * `lore-decision action='create'` with `supersedesIds`:
+ * `kennen-decision action='create'` with `supersedesIds`:
  * `DecisionService.getById` (the resolver the create handler runs
  * for every supersedesIds entry) throws on non-decision kinds, so a
  * footer that handed a runbook/incident/postmortem/policy/state operator
@@ -735,11 +735,11 @@ export function computePromotionAdvisory(input: {
   if (reasons.length === 0) return null
   const suggestion =
     input.kind === "decision"
-      ? "Consider promoting via lore-decision action='create' " +
+      ? "Consider promoting via kennen-decision action='create' " +
         "with supersedesIds: [<this-memory-id>], or splitting " +
         "the topic into narrower topicKeys."
       : "Consider splitting the topic into narrower topicKeys, " +
-        "or archiving this chain via lore-memory action='archive' " +
+        "or archiving this chain via kennen-memory action='archive' " +
         "and starting a fresh chain with a more specific topicKey."
   return { reasons, suggestion }
 }
@@ -748,7 +748,7 @@ export class MemoryTopicKey {
   constructor(
     private client: Client,
     private db: DatabaseRef,
-    private features: LoreFeatureFlags,
+    private features: KennenFeatureFlags,
     private deps: MemoryTopicKeyDependencies,
     private options: { synopsisMaxChars?: number } = {}
   ) {}
@@ -903,7 +903,7 @@ export class MemoryTopicKey {
    * - **THROW on mismatch**: Kind (per-kind chain). Project-set is
    * handled by the lookup; not a separate throw at this layer.
    * - **PRESERVE silently** (input dropped, no warning): Status,
-   * Topic relation. State transitions belong on `lore-memory
+   * Topic relation. State transitions belong on `kennen-memory
    * action='update'`; the upsert path treats these as forgotten-to-
    * omit envelopes.
    * - **REPLACE on every save** (latest write wins): Title, Synopsis,
@@ -913,7 +913,7 @@ export class MemoryTopicKey {
    *
    * **Empty-project guard.** An upsert with `projectIds: []` is
    * structurally undefined — set-equality on the empty set matches
-   * every other empty-project memory. Lore allows projectless saves
+   * every other empty-project memory. Kennen allows projectless saves
    * via the create path (catch-all), but those must NOT participate
    * in topic-key upsert. `findByTopicKey` returns null on empty
    * projects, but we throw here for a clearer error.
@@ -966,7 +966,7 @@ export class MemoryTopicKey {
      * Scope / lifetime declaration. On fresh-create the
      * scope columns land verbatim; on append-revision the scope is
      * silently preserved (revisions inherit the head row's scope —
-     * agents change scope through `lore-memory action='update'`).
+     * agents change scope through `kennen-memory action='update'`).
      */
     scope?: MemoryScopeInput
   }): Promise<{
@@ -1050,7 +1050,7 @@ export class MemoryTopicKey {
       throw new Error(
         `Kind cannot change on upsert. Existing: '${existing.kind}'; ` +
           `input: '${input.kind}'. Pick a new topicKey for the new ` +
-          `kind, or supersede via lore-decision action='create'.`
+          `kind, or supersede via kennen-decision action='create'.`
       )
     }
 
@@ -1167,7 +1167,7 @@ export class MemoryTopicKey {
 
     // Append + write. Notion's v5 markdown API has no append mode;
     // replace_content with allow_deleting_content is the canonical
-    // full-body edit path. When `LORE_USE_RUNTOOL_BLOCK_EDIT` is on
+    // full-body edit path. When `KENNEN_USE_RUNTOOL_BLOCK_EDIT` is on
     // AND the previous revision carries a fingerprint we can
     // anchor on, a RunTool `update_content` call substitutes only the
     // tail of the body — the server splices the new
@@ -1288,7 +1288,7 @@ export class MemoryTopicKey {
     //
     // `kind` is forwarded to `computePromotionAdvisory` because the
     // suggestion wording is kind-aware: only `kind: 'decision'`
-    // memories can be referenced from `lore-decision action='create'
+    // memories can be referenced from `kennen-decision action='create'
     // supersedesIds: [...]` (DecisionService.getById throws on
     // non-decision kinds). The kind-mismatch guard above already
     // rejected upserts where `input.kind !== existing.kind`, so the
@@ -1359,7 +1359,7 @@ export class MemoryTopicKey {
    * check delegates to `findByTopicKey`, which is deliberately
    * Kind-agnostic (see its docstring) — a re-key onto a slot held by a
    * task or decision under the same key surfaces as a collision and is
-   * rejected, even if the re-keyed memory is a different Kind. Lore
+   * rejected, even if the re-keyed memory is a different Kind. Kennen
    * does NOT auto-merge two topic chains; the operator handles the
    * duplication manually (archive one, re-key the other).
    *
@@ -1371,7 +1371,7 @@ export class MemoryTopicKey {
    * track: un-archiving the old row after a re-key would land two
    * live members under the same `(Topic Key, Project-set)` slot.
    * Operators that un-archive should re-check chain integrity via
-   * `lore-memory action='recall'`.
+   * `kennen-memory action='recall'`.
    *
    * **Skip-self in collision check.** A memory whose `Topic Key`
    * already equals `newTopicKey` would otherwise self-collide. The
@@ -1411,7 +1411,7 @@ export class MemoryTopicKey {
    * empty-projectIds rejection, collision rejection — so callers
    * can surface those failures BEFORE running unrelated mutations.
    *
-   * The `lore-memory action='update'` MCP handler calls this
+   * The `kennen-memory action='update'` MCP handler calls this
    * before applying a residual content delta so a topicKey-only
    * rejection (collision, empty-projectIds) doesn't leave the
    * content update half-persisted with the operator looking at
@@ -1455,7 +1455,7 @@ export class MemoryTopicKey {
       throw new Error(
         `Re-key target '${input.newTopicKey}' is already in use by ` +
           `memory ${collision.id} in this project-set. ` +
-          `Lore does not auto-merge — archive one or pick a different key.`
+          `Kennen does not auto-merge — archive one or pick a different key.`
       )
     }
 

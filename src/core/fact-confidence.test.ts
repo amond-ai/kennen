@@ -395,7 +395,7 @@ describe("FactService.invalidate", () => {
 
   it("serializes concurrent confidence decrements for the same fact id", async () => {
     const stateDir = mkdtempSync(
-      join(process.env["TMPDIR"] ?? "/tmp", "lore-fact-lock-test-")
+      join(process.env["TMPDIR"] ?? "/tmp", "kennen-fact-lock-test-")
     )
     vi.stubEnv("HOME", stateDir)
     try {
@@ -504,7 +504,7 @@ describe("FactService.invalidate", () => {
   })
 
   it("surgically drops only Confidence Score on legacy retry (issue #284 review item #5)", async () => {
-    // Pre-DEFERRED-02 vault that hasn't run `lore migrate`: the
+    // Pre-DEFERRED-02 vault that hasn't run `kennen migrate`: the
     // schema has no `Confidence Score` / `Last Referenced At`
     // columns. Pre-#284 the retry dropped EVERY column and wrote
     // only `Valid Until`; the surgical-drop fix (#284 review item

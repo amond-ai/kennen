@@ -23,7 +23,7 @@ import {
   NTN_VERIFIED_INSTALL_DESCRIPTION,
   type NtnEnv,
 } from "../../auth/ntn.js"
-import type { LoreConfig } from "../../types.js"
+import type { KennenConfig } from "../../types.js"
 import { defaultProfileSelector, resolveProfileFromConfig } from "../../profile/index.js"
 import {
   buildHookDisclosureLines as buildHookDisclosureLinesShared,
@@ -39,7 +39,7 @@ import { confirmPrompt } from "./init-prompt.js"
 export const buildHookDisclosureLines = buildHookDisclosureLinesShared
 
 /**
- * Build the .lore.yaml text emitted by `lore init`. Pure so tests can
+ * Build the .kennen.yaml text emitted by `kennen init`. Pure so tests can
  * assert the comment placement without spinning up the Notion-touching
  * command path.
  *
@@ -63,7 +63,7 @@ export function buildInitConfigYaml(
   workspaceId?: string,
   profileSelector = defaultProfileSelector()
 ): string {
-  const config: LoreConfig = {
+  const config: KennenConfig = {
     vault: { pageId },
     profile: profileSelector,
     ...(workspaceId !== undefined && {
@@ -124,7 +124,7 @@ export function buildInitConfigYaml(
  *
  * `title` is the operator-visible page name in Notion's UI. The default
  * is repo-derived (`defaultVaultTitle`) so a workspace with multiple
- * vaults doesn't collapse to indistinguishable `Lore Vault` private
+ * vaults doesn't collapse to indistinguishable `Kennen Vault` private
  * pages; operators can override via `--name`.
  *
  * The v5 SDK's `CreatePageParameters` is a strict discriminated union;
@@ -151,22 +151,22 @@ export async function createWorkspaceLevelPage(
 }
 
 /**
- * Default `Lore Vault` page title, repo-derived from the cwd basename.
- * Falls back to the bare `Lore Vault` string when the basename is
+ * Default `Kennen Vault` page title, repo-derived from the cwd basename.
+ * Falls back to the bare `Kennen Vault` string when the basename is
  * empty (cwd is at the filesystem root) so we never produce a malformed
- * title like `"Lore Vault — "`.
+ * title like `"Kennen Vault — "`.
  *
  * Pure so tests can pin the basename → title mapping without spinning
  * up `runNoArgInit`. The em-dash separator (`—`, not `-`) intentionally
  * matches the "vault for the <repo> project" framing that surfaces in
  * Notion's UI sidebar; ASCII `-` would compose ambiguously with hyphens
- * inside the repo name (`my-cool-repo` → `Lore Vault - my-cool-repo`).
+ * inside the repo name (`my-cool-repo` → `Kennen Vault - my-cool-repo`).
  *
- * Title-collision footgun (by design): two engineers running `lore init`
+ * Title-collision footgun (by design): two engineers running `kennen init`
  * from different machines but in directories with the same basename
  * (e.g., both have `~/Developer/widget`) produce identically-titled
  * private pages in the same workspace. The page id distinguishes them
- * structurally — Lore identity is page-id-keyed, not title-keyed — but
+ * structurally — Kennen identity is page-id-keyed, not title-keyed — but
  * Notion's UI sidebar shows both rows the same way. Operators who hit
  * this rename via `--name`. Not surfaced as a warning at init time
  * because the collision is invisible to the engineer (they can only see
@@ -174,8 +174,8 @@ export async function createWorkspaceLevelPage(
  */
 export function defaultVaultTitle(cwd: string): string {
   const name = basename(cwd).trim()
-  if (!name) return "Lore Vault"
-  return `Lore Vault — ${name}`
+  if (!name) return "Kennen Vault"
+  return `Kennen Vault — ${name}`
 }
 
 /**
@@ -196,13 +196,13 @@ async function tryResolveAuth(cwd: string): Promise<ResolvedAuth | null> {
 /**
  * Check whether a resolved auth's baseUrl corresponds to the operator's
  * requested `--ntn-env`. Distinguishes the "operator already had auth
- * resolving to prod, but runs `lore init --ntn-env dev`" footgun: pre-
+ * resolving to prod, but runs `kennen init --ntn-env dev`" footgun: pre-
  * fix, the flag was silently ignored when auth resolved on the first
  * try, leading to a vault created in prod despite the explicit dev
  * request.
  *
  * Delegates the URL → env mapping to `ntnEnvFromBaseUrl` so
- * every Lore-managed ntn login surface agrees on the canonical URL
+ * every Kennen-managed ntn login surface agrees on the canonical URL
  * table — the "Centralize this so every surface agrees" rule.
  *
  * The `undefined === prod` rule is load-bearing and lives here, NOT
@@ -262,15 +262,15 @@ function formatDatabaseRef(ref: unknown): string {
 }
 
 /**
- * `lore init <page-id>` legacy path. Operator already owns a vault page
+ * `kennen init <page-id>` legacy path. Operator already owns a vault page
  * (created in Notion's UI or via a prior install) and hands its id to
- * Lore. Adds a `verifyVaultAccess` preflight ahead of the heavy
+ * Kennen. Adds a `verifyVaultAccess` preflight ahead of the heavy
  * database-creation work — if the operator pasted a page id their auth
  * can't reach, we want a clean "page not accessible" error rather than
  * letting `vault.init()` throw a less-clear 404 mid-fan-out.
  *
  * `name` is accepted for option-shape symmetry with the no-arg flow
- * but ignored here — the page already exists, Lore doesn't rename it.
+ * but ignored here — the page already exists, Kennen doesn't rename it.
  * A truthy value emits a one-line stderr note (matching the
  * `--cursor-global ignored under --client claude` precedent) so an
  * operator who scripted `--name` against the wrong shape isn't
@@ -282,7 +282,7 @@ export async function runExplicitPageInit(
 ): Promise<void> {
   if (opts.name && opts.name.trim().length > 0) {
     console.error(
-      "[lore] --name is ignored when a page id is provided (Lore doesn't rename existing pages)."
+      "[kennen] --name is ignored when a page id is provided (Kennen doesn't rename existing pages)."
     )
   }
   if (opts.ntnEnv !== undefined) {
@@ -293,13 +293,13 @@ export async function runExplicitPageInit(
     // precedent so an operator who scripted the wrong shape isn't
     // surprised by silent drop.
     console.error(
-      "[lore] --ntn-env is ignored when a page id is provided (no ntn login is spawned on the explicit-page path)."
+      "[kennen] --ntn-env is ignored when a page id is provided (no ntn login is spawned on the explicit-page path)."
     )
   }
   const profile = resolveInitProfile(opts.profile)
   // Two paths:
   // - `--token` provided: operator hands us a literal token. We don't
-  //   know the base URL (the operator can set `LORE_NOTION_BASE_URL`
+  //   know the base URL (the operator can set `KENNEN_NOTION_BASE_URL`
   //   env if they need a non-prod endpoint), and we have no workspace
   //   id to thread into the generated config.
   // - Otherwise: route through `resolveAuth` which threads the
@@ -317,7 +317,7 @@ export async function runExplicitPageInit(
   let workspaceId: string | undefined
   if (opts.token) {
     token = opts.token
-    baseUrl = process.env["LORE_NOTION_BASE_URL"]
+    baseUrl = process.env["KENNEN_NOTION_BASE_URL"]
     // workspaceId stays undefined — the operator handed us a raw
     // token; we have no metadata about which workspace it authorizes.
   } else {
@@ -326,11 +326,11 @@ export async function runExplicitPageInit(
     baseUrl = auth.baseUrl
     workspaceId = auth.workspaceId
   }
-  // Wrap the raw client so `lore init`'s database-creation fan-out
+  // Wrap the raw client so `kennen init`'s database-creation fan-out
   // (four pages.create + assorted reads) stays under Notion's rps
   // ceiling just like the MCP/CLI hot paths. No config is loaded here
   // yet so use the default concurrency; operators with a custom value
-  // in .lore.yaml pick it up on subsequent commands.
+  // in .kennen.yaml pick it up on subsequent commands.
   const client = createLimitedClient(createClient(token, baseUrl))
 
   // Preflight before doing the heavy database-creation work. If the
@@ -356,7 +356,7 @@ export async function runExplicitPageInit(
 
   const vault = new VaultManager(client, pageId, profile)
 
-  console.log("Creating Lore databases in Notion...")
+  console.log("Creating Kennen databases in Notion...")
 
   try {
     const result = await vault.init()
@@ -367,9 +367,9 @@ export async function runExplicitPageInit(
     console.log(`  Entities DB: ${formatDatabaseRef(result.databases.entities)}`)
     console.log(`  Facts DB:    ${formatDatabaseRef(result.databases.facts)}`)
 
-    const configPath = resolve(process.cwd(), ".lore.yaml")
+    const configPath = resolve(process.cwd(), ".kennen.yaml")
     // Pass the ntn-source `workspaceId` through to the generated YAML
-    // so multi-workspace operators using `lore init <page-id>` get
+    // so multi-workspace operators using `kennen init <page-id>` get
     // `auth.workspaceId` pinned just like the no-arg path. Without
     // this, the legacy path silently re-introduced the ambiguity case
     // every subsequent command would re-discover.
@@ -383,12 +383,12 @@ export async function runExplicitPageInit(
       console.log(line)
     }
     console.log("\nNext steps:")
-    console.log("  1. Add projects to .lore.yaml")
+    console.log("  1. Add projects to .kennen.yaml")
     console.log("  2. Add the MCP server to your AI assistant config")
-    console.log("  3. Run `lore mine` to index project files")
+    console.log("  3. Run `kennen mine` to index project files")
   } catch (err) {
     if (err instanceof Error && err.message.includes("already initialized")) {
-      console.log("Vault already exists at this page. Use `lore status` to check.")
+      console.log("Vault already exists at this page. Use `kennen status` to check.")
     } else {
       console.error(
         "Failed to initialize vault:",
@@ -400,10 +400,10 @@ export async function runExplicitPageInit(
 }
 
 /**
- * `lore init` no-arg path. Resolves the ntn-issued token (or recovers
+ * `kennen init` no-arg path. Resolves the ntn-issued token (or recovers
  * via interactive ntn install/login), creates a workspace-level vault
  * page, runs `verifyVaultAccess` post-creation, initializes the four
- * databases, and writes .lore.yaml. End-to-end onboarding for a fresh
+ * databases, and writes .kennen.yaml. End-to-end onboarding for a fresh
  * project under ntn-first auth.
  */
 export async function runNoArgInit(opts: {
@@ -434,11 +434,11 @@ export async function runNoArgInit(opts: {
   const vaultTitle =
     opts.name && opts.name.trim().length > 0 ? opts.name.trim() : defaultVaultTitle(cwd)
 
-  // Refuse to overwrite an existing .lore.yaml. Check existence
+  // Refuse to overwrite an existing .kennen.yaml. Check existence
   // outside the early-exit branch so a future `process.exit` mock (or a
   // hook that catches PromiseRejection) can't silently fall through into
   // the create path.
-  const configPath = resolve(cwd, ".lore.yaml")
+  const configPath = resolve(cwd, ".kennen.yaml")
   let configExists = false
   try {
     await access(configPath)
@@ -447,7 +447,7 @@ export async function runNoArgInit(opts: {
     // File doesn't exist — proceed.
   }
   if (configExists) {
-    console.error(`A .lore.yaml already exists at ${configPath}.`)
+    console.error(`A .kennen.yaml already exists at ${configPath}.`)
     console.error(
       "If you want to re-initialize, delete it first or run from a different directory."
     )
@@ -468,15 +468,15 @@ export async function runNoArgInit(opts: {
   //       "no auth, recover via interactive install + login".
   //   (b) ntn installed, logged in, but auth.json carries multiple
   //       workspaces with no selector (no NOTION_WORKSPACE_ID env, no
-  //       .lore.yaml yet — we're initializing, so there isn't one) →
+  //       .kennen.yaml yet — we're initializing, so there isn't one) →
   //       `loadNtnToken` writes a stderr hint and returns null.
   //
   // The recovery flow below is only correct for (a). Falling into it
   // for (b) prints a misleading "ntn is not installed" copy or routes
   // the operator into a redundant `ntn login` that doesn't fix the
-  // ambiguity. The actual fix is `NOTION_WORKSPACE_ID=<id> lore init`
-  // (or equivalent .lore.yaml seeding before init, but `lore init`'s
-  // contract is "no .lore.yaml exists yet").
+  // ambiguity. The actual fix is `NOTION_WORKSPACE_ID=<id> kennen init`
+  // (or equivalent .kennen.yaml seeding before init, but `kennen init`'s
+  // contract is "no .kennen.yaml exists yet").
   //
   // Probe-then-branch: `isNtnInstalled` is a cheap synchronous
   // `execFileSync ntn --version` (memoized per-process). Hoisted to a
@@ -494,12 +494,12 @@ export async function runNoArgInit(opts: {
     if (workspaces.length > 1) {
       console.error(
         `Multiple workspaces in ntn auth.json (${workspaces.length}); ` +
-          `Lore can't pick one without a selector.`
+          `Kennen can't pick one without a selector.`
       )
       console.error(`Available: ${workspaces.join(", ")}`)
       console.error("")
-      // Single actionable next step — `auth.workspaceId` in .lore.yaml
-      // is bootstrap-impossible during init (no .lore.yaml exists
+      // Single actionable next step — `auth.workspaceId` in .kennen.yaml
+      // is bootstrap-impossible during init (no .kennen.yaml exists
       // yet), so listing it as a parallel option misleads readers
       // skimming for what to type. The env-var route is the only
       // surface that works at first run; subsequent commands pick up
@@ -525,8 +525,8 @@ export async function runNoArgInit(opts: {
         .filter((f): f is string => f !== null)
         .join(" ")
       const recoveryCommand = recoveryFlags
-        ? `NOTION_WORKSPACE_ID=<id> lore init ${recoveryFlags}`
-        : "NOTION_WORKSPACE_ID=<id> lore init"
+        ? `NOTION_WORKSPACE_ID=<id> kennen init ${recoveryFlags}`
+        : "NOTION_WORKSPACE_ID=<id> kennen init"
       console.error("Re-run with the workspace id in env:")
       console.error(`  ${recoveryCommand}`)
       process.exit(1)
@@ -539,8 +539,8 @@ export async function runNoArgInit(opts: {
   }
 
   // If no auth resolves, offer to run ntn login (after checking ntn
-  // install state). Same shell-out pattern as `lore auth --login` and
-  // `lore install`. Reuses `isNtnInstalled` / `installNtn` /
+  // install state). Same shell-out pattern as `kennen auth --login` and
+  // `kennen install`. Reuses `isNtnInstalled` / `installNtn` /
   // `runNtnLogin`. No `NOTION_KEYRING=0` check — `runNtnLogin()`
   // forces it inside the spawn.
   if (!auth) {
@@ -549,21 +549,21 @@ export async function runNoArgInit(opts: {
 
     if (!ntnInstalled) {
       console.log("ntn is not installed.")
-      console.log("Lore can install it using a verified release archive:")
+      console.log("Kennen can install it using a verified release archive:")
       console.log(`  ${NTN_VERIFIED_INSTALL_DESCRIPTION}`)
       console.log("")
       const ok = await confirmPrompt("Install ntn now? [Y/n] ", yesFlag)
       if (!ok) {
-        console.error("ntn is required for `lore init`. Install manually:")
+        console.error("ntn is required for `kennen init`. Install manually:")
         console.error(`  ${NTN_MANUAL_INSTALL_COMMAND}`)
-        console.error("Then re-run `lore init`.")
+        console.error("Then re-run `kennen init`.")
         process.exit(1)
         return
       }
       const installResult = await installNtn()
       if (installResult.kind !== "success") {
         console.error("ntn install failed.")
-        console.error("Check your network and shell, then re-run `lore init`.")
+        console.error("Check your network and shell, then re-run `kennen init`.")
         process.exit(1)
         return
       }
@@ -571,9 +571,9 @@ export async function runNoArgInit(opts: {
       console.log("")
     }
 
-    // Offer ntn login. If the operator declines the Lore-spawned path,
+    // Offer ntn login. If the operator declines the Kennen-spawned path,
     // the manual fallback must include NOTION_KEYRING=0; otherwise ntn
-    // can write to the macOS keychain where Lore cannot read the token.
+    // can write to the macOS keychain where Kennen cannot read the token.
     const manualLoginCommand = ntnEnv
       ? `NOTION_KEYRING=0 NOTION_ENV=${ntnEnv} ntn login`
       : "NOTION_KEYRING=0 ntn login"
@@ -582,7 +582,7 @@ export async function runNoArgInit(opts: {
       console.error(
         `ntn login is required to initialize a vault. Run \`${manualLoginCommand}\` manually,`
       )
-      console.error("then re-run `lore init`.")
+      console.error("then re-run `kennen init`.")
       process.exit(1)
       return
     }
@@ -599,7 +599,7 @@ export async function runNoArgInit(opts: {
       if (loginResult.kind === "exit-non-zero") {
         console.error(`  ntn exited with code ${loginResult.code}`)
       }
-      console.error("Re-run `lore init` to retry.")
+      console.error("Re-run `kennen init` to retry.")
       process.exit(1)
       return
     }
@@ -608,8 +608,8 @@ export async function runNoArgInit(opts: {
     // Re-resolve after login.
     auth = await tryResolveAuth(cwd)
     if (!auth) {
-      console.error("ntn login completed, but Lore could not resolve a token.")
-      console.error("Run `lore auth --status` for diagnostic info.")
+      console.error("ntn login completed, but Kennen could not resolve a token.")
+      console.error("Run `kennen auth --status` for diagnostic info.")
       process.exit(1)
       return
     }
@@ -620,7 +620,7 @@ export async function runNoArgInit(opts: {
   // recovery copy. Pre-fix bug (round-5 review): the flag was only
   // threaded into the recovery-branch `runNtnLogin` call; if auth
   // resolved on the first try (prod ntn login already in place,
-  // operator runs `lore init --ntn-env dev`), the flag was silently
+  // operator runs `kennen init --ntn-env dev`), the flag was silently
   // ignored and the vault landed in prod despite the explicit dev
   // request.
   //
@@ -640,15 +640,15 @@ export async function runNoArgInit(opts: {
       // ntn owns auth.json's contents; the right move is to logout +
       // re-login under the requested env so config.json reflects it.
       console.error(`  ntn logout && NOTION_KEYRING=0 NOTION_ENV=${ntnEnv} ntn login`)
-      console.error("  (then re-run lore init)")
+      console.error("  (then re-run kennen init)")
     } else if (auth.source === "env-notion-api-token") {
       // The operator pasted a token into NOTION_API_TOKEN env that
       // doesn't match. Either let ntn-resolved auth take over, or set
-      // LORE_NOTION_BASE_URL to point at the requested env.
+      // KENNEN_NOTION_BASE_URL to point at the requested env.
       console.error("  Unset NOTION_API_TOKEN to fall through to ntn-resolved auth,")
-      console.error(`  or set LORE_NOTION_BASE_URL to the ${ntnEnv} endpoint:`)
+      console.error(`  or set KENNEN_NOTION_BASE_URL to the ${ntnEnv} endpoint:`)
       console.error(
-        `    export LORE_NOTION_BASE_URL=${expectedBaseUrlForEnv(ntnEnv) ?? "https://api.notion.so"}`
+        `    export KENNEN_NOTION_BASE_URL=${expectedBaseUrlForEnv(ntnEnv) ?? "https://api.notion.so"}`
       )
     } else {
       console.error("  Re-authenticate for the requested Notion environment.")
@@ -658,7 +658,7 @@ export async function runNoArgInit(opts: {
   }
 
   console.log(
-    `Initializing Lore vault in workspace ${
+    `Initializing Kennen vault in workspace ${
       auth.workspaceId ?? `(unknown — resolved from ${auth.source})`
     }`
   )
@@ -691,7 +691,7 @@ export async function runNoArgInit(opts: {
     console.error("workspace your engineers belong to (no special integration share")
     console.error("needed for ntn-issued auth — engineers' tokens inherit their")
     console.error("personal Notion permissions). Then run:")
-    console.error("  lore init <page-id-from-notion-url>")
+    console.error("  kennen init <page-id-from-notion-url>")
     process.exit(1)
     return
   }
@@ -700,7 +700,7 @@ export async function runNoArgInit(opts: {
   // Belt-and-suspenders against permission edge cases. If preflight
   // fails here we have an orphan page in the operator's Notion Private
   // area — surface its id so the operator can either retry via
-  // `lore init <id>` (which re-runs preflight against the same page)
+  // `kennen init <id>` (which re-runs preflight against the same page)
   // or delete it from Notion's UI.
   console.log("")
   console.log("Verifying vault access...")
@@ -718,14 +718,14 @@ export async function runNoArgInit(opts: {
     }
     console.error("")
     console.error("  Recovery options:")
-    console.error(`    1. Retry with the explicit page: lore init ${vaultPageId}`)
+    console.error(`    1. Retry with the explicit page: kennen init ${vaultPageId}`)
     console.error("       (preflight runs again; if it now succeeds the flow continues)")
     console.error(
       `    2. Delete the orphan page in Notion's UI (search by id ${vaultPageId})`
     )
     console.error("")
     console.error(
-      "  This is unusual; please open an issue if it persists, including the auth source from `lore auth --status`."
+      "  This is unusual; please open an issue if it persists, including the auth source from `kennen auth --status`."
     )
     process.exit(1)
     return
@@ -734,7 +734,7 @@ export async function runNoArgInit(opts: {
   console.log("")
 
   // Create the five databases under the vault page.
-  console.log("Creating Lore databases...")
+  console.log("Creating Kennen databases...")
   const vault = new VaultManager(client, vaultPageId, profile)
   try {
     const result = await vault.init()
@@ -748,7 +748,7 @@ export async function runNoArgInit(opts: {
     // created the page seconds ago via `pages.create`. If
     // `verifyVaultDatabases` finds an existing five-database structure
     // on a freshly-created page, it's a genuine anomaly (concurrent
-    // Lore process, Notion misbehavior, real bug) — burying it under a
+    // Kennen process, Notion misbehavior, real bug) — burying it under a
     // friendly "already exists" message would silently land a config
     // pointing at a vault we don't understand. Surface the page id so
     // the operator can investigate / clean up.
@@ -764,22 +764,22 @@ export async function runNoArgInit(opts: {
       console.error(`  Orphan page id: ${vaultPageId}`)
       console.error("")
       console.error(
-        "  Please open an issue with the page id, the auth source from `lore auth --status`,"
+        "  Please open an issue with the page id, the auth source from `kennen auth --status`,"
       )
       console.error(
-        "  and any other Lore processes that may have been running concurrently."
+        "  and any other Kennen processes that may have been running concurrently."
       )
       process.exit(1)
       return
     }
     console.error("Failed to initialize vault:", err instanceof Error ? err.message : err)
     console.error(`  Orphan page id: ${vaultPageId}`)
-    console.error(`  Recovery: re-run via the explicit path — lore init ${vaultPageId}`)
+    console.error(`  Recovery: re-run via the explicit path — kennen init ${vaultPageId}`)
     process.exit(1)
     return
   }
 
-  // Write .lore.yaml.
+  // Write .kennen.yaml.
   await writeFile(
     configPath,
     buildInitConfigYaml(vaultPageId, auth.workspaceId, profile.selector)
@@ -795,21 +795,21 @@ export async function runNoArgInit(opts: {
   console.log("")
   console.log("Next steps:")
   console.log(
-    "  1. Add projects to .lore.yaml (or auto-detect via the `detect.patterns` config)"
+    "  1. Add projects to .kennen.yaml (or auto-detect via the `detect.patterns` config)"
   )
-  console.log("  2. Run `lore install` to wire Lore into your assistant")
-  console.log("  3. Run `lore mine` to index project files")
+  console.log("  2. Run `kennen install` to wire Kennen into your assistant")
+  console.log("  3. Run `kennen mine` to index project files")
 }
 
 /**
- * Options accepted on the `lore init` action. Single source of truth so
+ * Options accepted on the `kennen init` action. Single source of truth so
  * `runExplicitPageInit` / `runNoArgInit` and the commander dispatch
  * can't drift if a future option is added.
  *
  * `--name` is an addition over the original surface (`<page-id>` /
  * `--token` / `-y/--yes`): the cwd-derived default title plus the
  * explicit override handles the multi-vault-per-workspace footgun
- * where two `lore init` runs against the same workspace would
+ * where two `kennen init` runs against the same workspace would
  * otherwise produce indistinguishable page titles.
  */
 interface InitOpts {
@@ -821,7 +821,7 @@ interface InitOpts {
 }
 
 export const initCommand = new Command("init")
-  .description("Initialize a Lore vault in a Notion page")
+  .description("Initialize a Kennen vault in a Notion page")
   .argument(
     "[page-id]",
     "Existing Notion page ID to use as the vault root (omitted: create a new workspace-level page via ntn-resolved auth)"
@@ -833,7 +833,7 @@ export const initCommand = new Command("init")
   .option("-y, --yes", "Auto-confirm prompts (e.g., 'Install ntn?', 'Run ntn login?')")
   .option(
     "--name <name>",
-    "Page title for the new workspace-level vault (no-arg only; ignored when a page id is provided). Defaults to 'Lore Vault — <basename(cwd)>'"
+    "Page title for the new workspace-level vault (no-arg only; ignored when a page id is provided). Defaults to 'Kennen Vault — <basename(cwd)>'"
   )
   .option(
     "--ntn-env <env>",

@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-werkzeug-public-spec-v1
+name: kennen-longitudinal-werkzeug-public-spec-v1
 description: >-
   Public-spec Werkzeug longitudinal suite. Scenarios are pinned before real
   upstream parser fixes and verified through deterministic local tests with no
@@ -9,8 +9,8 @@ description: >-
 seededCorpus: ../vault-seeds/werkzeug-public-spec-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: werkzeug-multipart-boundary-crlf-epic-v1
     difficulty: hard
@@ -58,10 +58,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/tests/test_lore_hidden_multipart.py b/tests/test_lore_hidden_multipart.py
+          diff --git a/tests/test_kennen_hidden_multipart.py b/tests/test_kennen_hidden_multipart.py
           new file mode 100644
           --- /dev/null
-          +++ b/tests/test_lore_hidden_multipart.py
+          +++ b/tests/test_kennen_hidden_multipart.py
           @@ -0,0 +1,48 @@
           +import io
           +
@@ -124,6 +124,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - tests/test_lore_hidden_multipart.py
+          - tests/test_kennen_hidden_multipart.py
           - -q
         timeoutMs: 180000

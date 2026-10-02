@@ -6,10 +6,10 @@
     "mode": "skill-agent",
     "readOnly": true,
     "conditions": [
-      "tool-driven-lore"
+      "tool-driven-kennen"
     ],
     "requiredConditions": [
-      "tool-driven-lore"
+      "tool-driven-kennen"
     ],
     "agent": {
       "kind": "codex",
@@ -22,7 +22,7 @@
         5,
         10
       ],
-      "requireLoreUse": true,
+      "requireKennenUse": true,
       "requireExpandedEvidence": true
     },
     "skillRetrievalSuite": "evals/skill-retrieval/skillret-notion-ai.yaml"
@@ -39,7 +39,7 @@
     {
       "queryId": "q-00016",
       "query": "[redacted SkillRet query text; use queryId q-00016 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-82975c9bd33e"
@@ -206,7 +206,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -225,7 +225,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -243,7 +243,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -262,7 +262,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -278,7 +278,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -297,7 +297,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -309,7 +309,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -328,7 +328,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -347,7 +347,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -366,7 +366,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -380,7 +380,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -399,7 +399,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -423,7 +423,7 @@
     {
       "queryId": "q-00028",
       "query": "[redacted SkillRet query text; use queryId q-00028 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-7dbd5e8732c9",
@@ -606,7 +606,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -625,7 +625,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -641,7 +641,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -660,7 +660,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -676,7 +676,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -695,7 +695,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -709,7 +709,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -728,7 +728,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -744,7 +744,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -763,7 +763,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -779,7 +779,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -798,7 +798,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -816,7 +816,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -828,7 +828,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -840,7 +840,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -859,7 +859,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -875,7 +875,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -894,7 +894,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -914,7 +914,7 @@
     {
       "queryId": "q-00049",
       "query": "[redacted SkillRet query text; use queryId q-00049 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-34232e9906ae",
@@ -1050,7 +1050,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1069,7 +1069,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1083,7 +1083,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1102,7 +1102,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1120,7 +1120,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1132,7 +1132,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1151,7 +1151,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1175,7 +1175,7 @@
     {
       "queryId": "q-00050",
       "query": "[redacted SkillRet query text; use queryId q-00050 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-f1baf9046f17",
@@ -1390,7 +1390,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1409,7 +1409,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1428,7 +1428,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1447,7 +1447,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1477,7 +1477,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1496,7 +1496,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1516,7 +1516,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1528,7 +1528,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1540,7 +1540,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1552,7 +1552,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1571,7 +1571,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1589,7 +1589,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1608,7 +1608,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1624,7 +1624,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1643,7 +1643,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1669,7 +1669,7 @@
     {
       "queryId": "q-00072",
       "query": "[redacted SkillRet query text; use queryId q-00072 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-a716b32927ed"
@@ -1942,7 +1942,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1961,7 +1961,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1977,7 +1977,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -1996,7 +1996,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2012,7 +2012,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2031,7 +2031,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2049,7 +2049,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2068,7 +2068,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2086,7 +2086,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2105,7 +2105,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2121,7 +2121,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2140,7 +2140,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2158,7 +2158,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2177,7 +2177,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2193,7 +2193,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2212,7 +2212,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2228,7 +2228,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2247,7 +2247,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2263,7 +2263,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2282,7 +2282,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2296,7 +2296,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2312,7 +2312,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2324,7 +2324,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2343,7 +2343,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2363,7 +2363,7 @@
     {
       "queryId": "q-00081",
       "query": "[redacted SkillRet query text; use queryId q-00081 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-5b5e5a60751e"
@@ -2495,7 +2495,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2514,7 +2514,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2526,7 +2526,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2545,7 +2545,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2561,7 +2561,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2580,7 +2580,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2592,7 +2592,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2611,7 +2611,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2631,7 +2631,7 @@
     {
       "queryId": "q-00082",
       "query": "[redacted SkillRet query text; use queryId q-00082 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-2a191c9d37c2",
@@ -2765,7 +2765,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2784,7 +2784,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2798,7 +2798,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2817,7 +2817,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2839,7 +2839,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2858,7 +2858,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2874,7 +2874,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2893,7 +2893,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -2913,7 +2913,7 @@
     {
       "queryId": "q-00089",
       "query": "[redacted SkillRet query text; use queryId q-00089 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-7278aa9d17b0"
@@ -3050,7 +3050,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3069,7 +3069,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3087,7 +3087,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3106,7 +3106,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3122,7 +3122,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3141,7 +3141,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3159,7 +3159,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3178,7 +3178,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3192,7 +3192,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3211,7 +3211,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3233,7 +3233,7 @@
     {
       "queryId": "q-00092",
       "query": "[redacted SkillRet query text; use queryId q-00092 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-9caa7c46c02c",
@@ -3385,7 +3385,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3404,7 +3404,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3418,7 +3418,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3437,7 +3437,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3461,7 +3461,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3480,7 +3480,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3494,7 +3494,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3506,7 +3506,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3525,7 +3525,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3545,7 +3545,7 @@
     {
       "queryId": "q-00100",
       "query": "[redacted SkillRet query text; use queryId q-00100 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-90e93af4f4f7",
@@ -3724,7 +3724,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3743,7 +3743,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3761,7 +3761,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3780,7 +3780,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3799,7 +3799,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3817,7 +3817,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3836,7 +3836,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3852,7 +3852,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3871,7 +3871,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3883,7 +3883,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3902,7 +3902,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3922,7 +3922,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3941,7 +3941,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -3961,7 +3961,7 @@
     {
       "queryId": "q-00111",
       "query": "[redacted SkillRet query text; use queryId q-00111 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-f38498806181",
@@ -4115,7 +4115,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4134,7 +4134,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4164,7 +4164,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4183,7 +4183,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4213,7 +4213,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4229,7 +4229,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4248,7 +4248,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4264,7 +4264,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4283,7 +4283,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4307,7 +4307,7 @@
     {
       "queryId": "q-00114",
       "query": "[redacted SkillRet query text; use queryId q-00114 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-f6c18052403a"
@@ -4473,7 +4473,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4492,7 +4492,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4512,7 +4512,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4531,7 +4531,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4545,7 +4545,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4564,7 +4564,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4578,7 +4578,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4597,7 +4597,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4611,7 +4611,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4630,7 +4630,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4644,7 +4644,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4663,7 +4663,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4685,7 +4685,7 @@
     {
       "queryId": "q-00116",
       "query": "[redacted SkillRet query text; use queryId q-00116 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-dff4cb6d5a2c",
@@ -4861,7 +4861,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4880,7 +4880,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4899,7 +4899,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4918,7 +4918,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4942,7 +4942,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4961,7 +4961,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4979,7 +4979,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -4998,7 +4998,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5010,7 +5010,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5029,7 +5029,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5053,7 +5053,7 @@
     {
       "queryId": "q-00119",
       "query": "[redacted SkillRet query text; use queryId q-00119 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-a691728713e6",
@@ -5219,7 +5219,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5238,7 +5238,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5256,7 +5256,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5268,7 +5268,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5287,7 +5287,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5305,7 +5305,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5324,7 +5324,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5340,7 +5340,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5359,7 +5359,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5373,7 +5373,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5392,7 +5392,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5412,7 +5412,7 @@
     {
       "queryId": "q-00127",
       "query": "[redacted SkillRet query text; use queryId q-00127 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-0baa28ef5cd9"
@@ -5554,7 +5554,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5573,7 +5573,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5591,7 +5591,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5610,7 +5610,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5624,7 +5624,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5643,7 +5643,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5661,7 +5661,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5680,7 +5680,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5702,7 +5702,7 @@
     {
       "queryId": "q-00141",
       "query": "[redacted SkillRet query text; use queryId q-00141 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-a27e09841565",
@@ -5842,7 +5842,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5861,7 +5861,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5873,7 +5873,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5892,7 +5892,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5906,7 +5906,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5925,7 +5925,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -5947,7 +5947,7 @@
     {
       "queryId": "q-00158",
       "query": "[redacted SkillRet query text; use queryId q-00158 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-e46b3b02d15d"
@@ -6092,7 +6092,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6111,7 +6111,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6141,7 +6141,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6160,7 +6160,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6176,7 +6176,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6195,7 +6195,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6209,7 +6209,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6228,7 +6228,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6242,7 +6242,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6261,7 +6261,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6281,7 +6281,7 @@
     {
       "queryId": "q-00172",
       "query": "[redacted SkillRet query text; use queryId q-00172 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-fc2d1b6cdba6",
@@ -6433,7 +6433,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6452,7 +6452,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6471,7 +6471,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6490,7 +6490,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6516,7 +6516,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6528,7 +6528,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6540,7 +6540,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6552,7 +6552,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6564,7 +6564,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6576,7 +6576,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6588,7 +6588,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6600,7 +6600,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6612,7 +6612,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6631,7 +6631,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6643,7 +6643,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6655,7 +6655,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6667,7 +6667,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6687,7 +6687,7 @@
     {
       "queryId": "q-00174",
       "query": "[redacted SkillRet query text; use queryId q-00174 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-cbc6dafe5518",
@@ -6852,7 +6852,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6871,7 +6871,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6901,7 +6901,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6913,7 +6913,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6925,7 +6925,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6937,7 +6937,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6956,7 +6956,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6974,7 +6974,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -6993,7 +6993,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7009,7 +7009,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7028,7 +7028,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7044,7 +7044,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7063,7 +7063,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7085,7 +7085,7 @@
     {
       "queryId": "q-00184",
       "query": "[redacted SkillRet query text; use queryId q-00184 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-44d153c578df"
@@ -7246,7 +7246,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7265,7 +7265,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7295,7 +7295,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7314,7 +7314,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7332,7 +7332,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7351,7 +7351,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7371,7 +7371,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7390,7 +7390,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7410,7 +7410,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7429,7 +7429,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7453,7 +7453,7 @@
     {
       "queryId": "q-00185",
       "query": "[redacted SkillRet query text; use queryId q-00185 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-88a550811304"
@@ -7587,7 +7587,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7606,7 +7606,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7622,7 +7622,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7641,7 +7641,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7659,7 +7659,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7678,7 +7678,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7696,7 +7696,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7715,7 +7715,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7735,7 +7735,7 @@
     {
       "queryId": "q-00198",
       "query": "[redacted SkillRet query text; use queryId q-00198 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-3149d48ac1e2",
@@ -7929,7 +7929,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7948,7 +7948,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7978,7 +7978,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -7997,7 +7997,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8027,7 +8027,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8045,7 +8045,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8064,7 +8064,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8082,7 +8082,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8101,7 +8101,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8119,7 +8119,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8131,7 +8131,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8150,7 +8150,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8174,7 +8174,7 @@
     {
       "queryId": "q-00214",
       "query": "[redacted SkillRet query text; use queryId q-00214 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-ae8800b798d7"
@@ -8315,7 +8315,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8334,7 +8334,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8364,7 +8364,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8376,7 +8376,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8395,7 +8395,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8414,7 +8414,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8426,7 +8426,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8445,7 +8445,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8463,7 +8463,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8482,7 +8482,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8504,7 +8504,7 @@
     {
       "queryId": "q-00217",
       "query": "[redacted SkillRet query text; use queryId q-00217 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-1fb289c11a53",
@@ -8646,7 +8646,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8665,7 +8665,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8679,7 +8679,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8698,7 +8698,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8712,7 +8712,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8731,7 +8731,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8743,7 +8743,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8762,7 +8762,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8784,7 +8784,7 @@
     {
       "queryId": "q-00231",
       "query": "[redacted SkillRet query text; use queryId q-00231 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-2175d6ecc4f5",
@@ -8974,7 +8974,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -8993,7 +8993,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9023,7 +9023,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9042,7 +9042,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9072,7 +9072,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9091,7 +9091,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9111,7 +9111,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9130,7 +9130,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9146,7 +9146,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9165,7 +9165,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9181,7 +9181,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9200,7 +9200,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9226,7 +9226,7 @@
     {
       "queryId": "q-00240",
       "query": "[redacted SkillRet query text; use queryId q-00240 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-0e94b5c7f70e",
@@ -9420,7 +9420,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9439,7 +9439,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9457,7 +9457,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9469,7 +9469,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9488,7 +9488,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9506,7 +9506,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9518,7 +9518,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9537,7 +9537,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9553,7 +9553,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9572,7 +9572,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9590,7 +9590,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9609,7 +9609,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9623,7 +9623,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9642,7 +9642,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9658,7 +9658,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9677,7 +9677,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9699,7 +9699,7 @@
     {
       "queryId": "q-00246",
       "query": "[redacted SkillRet query text; use queryId q-00246 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-227633a97fda",
@@ -9873,7 +9873,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9892,7 +9892,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9908,7 +9908,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9927,7 +9927,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9943,7 +9943,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9962,7 +9962,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9982,7 +9982,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -9994,7 +9994,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10013,7 +10013,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10027,7 +10027,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10046,7 +10046,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10068,7 +10068,7 @@
     {
       "queryId": "q-00256",
       "query": "[redacted SkillRet query text; use queryId q-00256 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-f2f43162c944"
@@ -10181,7 +10181,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10200,7 +10200,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10218,7 +10218,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10237,7 +10237,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10251,7 +10251,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10270,7 +10270,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10284,7 +10284,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10303,7 +10303,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10331,7 +10331,7 @@
     {
       "queryId": "q-00272",
       "query": "[redacted SkillRet query text; use queryId q-00272 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-253a44957c2e",
@@ -10511,7 +10511,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10530,7 +10530,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10549,7 +10549,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10568,7 +10568,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10588,7 +10588,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10606,7 +10606,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10622,7 +10622,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10641,7 +10641,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10653,7 +10653,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10672,7 +10672,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10684,7 +10684,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10702,7 +10702,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10721,7 +10721,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10733,7 +10733,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10753,7 +10753,7 @@
     {
       "queryId": "q-00282",
       "query": "[redacted SkillRet query text; use queryId q-00282 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-0a3f19f6e288"
@@ -10858,7 +10858,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10877,7 +10877,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10907,7 +10907,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10926,7 +10926,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10942,7 +10942,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10961,7 +10961,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -10985,7 +10985,7 @@
     {
       "queryId": "q-00304",
       "query": "[redacted SkillRet query text; use queryId q-00304 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-ad3d181c8c5b",
@@ -11162,7 +11162,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11181,7 +11181,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11193,7 +11193,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11212,7 +11212,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11230,7 +11230,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11242,7 +11242,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11261,7 +11261,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11275,7 +11275,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11294,7 +11294,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11310,7 +11310,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11329,7 +11329,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11353,7 +11353,7 @@
     {
       "queryId": "q-00311",
       "query": "[redacted SkillRet query text; use queryId q-00311 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-2ec61ceeb40c",
@@ -11490,7 +11490,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11509,7 +11509,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11527,7 +11527,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11546,7 +11546,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11560,7 +11560,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11579,7 +11579,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11603,7 +11603,7 @@
     {
       "queryId": "q-00314",
       "query": "[redacted SkillRet query text; use queryId q-00314 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-b32a47215d62"
@@ -11763,7 +11763,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11782,7 +11782,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11794,7 +11794,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11813,7 +11813,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11827,7 +11827,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11846,7 +11846,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11864,7 +11864,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11883,7 +11883,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11899,7 +11899,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11918,7 +11918,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11937,7 +11937,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11951,7 +11951,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11970,7 +11970,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -11992,7 +11992,7 @@
     {
       "queryId": "q-00318",
       "query": "[redacted SkillRet query text; use queryId q-00318 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-f41c3625ec3a"
@@ -12203,7 +12203,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12222,7 +12222,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12246,7 +12246,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12265,7 +12265,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12287,7 +12287,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12306,7 +12306,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12330,7 +12330,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12349,7 +12349,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12369,7 +12369,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12388,7 +12388,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12406,7 +12406,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12418,7 +12418,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12437,7 +12437,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12455,7 +12455,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12474,7 +12474,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12498,7 +12498,7 @@
     {
       "queryId": "q-00334",
       "query": "[redacted SkillRet query text; use queryId q-00334 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-4df3795d8fbe",
@@ -12671,7 +12671,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12690,7 +12690,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12709,7 +12709,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12728,7 +12728,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12747,7 +12747,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12781,7 +12781,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12793,7 +12793,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12805,7 +12805,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12817,7 +12817,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12829,7 +12829,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12848,7 +12848,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12860,7 +12860,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12872,7 +12872,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12884,7 +12884,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -12904,7 +12904,7 @@
     {
       "queryId": "q-00356",
       "query": "[redacted SkillRet query text; use queryId q-00356 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-8bbc7bab8f15"
@@ -13044,7 +13044,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13063,7 +13063,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13079,7 +13079,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13098,7 +13098,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13114,7 +13114,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13133,7 +13133,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13147,7 +13147,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13166,7 +13166,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13188,7 +13188,7 @@
     {
       "queryId": "q-00369",
       "query": "[redacted SkillRet query text; use queryId q-00369 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-6abf7d7988fd"
@@ -13330,7 +13330,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13349,7 +13349,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13368,7 +13368,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13387,7 +13387,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13417,7 +13417,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13436,7 +13436,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13455,7 +13455,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13479,7 +13479,7 @@
     {
       "queryId": "q-00380",
       "query": "[redacted SkillRet query text; use queryId q-00380 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-3601d6656fdf",
@@ -13660,7 +13660,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13679,7 +13679,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13709,7 +13709,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13728,7 +13728,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13758,7 +13758,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13770,7 +13770,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13789,7 +13789,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13819,7 +13819,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13831,7 +13831,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13850,7 +13850,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13868,7 +13868,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -13888,7 +13888,7 @@
     {
       "queryId": "q-00385",
       "query": "[redacted SkillRet query text; use queryId q-00385 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-e6593590dd04",
@@ -14092,7 +14092,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14111,7 +14111,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14141,7 +14141,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14160,7 +14160,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14182,7 +14182,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14198,7 +14198,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14217,7 +14217,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14239,7 +14239,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14258,7 +14258,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14278,7 +14278,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14297,7 +14297,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14315,7 +14315,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14334,7 +14334,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14360,7 +14360,7 @@
     {
       "queryId": "q-00406",
       "query": "[redacted SkillRet query text; use queryId q-00406 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-26917664f873",
@@ -14513,7 +14513,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14532,7 +14532,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14551,7 +14551,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14570,7 +14570,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14589,7 +14589,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14615,7 +14615,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14629,7 +14629,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14641,7 +14641,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14660,7 +14660,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14680,7 +14680,7 @@
     {
       "queryId": "q-00410",
       "query": "[redacted SkillRet query text; use queryId q-00410 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-64df9bf4d3de",
@@ -14912,7 +14912,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14931,7 +14931,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14947,7 +14947,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14966,7 +14966,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -14984,7 +14984,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15003,7 +15003,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15019,7 +15019,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15038,7 +15038,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15054,7 +15054,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15073,7 +15073,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15089,7 +15089,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15108,7 +15108,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15122,7 +15122,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15141,7 +15141,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15155,7 +15155,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15174,7 +15174,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15190,7 +15190,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15209,7 +15209,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15229,7 +15229,7 @@
     {
       "queryId": "q-00433",
       "query": "[redacted SkillRet query text; use queryId q-00433 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-791d19c4b0ad",
@@ -15413,7 +15413,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15432,7 +15432,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15448,7 +15448,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15467,7 +15467,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15491,7 +15491,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15510,7 +15510,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15522,7 +15522,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15541,7 +15541,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15553,7 +15553,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15572,7 +15572,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15586,7 +15586,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15605,7 +15605,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15631,7 +15631,7 @@
     {
       "queryId": "q-00472",
       "query": "[redacted SkillRet query text; use queryId q-00472 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": false,
       "expectedSkillIds": [
         "memory-44d1d5f15fa9"
@@ -15785,7 +15785,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15804,7 +15804,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15823,7 +15823,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15842,7 +15842,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15854,7 +15854,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15866,7 +15866,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15878,7 +15878,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15890,7 +15890,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15902,7 +15902,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15921,7 +15921,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15940,7 +15940,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15959,7 +15959,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15971,7 +15971,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15983,7 +15983,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -15995,7 +15995,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16007,7 +16007,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16026,7 +16026,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16045,7 +16045,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16057,7 +16057,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16077,7 +16077,7 @@
     {
       "queryId": "q-00476",
       "query": "[redacted SkillRet query text; use queryId q-00476 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-07e74abce0a4",
@@ -16259,7 +16259,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16278,7 +16278,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16290,7 +16290,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16309,7 +16309,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16325,7 +16325,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16344,7 +16344,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16360,7 +16360,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16379,7 +16379,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16393,7 +16393,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16412,7 +16412,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16426,7 +16426,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16445,7 +16445,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16465,7 +16465,7 @@
     {
       "queryId": "q-00483",
       "query": "[redacted SkillRet query text; use queryId q-00483 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-b180a6ed52d7"
@@ -16625,7 +16625,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16644,7 +16644,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16674,7 +16674,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16693,7 +16693,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16723,7 +16723,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16742,7 +16742,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16772,7 +16772,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16788,7 +16788,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16800,7 +16800,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16819,7 +16819,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -16841,7 +16841,7 @@
     {
       "queryId": "q-00489",
       "query": "[redacted SkillRet query text; use queryId q-00489 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-6b52bf920d2b",
@@ -17049,7 +17049,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17068,7 +17068,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17098,7 +17098,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17117,7 +17117,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17137,7 +17137,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17156,7 +17156,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17172,7 +17172,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17191,7 +17191,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17209,7 +17209,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17228,7 +17228,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17246,7 +17246,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17265,7 +17265,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17281,7 +17281,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17300,7 +17300,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17320,7 +17320,7 @@
     {
       "queryId": "q-00505",
       "query": "[redacted SkillRet query text; use queryId q-00505 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-5ba3eeac427b",
@@ -17459,7 +17459,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17478,7 +17478,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17492,7 +17492,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17511,7 +17511,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17525,7 +17525,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17544,7 +17544,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17556,7 +17556,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17583,7 +17583,7 @@
     {
       "queryId": "q-00518",
       "query": "[redacted SkillRet query text; use queryId q-00518 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-1fb289c11a53",
@@ -17736,7 +17736,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17755,7 +17755,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17769,7 +17769,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17788,7 +17788,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17804,7 +17804,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17823,7 +17823,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17839,7 +17839,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17858,7 +17858,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17872,7 +17872,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17884,7 +17884,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17903,7 +17903,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -17925,7 +17925,7 @@
     {
       "queryId": "q-00521",
       "query": "[redacted SkillRet query text; use queryId q-00521 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-a22075de5018",
@@ -18119,7 +18119,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18138,7 +18138,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18152,7 +18152,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18171,7 +18171,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18189,7 +18189,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18201,7 +18201,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18220,7 +18220,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18238,7 +18238,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18257,7 +18257,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18275,7 +18275,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18294,7 +18294,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18312,7 +18312,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18331,7 +18331,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18349,7 +18349,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18361,7 +18361,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18380,7 +18380,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18399,7 +18399,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18415,7 +18415,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18435,7 +18435,7 @@
     {
       "queryId": "q-00532",
       "query": "[redacted SkillRet query text; use queryId q-00532 with the pinned public corpus]",
-      "condition": "tool-driven-lore",
+      "condition": "tool-driven-kennen",
       "success": true,
       "expectedSkillIds": [
         "memory-4e6f7bef9c8e"
@@ -18659,7 +18659,7 @@
       },
       "toolTrace": [
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18678,7 +18678,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18708,7 +18708,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18727,7 +18727,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18751,7 +18751,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18763,7 +18763,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18775,7 +18775,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18794,7 +18794,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18808,7 +18808,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18827,7 +18827,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18845,7 +18845,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18864,7 +18864,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18882,7 +18882,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18901,7 +18901,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18919,7 +18919,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18938,7 +18938,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18954,7 +18954,7 @@
           "error": null
         },
         {
-          "tool": "lore-query",
+          "tool": "kennen-query",
           "action": "search",
           "status": "success",
           "surfacedMemoryIds": [
@@ -18973,7 +18973,7 @@
           "error": null
         },
         {
-          "tool": "lore-memory",
+          "tool": "kennen-memory",
           "action": "expand",
           "status": "success",
           "surfacedMemoryIds": [
@@ -19003,8 +19003,8 @@
     "failedRequiredResults": 11,
     "writeAttemptsBlocked": 0,
     "conditions": {
-      "no-lore": null,
-      "tool-driven-lore": {
+      "no-kennen": null,
+      "tool-driven-kennen": {
         "results": 50,
         "passed": 39,
         "failed": 11,
@@ -19037,7 +19037,7 @@
         }
       },
       "oracle-context": null,
-      "noisy-lore": null
+      "noisy-kennen": null
     }
   },
   "retryProvenance": {

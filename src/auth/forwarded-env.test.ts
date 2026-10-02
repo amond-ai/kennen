@@ -8,7 +8,7 @@ import {
 } from "./forwarded-env.js"
 
 // `forwarded-env.ts` is a contract module: a single source-of-truth
-// allowlist consumed by every Lore surface that needs to thread the
+// allowlist consumed by every Kennen surface that needs to thread the
 // operator's auth-relevant env into a spawned child (committed MCP
 // host config placeholders + the detached background-save spawn).
 // Drift between consumers produces silent auth/workspace divergence;
@@ -31,14 +31,14 @@ function assertNever(_value: never): never {
 function exhaustiveAllKeys(key: RuntimeForwardedKey): RuntimeForwardedKey {
   switch (key) {
     case "NOTION_API_TOKEN":
-    case "LORE_NOTION_BASE_URL":
+    case "KENNEN_NOTION_BASE_URL":
     case "NOTION_WORKSPACE_ID":
     case "NOTION_ENV":
     case "NOTION_BASE_URL":
     case "NOTION_API_BASE_URL":
-    case "LORE_USER_NAME":
-    case "LORE_MCP_WRITE_BUDGET":
-    case "LORE_MCP_BUDGET_STATE_FILE":
+    case "KENNEN_USER_NAME":
+    case "KENNEN_MCP_WRITE_BUDGET":
+    case "KENNEN_MCP_BUDGET_STATE_FILE":
       return key
     default:
       return assertNever(key)
@@ -57,22 +57,22 @@ function exhaustiveAuthTokenKeys(
 
 describe("RUNTIME_FORWARDED_KEYS — declaration shape", () => {
   it("matches the exact expected sequence", () => {
-    // Declaration order is observable: `lore install` emits Codex
+    // Declaration order is observable: `kennen install` emits Codex
     // `env_vars = [...]` entries in this order, so a refactor that
     // shuffles the array silently rewrites committed TOML for every
-    // operator who re-runs `lore install`. Pin the sequence so that
+    // operator who re-runs `kennen install`. Pin the sequence so that
     // reorder is a deliberate, reviewed change rather than an
     // accidental side effect of a sort or a structural cleanup.
     expect(RUNTIME_FORWARDED_KEYS).toEqual([
       "NOTION_API_TOKEN",
-      "LORE_NOTION_BASE_URL",
+      "KENNEN_NOTION_BASE_URL",
       "NOTION_WORKSPACE_ID",
       "NOTION_ENV",
       "NOTION_BASE_URL",
       "NOTION_API_BASE_URL",
-      "LORE_USER_NAME",
-      "LORE_MCP_WRITE_BUDGET",
-      "LORE_MCP_BUDGET_STATE_FILE",
+      "KENNEN_USER_NAME",
+      "KENNEN_MCP_WRITE_BUDGET",
+      "KENNEN_MCP_BUDGET_STATE_FILE",
     ])
   })
 
@@ -107,12 +107,12 @@ describe("RUNTIME_FORWARDED_KEYS — declaration shape", () => {
     // The module JSDoc explicitly carves out three env names that
     // would otherwise be plausible additions:
     //
-    // - `LORE_AGENT_NAME` (lines 47-52) — agent-name flow already
+    // - `KENNEN_AGENT_NAME` (lines 47-52) — agent-name flow already
     //   threads through prompt-text + Codex hook-command prefix.
     //   Forwarding here would double-forward.
-    // - `LORE_CONFIG_ROOT` (lines 43-46) — install-time-derived
+    // - `KENNEN_CONFIG_ROOT` (lines 43-46) — install-time-derived
     //   absolute path, not an operator-controlled env reference.
-    // - `LORE_SUPPRESS_DEPRECATIONS` (same range) — literal
+    // - `KENNEN_SUPPRESS_DEPRECATIONS` (same range) — literal
     //   `"1"` static value, set by `buildMcpEnv`'s static block.
     //
     // A "quiet append" that adds any of these without re-reading
@@ -120,9 +120,9 @@ describe("RUNTIME_FORWARDED_KEYS — declaration shape", () => {
     // the carve-out exists to prevent. Pin the exclusions so a
     // future PR has to delete this assertion deliberately, which
     // forces a re-read.
-    expect(RUNTIME_FORWARDED_KEYS).not.toContain("LORE_AGENT_NAME")
-    expect(RUNTIME_FORWARDED_KEYS).not.toContain("LORE_CONFIG_ROOT")
-    expect(RUNTIME_FORWARDED_KEYS).not.toContain("LORE_SUPPRESS_DEPRECATIONS")
+    expect(RUNTIME_FORWARDED_KEYS).not.toContain("KENNEN_AGENT_NAME")
+    expect(RUNTIME_FORWARDED_KEYS).not.toContain("KENNEN_CONFIG_ROOT")
+    expect(RUNTIME_FORWARDED_KEYS).not.toContain("KENNEN_SUPPRESS_DEPRECATIONS")
     expect(RUNTIME_FORWARDED_KEYS).not.toContain("CODEX_HOME")
   })
 })
@@ -158,13 +158,13 @@ describe("RUNTIME_FORWARDED_AUTH_TOKEN_KEYS — subset partition", () => {
   })
 })
 
-describe("buildSafeEnv — env partition shared by every Lore child spawn", () => {
+describe("buildSafeEnv — env partition shared by every Kennen child spawn", () => {
   const parent: NodeJS.ProcessEnv = {
     PATH: "/usr/local/bin:/usr/bin",
     HOME: "/home/test",
     NOTION_API_TOKEN: "tok-canonical",
     NOTION_WORKSPACE_ID: "ws-abc",
-    LORE_USER_NAME: "Test Operator",
+    KENNEN_USER_NAME: "Test Operator",
     NOTION_ENV: "prod",
     UNRELATED_VAR: "should-not-leak",
   }
@@ -178,10 +178,10 @@ describe("buildSafeEnv — env partition shared by every Lore child spawn", () =
     }
   })
 
-  it("attaches LORE_AUTOSAVE=false and LORE_BACKGROUND_AGENT=true unconditionally", () => {
+  it("attaches KENNEN_AUTOSAVE=false and KENNEN_BACKGROUND_AGENT=true unconditionally", () => {
     const env = buildSafeEnv(undefined, parent)
-    expect(env["LORE_AUTOSAVE"]).toBe("false")
-    expect(env["LORE_BACKGROUND_AGENT"]).toBe("true")
+    expect(env["KENNEN_AUTOSAVE"]).toBe("false")
+    expect(env["KENNEN_BACKGROUND_AGENT"]).toBe("true")
   })
 
   it("does not leak env vars outside the allowlist", () => {
@@ -192,9 +192,9 @@ describe("buildSafeEnv — env partition shared by every Lore child spawn", () =
   it("forwards CODEX_HOME only as a runtime child-process selector", () => {
     const env = buildSafeEnv(undefined, {
       ...parent,
-      CODEX_HOME: "/tmp/lore-codex-home",
+      CODEX_HOME: "/tmp/kennen-codex-home",
     })
-    expect(env["CODEX_HOME"]).toBe("/tmp/lore-codex-home")
+    expect(env["CODEX_HOME"]).toBe("/tmp/kennen-codex-home")
   })
 
   it("skips empty-string values to match resolveAuth priority semantics", () => {
@@ -218,7 +218,7 @@ describe("buildSafeEnv — env partition shared by every Lore child spawn", () =
     // needs to land on the same workspace as the foreground.
     expect(env["NOTION_WORKSPACE_ID"]).toBe("ws-abc")
     expect(env["NOTION_ENV"]).toBe("prod")
-    expect(env["LORE_USER_NAME"]).toBe("Test Operator")
+    expect(env["KENNEN_USER_NAME"]).toBe("Test Operator")
   })
 
   it("forwards the auth-token subset under non-ntn auth sources", () => {

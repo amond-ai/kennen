@@ -507,7 +507,7 @@ describe("RunTool SQL vs REST/SDK A/B harness", () => {
  * Each fixture row is registered both as a REST `client.search` hit
  * AND as a RunTool `search` hit; the harness exercises
  * `MemoryService.search({ mode: "semantic" })` once with
- * `LORE_USE_RUNTOOL_SEARCH=1` and once with the flag unset, then
+ * `KENNEN_USE_RUNTOOL_SEARCH=1` and once with the flag unset, then
  * asserts the resulting Memory id sets are equal at the same final
  * `limit`.
  *
@@ -669,17 +669,17 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // Default state is ON post-#543. Tests that need the flag-off
     // branch must explicitly set `=0` below; tests that need flag-on
     // can set `=1` for clarity (or rely on the inherited default).
-    delete process.env["LORE_USE_RUNTOOL_SEARCH"]
-    delete process.env["LORE_USE_RUNTOOL"]
+    delete process.env["KENNEN_USE_RUNTOOL_SEARCH"]
+    delete process.env["KENNEN_USE_RUNTOOL"]
   })
 
   afterEach(() => {
-    delete process.env["LORE_USE_RUNTOOL_SEARCH"]
-    delete process.env["LORE_USE_RUNTOOL"]
+    delete process.env["KENNEN_USE_RUNTOOL_SEARCH"]
+    delete process.env["KENNEN_USE_RUNTOOL"]
   })
 
   it("flag-off and flag-on agree on the page-id set at limit ≤ 25", async () => {
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "0"
     const restStub = buildSemanticStubClient()
     const restService = new MemoryService(restStub.client, SEMANTIC_DB)
     const restResult = await restService.search({
@@ -688,7 +688,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
       limit: 5,
     })
 
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const runStub = buildSemanticStubClient()
     const runService = new MemoryService(runStub.client, SEMANTIC_DB)
     const runResult = await runService.search({
@@ -717,7 +717,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
   })
 
   it("flag-on with empty composed query uses DS-scoped listing without dispatching RunTool", async () => {
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const stub = buildSemanticStubClient()
     const service = new MemoryService(stub.client, SEMANTIC_DB)
 
@@ -845,7 +845,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
       }
     }
 
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "0"
     const restService = new MemoryService(buildRichStub().client, SEMANTIC_DB)
     const restResult = await restService.search({
       query: "Memory",
@@ -853,7 +853,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
       limit: 10,
     })
 
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const runService = new MemoryService(buildRichStub().client, SEMANTIC_DB)
     const runResult = await runService.search({
       query: "Memory",
@@ -878,7 +878,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // Pin that the RunTool route is not capped by the caller's display
     // limit. The wrapper asks for the server's full search window and
     // lets `runSearch` apply the final slice.
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const stub = buildSemanticStubClient()
     const service = new MemoryService(stub.client, SEMANTIC_DB)
 
@@ -889,7 +889,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
   })
 
   it("flag-on with limit > RUNTOOL_SEARCH_MAX_PAGE_SIZE still routes through RunTool", async () => {
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const stub = buildSemanticStubClient()
     const service = new MemoryService(stub.client, SEMANTIC_DB)
 
@@ -903,7 +903,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // RunTool's `id` is the search index's internal resource id and
     // is not guaranteed to be the page id. The wrapper normalizes
     // `url` to a page id before `MemoryService` hydrates the hit.
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const pageId = "11111111-1111-1111-1111-111111111111"
     const pageUrl = `https://app.dev.notion.com/p/${pageId.replaceAll("-", "")}`
     const indexId = "search-index-resource-id-7" // arbitrary non-page-id
@@ -977,7 +977,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // have queued all 25 retrieves through the rate-limit proxy
     // before observing the abort; the sequential loop bounds the
     // residual cost.
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
 
     const controller = new AbortController()
     const liveIds = Array.from(
@@ -1064,7 +1064,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
   })
 
   it("flag-on tolerates per-id 404 / RestrictedResource without failing the search", async () => {
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const liveId = "11111111-1111-1111-1111-111111111111"
     const staleId = "99999999-9999-9999-9999-999999999999"
     const stub = {
@@ -1151,7 +1151,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
   })
 
   it("flag-on propagates search-dispatch RestrictedResource instead of falling back to REST", async () => {
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const counters = { searchCalls: 0, requestCalls: 0 }
     const stub = {
       search: async () => {
@@ -1194,7 +1194,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
   })
 
   it("flag-on de-duplicates repeated normalized page ids before hydration", async () => {
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const pageId = "11111111-1111-1111-1111-111111111111"
     const retrievedPageIds: string[] = []
     const stub = {
@@ -1241,7 +1241,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // window. The service reports `capped: true` instead of switching to
     // REST, so callers can render truncation without discarding Notion AI
     // ordering.
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const counters = { searchCalls: 0, requestCalls: 0 }
     const liveIds = Array.from(
       { length: 25 },
@@ -1314,7 +1314,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // Post-filters can drop every RunTool hit, but the semantic relevance
     // source remains RunTool. The cap metadata distinguishes a truncated
     // search window from a fully exhausted no-match.
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const counters = { searchCalls: 0, requestCalls: 0 }
     const liveIds = Array.from(
       { length: 25 },
@@ -1389,7 +1389,7 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
     // Drive — `url` is a full URL, not a Notion page id). The
     // wrapper drops them all in `isNotionInternalHit`, so
     // `outcome.hits.length === 0` AND `outcome.saturated === true`.
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     const counters = { searchCalls: 0, requestCalls: 0 }
     const stub = {
       search: async () => {
@@ -1444,10 +1444,10 @@ describe("RunTool search vs REST/SDK semantic A/B harness", () => {
  * dev/manual run."
  *
  * The harness drives `runOrphanRateReport` (the integration site
- * consumed by `lore migrate --build-entities --report-orphan-rate`)
+ * consumed by `kennen migrate --build-entities --report-orphan-rate`)
  * twice over a shared fact corpus — once with
- * `LORE_USE_RUNTOOL_AGGREGATE=0` (forces the JS enumeration path)
- * and once with `LORE_USE_RUNTOOL_AGGREGATE=1` (forces the RunTool
+ * `KENNEN_USE_RUNTOOL_AGGREGATE=0` (forces the JS enumeration path)
+ * and once with `KENNEN_USE_RUNTOOL_AGGREGATE=1` (forces the RunTool
  * SQL aggregate path) — and asserts the emitted orphan-rate metric
  * matches byte-for-byte.
  *
@@ -1681,29 +1681,29 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
   let savedParentFlag: string | undefined
 
   beforeEach(() => {
-    savedAggregateFlag = process.env["LORE_USE_RUNTOOL_AGGREGATE"]
-    savedParentFlag = process.env["LORE_USE_RUNTOOL"]
-    delete process.env["LORE_USE_RUNTOOL_AGGREGATE"]
-    delete process.env["LORE_USE_RUNTOOL"]
+    savedAggregateFlag = process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
+    savedParentFlag = process.env["KENNEN_USE_RUNTOOL"]
+    delete process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
+    delete process.env["KENNEN_USE_RUNTOOL"]
   })
 
   afterEach(() => {
     if (savedAggregateFlag === undefined) {
-      delete process.env["LORE_USE_RUNTOOL_AGGREGATE"]
+      delete process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
     } else {
-      process.env["LORE_USE_RUNTOOL_AGGREGATE"] = savedAggregateFlag
+      process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = savedAggregateFlag
     }
     if (savedParentFlag === undefined) {
-      delete process.env["LORE_USE_RUNTOOL"]
+      delete process.env["KENNEN_USE_RUNTOOL"]
     } else {
-      process.env["LORE_USE_RUNTOOL"] = savedParentFlag
+      process.env["KENNEN_USE_RUNTOOL"] = savedParentFlag
     }
   })
 
   it("flag-off (JS enumeration) and flag-on (RunTool aggregate) emit identical orphan-rate metrics", async () => {
     // Flag-off: force JS enumeration. Stub's `request` must NOT be
     // called; `queryBySubject` runs once over the full corpus.
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "0"
     const off = buildOrphanRateServicesStub(AGGREGATE_FIXTURE)
     const offResult = await captureOrphanRateLogs(() =>
       runOrphanRateReport(off.services, { apply: false })
@@ -1712,7 +1712,7 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
     // Flag-on: force RunTool aggregate. Stub's `request` runs once
     // with the `query_data_sources` envelope; `queryBySubject` is NOT
     // called because the SQL path serves the metric end-to-end.
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "1"
     const on = buildOrphanRateServicesStub(AGGREGATE_FIXTURE)
     const onResult = await captureOrphanRateLogs(() =>
       runOrphanRateReport(on.services, { apply: false })
@@ -1765,13 +1765,13 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
     // `SqlPartialResultError` and the call site falls through to
     // JS enumeration. The metric must still match the flag-off
     // path because the underlying corpus is identical.
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "0"
     const off = buildOrphanRateServicesStub(AGGREGATE_FIXTURE)
     const offResult = await captureOrphanRateLogs(() =>
       runOrphanRateReport(off.services, { apply: false })
     )
 
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "1"
     // Wrap the JS-path stub with a spy that records the args
     // `runOrphanRateReport` passed to `queryBySubject`. Per PR
     // #549 review iteration 1 should-fix #5: explicit assertion
@@ -1835,7 +1835,7 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
     // this as fall-back-able (the auth-refresh proxy can't repair
     // it — it refreshes only on 401), and the call site falls
     // through to JS enumeration.
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "0"
     const off = buildOrphanRateServicesStub(AGGREGATE_FIXTURE)
     const offResult = await captureOrphanRateLogs(() =>
       runOrphanRateReport(off.services, { apply: false })
@@ -1852,7 +1852,7 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
       request_id: undefined,
     })
 
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "1"
     const onDegraded = buildOrphanRateServicesStub(AGGREGATE_FIXTURE, {
       requestError: restrictedError,
     })
@@ -1879,7 +1879,7 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
     // Silent fallback would mask a permanent SQL-rollout failure
     // as "REST/JS path always ran"; the load-bearing rule is to
     // surface them to the operator.
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "1"
 
     const { APIResponseError, APIErrorCode } = await import("@notionhq/client")
     const validationError = new APIResponseError({
@@ -1907,13 +1907,13 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
 
   it("flag-on (no env set) inherits from the default-on parent and routes through the aggregate path", async () => {
     // Issue #543 default flip: with no env vars set, the parent
-    // `LORE_USE_RUNTOOL` defaults ON and `LORE_USE_RUNTOOL_AGGREGATE`
+    // `KENNEN_USE_RUNTOOL` defaults ON and `KENNEN_USE_RUNTOOL_AGGREGATE`
     // inherits — so the aggregate path runs without any operator
     // opt-in. Pin this behavior here so a future "back to default
     // off" change fails loudly across both the unit test suite and
     // the integration A/B harness.
-    delete process.env["LORE_USE_RUNTOOL_AGGREGATE"]
-    delete process.env["LORE_USE_RUNTOOL"]
+    delete process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
+    delete process.env["KENNEN_USE_RUNTOOL"]
 
     // Per PR #549 review iteration 1 should-fix #6: assert env is
     // genuinely unset at the moment the harness runs, instead of
@@ -1923,8 +1923,8 @@ describe("RunTool aggregate vs JS enumeration A/B harness (issue #542)", () => {
     // describe-block's `beforeEach` would silently re-pin the
     // parent to `=0` and make this test report
     // `path: "js-enumeration"`, defeating the assertion.
-    expect(process.env["LORE_USE_RUNTOOL"]).toBeUndefined()
-    expect(process.env["LORE_USE_RUNTOOL_AGGREGATE"]).toBeUndefined()
+    expect(process.env["KENNEN_USE_RUNTOOL"]).toBeUndefined()
+    expect(process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]).toBeUndefined()
 
     const stub = buildOrphanRateServicesStub(AGGREGATE_FIXTURE)
     const result = await captureOrphanRateLogs(() =>

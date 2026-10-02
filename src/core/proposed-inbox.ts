@@ -1,6 +1,6 @@
 /**
  * Proposed-memory review inbox status surface.
- * Shared between `lore status` (CLI) and `lore-context action='status'`
+ * Shared between `kennen status` (CLI) and `kennen-context action='status'`
  * (MCP) so the two operator-facing surfaces emit byte-identical lines
  * for the same vault state — same parity contract as `taskStats` /
  * `formatTaskSummary`.
@@ -15,8 +15,8 @@ import type { MemoryService } from "./memory.js"
 
 /**
  * Aggregated proposed-memory inbox depth surfaced as a single status
- * line. Project scoping is applied upstream by the caller (`lore
- * status` and `lore-context action='status'` both call
+ * line. Project scoping is applied upstream by the caller (`kennen
+ * status` and `kennen-context action='status'` both call
  * `loadProposedInboxStatus({ projectId })` or omit the scope for a
  * vault-wide total), so the report itself does not carry the project
  * axis.
@@ -40,7 +40,7 @@ export interface ProposedInboxReport {
 }
 
 /**
- * Subset of `LoreServices` the inbox loader actually reads. Lets tests
+ * Subset of `KennenServices` the inbox loader actually reads. Lets tests
  * pass a one-method fake instead of standing up the full services
  * object.
  */

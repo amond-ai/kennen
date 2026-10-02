@@ -44,7 +44,7 @@ describe("costs command", () => {
   let exitTrap: ReturnType<typeof trapProcessExit>
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "lore-costs-command-"))
+    dir = mkdtempSync(join(tmpdir(), "kennen-costs-command-"))
     logSpy = vi.fn()
     errorSpy = vi.fn()
     warnSpy = vi.fn()
@@ -63,7 +63,7 @@ describe("costs command", () => {
   function writeCostTrackingConfig(): void {
     mkdirSync(join(dir, "state"))
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `
 vault:
   pageId: abc123
@@ -83,7 +83,7 @@ costTracking:
         eventType: "mcp.invocation",
         source: "host_agent",
         status: "success",
-        tool: "lore-query",
+        tool: "kennen-query",
         action: "search",
         payload: payloadSummary("{}", "ok"),
         notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -99,7 +99,7 @@ costTracking:
         eventType: "mcp.invocation",
         source: "host_agent",
         status: "success",
-        tool: "lore-query",
+        tool: "kennen-query",
         action,
         payload: payloadSummary("{}", "ok"),
         notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -110,7 +110,7 @@ costTracking:
   it("renders a summary from the configured ledger and skips invalid rows", async () => {
     mkdirSync(join(dir, "state"))
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `
 vault:
   pageId: abc123
@@ -128,7 +128,7 @@ costTracking:
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -178,7 +178,7 @@ costTracking:
   it("exports CSV from valid ledger rows while skipping invalid rows", async () => {
     mkdirSync(join(dir, "state"))
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `
 vault:
   pageId: abc123
@@ -196,7 +196,7 @@ costTracking:
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -214,7 +214,7 @@ costTracking:
 
     const output = logSpy.mock.calls.flat().join("\n")
     expect(output).toContain("timestamp,eventType,source,status")
-    expect(output).toContain("lore-query,search")
+    expect(output).toContain("kennen-query,search")
     expect(output).not.toContain("SECRET_INVALID_ROW")
     expect(warnSpy.mock.calls.flat().join("\n")).toContain(
       "skipped 1 malformed cost ledger line"
@@ -225,7 +225,7 @@ costTracking:
   it("keeps JSONL export stdout parseable and writes malformed-row warnings to stderr", async () => {
     mkdirSync(join(dir, "state"))
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `
 vault:
   pageId: abc123
@@ -243,7 +243,7 @@ costTracking:
           eventType: "mcp.invocation",
           source: "host_agent",
           status: "success",
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           payload: payloadSummary("{}", "ok"),
           notion: { reads: 1, writes: 0, failures: 0, rateLimitBackoffs: 0 },
@@ -268,7 +268,7 @@ costTracking:
       .filter((line) => line.length > 0)
       .map((line) => JSON.parse(line) as Record<string, unknown>)
     expect(exported).toHaveLength(1)
-    expect(exported[0]?.["tool"]).toBe("lore-query")
+    expect(exported[0]?.["tool"]).toBe("kennen-query")
     expect(output).not.toContain("Warning:")
     expect(output).not.toContain("SECRET_INVALID_ROW")
     expect(warning).toContain("skipped 2 malformed cost ledger lines")
@@ -308,9 +308,9 @@ costTracking:
 
     const output = logSpy.mock.calls.flat().join("\n")
     expect(output).toContain("MCP calls: 3 total")
-    expect(output).toContain("lore-query legacy: 1 success")
-    expect(output).toContain("lore-query shard-101: 1 success")
-    expect(output).toContain("lore-query shard-202: 1 success")
+    expect(output).toContain("kennen-query legacy: 1 success")
+    expect(output).toContain("kennen-query shard-101: 1 success")
+    expect(output).toContain("kennen-query shard-202: 1 success")
     expect(exitTrap.exitCodes).toEqual([])
   })
 
@@ -362,7 +362,7 @@ costTracking:
 
   it("exits 1 when --since and --month are combined", async () => {
     writeFileSync(
-      join(dir, ".lore.yaml"),
+      join(dir, ".kennen.yaml"),
       `
 vault:
   pageId: abc123

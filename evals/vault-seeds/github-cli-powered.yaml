@@ -2769,7 +2769,7 @@ vault:
       sourcePullRequests: []
   decisions:
     - id: gh-cli/decision-single-project-vault
-      title: Model GitHub CLI as one Lore project
+      title: Model GitHub CLI as one Kennen project
       topics: ["commands/config", "commands/alias", "commands/skills"]
       status: accepted
       provenanceKind: generalized

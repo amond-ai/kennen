@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-public-spec-v1
+name: kennen-longitudinal-github-cli-public-spec-v1
 description: >-
   Public-spec GitHub CLI longitudinal suite. Phase B gives every condition a
   real issue-style behavior request; memory supplies prior investigation
@@ -9,8 +9,8 @@ description: >-
 seededCorpus: ../vault-seeds/github-cli-public-spec-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: gh-cli-auth-git-credential-requested-user-v3
     difficulty: hard

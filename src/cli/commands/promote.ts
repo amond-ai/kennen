@@ -1,15 +1,15 @@
 import { Command } from "commander"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { buildVaultTopology } from "../../core/topology.js"
 import { preparePromotion, promoteMemory } from "../../core/promote.js"
 import { notionPageUrl, terminalLink } from "../output.js"
 
 /**
- * `lore promote <memoryId> --to <name>` — operator-facing CLI for the
+ * `kennen promote <memoryId> --to <name>` — operator-facing CLI for the
  * cross-vault promotion path ("Promotion workflow").
  *
  * Copies a memory from the primary vault into a configured promotion
- * target defined in .lore.yaml's `promotionTargets`. The promoted
+ * target defined in .kennen.yaml's `promotionTargets`. The promoted
  * row carries an origin audit block in its body (per
  * `buildPromotionAuditBlock`) so the target-vault reader can trace
  * the copy back to its source without depending on cross-vault Notion
@@ -18,23 +18,23 @@ import { notionPageUrl, terminalLink } from "../output.js"
  * `promoteMemory` helper carries the full rationale).
  *
  * Promoter identity is resolved via `services.identity.resolveAuthor()`
- * (the same lazy `LORE_USER_NAME` → `users.me` chain that authors
+ * (the same lazy `KENNEN_USER_NAME` → `users.me` chain that authors
  * Memory writes). An unresolvable identity surfaces a clear error
  * rather than landing an audit block attributed to "(unknown)".
  *
- * Run `lore status` before promoting — the topology section's
+ * Run `kennen status` before promoting — the topology section's
  * `promotion (review required)` row health is the read-side preflight
- * for target reachability. `lore promote` itself skips drift checks
+ * for target reachability. `kennen promote` itself skips drift checks
  * on init (`driftCheck: false`) for the same reason every other
- * write-path CLI does (`lore mine`, `lore tasks reconcile`); a target
+ * write-path CLI does (`kennen mine`, `kennen tasks reconcile`); a target
  * that surfaces as `unavailable` or `missing databases` on
- * `lore status` will reject the promote at the `VaultManager.load`
+ * `kennen status` will reject the promote at the `VaultManager.load`
  * step.
  *
  * The CLI is intentionally narrow — no `--status`, no `--keywords`,
  * no taxonomy mapping. Operators promoted-then-curate: this command
  * lands a faithful copy in the target vault; downstream
- * `lore-memory action='update'` calls in the target vault re-scope
+ * `kennen-memory action='update'` calls in the target vault re-scope
  * or re-tag the row as needed. `--dry-run` previews the audit block
  * without touching the target vault (one source read, no target
  * round-trips).
@@ -43,13 +43,13 @@ import { notionPageUrl, terminalLink } from "../output.js"
 export const promoteCommand = new Command("promote")
   .description(
     "Copy a memory from the primary vault into a configured promotion target. " +
-      "Skips schema drift checks on init (same posture as `lore mine`); " +
-      "run `lore status` first to confirm target reachability."
+      "Skips schema drift checks on init (same posture as `kennen mine`); " +
+      "run `kennen status` first to confirm target reachability."
   )
   .argument("<memoryId>", "Notion page ID of the memory to promote")
   .requiredOption(
     "--to <name>",
-    "Name of the promotion target as configured in `.lore.yaml`'s promotionTargets"
+    "Name of the promotion target as configured in `.kennen.yaml`'s promotionTargets"
   )
   .option(
     "--reason <text>",
@@ -57,7 +57,7 @@ export const promoteCommand = new Command("promote")
   )
   .option(
     "--promoter <name>",
-    "Override the resolved promoter name (defaults to LORE_USER_NAME → users.me)"
+    "Override the resolved promoter name (defaults to KENNEN_USER_NAME → users.me)"
   )
   .option(
     "--dry-run",
@@ -80,7 +80,7 @@ export const promoteCommand = new Command("promote")
         if (!target) {
           const configured =
             topology.promotionTargets.length === 0
-              ? "no promotion targets are configured — add a `promotionTargets:` block to .lore.yaml"
+              ? "no promotion targets are configured — add a `promotionTargets:` block to .kennen.yaml"
               : `configured targets: ${topology.promotionTargets
                   .map((entry) => `"${entry.label}"`)
                   .join(", ")}`
@@ -95,7 +95,7 @@ export const promoteCommand = new Command("promote")
         if (promoter === null) {
           console.error(
             `Promote failed: no promoter identity available. ` +
-              `Set LORE_USER_NAME in your shell, or pass \`--promoter <name>\` ` +
+              `Set KENNEN_USER_NAME in your shell, or pass \`--promoter <name>\` ` +
               `directly so the origin audit block records who promoted the row.`
           )
           process.exit(1)
@@ -108,7 +108,7 @@ export const promoteCommand = new Command("promote")
           primaryVaultPageId: services.config.vault.pageId,
           // The primary vault's literal label in topology rendering is
           // always `Primary` — matches `buildVaultTopology`'s primary
-          // label so the audit block matches what `lore status` shows.
+          // label so the audit block matches what `kennen status` shows.
           primaryVaultLabel: topology.primary.label,
         }
         const helperInput = {
@@ -175,7 +175,7 @@ export const promoteCommand = new Command("promote")
   )
 
 async function resolvePromoterIdentity(
-  services: LoreServices,
+  services: KennenServices,
   explicit: string | undefined
 ): Promise<string | null> {
   const trimmedExplicit = explicit?.trim()

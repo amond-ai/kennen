@@ -1,5 +1,5 @@
 /**
- * lore-query polymorphic dispatcher tests.
+ * kennen-query polymorphic dispatcher tests.
  *
  * Pins the wiring between the dispatcher's discriminated union and the
  * downstream handlers — adding `includeContext` to the `ask` arm in
@@ -78,13 +78,13 @@ function makeAskServices(overrides: Record<string, unknown> = {}) {
   }
 }
 
-describe("lore-query polymorphic dispatcher — ask arm forwards includeContext", () => {
+describe("kennen-query polymorphic dispatcher — ask arm forwards includeContext", () => {
   it("renders the framing block when includeContext is omitted (default true)", async () => {
     const mockServer = createMockServer()
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService" })
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -96,7 +96,7 @@ describe("lore-query polymorphic dispatcher — ask arm forwards includeContext"
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService", includeContext: true })
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -108,7 +108,7 @@ describe("lore-query polymorphic dispatcher — ask arm forwards includeContext"
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService", includeContext: false })
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -124,7 +124,7 @@ describe("lore-query polymorphic dispatcher — ask arm forwards includeContext"
     const services = makeAskServices()
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({
       entity: "AuthService",
@@ -167,7 +167,7 @@ describe("lore-query polymorphic dispatcher — ask arm forwards includeContext"
     ] as const
 
     for (const { action, args } of cases) {
-      const handler = mockServer.getActionHandler("lore-query", action)
+      const handler = mockServer.getActionHandler("kennen-query", action)
       const result = await handler(args)
       const text = (result as { content: Array<{ text: string }> }).content[0].text
       expect(text, `action=${action} must not render framing block`).not.toContain(
@@ -180,7 +180,7 @@ describe("lore-query polymorphic dispatcher — ask arm forwards includeContext"
   })
 })
 
-describe("lore-query polymorphic dispatcher — includeSynopsis forwarding (issue 0.7.0/03)", () => {
+describe("kennen-query polymorphic dispatcher — includeSynopsis forwarding (issue 0.7.0/03)", () => {
   // The flag lives on the recall and search arms of the dispatch schema.
   // Pinning the wiring here protects against a future contributor
   // dropping the field from one arm and not the other, or accidentally
@@ -199,7 +199,7 @@ describe("lore-query polymorphic dispatcher — includeSynopsis forwarding (issu
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ includeSynopsis: false })
     expect((result as { isError?: boolean }).isError).not.toBe(true)
@@ -218,7 +218,7 @@ describe("lore-query polymorphic dispatcher — includeSynopsis forwarding (issu
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "anything", includeSynopsis: false })
     expect((result as { isError?: boolean }).isError).not.toBe(true)
@@ -236,14 +236,14 @@ describe("lore-query polymorphic dispatcher — includeSynopsis forwarding (issu
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ includeSynopsis: "yes" })
     expect((result as { isError?: boolean }).isError).toBe(true)
   })
 })
 
-describe("lore-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", () => {
+describe("kennen-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", () => {
   // The ask handler surfaces decisions via `decided_by` facts (each
   // resolves to a canonical decision page that is itself a memory) and
   // source memories backing every fact (`fact.sourceMemoryId`). Both
@@ -294,7 +294,7 @@ describe("lore-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", ()
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     await ask({ entity: "AuthService" })
 
@@ -346,7 +346,7 @@ describe("lore-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", ()
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     await ask({ entity: "AuthService" })
 
@@ -380,7 +380,7 @@ describe("lore-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", ()
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     await ask({ entity: "AuthService" })
 
@@ -432,7 +432,7 @@ describe("lore-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", ()
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService" })
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -469,14 +469,14 @@ describe("lore-query action='ask' — touch-on-read wiring (issue 0.8.0/05)", ()
     }
     registerKnowledgeTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const ask = mockServer.getActionHandler("lore-query", "ask")
+    const ask = mockServer.getActionHandler("kennen-query", "ask")
 
     const result = await ask({ entity: "AuthService" })
     expect((result as { isError?: boolean }).isError).not.toBe(true)
   })
 })
 
-describe("lore-query KINDS enum accepts every memory kind", () => {
+describe("kennen-query KINDS enum accepts every memory kind", () => {
   // The recall/search KINDS enum must accept every kind the write
   // path produces. Without `procedure` in the enum, agents cannot
   // filter retrieval by that kind through the read-path tool — the
@@ -535,7 +535,7 @@ describe("lore-query KINDS enum accepts every memory kind", () => {
   })
 })
 
-describe("lore-query READABLE_SOURCES enum accepts autosave learning rows", () => {
+describe("kennen-query READABLE_SOURCES enum accepts autosave learning rows", () => {
   it("recall accepts source: 'autosave_learning' at the dispatch boundary", () => {
     const result = queryDispatchSchema.safeParse({
       action: "recall",

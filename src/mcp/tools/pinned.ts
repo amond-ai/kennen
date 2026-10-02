@@ -1,17 +1,17 @@
 /**
- * `lore-pinned` polymorphic dispatcher.
+ * `kennen-pinned` polymorphic dispatcher.
  *
  * Pinned context blocks are an always-visible, shareable, optionally
- * read-only memory surface that Lore renders in `lore-context
+ * read-only memory surface that Kennen renders in `kennen-context
  * action='wake-up'` BEFORE the relevance-ranked sections. They
  * encode governance context — team policies, project invariants,
  * current initiative state, escalation rules, coordination notes —
  * as a distinct primitive from retrieved memory rows.
  *
- * The four actions are siblings of `lore-memory`'s CRUD surface but
+ * The four actions are siblings of `kennen-memory`'s CRUD surface but
  * coherent as a sub-surface: every action targets the pinned-block
  * facet of an existing memory. Splitting them onto a separate
- * polymorphic tool keeps the agent-visible `lore-memory`
+ * polymorphic tool keeps the agent-visible `kennen-memory`
  * description lean and surfaces "pinned blocks" as a first-class
  * concept in the MCP tool surface.
  *
@@ -25,7 +25,7 @@
 
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import {
   DEFAULT_PINNED_BLOCK_LIMIT,
   MEMORY_MUTABILITIES,
@@ -40,7 +40,7 @@ import { MemoryReadOnlyError } from "../../core/memory.js"
 import { RICH_TEXT_PROPERTY_MAX_LEN } from "../../core/rich-text-schema.js"
 import { resolveAuthorForWrite } from "../../auth/identity.js"
 import { formatDispatchError, toolError, withWakeUpCacheBump } from "../helpers.js"
-import { LoreError, errorCauseMessage } from "../../errors.js"
+import { KennenError, errorCauseMessage } from "../../errors.js"
 import type { CostOutputCounts } from "../../core/cost-ledger.js"
 
 /**
@@ -49,7 +49,7 @@ import type { CostOutputCounts } from "../../core/cost-ledger.js"
  * additionally scrubs ASCII control chars (newlines, tab,
  * carriage return, etc.) so a malicious reason cannot forge an
  * adjacent blockquote line. 500 chars matches the existing
- * `lore-memory action='approve'` / `'reject'` reason cap so
+ * `kennen-memory action='approve'` / `'reject'` reason cap so
  * audit-line wording stays uniform across surfaces.
  */
 const PIN_AUDIT_REASON_MAX = 500
@@ -146,13 +146,13 @@ const pinnedDispatchSchema = z.discriminatedUnion("action", [
   }),
 ])
 
-export function registerPinnedTools(server: McpServer, services: LoreServices): void {
+export function registerPinnedTools(server: McpServer, services: KennenServices): void {
   server.registerTool(
-    "lore-pinned",
+    "kennen-pinned",
     {
       title: "Pinned context blocks",
       description:
-        "Manage pinned context blocks (issue #282) — always-visible memory rendered in wake-up before relevance-ranked sections. Audience-targeted via comma-separated tokens matched against the reader's agent/role/userId; `all` matches every reader. Read-only blocks reject `lore-memory action='update'` unless overridden via `force: true` here. `force: true` is a stop-sign visible in the audit trail, NOT an access-control gate — Lore uses one operator bearer token, so any MCP caller can flip it; every forced write lands a `> Forced read-only update` audit line on the memory body. Action-dispatched:\n\n" +
+        "Manage pinned context blocks (issue #282) — always-visible memory rendered in wake-up before relevance-ranked sections. Audience-targeted via comma-separated tokens matched against the reader's agent/role/userId; `all` matches every reader. Read-only blocks reject `kennen-memory action='update'` unless overridden via `force: true` here. `force: true` is a stop-sign visible in the audit trail, NOT an access-control gate — Kennen uses one operator bearer token, so any MCP caller can flip it; every forced write lands a `> Forced read-only update` audit line on the memory body. Action-dispatched:\n\n" +
         "- `action: 'pin'` — flip an existing memory into a pinned block; sets priority / audience / mutability.\n" +
         "- `action: 'unpin'` — flip a pinned block back to a regular memory.\n" +
         "- `action: 'update'` — change priority / audience / mutability. Pass `force: true` to override `Mutability: read-only`.\n" +
@@ -187,7 +187,7 @@ export function registerPinnedTools(server: McpServer, services: LoreServices): 
           .optional()
           .nullable()
           .describe(
-            "(pin | update) `mutable` (default) or `read-only`. Read-only pins reject `lore-memory action='update'`; override on this tool via `force: true`."
+            "(pin | update) `mutable` (default) or `read-only`. Read-only pins reject `kennen-memory action='update'`; override on this tool via `force: true`."
           ),
         reason: z
           .string()
@@ -228,7 +228,7 @@ export function registerPinnedTools(server: McpServer, services: LoreServices): 
     async (args) => {
       const parsed = pinnedDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-pinned", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-pinned", parsed.error)))
       }
       const data = parsed.data
       switch (data.action) {
@@ -331,7 +331,7 @@ function scrubAuditField(value: string): string {
  * for an audit line matching `(action, today)`; if absent, the
  * retry appends it).
  */
-export class PinnedAuditError extends LoreError<"pinned-audit-failed"> {
+export class PinnedAuditError extends KennenError<"pinned-audit-failed"> {
   readonly memoryId: string
   readonly action: PinAuditAction
   readonly cause: unknown
@@ -343,7 +343,7 @@ export class PinnedAuditError extends LoreError<"pinned-audit-failed"> {
       "pinned-audit-failed",
       `PinnedAuditError: ${input.action.toLowerCase()} for memory ` +
         `${input.memoryId} persisted, but the audit-line append failed: ` +
-        `${causeMsg}. Retry the same lore-pinned action to re-attempt the ` +
+        `${causeMsg}. Retry the same kennen-pinned action to re-attempt the ` +
         "audit append; the primary mutation is idempotent on the row's " +
         "current state.",
       {
@@ -371,10 +371,10 @@ export class PinnedAuditError extends LoreError<"pinned-audit-failed"> {
  * warning so legitimate growth surfaces a soft signal first.
  *
  * Carries the current and capped counts plus a pointer to
- * `lore pinned list --all-audiences` / `lore-pinned
+ * `kennen pinned list --all-audiences` / `kennen-pinned
  * action='unpin'` so operators know exactly how to recover.
  */
-export class PinnedCapExceededError extends LoreError<"pinned-cap-exceeded"> {
+export class PinnedCapExceededError extends KennenError<"pinned-cap-exceeded"> {
   readonly currentCount: number
   readonly cap: number
 
@@ -384,8 +384,8 @@ export class PinnedCapExceededError extends LoreError<"pinned-cap-exceeded"> {
       `PinnedCapExceededError: cannot pin — vault already has ` +
         `${input.currentCount} active pinned block(s), at the ${input.cap}-block ` +
         "hard cap. Unpin stale or unauthorized blocks first via " +
-        "`lore pinned list --all-audiences` followed by " +
-        "`lore-pinned action='unpin' memoryId=<id>`. The cap prevents " +
+        "`kennen pinned list --all-audiences` followed by " +
+        "`kennen-pinned action='unpin' memoryId=<id>`. The cap prevents " +
         "cross-audience pin spam from starving legitimate matching pins " +
         "out of wake-up's bounded refill window.",
       { currentCount: input.currentCount, cap: input.cap }
@@ -514,7 +514,7 @@ export function latestPinnedTransition(body: string): "Pinned" | "Unpinned" | nu
  * primary mutation has already landed.
  */
 async function appendPinAuditLine(
-  services: LoreServices,
+  services: KennenServices,
   memoryId: string,
   action: PinAuditAction,
   reason: string | undefined
@@ -540,7 +540,7 @@ async function appendPinAuditLine(
   }
 }
 
-async function handlePin(services: LoreServices, args: PinArgs): Promise<ToolResult> {
+async function handlePin(services: KennenServices, args: PinArgs): Promise<ToolResult> {
   try {
     const memory = await services.memories.getPropertiesById(args.memoryId)
     // Retry-recover branch: a previous `action='pin'` may have
@@ -651,7 +651,7 @@ async function handlePin(services: LoreServices, args: PinArgs): Promise<ToolRes
     if (meta.length > 0) lines.push(`*${meta.join(" | ")}*`)
     lines.push(
       "",
-      "The block now renders in `lore-context action='wake-up'` under `## Pinned Context` for every session that matches its audience."
+      "The block now renders in `kennen-context action='wake-up'` under `## Pinned Context` for every session that matches its audience."
     )
     return {
       content: [{ type: "text", text: lines.join("\n") }],
@@ -662,7 +662,10 @@ async function handlePin(services: LoreServices, args: PinArgs): Promise<ToolRes
   }
 }
 
-async function handleUnpin(services: LoreServices, args: UnpinArgs): Promise<ToolResult> {
+async function handleUnpin(
+  services: KennenServices,
+  args: UnpinArgs
+): Promise<ToolResult> {
   try {
     const memory = await services.memories.getPropertiesById(args.memoryId)
     // Retry-recover branch: the unpin property write may have
@@ -703,10 +706,10 @@ async function handleUnpin(services: LoreServices, args: UnpinArgs): Promise<Too
     if (memory.pinned.mutability === "read-only") {
       throw new MemoryReadOnlyError(args.memoryId, memory.title, {
         recovery:
-          "To unpin a read-only block: first run `lore-pinned " +
+          "To unpin a read-only block: first run `kennen-pinned " +
           "action='update' memoryId='<id>' mutability='mutable' " +
           "force=true` to flip mutability, then re-issue " +
-          "`lore-pinned action='unpin'`.",
+          "`kennen-pinned action='unpin'`.",
       })
     }
     await services.memories.update(args.memoryId, {
@@ -763,7 +766,7 @@ async function handleUnpin(services: LoreServices, args: UnpinArgs): Promise<Too
  * latest transition already matched (true no-op).
  */
 async function tryRecoverMissingAudit(
-  services: LoreServices,
+  services: KennenServices,
   memoryId: string,
   action: "Pinned" | "Unpinned",
   reason: string | undefined
@@ -777,7 +780,7 @@ async function tryRecoverMissingAudit(
 }
 
 async function handleUpdate(
-  services: LoreServices,
+  services: KennenServices,
   args: UpdatePinnedArgs
 ): Promise<ToolResult> {
   try {
@@ -869,7 +872,7 @@ async function handleUpdate(
 }
 
 async function handleList(
-  services: LoreServices,
+  services: KennenServices,
   args: ListPinnedArgs
 ): Promise<ToolResult> {
   try {
@@ -888,7 +891,7 @@ async function handleList(
     // - default → use the resolved scope context, same audience
     // filter wake-up applies.
     // `includeOutOfScope` is intentionally NOT exposed on this
-    // surface today; operators can drop down to `lore-memory
+    // surface today; operators can drop down to `kennen-memory
     // action='recall'` to see scoped rows outside their context.
     const useAllAudiences = args.includeAllAudiences === true
     const readerContext = useAllAudiences

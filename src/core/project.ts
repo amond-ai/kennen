@@ -126,7 +126,7 @@ export class ProjectService {
    * same project pays one Notion round-trip, not one per tool call.
    *
    * Uses `getOrLoad` so N concurrent cold-start callers — an MCP batch
-   * that fans out `lore-memory` + `lore-fact` + `lore-query` action='ask'
+   * that fans out `kennen-memory` + `kennen-fact` + `kennen-query` action='ask'
    * against the same project in a single tick — share a single
    * `dataSources.query`.
    *

@@ -8,7 +8,7 @@ import {
 } from "./project-scope.js"
 import { taskDaysOverdue } from "./task.js"
 import { computeSubjectKey } from "../notion/normalize.js"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import {
   formatTrustLabel,
   type Decision,
@@ -20,7 +20,7 @@ import {
 
 const DEFAULT_ASK_BUCKET_CAP = 5
 const SUGGESTED_OVERFLOW_LIMIT = 20
-const PROJECT_LIST_HINT = "run `lore status projects` to list configured projects"
+const PROJECT_LIST_HINT = "run `kennen status projects` to list configured projects"
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const GOVERNANCE_PREDICATES: ReadonlySet<FactPredicate> = new Set<FactPredicate>([
   "decided_by",
@@ -83,7 +83,7 @@ type Governed = {
 type Structured = { fact: Fact; line: string; sortKey: string | null }
 
 export async function runAsk(
-  services: LoreServices,
+  services: KennenServices,
   args: RunAskOptions,
   hooks: RunAskHooks = {}
 ): Promise<AskResult> {
@@ -356,7 +356,7 @@ export async function runAsk(
 }
 
 async function resolveReadProjectScopeForAsk(
-  services: LoreServices,
+  services: KennenServices,
   projectName: string | undefined
 ): Promise<{
   projectId: string | undefined

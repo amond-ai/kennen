@@ -42,8 +42,8 @@ function testMemory(overrides: Partial<Memory> = {}): Memory {
 
 describe("buildBenchSandbox", () => {
   it("filters wake-up prefetch memories to the bench project", async () => {
-    const savedSandboxName = process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"]
-    process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] = "Eval Sandbox"
+    const savedSandboxName = process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"]
+    process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] = "Eval Sandbox"
     mocks.initServices.mockResolvedValue({
       authSource: "env-notion-api-token",
       profile: { selector: "default@1.0.0" },
@@ -108,9 +108,9 @@ describe("buildBenchSandbox", () => {
       )
     } finally {
       if (savedSandboxName === undefined) {
-        delete process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"]
+        delete process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"]
       } else {
-        process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] = savedSandboxName
+        process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] = savedSandboxName
       }
     }
   })

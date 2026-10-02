@@ -1,6 +1,6 @@
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import { formatDispatchError, toolError } from "../helpers.js"
 import { resolveProjectByName } from "../../core/project-scope.js"
 import type { CostOutputCounts } from "../../core/cost-ledger.js"
@@ -12,12 +12,12 @@ type ToolResult = {
 }
 
 // -------------------------------------------------------------------------
-// Handlers — one per `lore-project` action (list | get). Routed by the
+// Handlers — one per `kennen-project` action (list | get). Routed by the
 // polymorphic dispatcher's discriminated union.
 // -------------------------------------------------------------------------
 
 async function handleList(
-  services: LoreServices,
+  services: KennenServices,
   args: { status?: "active" | "archived" | "any" }
 ): Promise<ToolResult> {
   try {
@@ -52,12 +52,12 @@ async function handleList(
 }
 
 async function handleGet(
-  services: LoreServices,
+  services: KennenServices,
   args: { name: string }
 ): Promise<ToolResult> {
   try {
     const project = await resolveProjectByName(services.projects, args.name, "name", {
-      listHint: "call `lore-project action='list'` to see configured projects",
+      listHint: "call `kennen-project action='list'` to see configured projects",
     })
 
     const [topics, { items: recentMemories }] = await Promise.all([
@@ -106,7 +106,7 @@ async function handleGet(
 }
 
 /**
- * Discriminated union for runtime validation of `lore-project` dispatch.
+ * Discriminated union for runtime validation of `kennen-project` dispatch.
  * The MCP-level `inputSchema` is declared flat (every field optional) so
  * agents see one parameter table rather than a JSON Schema `oneOf`. We
  * re-validate against this union inside the handler so unsupported
@@ -123,12 +123,12 @@ const projectDispatchSchema = z.discriminatedUnion("action", [
   }),
 ])
 
-export function registerProjectTools(server: McpServer, services: LoreServices): void {
+export function registerProjectTools(server: McpServer, services: KennenServices): void {
   // -------------------------------------------------------------------------
-  // lore-project — polymorphic dispatcher
+  // kennen-project — polymorphic dispatcher
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-project",
+    "kennen-project",
     {
       title: "Project operations",
       description:
@@ -157,7 +157,7 @@ export function registerProjectTools(server: McpServer, services: LoreServices):
     async (args) => {
       const parsed = projectDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-project", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-project", parsed.error)))
       }
       switch (parsed.data.action) {
         case "list":

@@ -2,7 +2,7 @@
  * Tests for the `LockPathTooLongError` defense in `tryAcquireSessionLock`
  * (issue #485).
  *
- * Even with `safeFilenameSegment`'s 128-char cap, a `LORE_HOOK_STATE_DIR`
+ * Even with `safeFilenameSegment`'s 128-char cap, a `KENNEN_HOOK_STATE_DIR`
  * close to `PATH_MAX` (~1024 bytes on darwin, 4096 on Linux) can still
  * push the rendered lock path over the syscall limit. Without this
  * defense the resulting error rethrows out of every Stop hook for the
@@ -21,8 +21,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-lock-name-too-long-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-lock-name-too-long-${process.pid}-${Date.now()}`
 })
 
 const { writeFileSyncMock, mkdirSyncMock, chmodSyncMock } = vi.hoisted(() => ({
@@ -151,9 +151,9 @@ describe("tryAcquireSessionLock — LockPathTooLongError defense (#485)", () => 
     // The reviewer's load-bearing concern: on Linux, ENOENT only ever
     // means the parent directory disappeared between
     // `ensureStateDirSync()` and `writeFileSync` (TOCTOU — operator
-    // running `rm -rf $TMPDIR/lore-hook-state` mid-session, or a second
+    // running `rm -rf $TMPDIR/kennen-hook-state` mid-session, or a second
     // hook racing a cleanup). Conflating that into "path too long" would
-    // point the operator at the wrong knob (`LORE_HOOK_STATE_DIR`
+    // point the operator at the wrong knob (`KENNEN_HOOK_STATE_DIR`
     // length) and silently mask a real bug. Pin the platform gate.
     const enoent = makeFsError("ENOENT")
     writeFileSyncMock.mockImplementationOnce(() => {
@@ -178,7 +178,7 @@ describe("tryAcquireSessionLock — LockPathTooLongError defense (#485)", () => 
   it("includes the lockKey in the thrown error so callers can emit logLabel-aware warnings", () => {
     // The lock layer no longer emits stderr itself — the warning is the
     // caller's responsibility (in `spawnBackgroundSave`) so the
-    // `[lore] background save:` vs `[lore] digest:` framing matches the
+    // `[kennen] background save:` vs `[kennen] digest:` framing matches the
     // surface the failure occurred on. The error's `lockKey` field is
     // what makes that emission accurate.
     writeFileSyncMock.mockImplementationOnce(() => {
@@ -218,7 +218,7 @@ describe("tryAcquireSessionLock — LockPathTooLongError defense (#485)", () => 
   })
 
   it("throws LockPathTooLongError when ensureStateDirSync itself throws ENAMETOOLONG", () => {
-    // A pathological LORE_HOOK_STATE_DIR can be too long for mkdirSync to
+    // A pathological KENNEN_HOOK_STATE_DIR can be too long for mkdirSync to
     // resolve; the lock layer must absorb that the same way it absorbs a
     // too-long lock-file write. Otherwise the Stop hook still rethrows
     // even though we never reached the writeFileSync branch.

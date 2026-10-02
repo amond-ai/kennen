@@ -2,8 +2,8 @@
  * Project-context orchestrator.
  *
  * Composes a renderable framing block from an already-resolved `Project`
- * row plus config + cwd state. Used by `lore-context action='wake-up'`,
- * `lore-query action='ask'`, and the shell wake-up hook to answer the
+ * row plus config + cwd state. Used by `kennen-context action='wake-up'`,
+ * `kennen-query action='ask'`, and the shell wake-up hook to answer the
  * "what is this project, and how is it different from its siblings?"
  * question every fresh agent session needs first.
  *
@@ -18,7 +18,7 @@
  * round-trip the renderers don't need.
  */
 
-import type { LoreConfig, Project } from "../types.js"
+import type { KennenConfig, Project } from "../types.js"
 import { formatCatchAllScopeSummary, subProjectNames } from "./context.js"
 
 /**
@@ -63,7 +63,7 @@ export interface ProjectContext {
  */
 export function composeProjectContext(
   project: Project | null,
-  config: LoreConfig,
+  config: KennenConfig,
   isCatchAllFallback: boolean
 ): ProjectContext | null {
   if (!project) return null

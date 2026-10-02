@@ -6,7 +6,7 @@ import type { Memory, UpdateMemoryInput } from "../types.js"
 import { DEFAULT_MEMORY_SYNOPSIS_MAX } from "../types.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
 import { decodeTextEntities } from "../notion/html-entities.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
 import { validateRichTextMetadataFields } from "./rich-text-schema.js"
 import { clampPinnedPriority } from "./memory-pinned.js"
 
@@ -20,12 +20,12 @@ type MemoryUpdateDeps = {
 
 /**
  * Structured partial-state error raised by the MCP-layer
- * `lore-memory action='update'` handler when a combined
+ * `kennen-memory action='update'` handler when a combined
  * `topicKey + content` update has the content delta land
  * successfully but the subsequent re-key reject. The content
  * mutation is durable on Notion; the re-key did not occur.
  */
-export class PartialUpdateError extends LoreError<"memory-update-partial"> {
+export class PartialUpdateError extends KennenError<"memory-update-partial"> {
   readonly memoryId: string
   readonly contentApplied: true
   readonly rekeyError: unknown
@@ -56,7 +56,7 @@ export class PartialUpdateError extends LoreError<"memory-update-partial"> {
  * while the body remains at its prior value, so a caller should inspect
  * before repeating non-idempotent property transitions.
  */
-export class MemoryUpdatePartialFailureError extends LoreError<"memory-update-body-partial"> {
+export class MemoryUpdatePartialFailureError extends KennenError<"memory-update-body-partial"> {
   readonly memoryId: string
   readonly failedPhase: "body"
   readonly persisted: { readonly properties: true; readonly body: false }

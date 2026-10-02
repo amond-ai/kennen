@@ -1,4 +1,4 @@
-import type { LoreConfig } from "./types.js"
+import type { KennenConfig } from "./types.js"
 import { MEMORY_CAPTURE_MODES } from "./memory-capture-mode.js"
 import { SYNOPSIS_MAX } from "./types/domain.js"
 import { access, readFile } from "node:fs/promises"
@@ -7,7 +7,7 @@ import { parseProfileSelector } from "./profile/index.js"
 import { resolve, dirname } from "node:path"
 import { z } from "zod"
 
-const CONFIG_FILENAME = ".lore.yaml"
+const CONFIG_FILENAME = ".kennen.yaml"
 const PLACEHOLDER_PAGE_ID_PATTERN = /^<.+>$/
 
 const hookConfigSchema = z
@@ -152,7 +152,7 @@ const configSchema = z.object({
       token: z
         .undefined({
           error:
-            "auth.token has been removed. Use `lore auth --login` or set NOTION_API_TOKEN, then remove auth.token from .lore.yaml.",
+            "auth.token has been removed. Use `kennen auth --login` or set NOTION_API_TOKEN, then remove auth.token from .kennen.yaml.",
         })
         .optional(),
       baseUrl: z.string().url().optional(),
@@ -222,7 +222,7 @@ function omitHooks(value: unknown): unknown {
 }
 
 export interface LoadedConfigResult {
-  config: LoreConfig
+  config: KennenConfig
   warnings: string[]
 }
 
@@ -257,7 +257,7 @@ export function parseConfigAllowingInvalidHooks(raw: string): LoadedConfigResult
 }
 
 /**
- * Search upward from `startDir` for a .lore.yaml file.
+ * Search upward from `startDir` for a .kennen.yaml file.
  * Returns the path to the file and the directory it was found in.
  */
 export async function findConfigFile(
@@ -281,16 +281,16 @@ export async function findConfigFile(
 }
 
 /**
- * Load and validate a .lore.yaml config from disk.
+ * Load and validate a .kennen.yaml config from disk.
  */
-export async function loadConfig(configPath: string): Promise<LoreConfig> {
+export async function loadConfig(configPath: string): Promise<KennenConfig> {
   const raw = await readFile(configPath, "utf-8")
   const parsed = parseYaml(raw)
   return configSchema.parse(parsed)
 }
 
 /**
- * Load a .lore.yaml while treating any broken `hooks` section as absent.
+ * Load a .kennen.yaml while treating any broken `hooks` section as absent.
  *
  * Used by shell hooks so `hooks.wakeUp: false` can fail open: a malformed
  * `hooks` section should not suppress session-start context injection.
@@ -303,7 +303,7 @@ export async function loadConfigAllowingInvalidHooks(
 }
 
 /**
- * Which source produced the resolved token. Used in `lore auth --status`
+ * Which source produced the resolved token. Used in `kennen auth --status`
  * output, install summaries, and error messages — never to gate runtime
  * behavior, since every source produces a static bearer token with the same
  * SDK call shape.
@@ -328,7 +328,7 @@ export interface ResolvedAuth {
   /**
    * Workspace id this token authorizes. Populated by the `ntn-auth-json`
    * source; absent on the env source because there's no way to know
-   * without an API call. Consumed by `lore auth --status` /
+   * without an API call. Consumed by `kennen auth --status` /
    * `--whoami`; `resolveAuth` itself does not depend on it.
    */
   workspaceId?: string
@@ -349,7 +349,7 @@ export interface ResolveAuthOptions {
  * 1. **`NOTION_API_TOKEN` env** — canonical injection. Operators export
  *    it explicitly (often from a secret manager). ntn itself reads the
  *    same env var, so this path is also how an operator who'd rather
- *    not have Lore read auth.json opts out — exporting
+ *    not have Kennen read auth.json opts out — exporting
  *    `NOTION_API_TOKEN` short-circuits the file read entirely.
  * 2. **ntn-resolved (auth.json via `loadNtnToken`)** — picks a workspace
  *    token via `NOTION_WORKSPACE_ID` env / `auth.workspaceId` config /
@@ -358,17 +358,17 @@ export interface ResolveAuthOptions {
  *    the `ntn login` flow.
  *
  * Throws when no source produces a token. The error message recommends
- * `lore auth --login` (the canonical wrapper that auto-installs ntn,
+ * `kennen auth --login` (the canonical wrapper that auto-installs ntn,
  * forces `NOTION_KEYRING=0` in the spawn, and runs vault preflight) over
  * bare `ntn login` — the wrapper handles the env var that makes the
- * resulting token Lore-readable.
+ * resulting token Kennen-readable.
  *
- * `configRoot` is the directory containing .lore.yaml (or
+ * `configRoot` is the directory containing .kennen.yaml (or
  * `process.cwd()` when no config has been loaded yet — e.g. the no-arg
- * `lore init` flow).
+ * `kennen init` flow).
  */
 export async function resolveAuth(
-  config: LoreConfig | undefined,
+  config: KennenConfig | undefined,
   configRoot: string,
   options: ResolveAuthOptions = {}
 ): Promise<ResolvedAuth> {
@@ -377,10 +377,10 @@ export async function resolveAuth(
 
   // 1. NOTION_API_TOKEN env (canonical). Operator-controlled
   // base-URL overrides are honored in priority order
-  // `LORE_NOTION_BASE_URL` → `NOTION_BASE_URL` → `NOTION_API_BASE_URL`
+  // `KENNEN_NOTION_BASE_URL` → `NOTION_BASE_URL` → `NOTION_API_BASE_URL`
   // (the latter two are ntn's documented native names — operators
   // who switch envs via the ntn-shaped shell vars don't have to
-  // also export the Lore-namespaced alias). `auth.baseUrl` from
+  // also export the Kennen-namespaced alias). `auth.baseUrl` from
   // repo config is intentionally ignored here.
   const fromApiTokenEnv = process.env["NOTION_API_TOKEN"]
   if (fromApiTokenEnv) {
@@ -425,20 +425,14 @@ export async function resolveAuth(
   // requested selector wasn't found, recommend logging in against the
   // right workspace. Otherwise drop the hint.
   const ntnHint = await buildNtnAmbiguityHint(ntnModule, ntnSelector)
-  // The thrown message is forwarded to the operator by `lore auth
-  // --status` / `--login` / `--whoami`. `lore auth --login` is the
+  // The thrown message is forwarded to the operator by `kennen auth
+  // --status` / `--login` / `--whoami`. `kennen auth --login` is the
   // canonical wrapper; the ntn ambiguity hint is the actionable
   // piece when it applies, otherwise point at the wrapper.
-  const legacyEnvHint = process.env["LORE_NOTION_TOKEN"]
-    ? "Detected LORE_NOTION_TOKEN in the environment. This source was removed; " +
-      "move the value to NOTION_API_TOKEN only if it is a Notion Personal Access " +
-      "Token, otherwise rotate to a PAT."
-    : undefined
   throw new Error(
     "No Notion auth configured.\n" +
-      (legacyEnvHint ? legacyEnvHint + "\n" : "") +
       (ntnHint ? ntnHint + "\n" : "") +
-      "Recommended: run `lore auth --login` to authenticate via ntn.\n" +
+      "Recommended: run `kennen auth --login` to authenticate via ntn.\n" +
       "Alternative: set NOTION_API_TOKEN with a Notion Personal Access Token."
   )
 }
@@ -468,25 +462,25 @@ async function buildNtnAmbiguityHint(
   const workspaces = await ntnModule.listNtnWorkspaces()
   if (workspaces.length === 0) return undefined
   if (selector && !workspaces.includes(selector)) {
-    // Recovery recommends `lore auth --login` (the canonical wrapper
+    // Recovery recommends `kennen auth --login` (the canonical wrapper
     // that forces NOTION_KEYRING=0 inside the spawn) NOT bare
     // `ntn login` — on macOS bare `ntn login` defaults to keychain
-    // mode and writes nothing to auth.json, which leaves Lore
+    // mode and writes nothing to auth.json, which leaves Kennen
     // unable to read the new token and re-fires this same hint on
     // the next call.
     return (
       `ntn auth.json carries ${workspaces.length} workspace(s) but ` +
       `the requested workspaceId (${selector}) is not among them. ` +
       `Available: ${workspaces.join(", ")}. Run ` +
-      `\`lore auth --login\` against the right workspace, or update ` +
-      `auth.workspaceId in .lore.yaml.`
+      `\`kennen auth --login\` against the right workspace, or update ` +
+      `auth.workspaceId in .kennen.yaml.`
     )
   }
   if (!selector && workspaces.length > 1) {
     return (
       `ntn auth.json carries ${workspaces.length} workspaces; ` +
       `specify one via NOTION_WORKSPACE_ID env or auth.workspaceId in ` +
-      `.lore.yaml. Available: ${workspaces.join(", ")}.`
+      `.kennen.yaml. Available: ${workspaces.join(", ")}.`
     )
   }
   // Single workspace already on disk but loadNtnToken still returned
@@ -502,7 +496,7 @@ export function _resetConfigAuthTokenWarningStateForTests(): void {}
  * Convenience wrapper that returns just the token string.
  */
 export async function resolveToken(
-  config: LoreConfig | undefined,
+  config: KennenConfig | undefined,
   configRoot: string
 ): Promise<string> {
   const auth = await resolveAuth(config, configRoot)

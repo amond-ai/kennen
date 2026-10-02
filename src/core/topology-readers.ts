@@ -2,7 +2,7 @@
  * Per-upstream read-only service bundles for the vault topology
  * ("Read inheritance").
  *
- * `LoreServices.upstreams` is a list of `UpstreamVaultBundle` entries,
+ * `KennenServices.upstreams` is a list of `UpstreamVaultBundle` entries,
  * one per configured `upstreamVaults` row. Each bundle exposes a
  * single `loadReaders()` async method that lazy-loads the upstream
  * vault on first call, returning the upstream's `MemoryService` once.
@@ -17,12 +17,12 @@
  * Load failures degrade gracefully: `loadReaders()` returns `null`
  * and the bundle's `lastError` carries the underlying error message
  * for the operator to inspect. The first **load** failure per bundle
- * also emits one stderr line (gated on `LORE_DEBUG=1`) so a wake-up
+ * also emits one stderr line (gated on `KENNEN_DEBUG=1`) so a wake-up
  * that successfully renders the primary section but silently lost an
  * upstream surfaces in operator-debug logs. Subsequent calls within
  * the same process neither retry nor re-emit — `loadReaders()`
  * returns the cached failure sentinel (`null` + the preserved
- * `lastError`). The explicit retry surface is `lore status`, which
+ * `lastError`). The explicit retry surface is `kennen status`, which
  * constructs fresh bundles per invocation governed by the
  * `loadVaultTopologyStatus` short-TTL probe cache.
  *
@@ -36,7 +36,7 @@
  * fire on every degraded wake-up.
  *
  * Promotion targets are intentionally NOT exposed here: promotion is
- * a deliberate write surface (the `lore promote` CLI / promotion MCP
+ * a deliberate write surface (the `kennen promote` CLI / promotion MCP
  * action), not a read-orchestration surface. Promotion writes
  * construct their own `VaultManager` per call inside `promoteMemory`
  * — the `promoteMemory` helper owns that flow. Including promotion targets in
@@ -48,10 +48,10 @@ import type { Client } from "@notionhq/client"
 import { VaultManager } from "./vault.js"
 import { MemoryService } from "./memory.js"
 import { buildVaultTopology, type UpstreamVaultTopologyRef } from "./topology.js"
-import type { LoreConfig, VaultDatabases } from "../types.js"
+import type { KennenConfig, VaultDatabases } from "../types.js"
 import { redactDebugError, redactDebugMessage } from "../debug-redact.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
-import type { LoreFeatureFlags } from "../feature-flags.js"
+import type { KennenFeatureFlags } from "../feature-flags.js"
 
 /**
  * Read-only service bundle for one upstream vault. Today's only
@@ -67,11 +67,11 @@ export interface UpstreamReaders {
 }
 
 export interface UpstreamVaultBundle {
-  /** Configured upstream label (display name from .lore.yaml). */
+  /** Configured upstream label (display name from .kennen.yaml). */
   readonly label: string
   /** Configured priority — lower fires first in fan-out. */
   readonly priority: number
-  /** Configured page id (whatever shape .lore.yaml used). */
+  /** Configured page id (whatever shape .kennen.yaml used). */
   readonly pageId: string
   /**
    * Lazy-load the upstream vault and return its read-only
@@ -86,7 +86,7 @@ export interface UpstreamVaultBundle {
    * upstream is temporarily down.
    *
    * The first failure per bundle emits one stderr line (gated on
-   * `LORE_DEBUG=1`); subsequent calls neither retry nor re-emit.
+   * `KENNEN_DEBUG=1`); subsequent calls neither retry nor re-emit.
    */
   loadReaders(): Promise<UpstreamReaders | null>
   /**
@@ -116,8 +116,8 @@ export interface UpstreamVaultBundle {
  */
 export function buildUpstreamVaultBundles(
   client: Client,
-  config: LoreConfig,
-  features?: LoreFeatureFlags
+  config: KennenConfig,
+  features?: KennenFeatureFlags
 ): UpstreamVaultBundle[] {
   const topology = buildVaultTopology(config)
   return topology.upstreams.map((upstream) =>
@@ -128,7 +128,7 @@ export function buildUpstreamVaultBundles(
 function createUpstreamVaultBundle(
   client: Client,
   upstream: UpstreamVaultTopologyRef,
-  features?: LoreFeatureFlags
+  features?: KennenFeatureFlags
 ): UpstreamVaultBundle {
   // Three states:
   //   - `loaded === false`: never tried. First `loadReaders()`
@@ -138,7 +138,7 @@ function createUpstreamVaultBundle(
   //   - `loaded === true && readers === null`: failure cache.
   //     Subsequent calls return `null` immediately — they do NOT
   //     re-probe a broken upstream. The retry surface is
-  //     `lore status` (which builds its own per-call bundle), not
+  //     `kennen status` (which builds its own per-call bundle), not
   //     long-lived MCP wake-up calls.
   let loaded = false
   let cachedReaders: UpstreamReaders | null = null
@@ -167,16 +167,16 @@ function createUpstreamVaultBundle(
           const vault = new VaultManager(client, upstream.pageId)
           // Skip drift check on upstream load — upstreams are
           // read-only inheritance, not a write surface, and the
-          // operator's `lore migrate` posture is anchored against
+          // operator's `kennen migrate` posture is anchored against
           // their primary vault. Drift on an upstream is a signal
-          // to surface in `lore status`, not to nudge the operator
+          // to surface in `kennen status`, not to nudge the operator
           // on every wake-up.
           await vault.load({ driftCheck: false })
 
           // Migration-safety probe: the primary
           // `initServicesFromConfig` path runs the same probe and
           // passes `undefined` (= filter disabled, legacy retrieval
-          // shape) when the vault hasn't yet run `lore migrate`.
+          // shape) when the vault hasn't yet run `kennen migrate`.
           // Mirror that posture on the upstream so an unmigrated
           // upstream's wake-up read uses the legacy retrieval shape
           // instead of failing with a `validation_error` against the
@@ -198,7 +198,7 @@ function createUpstreamVaultBundle(
             client,
             vault.databases
           ).catch((probeErr) => {
-            // Surface probe failures under `LORE_DEBUG=1` so an operator triaging
+            // Surface probe failures under `KENNEN_DEBUG=1` so an operator triaging
             // "why does this upstream surface narrow-scope rows"
             // can see whether the probe was bypassed via
             // conservative fall-back. Same pattern as the
@@ -207,9 +207,9 @@ function createUpstreamVaultBundle(
             // conservative (filter stays enabled) and a
             // transient probe blip should not noise stderr on
             // every wake-up.
-            if (process.env["LORE_DEBUG"] === "1") {
+            if (process.env["KENNEN_DEBUG"] === "1") {
               const rawLine =
-                `[lore] upstream-scope-probe-failed: label=${upstream.label} ` +
+                `[kennen] upstream-scope-probe-failed: label=${upstream.label} ` +
                 `page=${upstream.pageId} error=${redactDebugError(probeErr)}`
               process.stderr.write(redactDebugMessage(rawLine) + "\n")
             }
@@ -248,28 +248,28 @@ function createUpstreamVaultBundle(
             warningEmitted = true
             // Two layers of protection on the stderr emission:
             //
-            //   1. **`LORE_DEBUG=1` gate.** Wake-up runs on every
+            //   1. **`KENNEN_DEBUG=1` gate.** Wake-up runs on every
             //      session start; unconditional stderr would noise
             //      every session that touches a degraded upstream.
             //      Operators triaging a degraded upstream re-run
-            //      with `LORE_DEBUG=1` to see the line.
+            //      with `KENNEN_DEBUG=1` to see the line.
             //
             //   2. **Whole-line redaction.** The line goes through
             //      `redactDebugMessage` (the same scrubber the
             //      capture-side renderer uses), so real Notion page
             //      ids are emitted as `<page-id>` regardless of
-            //      whether the operator opted into LORE_DEBUG. Page
+            //      whether the operator opted into KENNEN_DEBUG. Page
             //      ids are recon-class (operator-config locators,
             //      not bearer secrets) but redaction here is
             //      defense-in-depth against leaking vault structure
             //      into a centralized log aggregator. Operators who
             //      genuinely need the raw page id look it up via
-            //      `lore status` — labels + page ids surface
+            //      `kennen status` — labels + page ids surface
             //      verbatim there as an explicit operator-invoked
             //      command, not a hot-path emitter.
-            if (process.env["LORE_DEBUG"] === "1") {
+            if (process.env["KENNEN_DEBUG"] === "1") {
               const rawLine =
-                `[lore] upstream-vault-unavailable: label=${upstream.label} ` +
+                `[kennen] upstream-vault-unavailable: label=${upstream.label} ` +
                 `page=${upstream.pageId} error=${redactDebugError(err)}`
               process.stderr.write(redactDebugMessage(rawLine) + "\n")
             }

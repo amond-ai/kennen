@@ -11,10 +11,10 @@ import {
   type VaultHealthStatus,
   type VaultTopologyStatusReport,
 } from "./topology-status.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 
 function makeServices(
-  config: LoreConfig,
+  config: KennenConfig,
   overrides: { client?: unknown; configRoot?: string | null } = {}
 ): TopologyStatusServices {
   return {
@@ -216,7 +216,7 @@ describe("loadVaultTopologyStatus", () => {
   })
 
   it("caches topology health probes for the TTL and refreshes stale entries", async () => {
-    const cacheDir = await mkdtemp(join(tmpdir(), "lore-topology-status-"))
+    const cacheDir = await mkdtemp(join(tmpdir(), "kennen-topology-status-"))
     try {
       let now = new Date("2026-05-03T12:00:00.000Z")
       const probeVault = vi.fn(async (): Promise<VaultHealthStatus> => ({ kind: "ok" }))

@@ -1,5 +1,5 @@
 /**
- * Polymorphic dispatcher tests for the registered `lore-*` tools.
+ * Polymorphic dispatcher tests for the registered `kennen-*` tools.
  * The exact set is enumerated in the `polymorphic` array in each
  * test below and is the load-bearing contract — when a tool family
  * is added or removed the list updates in lockstep, and the tests
@@ -333,14 +333,14 @@ function makeServices(opts: StubOpts = {}): unknown {
 }
 
 // -------------------------------------------------------------------------
-// lore-project
+// kennen-project
 // -------------------------------------------------------------------------
 
-describe("lore-project polymorphic dispatcher", () => {
+describe("kennen-project polymorphic dispatcher", () => {
   it("registers the polymorphic tool", () => {
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-project")).toBe(true)
+    expect(mock.has("kennen-project")).toBe(true)
   })
 
   it("dispatches action='list' to the list handler", async () => {
@@ -356,7 +356,7 @@ describe("lore-project polymorphic dispatcher", () => {
     ])
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices({ projectsList }) as never)
-    const result = await mock.get("lore-project")({ action: "list" } as never)
+    const result = await mock.get("kennen-project")({ action: "list" } as never)
     expect(projectsList).toHaveBeenCalled()
     expect(extractText(result)).toContain("Widget")
   })
@@ -366,7 +366,7 @@ describe("lore-project polymorphic dispatcher", () => {
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices({ projectsList }) as never)
 
-    await mock.get("lore-project")({ action: "list", status: "any" } as never)
+    await mock.get("kennen-project")({ action: "list", status: "any" } as never)
 
     expect(projectsList).toHaveBeenCalledWith("any")
   })
@@ -376,7 +376,7 @@ describe("lore-project polymorphic dispatcher", () => {
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices({ projectsList }) as never)
 
-    await mock.get("lore-project")({ action: "list", status: "archived" } as never)
+    await mock.get("kennen-project")({ action: "list", status: "archived" } as never)
 
     expect(projectsList).toHaveBeenCalledWith("archived")
   })
@@ -392,7 +392,7 @@ describe("lore-project polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices({ projectsFindByName }) as never)
-    const result = await mock.get("lore-project")({
+    const result = await mock.get("kennen-project")({
       action: "get",
       name: "Widget",
     } as never)
@@ -417,7 +417,7 @@ describe("lore-project polymorphic dispatcher", () => {
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices({ projectsFindByName }) as never)
 
-    const result = await mock.get("lore-project")({
+    const result = await mock.get("kennen-project")({
       action: "get",
       name: "Archive",
     } as never)
@@ -435,37 +435,37 @@ describe("lore-project polymorphic dispatcher", () => {
   it("rejects an invalid action with a discriminator error", async () => {
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-project")({ action: "explode" } as never)
+    const result = await mock.get("kennen-project")({ action: "explode" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-project")
+    expect(extractText(result)).toContain("kennen-project")
     expect(extractText(result)).toContain("action")
   })
 
   it("rejects action='get' without `name`", async () => {
     const mock = createMockServer()
     registerProjectTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-project")({ action: "get" } as never)
+    const result = await mock.get("kennen-project")({ action: "get" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-project")
+    expect(extractText(result)).toContain("kennen-project")
   })
 })
 
 // -------------------------------------------------------------------------
-// lore-memory
+// kennen-memory
 // -------------------------------------------------------------------------
 
-describe("lore-memory polymorphic dispatcher", () => {
+describe("kennen-memory polymorphic dispatcher", () => {
   it("registers the polymorphic tool", () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-memory")).toBe(true)
+    expect(mock.has("kennen-memory")).toBe(true)
   })
 
   it("dispatches action='archive' to the archive handler", async () => {
     const memoriesArchive = vi.fn(async () => undefined)
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesArchive }) as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "archive",
       memoryId: "mem-123",
     } as never)
@@ -501,7 +501,7 @@ describe("lore-memory polymorphic dispatcher", () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesGetById }) as never)
     const id = "11111111-1111-1111-1111-111111111111"
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "expand",
       ids: [id, id],
     } as never)
@@ -512,9 +512,9 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("rejects archive without memoryId via discriminated union", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({ action: "archive" } as never)
+    const result = await mock.get("kennen-memory")({ action: "archive" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-memory")
+    expect(extractText(result)).toContain("kennen-memory")
   })
 
   // ---------------------------------------------------------------------
@@ -528,7 +528,7 @@ describe("lore-memory polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesRecordReview }) as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "approve",
       memoryId: "mem-1",
       reviewer: "Alice",
@@ -552,7 +552,7 @@ describe("lore-memory polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesRecordReview }) as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "reject",
       memoryId: "mem-2",
       reviewer: "Bob",
@@ -579,7 +579,7 @@ describe("lore-memory polymorphic dispatcher", () => {
       mock.server,
       makeServices({ memoriesRecordReview, identityResolveAuthor }) as never
     )
-    await mock.get("lore-memory")({
+    await mock.get("kennen-memory")({
       action: "approve",
       memoryId: "mem-3",
     } as never)
@@ -605,7 +605,7 @@ describe("lore-memory polymorphic dispatcher", () => {
       mock.server,
       makeServices({ memoriesRecordReview, identityResolveAuthor }) as never
     )
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "approve",
       memoryId: "mem-4",
     } as never)
@@ -617,7 +617,7 @@ describe("lore-memory polymorphic dispatcher", () => {
 
   it("returns an actionable MCP error when reviewer identity resolves to whitespace", async () => {
     // Resolver-trim parity with the CLI: a `users.me` response with
-    // a whitespace-only `name` (or `LORE_USER_NAME="   "`) must hit
+    // a whitespace-only `name` (or `KENNEN_USER_NAME="   "`) must hit
     // the no-identity guard at the MCP boundary, NOT fall through
     // into `recordReview` and surface as the bare service-layer
     // "reviewer must be a non-empty string" message. Pinned so a
@@ -630,7 +630,7 @@ describe("lore-memory polymorphic dispatcher", () => {
       mock.server,
       makeServices({ memoriesRecordReview, identityResolveAuthor }) as never
     )
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "reject",
       memoryId: "mem-ws",
     } as never)
@@ -643,21 +643,21 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("rejects approve without memoryId via the discriminated union", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({ action: "approve" } as never)
+    const result = await mock.get("kennen-memory")({ action: "approve" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-memory")
+    expect(extractText(result)).toContain("kennen-memory")
   })
 
   it("rejects reject with a reason longer than 500 chars at the dispatch boundary", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "reject",
       memoryId: "mem-5",
       reason: "x".repeat(501),
     } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-memory")
+    expect(extractText(result)).toContain("kennen-memory")
   })
 
   it("dispatches action='save' to memories.create", async () => {
@@ -669,7 +669,7 @@ describe("lore-memory polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesCreate }) as never)
-    await mock.get("lore-memory")({
+    await mock.get("kennen-memory")({
       action: "save",
       title: "T",
       content: "C",
@@ -681,7 +681,7 @@ describe("lore-memory polymorphic dispatcher", () => {
     const memoriesCreate = vi.fn()
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesCreate }) as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "save",
       title: "T",
       content: "C",
@@ -694,7 +694,7 @@ describe("lore-memory polymorphic dispatcher", () => {
   })
 
   // -----------------------------------------------------------------------
-  // lore-memory action='suggest-topic-key'
+  // kennen-memory action='suggest-topic-key'
   //
   // Pure heuristic over (title, kind). No I/O, no service touch — the
   // handler routes directly through `suggestTopicKey`. These dispatch
@@ -707,7 +707,7 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("dispatches action='suggest-topic-key' and renders the suggested key + reason", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       title: "JWT auth model with refresh tokens",
       kind: "decision",
@@ -720,7 +720,7 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("renders the no-suggestion branch for kind='note'", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       title: "Quick observation about caching",
       kind: "note",
@@ -733,7 +733,7 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("renders the no-suggestion branch for kind='task'", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       title: "Investigate PR #1234",
       kind: "task",
@@ -746,9 +746,9 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("renders the no-suggestion branch for kind='state'", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       kind: "state",
     } as never)
     const text = extractText(result)
@@ -760,24 +760,24 @@ describe("lore-memory polymorphic dispatcher", () => {
   it("rejects action='suggest-topic-key' without title", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       kind: "decision",
     } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-memory")
+    expect(extractText(result)).toContain("kennen-memory")
     expect(extractText(result)).toContain("title")
   })
 
   it("rejects action='suggest-topic-key' without kind", async () => {
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       title: "JWT auth model",
     } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-memory")
+    expect(extractText(result)).toContain("kennen-memory")
     expect(extractText(result)).toContain("kind")
   })
 
@@ -787,18 +787,18 @@ describe("lore-memory polymorphic dispatcher", () => {
     // gate.
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       title: "Some title",
       kind: "fabrication",
     } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-memory")
+    expect(extractText(result)).toContain("kennen-memory")
   })
 
   it("issues no Notion service calls on action='suggest-topic-key' (pure helper)", async () => {
     // The handler is a pure heuristic — pin that no service method on
-    // the LoreServices stub fires when the dispatcher routes through
+    // the KennenServices stub fires when the dispatcher routes through
     // it. Catches any future regression that re-couples the handler to
     // service state (e.g. an over-eager session-memory record).
     const memoriesCreate = vi.fn()
@@ -821,7 +821,7 @@ describe("lore-memory polymorphic dispatcher", () => {
         factsCreateWithDedup,
       }) as never
     )
-    await mock.get("lore-memory")({
+    await mock.get("kennen-memory")({
       action: "suggest-topic-key",
       title: "Database migration for shard split",
       kind: "runbook",
@@ -837,21 +837,21 @@ describe("lore-memory polymorphic dispatcher", () => {
 })
 
 // -------------------------------------------------------------------------
-// lore-query
+// kennen-query
 // -------------------------------------------------------------------------
 
-describe("lore-query polymorphic dispatcher", () => {
-  it("registers lore-query", () => {
+describe("kennen-query polymorphic dispatcher", () => {
+  it("registers kennen-query", () => {
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-query")).toBe(true)
+    expect(mock.has("kennen-query")).toBe(true)
   })
 
   it("dispatches action='recall' to memories.list", async () => {
     const memoriesList = vi.fn(async () => ({ items: [], nextCursor: undefined }))
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesList }) as never)
-    await mock.get("lore-query")({ action: "recall" } as never)
+    await mock.get("kennen-query")({ action: "recall" } as never)
     expect(memoriesList).toHaveBeenCalled()
   })
 
@@ -859,13 +859,13 @@ describe("lore-query polymorphic dispatcher", () => {
     // The 0.6.0 deprecation purge removed the legacy journal tool, but
     // production vaults still carry historical `agent_diary` memories.
     // This test pins the documented escape hatch from `MemorySource`'s
-    // JSDoc: callers can still recall those rows via lore-query with an
+    // JSDoc: callers can still recall those rows via kennen-query with an
     // explicit source filter. Regression-pin so the recall path can't
     // silently regress when the source-filter list is touched.
     const memoriesList = vi.fn(async () => ({ items: [], nextCursor: undefined }))
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesList }) as never)
-    await mock.get("lore-query")({
+    await mock.get("kennen-query")({
       action: "recall",
       source: "agent_diary",
     } as never)
@@ -878,7 +878,7 @@ describe("lore-query polymorphic dispatcher", () => {
     const memoriesList = vi.fn(async () => ({ items: [], nextCursor: undefined }))
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesList }) as never)
-    await mock.get("lore-query")({
+    await mock.get("kennen-query")({
       action: "recall",
       kind: "operational",
     } as never)
@@ -891,7 +891,7 @@ describe("lore-query polymorphic dispatcher", () => {
     const memoriesSearch = vi.fn(async () => [])
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesSearch }) as never)
-    await mock.get("lore-query")({ action: "search", query: "auth" } as never)
+    await mock.get("kennen-query")({ action: "search", query: "auth" } as never)
     expect(memoriesSearch).toHaveBeenCalledWith(
       expect.objectContaining({ query: "auth" })
     )
@@ -901,7 +901,7 @@ describe("lore-query polymorphic dispatcher", () => {
     const memoriesSearch = vi.fn(async () => [])
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesSearch }) as never)
-    await mock.get("lore-query")({
+    await mock.get("kennen-query")({
       action: "search",
       query: "journal",
       source: "agent_diary",
@@ -918,7 +918,7 @@ describe("lore-query polymorphic dispatcher", () => {
     const memoriesSearch = vi.fn(async () => [])
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesSearch }) as never)
-    await mock.get("lore-query")({
+    await mock.get("kennen-query")({
       action: "search",
       query: "receipt",
       kind: "operational",
@@ -934,19 +934,19 @@ describe("lore-query polymorphic dispatcher", () => {
   it("rejects action='search' without query", async () => {
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-query")({ action: "search" } as never)
+    const result = await mock.get("kennen-query")({ action: "search" } as never)
     expect(isError(result)).toBe(true)
   })
 
   it("dispatches action='search' with intent forwarded to memories.search end-to-end (#17)", async () => {
-    // Acceptance criterion: `lore-query action='search'` forwards intent
+    // Acceptance criterion: `kennen-query action='search'` forwards intent
     // through to the service layer. Pin the dispatcher → handler → service
     // composition so a future refactor that drops the field at any seam
     // is caught here.
     const memoriesSearch = vi.fn(async () => [])
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesSearch }) as never)
-    await mock.get("lore-query")({
+    await mock.get("kennen-query")({
       action: "search",
       query: "auth",
       intent: "WeChat session cookie",
@@ -1041,7 +1041,7 @@ describe("lore-query polymorphic dispatcher", () => {
       mock.server,
       makeServices({ memoriesSearch, memoriesSearchWithExplain }) as never
     )
-    await mock.get("lore-query")({
+    await mock.get("kennen-query")({
       action: "search",
       query: "auth",
       explain: true,
@@ -1101,7 +1101,7 @@ describe("lore-query polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices({ memoriesSearchWithExplain }) as never)
-    const result = await mock.get("lore-query")({
+    const result = await mock.get("kennen-query")({
       action: "search",
       query: "auth",
       explain: true,
@@ -1124,7 +1124,7 @@ describe("lore-query polymorphic dispatcher", () => {
       mock.server,
       makeServices({ memoriesSearch, memoriesSearchWithExplain }) as never
     )
-    const result = await mock.get("lore-query")({
+    const result = await mock.get("kennen-query")({
       action: "search",
       query: "auth",
     } as never)
@@ -1135,7 +1135,7 @@ describe("lore-query polymorphic dispatcher", () => {
   it("rejects action='ask' without entity", async () => {
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-query")({ action: "ask" } as never)
+    const result = await mock.get("kennen-query")({ action: "ask" } as never)
     expect(isError(result)).toBe(true)
   })
 
@@ -1147,7 +1147,7 @@ describe("lore-query polymorphic dispatcher", () => {
     // diagnostic instead of "no facts found").
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-query")({
+    const result = await mock.get("kennen-query")({
       action: "ask",
       entity: "",
     } as never)
@@ -1158,7 +1158,7 @@ describe("lore-query polymorphic dispatcher", () => {
   it("rejects action='ask' with whitespace-only entity (issue #481)", async () => {
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-query")({
+    const result = await mock.get("kennen-query")({
       action: "ask",
       entity: "   ",
     } as never)
@@ -1169,28 +1169,28 @@ describe("lore-query polymorphic dispatcher", () => {
   it("rejects unknown action", async () => {
     const mock = createMockServer()
     registerQueryTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-query")({ action: "summarize" } as never)
+    const result = await mock.get("kennen-query")({ action: "summarize" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-query")
+    expect(extractText(result)).toContain("kennen-query")
   })
 })
 
 // -------------------------------------------------------------------------
-// lore-fact
+// kennen-fact
 // -------------------------------------------------------------------------
 
-describe("lore-fact polymorphic dispatcher", () => {
-  it("registers lore-fact", () => {
+describe("kennen-fact polymorphic dispatcher", () => {
+  it("registers kennen-fact", () => {
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-fact")).toBe(true)
+    expect(mock.has("kennen-fact")).toBe(true)
   })
 
   it("dispatches action='invalidate' to facts.invalidate", async () => {
     const factsInvalidate = vi.fn(async () => undefined)
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices({ factsInvalidate }) as never)
-    const result = await mock.get("lore-fact")({
+    const result = await mock.get("kennen-fact")({
       action: "invalidate",
       factId: "f-7",
     } as never)
@@ -1202,7 +1202,7 @@ describe("lore-fact polymorphic dispatcher", () => {
     const factsExtendReview = vi.fn(async () => undefined)
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices({ factsExtendReview }) as never)
-    await mock.get("lore-fact")({
+    await mock.get("kennen-fact")({
       action: "extend",
       factId: "f-7",
       reviewBy: "2026-12-31",
@@ -1213,7 +1213,7 @@ describe("lore-fact polymorphic dispatcher", () => {
   it("rejects action='extend' without reviewBy", async () => {
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-fact")({
+    const result = await mock.get("kennen-fact")({
       action: "extend",
       factId: "f-7",
     } as never)
@@ -1235,7 +1235,7 @@ describe("lore-fact polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices({ factsCreateWithDedup }) as never)
-    await mock.get("lore-fact")({
+    await mock.get("kennen-fact")({
       action: "create",
       subject: "Auth",
       predicate: "uses",
@@ -1254,7 +1254,7 @@ describe("lore-fact polymorphic dispatcher", () => {
     // before `createWithDedup` runs.
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-fact")({
+    const result = await mock.get("kennen-fact")({
       action: "create",
       subject: "",
       predicate: "uses",
@@ -1268,7 +1268,7 @@ describe("lore-fact polymorphic dispatcher", () => {
   it("rejects action='create' with whitespace-only object (issue #481)", async () => {
     const mock = createMockServer()
     registerKnowledgeTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-fact")({
+    const result = await mock.get("kennen-fact")({
       action: "create",
       subject: "Auth",
       predicate: "uses",
@@ -1281,14 +1281,14 @@ describe("lore-fact polymorphic dispatcher", () => {
 })
 
 // -------------------------------------------------------------------------
-// lore-decision
+// kennen-decision
 // -------------------------------------------------------------------------
 
-describe("lore-decision polymorphic dispatcher", () => {
-  it("registers lore-decision", () => {
+describe("kennen-decision polymorphic dispatcher", () => {
+  it("registers kennen-decision", () => {
     const mock = createMockServer()
     registerDecisionTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-decision")).toBe(true)
+    expect(mock.has("kennen-decision")).toBe(true)
   })
 
   it("dispatches action='supersede' atomically", async () => {
@@ -1335,7 +1335,7 @@ describe("lore-decision polymorphic dispatcher", () => {
     }
     const mock = createMockServer()
     registerDecisionTools(mock.server, services as never)
-    const result = await mock.get("lore-decision")({
+    const result = await mock.get("kennen-decision")({
       action: "supersede",
       newDecisionId: "new-1",
       oldDecisionId: "old-1",
@@ -1352,7 +1352,7 @@ describe("lore-decision polymorphic dispatcher", () => {
       mock.server,
       makeServices({ decisionsReviewCompleted }) as never
     )
-    const result = await mock.get("lore-decision")({
+    const result = await mock.get("kennen-decision")({
       action: "review",
       decisionId: "d-1",
     } as never)
@@ -1366,18 +1366,18 @@ describe("lore-decision polymorphic dispatcher", () => {
   it("rejects action='supersede' without ids", async () => {
     const mock = createMockServer()
     registerDecisionTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-decision")({ action: "supersede" } as never)
+    const result = await mock.get("kennen-decision")({ action: "supersede" } as never)
     expect(isError(result)).toBe(true)
   })
 
   it("rejects action='context' with empty entity (issue #481)", async () => {
-    // Mirrors the `lore-query action='ask'` rejection above. The
+    // Mirrors the `kennen-query action='ask'` rejection above. The
     // handler funnels into `FactService.queryByEntity`, which short-
     // circuits empty input to `[]`, but the dispatch should fail with
     // a useful diagnostic instead of "No decisions found governing".
     const mock = createMockServer()
     registerDecisionTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-decision")({
+    const result = await mock.get("kennen-decision")({
       action: "context",
       entity: "",
     } as never)
@@ -1388,7 +1388,7 @@ describe("lore-decision polymorphic dispatcher", () => {
   it("rejects action='context' with whitespace-only entity (issue #481)", async () => {
     const mock = createMockServer()
     registerDecisionTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-decision")({
+    const result = await mock.get("kennen-decision")({
       action: "context",
       entity: "\t",
     } as never)
@@ -1398,14 +1398,14 @@ describe("lore-decision polymorphic dispatcher", () => {
 })
 
 // -------------------------------------------------------------------------
-// lore-context
+// kennen-context
 // -------------------------------------------------------------------------
 
-describe("lore-context polymorphic dispatcher", () => {
-  it("registers lore-context", () => {
+describe("kennen-context polymorphic dispatcher", () => {
+  it("registers kennen-context", () => {
     const mock = createMockServer()
     registerContextTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-context")).toBe(true)
+    expect(mock.has("kennen-context")).toBe(true)
   })
 
   it("dispatches action='status' to vault.stats", async () => {
@@ -1417,7 +1417,7 @@ describe("lore-context polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerContextTools(mock.server, makeServices({ vaultStats }) as never)
-    const result = await mock.get("lore-context")({ action: "status" } as never)
+    const result = await mock.get("kennen-context")({ action: "status" } as never)
     expect(vaultStats).toHaveBeenCalled()
     expect(extractText(result)).toContain("Memories: 3")
   })
@@ -1425,21 +1425,21 @@ describe("lore-context polymorphic dispatcher", () => {
   it("rejects unknown action", async () => {
     const mock = createMockServer()
     registerContextTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-context")({ action: "wake" } as never)
+    const result = await mock.get("kennen-context")({ action: "wake" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-context")
+    expect(extractText(result)).toContain("kennen-context")
   })
 })
 
 // -------------------------------------------------------------------------
-// lore-task (PF3-06)
+// kennen-task (PF3-06)
 // -------------------------------------------------------------------------
 
-describe("lore-task polymorphic dispatcher", () => {
-  it("registers lore-task", () => {
+describe("kennen-task polymorphic dispatcher", () => {
+  it("registers kennen-task", () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    expect(mock.has("lore-task")).toBe(true)
+    expect(mock.has("kennen-task")).toBe(true)
   })
 
   it("dispatches action='create' to tasks.create with subject threading through", async () => {
@@ -1454,7 +1454,7 @@ describe("lore-task polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksCreate }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "create",
       subject: "Rotate keys",
       description: "Roll the signing key.",
@@ -1481,7 +1481,7 @@ describe("lore-task polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksUpdate }) as never)
-    await mock.get("lore-task")({
+    await mock.get("kennen-task")({
       action: "update",
       taskId: TASK_PAGE_ID,
       state: "in-progress",
@@ -1496,7 +1496,7 @@ describe("lore-task polymorphic dispatcher", () => {
     const tasksClose = vi.fn(async () => undefined)
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksClose }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "close",
       taskId: TASK_PAGE_ID,
     } as never)
@@ -1529,7 +1529,7 @@ describe("lore-task polymorphic dispatcher", () => {
     }))
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksCloseMany }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "close-many",
       ids: [TASK_PAGE_ID, TASK_PAGE_ID_2],
       reason: "Parent PR merged",
@@ -1546,7 +1546,7 @@ describe("lore-task polymorphic dispatcher", () => {
     const tasksList = vi.fn(async () => ({ items: [] }))
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksList }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "list",
       entity: "PR-99",
     } as never)
@@ -1557,36 +1557,36 @@ describe("lore-task polymorphic dispatcher", () => {
   it("rejects an invalid action with a discriminator error", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({ action: "explode" } as never)
+    const result = await mock.get("kennen-task")({ action: "explode" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-task")
+    expect(extractText(result)).toContain("kennen-task")
     expect(extractText(result)).toContain("action")
   })
 
   it("rejects action='create' without subject", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({ action: "create" } as never)
+    const result = await mock.get("kennen-task")({ action: "create" } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-task")
+    expect(extractText(result)).toContain("kennen-task")
   })
 
   it("rejects action='update' without taskId", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "update",
       state: "in-progress",
     } as never)
     expect(isError(result)).toBe(true)
-    expect(extractText(result)).toContain("lore-task")
+    expect(extractText(result)).toContain("kennen-task")
   })
 
   it("preserves the create-time blocked-without-blockedBy guard at the polymorphic surface", async () => {
     const tasksCreate = vi.fn()
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksCreate }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "create",
       subject: "Ship release",
       state: "blocked",
@@ -1600,14 +1600,14 @@ describe("lore-task polymorphic dispatcher", () => {
     // Mirrors the create-time guard: `handleUpdate` rejects a transition
     // into `state: 'blocked'` unless `blockedBy` is restated in the same
     // call (even if a prior write already set it). The per-handler
-    // `tasks.test.ts` exercises this through the `lore-task-update`
+    // `tasks.test.ts` exercises this through the `kennen-task-update`
     // alias; this assertion pins the same contract at the polymorphic
     // dispatcher so a future regression in the dispatch path can't
     // silently drop the guard.
     const tasksUpdate = vi.fn()
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksUpdate }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "update",
       taskId: TASK_PAGE_ID,
       state: "blocked",
@@ -1625,7 +1625,7 @@ describe("lore-task polymorphic dispatcher", () => {
     const tasksUpdate = vi.fn()
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksUpdate }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "update",
       taskId: TASK_PAGE_ID,
       state: "blocked",
@@ -1636,7 +1636,7 @@ describe("lore-task polymorphic dispatcher", () => {
   })
 
   // -----------------------------------------------------------------------
-  // lore-task action='reconcile' (issue 0.7.0/14)
+  // kennen-task action='reconcile' (issue 0.7.0/14)
   //
   // The action must reach the orchestrator (positive dispatch) and the
   // discriminated-union must enforce the bounds on `minScore` (0–1) and
@@ -1649,7 +1649,7 @@ describe("lore-task polymorphic dispatcher", () => {
     const tasksList = vi.fn(async () => ({ items: [] }))
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksList }) as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "reconcile",
     } as never)
     expect(tasksList).toHaveBeenCalled()
@@ -1671,7 +1671,7 @@ describe("lore-task polymorphic dispatcher", () => {
       mock.server,
       makeServices({ tasksList, projectsFindByName }) as never
     )
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "reconcile",
       projectName: "Widget",
       minScore: 0.7,
@@ -1684,7 +1684,7 @@ describe("lore-task polymorphic dispatcher", () => {
   it("rejects action='reconcile' with minScore < 0", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "reconcile",
       minScore: -0.1,
     } as never)
@@ -1695,7 +1695,7 @@ describe("lore-task polymorphic dispatcher", () => {
   it("rejects action='reconcile' with minScore > 1", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "reconcile",
       minScore: 1.1,
     } as never)
@@ -1706,7 +1706,7 @@ describe("lore-task polymorphic dispatcher", () => {
   it("rejects action='reconcile' with limit < 1", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "reconcile",
       limit: 0,
     } as never)
@@ -1717,7 +1717,7 @@ describe("lore-task polymorphic dispatcher", () => {
   it("rejects action='reconcile' with limit > 100", async () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const result = await mock.get("lore-task")({
+    const result = await mock.get("kennen-task")({
       action: "reconcile",
       limit: 101,
     } as never)
@@ -1728,7 +1728,7 @@ describe("lore-task polymorphic dispatcher", () => {
   it("the registered action enum lists task actions", () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const cfg = mock.config("lore-task")
+    const cfg = mock.config("kennen-task")
     const schema = cfg.inputSchema as Record<string, unknown>
     // Pull the `action` field's enum values from the Zod enum. The mock
     // captures the schema field map, not a finalized JSON Schema; this
@@ -1742,13 +1742,13 @@ describe("lore-task polymorphic dispatcher", () => {
   it("describes the reconcile action in the top-level description", () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices() as never)
-    const desc = mock.description("lore-task")
+    const desc = mock.description("kennen-task")
     expect(desc).toContain("'reconcile'")
     expect(desc).toContain("never auto-closes")
   })
 
   it("the reconcile action is read-only by behavior — no write-shaped Notion calls land", async () => {
-    // The `lore-task` tool's annotations cannot set `readOnlyHint: true`
+    // The `kennen-task` tool's annotations cannot set `readOnlyHint: true`
     // (the same registration also serves create/update/close), so the
     // read-only contract is enforced by handler implementation. Pin
     // that the reconcile dispatch path issues no write-shaped service
@@ -1776,7 +1776,7 @@ describe("lore-task polymorphic dispatcher", () => {
         memoriesSearch,
       }) as never
     )
-    await mock.get("lore-task")({ action: "reconcile" } as never)
+    await mock.get("kennen-task")({ action: "reconcile" } as never)
     expect(tasksCreate).not.toHaveBeenCalled()
     expect(tasksUpdate).not.toHaveBeenCalled()
     expect(tasksClose).not.toHaveBeenCalled()
@@ -1793,7 +1793,7 @@ describe("lore-task polymorphic dispatcher", () => {
 describe("MCP tool surface", () => {
   it("registers exactly the declared polymorphic tools — zero aliases", () => {
     // The 0.6.0 deprecation purge removed the 28 single-purpose aliases
-    // (24 from P3-01 + 4 from PF3-06) and the `lore-journal` polymorphic
+    // (24 from P3-01 + 4 from PF3-06) and the `kennen-journal` polymorphic
     // tool itself. This assertion is the load-bearing guard against
     // re-introduction. Every registered tool name's schema is rendered
     // into the agent-visible MCP capabilities config on every
@@ -1814,15 +1814,15 @@ describe("MCP tool surface", () => {
     registerProcedureTools(mock.server, services)
 
     const polymorphic = [
-      "lore-context",
-      "lore-memory",
-      "lore-pinned",
-      "lore-query",
-      "lore-fact",
-      "lore-decision",
-      "lore-project",
-      "lore-task",
-      "lore-procedure",
+      "kennen-context",
+      "kennen-memory",
+      "kennen-pinned",
+      "kennen-query",
+      "kennen-fact",
+      "kennen-decision",
+      "kennen-project",
+      "kennen-task",
+      "kennen-procedure",
     ]
     expect(mock.names().sort()).toEqual([...polymorphic].sort())
   })
@@ -1933,34 +1933,34 @@ describe("MCP tool surface", () => {
     // a paragraph-of-narration regression, not to police phrasing.
     //
     // Bumped from 1100 → 1750 in 0.7.0/14: the previous ceiling left
-    // ~22 chars of headroom on `lore-task` (1078 chars at 4 actions),
+    // ~22 chars of headroom on `kennen-task` (1078 chars at 4 actions),
     // and adding the 5th action (`reconcile`) plus its bullet pushed
     // past the boundary. Per the original comment the budget should
-    // sit ~25% above current registration; the post-#14 lore-task
+    // sit ~25% above current registration; the post-#14 kennen-task
     // description is ~1383 chars, so 1750 (≈ 1.265 × 1383) restores
     // the original ~25% headroom posture and leaves room for one more
     // action without inviting a paragraph of narration. The earlier
     // 1400 number left only ~17 chars of headroom — the next action
     // would have tripped this on the same day it landed.
     //
-    // Bumped 1750 → 1950 in #282 to absorb the `lore-memory`
+    // Bumped 1750 → 1950 in #282 to absorb the `kennen-memory`
     // cross-reference paragraph pointing pinned-block users at the
-    // new `lore-pinned` family AND tighten the `update` bullet with
+    // new `kennen-pinned` family AND tighten the `update` bullet with
     // the MemoryReadOnlyError contract. The +200 chars stack against
     // the sibling fine-grained `PER_TOOL_DESCRIPTION_LIMITS` map
-    // below, which retains the same 1900 entry for `lore-memory`
+    // below, which retains the same 1900 entry for `kennen-memory`
     // (per-tool detection of lopsided growth across the surface).
     const PER_TOOL_DESCRIPTION_LIMIT = 2050
     const polymorphic = [
-      "lore-context",
-      "lore-memory",
-      "lore-pinned",
-      "lore-query",
-      "lore-fact",
-      "lore-decision",
-      "lore-project",
-      "lore-task",
-      "lore-procedure",
+      "kennen-context",
+      "kennen-memory",
+      "kennen-pinned",
+      "kennen-query",
+      "kennen-fact",
+      "kennen-decision",
+      "kennen-project",
+      "kennen-task",
+      "kennen-procedure",
     ]
     for (const name of polymorphic) {
       const desc = mock.description(name)
@@ -1994,7 +1994,7 @@ describe("MCP tool surface", () => {
     // dispatcher with multiple actions) or a critical-rule block
     // pushed onto an existing description must bump this ceiling
     // explicitly and document why in the same change.
-    // Bumped 11050 → 11450 (+400) for the lore-query "retrieve-first"
+    // Bumped 11050 → 11450 (+400) for the kennen-query "retrieve-first"
     // framing paragraph. The added wording instructs agents to call
     // `action: 'search'` (and `action: 'ask'` when an entity is named)
     // BEFORE abstaining — closes the failure mode where a model with
@@ -2002,18 +2002,18 @@ describe("MCP tool surface", () => {
     // reads the question, decides "I don't know," and never tries
     // retrieval. Production agents also benefit from the same
     // posture against in-context guessing. Per-tool ceiling for
-    // lore-query also bumped 1340 → 1580 below.
+    // kennen-query also bumped 1340 → 1580 below.
     const TOTAL_POLYMORPHIC_DESCRIPTION_LIMIT = 11450
     const polymorphic = [
-      "lore-context",
-      "lore-memory",
-      "lore-pinned",
-      "lore-query",
-      "lore-fact",
-      "lore-decision",
-      "lore-project",
-      "lore-task",
-      "lore-procedure",
+      "kennen-context",
+      "kennen-memory",
+      "kennen-pinned",
+      "kennen-query",
+      "kennen-fact",
+      "kennen-decision",
+      "kennen-project",
+      "kennen-task",
+      "kennen-procedure",
     ]
     const total = polymorphic.reduce(
       (sum, name) => sum + mock.description(name).length,
@@ -2043,8 +2043,8 @@ describe("MCP tool surface", () => {
     // isn't paired with a per-tool ceiling bump means the addition
     // landed entirely on a single tool — usually a sign that a
     // different tool's description should have absorbed the new
-    // content (e.g., approve/reject went on `lore-memory`, not on
-    // `lore-context`).
+    // content (e.g., approve/reject went on `kennen-memory`, not on
+    // `kennen-context`).
     const mock = createMockServer()
     const services = makeServices() as never
     registerContextTools(mock.server, services)
@@ -2058,16 +2058,16 @@ describe("MCP tool surface", () => {
     registerProcedureTools(mock.server, services)
 
     // Current observed lengths (post-#550 / 0.13.1 SCOPE RULE block
-    // + issue #282 lore-pinned family):
-    // lore-context: 1087, lore-memory: 1775, lore-query: 1038,
-    // lore-fact: 1233, lore-decision: 848, lore-project: 323,
-    // lore-task: 1704, lore-pinned: 880. Each ceiling is
+    // + issue #282 kennen-pinned family):
+    // kennen-context: 1087, kennen-memory: 1775, kennen-query: 1038,
+    // kennen-fact: 1233, kennen-decision: 848, kennen-project: 323,
+    // kennen-task: 1704, kennen-pinned: 880. Each ceiling is
     // `current + ~150 chars` — accommodates one single-action-add at
     // the documented envelope before the test fails LOUDLY and
     // forces the contributor to bump the entry here AND the combined
     // ceiling above.
     //
-    // `lore-procedure` carries the propose/scan-candidates/deprecate
+    // `kennen-procedure` carries the propose/scan-candidates/deprecate
     // actions with a paragraph framing the propose-then-approve safety
     // gate so agents see the contract alongside the action list. The
     // per-tool ceiling is set to match the per-tool envelope discipline
@@ -2083,13 +2083,13 @@ describe("MCP tool surface", () => {
     // confirm the sum-of-ceilings still has headroom (or bump
     // individual entries alongside).
     //
-    // `lore-memory` bumped 1520 → 1900 in #282 to absorb the
+    // `kennen-memory` bumped 1520 → 1900 in #282 to absorb the
     // cross-reference paragraph pointing pinned-block users at the
-    // new `lore-pinned` family AND a tightened wording on the
+    // new `kennen-pinned` family AND a tightened wording on the
     // `update` bullet noting the MemoryReadOnlyError contract. The
-    // +255 chars keep `lore-memory` as the largest mutator surface
+    // +255 chars keep `kennen-memory` as the largest mutator surface
     // without inviting a paragraph of unstructured commentary.
-    // `lore-pinned` sized at 1330 — current ~1180 plus headroom.
+    // `kennen-pinned` sized at 1330 — current ~1180 plus headroom.
     // The description carries load-bearing security framing on
     // `force: true` ("stop-sign visible in the audit trail, NOT
     // an access-control gate"), an explicit "Audience is render
@@ -2099,21 +2099,21 @@ describe("MCP tool surface", () => {
     // re-introduce the access-control misconception that the
     // wording exists to prevent.
     const PER_TOOL_DESCRIPTION_LIMITS: Record<string, number> = {
-      "lore-context": 1240,
-      // 1520 → 1720 to absorb the `lore-memory action='promote'`
+      "kennen-context": 1240,
+      // 1520 → 1720 to absorb the `kennen-memory action='promote'`
       // bullet (issue #286). 1720 → 2050 after merging issue
       // #282 onto the post-#286 head: the pinned cross-reference
       // paragraph + tightened `update`-bullet MemoryReadOnlyError
       // wording stack on top of the promote bullet. Both deltas
-      // keep `lore-memory` as the largest mutator surface
+      // keep `kennen-memory` as the largest mutator surface
       // without inviting a paragraph of unstructured commentary.
-      "lore-memory": 2050,
-      // `lore-pinned` lands fresh at 1330 — current ~1180 plus
+      "kennen-memory": 2050,
+      // `kennen-pinned` lands fresh at 1330 — current ~1180 plus
       // the ~150-char headroom envelope. Description carries
       // load-bearing security framing on `force` / `audience`.
-      "lore-pinned": 1330,
+      "kennen-pinned": 1330,
       // Issue #284 — bumped 1190 → 1340 to absorb the
-      // `lore-query action='ask'` asOf / includeHistory bullet.
+      // `kennen-query action='ask'` asOf / includeHistory bullet.
       // Bumped 1340 → 1580 to absorb the "retrieve-first" framing
       // paragraph instructing agents to call `action: 'search'`
       // (and `action: 'ask'` when an entity is named) BEFORE
@@ -2121,23 +2121,23 @@ describe("MCP tool surface", () => {
       // gpt-4o-mini reads the question, decides "I don't know,"
       // and never tries retrieval. Production agents benefit from
       // the same posture against in-context guessing.
-      "lore-query": 1580,
+      "kennen-query": 1580,
       // Issue #284 — bumped 1390 → 1440 to absorb the
       // `Invalidated At` / `Invalidated By` mention on
-      // `lore-fact action='invalidate'` and the new `sourceMemoryId`
+      // `kennen-fact action='invalidate'` and the new `sourceMemoryId`
       // describe clause; bumped 1440 → 1540 for R3 nit (confidence-
       // decrement side-effect note on the `invalidate` action so
       // agents see the DEFERRED-02 / 0.8.0/#06 downstream signal).
-      "lore-fact": 1540,
-      "lore-decision": 1000,
-      "lore-project": 480,
-      "lore-task": 1850,
+      "kennen-fact": 1540,
+      "kennen-decision": 1000,
+      "kennen-project": 480,
+      "kennen-task": 1850,
       // Carries the propose / scan-candidates / deprecate action
       // bullets plus a propose-then-approve safety-gate paragraph
       // so agents see the contract alongside the action list. The
       // envelope sits ~150 chars above current registered length,
       // matching the per-tool headroom discipline.
-      "lore-procedure": 1300,
+      "kennen-procedure": 1300,
     }
     for (const [name, limit] of Object.entries(PER_TOOL_DESCRIPTION_LIMITS)) {
       const length = mock.description(name).length
@@ -2169,9 +2169,9 @@ describe("MCP tool surface", () => {
     registerTaskTools(mock.server, services)
     registerProcedureTools(mock.server, services)
 
-    // Per-tool full-config ceiling. `lore-memory` is the current
+    // Per-tool full-config ceiling. `kennen-memory` is the current
     // largest at ~5000 chars rendered (its 6 actions plus the 0.9.0
-    // topic-key + compare workstreams pushed it past `lore-decision`).
+    // topic-key + compare workstreams pushed it past `kennen-decision`).
     // 0.10.0/DEFERRED-ATTRIBUTION added the `author` parameter to the
     // save action; budget bumped from 5000 → 5200 to absorb that and
     // leave ~30% headroom for a future action without inviting a
@@ -2179,7 +2179,7 @@ describe("MCP tool surface", () => {
     // Issue #281 Phase 4 bumped 5200 → 5700 for the `approve` / `reject`
     // inbox-review actions plus their `reviewer` parameter; the +500
     // chars cover two new discriminated-union branches and one new
-    // input field on `lore-memory` without leaking elsewhere.
+    // input field on `kennen-memory` without leaking elsewhere.
     // Issue #283 bumped 5700 → 6000 for the `scope` parameter on
     // save/update — one new structured field with five sub-properties
     // (kind/key/audience/lifetime/expiresAt) plus a single combined
@@ -2198,24 +2198,24 @@ describe("MCP tool surface", () => {
     // rationale for why the MCP equivalent of `--dry-run` exists)
     // plus the longer `targetName` describe text covering the
     // configured-list error contract. Issue #282 bumped 6600 →
-    // 6900 for the lore-memory cross-reference paragraph
-    // pointing pinned-block users at `lore-pinned` plus a
+    // 6900 for the kennen-memory cross-reference paragraph
+    // pointing pinned-block users at `kennen-pinned` plus a
     // tightened wording on the `update` bullet noting the
-    // MemoryReadOnlyError contract. `lore-pinned` lives in its
+    // MemoryReadOnlyError contract. `kennen-pinned` lives in its
     // own file and stays within the same per-tool budget.
     // Future actions should continue stacking the budget
     // explicitly.
     const PER_TOOL_CONFIG_LIMIT = 6900
     const polymorphic = [
-      "lore-context",
-      "lore-memory",
-      "lore-pinned",
-      "lore-query",
-      "lore-fact",
-      "lore-decision",
-      "lore-project",
-      "lore-task",
-      "lore-procedure",
+      "kennen-context",
+      "kennen-memory",
+      "kennen-pinned",
+      "kennen-query",
+      "kennen-fact",
+      "kennen-decision",
+      "kennen-project",
+      "kennen-task",
+      "kennen-procedure",
     ]
     for (const name of polymorphic) {
       const size = mock.renderedSize(name)
@@ -2237,7 +2237,7 @@ describe("MCP tool surface", () => {
 // -------------------------------------------------------------------------
 
 describe("synopsis surface (issue 0.7.0/02)", () => {
-  it("threads synopsis on lore-memory action='save' to memories.create", async () => {
+  it("threads synopsis on kennen-memory action='save' to memories.create", async () => {
     const memoriesCreate = vi.fn(async () => ({
       id: "m1",
       title: "T",
@@ -2246,7 +2246,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     }))
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesCreate }) as never)
-    await mock.get("lore-memory")({
+    await mock.get("kennen-memory")({
       action: "save",
       title: "T",
       content: "C",
@@ -2257,7 +2257,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     )
   })
 
-  it("threads synopsis on lore-memory action='update' to memories.update", async () => {
+  it("threads synopsis on kennen-memory action='update' to memories.update", async () => {
     const memoriesUpdate = vi.fn(async () => ({
       id: "m1",
       title: "T",
@@ -2266,7 +2266,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     }))
     const mock = createMockServer()
     registerMemoryTools(mock.server, makeServices({ memoriesUpdate }) as never)
-    await mock.get("lore-memory")({
+    await mock.get("kennen-memory")({
       action: "update",
       memoryId: "m1",
       synopsis: "Refined",
@@ -2277,7 +2277,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     )
   })
 
-  it("threads synopsis on lore-decision action='create' to decisions.create", async () => {
+  it("threads synopsis on kennen-decision action='create' to decisions.create", async () => {
     const decisionsCreate = vi.fn(async () => ({
       id: "d1",
       title: "T",
@@ -2286,7 +2286,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     }))
     const mock = createMockServer()
     registerDecisionTools(mock.server, makeServices({ decisionsCreate }) as never)
-    await mock.get("lore-decision")({
+    await mock.get("kennen-decision")({
       action: "create",
       decision: "Cache resolutions",
       rationale: "long form",
@@ -2299,7 +2299,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     )
   })
 
-  it("threads synopsis on lore-task action='create' and 'update' to TaskService", async () => {
+  it("threads synopsis on kennen-task action='create' and 'update' to TaskService", async () => {
     const tasksCreate = vi.fn(async () => ({
       id: "t1",
       title: "T",
@@ -2315,7 +2315,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     const mock = createMockServer()
     registerTaskTools(mock.server, makeServices({ tasksCreate, tasksUpdate }) as never)
 
-    await mock.get("lore-task")({
+    await mock.get("kennen-task")({
       action: "create",
       subject: "Rotate keys",
       synopsis: "Rotate keys for new env.",
@@ -2324,7 +2324,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
       expect.objectContaining({ synopsis: "Rotate keys for new env." })
     )
 
-    await mock.get("lore-task")({
+    await mock.get("kennen-task")({
       action: "update",
       taskId: TASK_PAGE_ID,
       synopsis: "Updated synopsis",
@@ -2339,15 +2339,15 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     const overCap = "x".repeat(501)
     const cases: Array<{ tool: string; args: Record<string, unknown> }> = [
       {
-        tool: "lore-memory",
+        tool: "kennen-memory",
         args: { action: "save", title: "T", content: "C", synopsis: overCap },
       },
       {
-        tool: "lore-memory",
+        tool: "kennen-memory",
         args: { action: "update", memoryId: "m1", synopsis: overCap },
       },
       {
-        tool: "lore-decision",
+        tool: "kennen-decision",
         args: {
           action: "create",
           decision: "T",
@@ -2356,11 +2356,11 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
         },
       },
       {
-        tool: "lore-task",
+        tool: "kennen-task",
         args: { action: "create", subject: "T", synopsis: overCap },
       },
       {
-        tool: "lore-task",
+        tool: "kennen-task",
         args: { action: "update", taskId: TASK_PAGE_ID, synopsis: overCap },
       },
     ]
@@ -2387,7 +2387,7 @@ describe("synopsis surface (issue 0.7.0/02)", () => {
     registerDecisionTools(mock.server, services)
     registerTaskTools(mock.server, services)
 
-    for (const tool of ["lore-memory", "lore-decision", "lore-task"]) {
+    for (const tool of ["kennen-memory", "kennen-decision", "kennen-task"]) {
       const cfg = mock.config(tool)
       const schema = cfg.inputSchema as Record<string, unknown> | undefined
       expect(schema, `${tool} must declare an inputSchema`).toBeDefined()

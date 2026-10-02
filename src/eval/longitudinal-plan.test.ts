@@ -6,7 +6,7 @@ import type {
 import { buildLongitudinalBenchmarkPlan } from "./longitudinal-plan.js"
 
 describe("buildLongitudinalBenchmarkPlan", () => {
-  it("uses lore-full-loop by default and estimates paired sample size from harm", () => {
+  it("uses kennen-full-loop by default and estimates paired sample size from harm", () => {
     const plan = buildLongitudinalBenchmarkPlan(
       artifact([
         ["one", false, true, false],
@@ -16,7 +16,7 @@ describe("buildLongitudinalBenchmarkPlan", () => {
       ])
     )
 
-    expect(plan.toCondition).toBe("lore-full-loop")
+    expect(plan.toCondition).toBe("kennen-full-loop")
     expect(plan.pairedOutcomes).toMatchObject({
       pairs: 4,
       lifted: 0,
@@ -74,16 +74,16 @@ describe("buildLongitudinalBenchmarkPlan", () => {
     expect(override.projectedCostUsd).toBe(override.conditionRunsRequired * 2)
   })
 
-  it("falls back to seeded-lore when lore-full-loop did not run", () => {
+  it("falls back to seeded-kennen when kennen-full-loop did not run", () => {
     const input = artifact([["one", false, false, true]])
-    input.summary.conditions["lore-full-loop"].trials = 0
+    input.summary.conditions["kennen-full-loop"].trials = 0
     input.results = input.results.filter(
-      (result) => result.condition !== "lore-full-loop"
+      (result) => result.condition !== "kennen-full-loop"
     )
 
     const plan = buildLongitudinalBenchmarkPlan(input)
 
-    expect(plan.toCondition).toBe("seeded-lore")
+    expect(plan.toCondition).toBe("seeded-kennen")
     expect(plan.pairedOutcomes.bothFailed).toBe(1)
   })
 
@@ -93,7 +93,7 @@ describe("buildLongitudinalBenchmarkPlan", () => {
       ["two", false, true, true],
     ])
     const harnessRow = input.results.find(
-      (result) => result.scenarioId === "two" && result.condition === "lore-full-loop"
+      (result) => result.scenarioId === "two" && result.condition === "kennen-full-loop"
     )!
     harnessRow.success = false
     harnessRow.failureReason = "harness-error"
@@ -110,13 +110,13 @@ describe("buildLongitudinalBenchmarkPlan", () => {
 
     const plan = buildLongitudinalBenchmarkPlan(input)
 
-    expect(plan.toCondition).toBe("lore-full-loop")
+    expect(plan.toCondition).toBe("kennen-full-loop")
     expect(plan.pairedOutcomes).toMatchObject({
       pairs: 1,
       lifted: 1,
       missing: 1,
     })
-    expect(plan.efficiency.conditions["lore-full-loop"].trials).toBe(1)
+    expect(plan.efficiency.conditions["kennen-full-loop"].trials).toBe(1)
     expect(plan.efficiency.pairedDeltas).toMatchObject({
       pairs: 1,
       elapsedPairs: 1,
@@ -132,17 +132,17 @@ function artifact(
     [
       scenarioId: string,
       noMemorySuccess: boolean,
-      seededLoreSuccess: boolean,
+      seededKennenSuccess: boolean,
       fullLoopSuccess: boolean,
     ]
   >
 ): LongitudinalTaskArtifact {
   const results = rows.flatMap(
-    ([scenarioId, noMemorySuccess, seededLoreSuccess, fullLoopSuccess]) => {
+    ([scenarioId, noMemorySuccess, seededKennenSuccess, fullLoopSuccess]) => {
       const conditionRows: Array<[LongitudinalTaskCondition, boolean]> = [
         ["no-memory", noMemorySuccess],
-        ["seeded-lore", seededLoreSuccess],
-        ["lore-full-loop", fullLoopSuccess],
+        ["seeded-kennen", seededKennenSuccess],
+        ["kennen-full-loop", fullLoopSuccess],
       ]
       return conditionRows.map(([condition, success]) => ({
         taskId: scenarioId,
@@ -165,8 +165,8 @@ function artifact(
   ) as LongitudinalTaskArtifact["results"]
   const conditions = {
     "no-memory": conditionSummary(rows.map((row) => row[1])),
-    "seeded-lore": conditionSummary(rows.map((row) => row[2])),
-    "lore-full-loop": conditionSummary(rows.map((row) => row[3])),
+    "seeded-kennen": conditionSummary(rows.map((row) => row[2])),
+    "kennen-full-loop": conditionSummary(rows.map((row) => row[3])),
   }
   return {
     suite: "pilot",
@@ -185,7 +185,7 @@ function artifact(
       conditions,
       lift: {
         fromCondition: "no-memory",
-        toCondition: "seeded-lore",
+        toCondition: "seeded-kennen",
         pairedTrials: 0,
         pairedScenarioIds: [],
         pairedNoMemoryPassed: 0,
@@ -208,8 +208,8 @@ function phaseForCondition(
 ): LongitudinalTaskArtifact["results"][number]["phases"][number] {
   const metrics = {
     "no-memory": { tokens: 1000, elapsedMs: 10_000, usd: 0.1 },
-    "seeded-lore": { tokens: 800, elapsedMs: 9_000, usd: 0.08 },
-    "lore-full-loop": { tokens: 1200, elapsedMs: 11_000, usd: 0.12 },
+    "seeded-kennen": { tokens: 800, elapsedMs: 9_000, usd: 0.08 },
+    "kennen-full-loop": { tokens: 1200, elapsedMs: 11_000, usd: 0.12 },
   }[condition]
   return {
     phase: "use",
@@ -222,8 +222,8 @@ function phaseForCondition(
     verifierResults: [],
     patchStats: { filesChanged: 0, linesAdded: 0, linesRemoved: 0 },
     patch: null,
-    lore: {
-      hooksEnabled: condition === "lore-full-loop",
+    kennen: {
+      hooksEnabled: condition === "kennen-full-loop",
       wakeUpEnabled: condition !== "no-memory",
       memoriesCreated: 0,
       factsCreated: 0,

@@ -1,7 +1,7 @@
 /**
  * Fact dedup-key backfill and duplicate-merge passes.
  *
- * Run on demand by `lore migrate --dedup-keys`:
+ * Run on demand by `kennen migrate --dedup-keys`:
  *
  * 1. Backfill: compute and write `DedupKey` AND `SubjectKey` on every fact
  *    whose cell is empty or stale (idempotent — rows whose stored values

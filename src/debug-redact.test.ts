@@ -271,7 +271,7 @@ describe("redactDebugMessage (issue #488)", () => {
     // embedded `_` is a regex word character, so a `\b` between
     // `development_` and `ntn_` does not match — the full prefix must
     // appear as its own alternation in BEARER_TOKEN. Without that, dev
-    // PATs leak unredacted to `LORE_DEBUG=1` stderr.
+    // PATs leak unredacted to `KENNEN_DEBUG=1` stderr.
     const out = redactDebugMessage(
       "leaked: development_ntn_abcdefghijklmnopqrstuvwx in trace"
     )

@@ -49,7 +49,7 @@ import {
   extractTitle,
   extractRichText,
 } from "../notion/extractors.js"
-import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { resolveFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 import { MemoryPinned } from "./memory-pinned.js"
 import { MemoryMaintenance } from "./memory-maintenance.js"
 import {
@@ -150,7 +150,7 @@ const TITLE_CACHE_TTL_MS = 60_000
  * Server-side filter clause defining the proposed-memory review inbox.
  * Single source of truth so every consumer — the count primitive
  * (`MemoryService.countProposed`), the wake-up inbox section
- * (`loadWakeUpData`), the inbox-list CLI (`lore inbox list`) —
+ * (`loadWakeUpData`), the inbox-list CLI (`kennen inbox list`) —
  * composes the same filter literal and never drifts.
  *
  * The clause is `Status = proposed AND Kind != decision`:
@@ -178,11 +178,11 @@ export function proposedMemoryFilter(): { and: Array<Record<string, unknown>> } 
 }
 
 export class MemoryService {
-  private readonly features: LoreFeatureFlags
+  private readonly features: KennenFeatureFlags
 
   /**
    * `getTitleById` is the hot path for UUID→title resolution in
-   * `render.ts:resolveTitles` and `lore-context action='wake-up'`. A 25-UUID wake-up without
+   * `render.ts:resolveTitles` and `kennen-context action='wake-up'`. A 25-UUID wake-up without
    * this cache pays 25 Notion `pages.retrieve` calls even if the same IDs
    * were just resolved a few seconds earlier. The cache is keyed on the
    * memory id so `Kind = decision` pages (which also live in Memories DB)
@@ -269,7 +269,7 @@ export class MemoryService {
     private client: Client,
     private db: DatabaseRef,
     scopeCtx?: MemoryScopeContext,
-    options?: { features?: LoreFeatureFlags; synopsisMaxChars?: number }
+    options?: { features?: KennenFeatureFlags; synopsisMaxChars?: number }
   ) {
     this.features = options?.features ?? resolveFeatureFlags()
     const synopsisMaxChars = options?.synopsisMaxChars ?? DEFAULT_MEMORY_SYNOPSIS_MAX
@@ -441,7 +441,7 @@ export class MemoryService {
    * needing the body must use `getById` instead.
    *
    * The properties-only posture matters because the touch-on-read
-   * wiring in `lore-query action='ask'` routes through here —
+   * wiring in `kennen-query action='ask'` routes through here —
    * fetching markdown bodies the caller will discard would
    * double the Notion call budget on every ask response with cited
    * source memories.
@@ -551,7 +551,7 @@ export class MemoryService {
    * inbox-state — applying them to an already-accepted row would be
    * a no-op masquerading as a real review event. Operators who want
    * to flip a non-proposed row's status use
-   * `lore-memory action='update' status='<value>'` directly.
+   * `kennen-memory action='update' status='<value>'` directly.
    *
    * **Property write FIRST, audit-block append SECOND** — same
    * partial-state posture as `rekeyTopicKey`. A property-write
@@ -776,7 +776,7 @@ export class MemoryService {
   }
 
   /**
-   * Symmetric audit-marker write for `lore-memory action='compare'`.
+   * Symmetric audit-marker write for `kennen-memory action='compare'`.
    * Issues up to two `pages.update` calls in parallel,
    * one per side, each writing BOTH the `Compared With` relation
    * (with the counterpart's id added) AND the `Compare Notes`
@@ -886,13 +886,13 @@ export class MemoryService {
   }
 
   /**
-   * Operator-facing counters for the `lore status` expiring/expired
+   * Operator-facing counters for the `kennen status` expiring/expired
    * scoped-memory surface.
    *
    * Returns three counts:
    * - `expired`: rows whose `Expires At < today` and whose page is
    * not archived. Already invisible to default reads — surfaced
-   * here so an operator can run `lore-memory action='archive'` to
+   * here so an operator can run `kennen-memory action='archive'` to
    * actually clean them up.
    * - `expiringSoon`: rows with `Expires At` in the inclusive window
    * `[today, today + EXPIRING_SOON_DAYS]`. The "expiring this
@@ -965,7 +965,7 @@ export class MemoryService {
   /**
    * Count non-archived `Kind != decision` memories whose `Status =
    * proposed` — the proposed-memory review inbox primitive backing
-   * the `lore status` and `lore-context action='status'` inbox-count
+   * the `kennen status` and `kennen-context action='status'` inbox-count
    * surfaces. Reports pending proposed-memory counts by
    * project/source/agent.
    *
@@ -988,7 +988,7 @@ export class MemoryService {
    * lifecycle state — counting those rows as inbox memories would
    * conflate governance with auto-extracted learnings awaiting
    * review and inflate the operator's review pressure on every
-   * vault that uses `lore-decision action='create'` with
+   * vault that uses `kennen-decision action='create'` with
    * `status: "proposed"`. The exclusion matches the
    * `excludeKinds: ["decision"]` posture that the memory near-duplicate
    * probe already uses for the same memories-vs-decisions split.
@@ -1003,7 +1003,7 @@ export class MemoryService {
    * Direct `client.dataSources.query` rather than `MemoryService.list`
    * because the inbox surface only needs the property tuple
    * (Status / Kind / Source / Agent) and never the markdown body —
-   * paying for `pageToMemory`'s per-row body fetch on every `lore
+   * paying for `pageToMemory`'s per-row body fetch on every `kennen
    * status` would scale linearly with the inbox depth for zero
    * rendered benefit. Same posture as `TaskService.countClosedSince`
    * and `FactService.countByPredicateRaw`.
@@ -1016,7 +1016,7 @@ export class MemoryService {
    * Vault-scoping and lifetime visibility match `MemoryService.list`:
    * when `projectId` is omitted the project clause is dropped entirely,
    * so the counter walks every project's proposals (the surface used when
-   * no `--project` flag is supplied to `lore status`). When `projectId`
+   * no `--project` flag is supplied to `kennen status`). When `projectId`
    * is supplied, repo-wide unscoped proposals surface in the count via
    * the OR clause — same posture as recall. When default scope filtering
    * is enabled, expired proposals are excluded unless `includeExpired`
@@ -1114,7 +1114,7 @@ export class MemoryService {
   }
 
   /**
-   * Project-grouped paginated walk for `lore conflicts scan`.
+   * Project-grouped paginated walk for `kennen conflicts scan`.
    * Returns `Memory[][]` aligned by index with the input `projectIds` —
    * `result[i]` holds every non-archived memory whose `Project` relation
    * contains `projectIds[i]`.
@@ -1233,7 +1233,7 @@ export class MemoryService {
    * `Status IN (...)` and `Kind NOT IN (...)` ahead of the row
    * limit when the operator opts into the RunTool SQL path:
    *
-   * - **Flag on (`LORE_USE_RUNTOOL_FILTER_SQL=1`) AND a RunTool
+   * - **Flag on (`KENNEN_USE_RUNTOOL_FILTER_SQL=1`) AND a RunTool
    * client is wired:** issue one parameterized SQL query through
    * `query_data_sources` with both predicates pushed
    * server-side and `LIMIT N` applied AFTER. The SQL query

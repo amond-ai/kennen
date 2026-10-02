@@ -21,7 +21,7 @@ const NTN_ENV_BASE_URLS: Record<NtnEnv, string> = {
 }
 
 const OPERATOR_BASE_URL_ENV_KEYS = [
-  "LORE_NOTION_BASE_URL",
+  "KENNEN_NOTION_BASE_URL",
   "NOTION_BASE_URL",
   "NOTION_API_BASE_URL",
 ] as const
@@ -114,7 +114,7 @@ export function ntnEnvBaseUrl(env: string | undefined): string | undefined {
 /**
  * Aliases beyond the canonical `NTN_ENV_BASE_URLS` table that resolve
  * to the same env. Notion is migrating public surfaces from `.so` to
- * `.com`; both forms hit prod, so a .lore.yaml carrying either one
+ * `.com`; both forms hit prod, so a .kennen.yaml carrying either one
  * must infer prod. The alias lives in its own table (rather than
  * duplicating values inside `NTN_ENV_BASE_URLS`) so `ntnEnvBaseUrl`
  * keeps returning ONE canonical URL per env — the inverse direction
@@ -129,18 +129,18 @@ const NTN_ENV_BASE_URL_ALIASES: Record<string, NtnEnv> = {
  * ntn env selector (`prod` / `dev` / `stg`). Recognizes the canonical
  * URLs in `NTN_ENV_BASE_URLS` plus the aliases in
  * `NTN_ENV_BASE_URL_ALIASES`. Returns `undefined` for unknown URLs
- * (e.g., a corporate proxy or a future env Lore doesn't know about).
+ * (e.g., a corporate proxy or a future env Kennen doesn't know about).
  *
- * Single canonical helper for every Lore-managed ntn login surface
- * (`lore auth --login`, `lore install`, `lore init`). Centralized here so a future
+ * Single canonical helper for every Kennen-managed ntn login surface
+ * (`kennen auth --login`, `kennen install`, `kennen init`). Centralized here so a future
  * canonical-URL change (Notion shipping a new env, retiring an old
  * one, adding another `.com` alias) lands in one place — surfaces
  * MUST NOT hand-roll their own URL → env mapping.
  *
- * Used to derive the ntn-login env target from .lore.yaml's
+ * Used to derive the ntn-login env target from .kennen.yaml's
  * `auth.baseUrl` when the operator hasn't set `NOTION_ENV` in their
- * shell — without this inference, an `lore install -y` (or
- * `lore auth --login`) against a dev project would mint a prod token
+ * shell — without this inference, an `kennen install -y` (or
+ * `kennen auth --login`) against a dev project would mint a prod token
  * (ntn's default) and the post-login preflight would fail with a
  * confusing "vault not accessible" error.
  */
@@ -158,10 +158,10 @@ export function ntnEnvFromBaseUrl(url: string | undefined): NtnEnv | undefined {
  * Resolve the Notion API base URL from the operator's environment.
  *
  * Priority order (highest first):
- *   1. `LORE_NOTION_BASE_URL` — Lore-namespaced explicit override
+ *   1. `KENNEN_NOTION_BASE_URL` — Kennen-namespaced explicit override
  *   2. `NOTION_BASE_URL` — ntn-native override; respected so a dev
  *      operator who has the ntn-shaped env state in their shell
- *      doesn't have to also export the Lore-namespaced alias
+ *      doesn't have to also export the Kennen-namespaced alias
  *   3. `NOTION_API_BASE_URL` — legacy ntn name; same posture
  *   4. `NOTION_ENV` mapped via `ntnEnvBaseUrl` — covers operators
  *      who set the env selector without an explicit URL var (the
@@ -186,7 +186,7 @@ export function resolveOperatorBaseUrl(
   envSource: NodeJS.ProcessEnv = process.env
 ): string | undefined {
   return (
-    envSource["LORE_NOTION_BASE_URL"] ||
+    envSource["KENNEN_NOTION_BASE_URL"] ||
     envSource["NOTION_BASE_URL"] ||
     envSource["NOTION_API_BASE_URL"] ||
     ntnEnvBaseUrl(envSource["NOTION_ENV"]) ||
@@ -234,7 +234,7 @@ export function resolveOperatorBaseUrlWithSource(
 /**
  * Resolve the Notion API base URL with a prod default.
  *
- * Set `LORE_NOTION_BASE_URL`, `NOTION_BASE_URL`, or
+ * Set `KENNEN_NOTION_BASE_URL`, `NOTION_BASE_URL`, or
  * `NOTION_API_BASE_URL` to override (e.g.,
  * `"https://api.dev.notion.com"`).
  */
@@ -269,7 +269,7 @@ export function getBaseUrl(): string {
  *   recognized cases (5xx, network error, unparseable response,
  *   etc.). Caller surfaces the raw error.
  *
- * The split exists because `lore install` (and other consumers)
+ * The split exists because `kennen install` (and other consumers)
  * need to gate `ready` differently per failure mode: a 401/404
  * means MCP config writes would land an immediately-broken
  * install, while a 429/5xx is plausibly transient and shouldn't
@@ -292,12 +292,12 @@ export type VaultAccessResult =
  * enough to call on every login without being a startup-tax concern.
  *
  * The page title is returned on success so the caller can confirm the
- * operator picked the *right* vault. `lore init`'s no-arg flow
+ * operator picked the *right* vault. `kennen init`'s no-arg flow
  * shows the title back so an operator who creates a vault in the
  * wrong workspace catches the discrepancy and can re-run.
  *
  * The helper takes a `Client`, not a token, matching the rest of
- * Lore's discipline: every Notion-touching path uses the rate-limited
+ * Kennen's discipline: every Notion-touching path uses the rate-limited
  * proxy. A caller with only a raw token wraps via
  * `createLimitedClient(createClient(token, baseUrl))` first.
  */

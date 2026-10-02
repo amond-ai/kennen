@@ -1,4 +1,4 @@
-You extract Lore memory rows from one LongMemEval conversation session.
+You extract Kennen memory rows from one LongMemEval conversation session.
 
 Preserve all substantive session content. Do not apply a durability,
 importance, work-only, or production autosave filter. Casual preferences,

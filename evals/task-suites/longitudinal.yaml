@@ -1,16 +1,16 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-minimal
+name: kennen-longitudinal-minimal
 description: |
   Minimal hook-native longitudinal software-task suite. Each scenario runs
-  Phase A and Phase B under no-memory and lore-full-loop. Real Codex runs
-  require LORE_EVAL_TASK_REAL=1; real Lore formation requires
-  LORE_EVAL_LONGITUDINAL_REAL=1 and LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT.
+  Phase A and Phase B under no-memory and kennen-full-loop. Real Codex runs
+  require KENNEN_EVAL_TASK_REAL=1; real Kennen formation requires
+  KENNEN_EVAL_LONGITUDINAL_REAL=1 and KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT.
 
 conditions:
   - no-memory
-  - lore-full-loop
+  - kennen-full-loop
 
 scenarios:
   - id: decision-continuity-result-boundary

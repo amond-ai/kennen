@@ -36,7 +36,7 @@
  * - `query_data_sources` — `runTool(client,
  *   "query_data_sources", params)` consumed by `EntityService.findByName`
  *   / `findByAlias`, `MemoryService.listForNearDuplicates`, and
- *   `lore conflicts scan`'s already-judged pre-filter. Implementation in
+ *   `kennen conflicts scan`'s already-judged pre-filter. Implementation in
  *   the query module (with `SqlPartialResultError` for saturated
  *   `has_more` windows and `isSqlValidationError` to escalate
  *   query-shape drift).

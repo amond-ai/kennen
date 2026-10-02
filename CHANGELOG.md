@@ -1,7 +1,7 @@
 # Changelog
 
-All notable user-facing changes to Lore are recorded here. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and Lore versions
+All notable user-facing changes to Kennen are recorded here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and Kennen versions
 adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Entries describe behavior an operator or AI assistant can observe — tool
@@ -13,6 +13,16 @@ log is the canonical source for those.
 
 ### Changed
 
+- Lore is renamed to Kennen and published as `@amond-ai/kennen`. The CLI binary
+  is `kennen`, MCP tools are `kennen-*`, the config file is `.kennen.yaml`,
+  environment variables use the `KENNEN_` prefix, and installed assets live
+  under `~/.kennen/`. The topic-upsert fingerprint marker written into Notion
+  page bodies is now `<!-- kennen-topic-upsert-sha256: … -->`, so revisions
+  saved under the old marker are not recognized as duplicates on the next
+  upsert, and memories tagged with the old `__lore-cleanup-orphan` keyword
+  sentinel are no longer excluded from search and list results. The old names
+  are not accepted. Entries for earlier releases keep the names that were
+  current when they shipped.
 - The MCP server now runs on MCP TypeScript SDK v2 (`@modelcontextprotocol/server`)
   and zod 4. The negotiated protocol is unchanged (2025-era revisions; the
   2026-07-28 revision is not enabled). What clients can observe:
@@ -24,7 +34,7 @@ log is the canonical source for those.
   - SDK input-validation errors are single-line zod 4 messages without the
     `MCP error -32602:` prefix. Dispatcher errors still echo a rejected enum
     value (`, received 'task'`).
-- Numeric config fields in `.lore.yaml` now reject `Infinity` (e.g. YAML
+- Numeric config fields in `.kennen.yaml` now reject `Infinity` (e.g. YAML
   `.inf`).
 
 ## [1.0.0] - 2026-08-04
@@ -1247,7 +1257,7 @@ move atomically per the release-coordinator pattern (#13).
   `lore migrate --migrate-tracking-to-tasks` still works; on 0.6.0
   the prose updates to reflect the migration command's removal.
 
-[Unreleased]: https://github.com/makenotion/lore/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/amond-ai/kennen/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/makenotion/lore/compare/v0.19.1...v1.0.0
 [0.19.1]: https://github.com/makenotion/lore/compare/v0.19.0...v0.19.1
 [0.19.0]: https://github.com/makenotion/lore/compare/v0.18.1...v0.19.0

@@ -162,8 +162,8 @@ function summarizeEfficiency(
   return {
     conditions: {
       "no-memory": summarizeConditionEfficiency(artifact, "no-memory"),
-      "seeded-lore": summarizeConditionEfficiency(artifact, "seeded-lore"),
-      "lore-full-loop": summarizeConditionEfficiency(artifact, "lore-full-loop"),
+      "seeded-kennen": summarizeConditionEfficiency(artifact, "seeded-kennen"),
+      "kennen-full-loop": summarizeConditionEfficiency(artifact, "kennen-full-loop"),
     },
     pairedDeltas: summarizePairedEfficiencyDeltas(artifact, toCondition),
   }
@@ -332,10 +332,10 @@ function defaultMemoryCondition(
   artifact: LongitudinalTaskArtifact
 ): Exclude<LongitudinalTaskCondition, "no-memory"> {
   const results = scoreableResults(artifact)
-  if (results.some((result) => result.condition === "lore-full-loop")) {
-    return "lore-full-loop"
+  if (results.some((result) => result.condition === "kennen-full-loop")) {
+    return "kennen-full-loop"
   }
-  return "seeded-lore"
+  return "seeded-kennen"
 }
 
 function countPairedOutcomes(

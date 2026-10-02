@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-sqlalchemy-modelhard-v1
+name: kennen-longitudinal-sqlalchemy-modelhard-v1
 description: >-
   Model-hard SQLAlchemy longitudinal suite. Scenarios pin a stable SQLAlchemy
   release and ask the agent to implement application code against an intrinsic
@@ -12,8 +12,8 @@ description: >-
 seededCorpus: ../vault-seeds/sqlalchemy-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: sqlalchemy-typedecorator-cache-ok-state-v1
     difficulty: hard
@@ -35,7 +35,7 @@ scenarios:
     phaseB:
       promptId: sqlalchemy-typedecorator-cache-ok-state-v1-use
       prompt: >-
-        Implement a new module `lore_solution.py` at the repository root that
+        Implement a new module `kennen_solution.py` at the repository root that
         defines a reusable custom column type and two ORM models that use it with
         different configuration.
 
@@ -64,7 +64,7 @@ scenarios:
         round-trip through either column must encode and decode against that
         column's own label list, no matter how many structurally identical
         statements run on the same engine. Do not edit files outside
-        `lore_solution.py`.
+        `kennen_solution.py`.
     expectedContext:
       description: >-
         A custom type whose behavior depends on constructor state is not
@@ -85,10 +85,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_sa_cache.py b/lore_eval_hidden_sa_cache.py
+          diff --git a/kennen_eval_hidden_sa_cache.py b/kennen_eval_hidden_sa_cache.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_sa_cache.py
+          +++ b/kennen_eval_hidden_sa_cache.py
           @@ -0,0 +1,110 @@
           +import warnings
           +
@@ -97,7 +97,7 @@ scenarios:
           +from sqlalchemy.exc import SAWarning
           +from sqlalchemy.sql.cache_key import NO_CACHE
           +
-          +from lore_solution import Account, EnumCodec, Ticket, make_session
+          +from kennen_solution import Account, EnumCodec, Ticket, make_session
           +
           +
           +TICKET_LABELS = ["triage", "working", "resolved"]
@@ -205,5 +205,5 @@ scenarios:
           - -lc
           - >-
             DISABLE_SQLALCHEMY_CEXT=1 uv run --with-editable . --with
-            pytest==7.4.4 python -m pytest lore_eval_hidden_sa_cache.py -q
+            pytest==7.4.4 python -m pytest kennen_eval_hidden_sa_cache.py -q
         timeoutMs: 900000

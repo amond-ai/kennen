@@ -559,7 +559,7 @@ describe("MemoryService.create — autosave-learning duplicate gate", () => {
   })
 
   it("keeps the autosave lock until a fresh create is query-visible", async () => {
-    vi.stubEnv("LORE_AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS", "200")
+    vi.stubEnv("KENNEN_AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS", "200")
     const events: string[] = []
     const querySpy = vi
       .fn()
@@ -694,7 +694,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     // act on — "your retry will land cleanly" — instead of leaving
     // them to infer behavior from the implementation detail.
     expect(partial.message).toMatch(/soft-archived to Notion's trash/)
-    expect(partial.message).toMatch(/__lore-cleanup-orphan/)
+    expect(partial.message).toMatch(/__kennen-cleanup-orphan/)
     expect(partial.message).toMatch(/restored from trash/)
     expect(partial.message).toMatch(/Your retry will land cleanly/)
 
@@ -713,7 +713,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
       archived: true,
       properties: {
         Keywords: {
-          rich_text: [{ text: { content: "__lore-cleanup-orphan" } }],
+          rich_text: [{ text: { content: "__kennen-cleanup-orphan" } }],
         },
       },
     })
@@ -933,7 +933,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
       archived: true,
       properties: {
         Keywords: {
-          rich_text: [{ text: { content: "__lore-cleanup-orphan" } }],
+          rich_text: [{ text: { content: "__kennen-cleanup-orphan" } }],
         },
       },
     })
@@ -972,7 +972,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
       Keywords: {
         rich_text: [
           { text: { content: "auth, middleware" } },
-          { text: { content: " __lore-cleanup-orphan" } },
+          { text: { content: " __kennen-cleanup-orphan" } },
         ],
       },
     })
@@ -982,7 +982,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     // The MCP boundary's `keywordsSchema` accepts keywords up to
     // exactly `RICH_TEXT_PROPERTY_MAX_LEN` (2000 chars). A naive
     // concatenated single-segment cleanup write
-    // (`${atCap} __lore-cleanup-orphan`) would produce a 2022-char
+    // (`${atCap} __kennen-cleanup-orphan`) would produce a 2022-char
     // segment that Notion rejects with a validation error — flipping
     // `cleanedUp` to `false` and leaving the orphan live in the vault.
     // This regresses exactly the partial-failure recovery path issue
@@ -1023,7 +1023,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     ).Keywords.rich_text
     expect(richText).toEqual([
       { text: { content: atCapKeywords } },
-      { text: { content: " __lore-cleanup-orphan" } },
+      { text: { content: " __kennen-cleanup-orphan" } },
     ])
     // Each segment must be ≤ the per-segment cap.
     for (const seg of richText) {
@@ -1033,7 +1033,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     // sentinel substring — the `does_not_contain` filter still excludes
     // a resurfaced row.
     const concat = richText.map((s) => s.text.content).join("")
-    expect(concat.includes("__lore-cleanup-orphan")).toBe(true)
+    expect(concat.includes("__kennen-cleanup-orphan")).toBe(true)
   })
 
   it("cleanup write collapses to bare sentinel when the caller's keywords are whitespace-only (issue #477 review-feedback)", async () => {
@@ -1041,7 +1041,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     // empty for the purposes of the concatenated form — a bare-sentinel
     // write is preferred to preserve the simplest filter contract.
     // Without this guard, a stray space in the caller's input would
-    // produce a leading-space keyword (`" __lore-cleanup-orphan"`)
+    // produce a leading-space keyword (`" __kennen-cleanup-orphan"`)
     // that's still substring-matched but visually noisy.
     const bodyWriteError = new Error("Notion body update failed (502)")
     const { client, updateSpy } = makePartialFailureClient({ bodyWriteError })
@@ -1054,7 +1054,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     expect(updateSpy).toHaveBeenCalledTimes(1)
     expect(updateSpy.mock.calls[0]![0].properties).toEqual({
       Keywords: {
-        rich_text: [{ text: { content: "__lore-cleanup-orphan" } }],
+        rich_text: [{ text: { content: "__kennen-cleanup-orphan" } }],
       },
     })
   })
@@ -1063,7 +1063,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     // Bug repro from the original issue. Steps:
     // 1. createFresh body-write fails → cleanup archive lands sentinel
     // 2. Operator restores the orphan from Notion's workspace trash
-    // 3. The next lore-memory action='save' against the same topic key
+    // 3. The next kennen-memory action='save' against the same topic key
     // runs findByTopicKey
     // 4. WITHOUT the fix, the resurfaced row matches the topic-key
     // query and the upsert path appends a revision to an
@@ -1108,7 +1108,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     const archivedKeywords = cleanupKeywordsProp.rich_text
       .map((seg) => seg.text.content)
       .join("")
-    expect(archivedKeywords).toBe("auth __lore-cleanup-orphan")
+    expect(archivedKeywords).toBe("auth __kennen-cleanup-orphan")
 
     // Steps 2–4: build a query client whose dataSources.query response
     // ignores the does_not_contain filter (i.e. simulates a Notion API
@@ -1226,7 +1226,7 @@ describe("MemoryService.create — partial-failure on body write (issue #190)", 
     const filter = capturedFilter as { and: Array<Record<string, unknown>> }
     expect(filter.and).toContainEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
   })
 })
@@ -2237,12 +2237,12 @@ describe("MemoryService.findByTopicKey (0.9.0/01)", () => {
   })
 
   it("excludes resurfaced cleanup-orphans server-side via Keywords does_not_contain (issue #477)", async () => {
-    // The filter `Keywords does_not_contain '__lore-cleanup-orphan'` is
+    // The filter `Keywords does_not_contain '__kennen-cleanup-orphan'` is
     // pushed server-side so a restored-from-trash properties-only orphan
     // never reaches the JS post-filter. Without this clause, an operator
     // who restores an archived orphan from Notion's workspace trash
     // would see the live row resurface as a topic-key match the next
-    // time `lore-memory action='save'` ran — silently routing into the
+    // time `kennen-memory action='save'` ran — silently routing into the
     // upsert path against an empty-body shell.
     const { client, querySpy } = makeQueryClient([{ results: [] }])
     const service = new MemoryService(client, db)
@@ -2258,7 +2258,7 @@ describe("MemoryService.findByTopicKey (0.9.0/01)", () => {
     }
     expect(filter.and).toContainEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
   })
 
@@ -2299,7 +2299,7 @@ describe("MemoryService.findByTopicKey (0.9.0/01)", () => {
     // those would silently exclude memories with no keywords.
     expect(keywordClauses[0]).toEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
   })
 })
@@ -2727,7 +2727,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "## Revision 2 (2026-04-30)",
       "",
-      `<!-- lore-topic-upsert-sha256: ${testTopicUpsertFingerprint({
+      `<!-- kennen-topic-upsert-sha256: ${testTopicUpsertFingerprint({
         title: "JWT auth model with refresh rotation",
         content: "Now we rotate refresh tokens.",
         synopsis: "Refresh rotation adopted.",
@@ -2788,7 +2788,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "## Revision 2 (2026-04-30)",
       "",
-      `<!-- lore-topic-upsert-sha256: ${testTopicUpsertFingerprint({
+      `<!-- kennen-topic-upsert-sha256: ${testTopicUpsertFingerprint({
         title: "JWT auth model with refresh rotation",
         content: "Now we rotate refresh tokens.",
         synopsis: "Refresh rotation adopted.",
@@ -2928,7 +2928,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "## Revision 2 (2026-04-30)",
       "",
-      `<!-- lore-topic-upsert-sha256: ${testTopicUpsertFingerprint({
+      `<!-- kennen-topic-upsert-sha256: ${testTopicUpsertFingerprint({
         title: "JWT auth model with refresh rotation",
         content: "Now we rotate refresh tokens.",
         synopsis: "Refresh rotation adopted.",
@@ -2993,7 +2993,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "## Revision 2 (2026-04-30)",
       "",
-      `<!-- lore-topic-upsert-sha256: ${testTopicUpsertFingerprint({
+      `<!-- kennen-topic-upsert-sha256: ${testTopicUpsertFingerprint({
         title: "JWT auth model with refresh rotation",
         content: "Now we rotate refresh tokens.",
         synopsis: "Refresh rotation adopted.",
@@ -3055,7 +3055,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "## Revision 2 (2026-04-30)",
       "",
-      `<!-- lore-topic-upsert-sha256: ${testTopicUpsertFingerprint({
+      `<!-- kennen-topic-upsert-sha256: ${testTopicUpsertFingerprint({
         kind: "runbook",
         title: "DB migration",
         content: [
@@ -3067,7 +3067,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
           "",
           "**Title at this revision:** Example copied from docs",
           "",
-          "Not a Lore revision.",
+          "Not a Kennen revision.",
         ].join("\n"),
         synopsis: "Migration runbook.",
         keywords: "db,migration",
@@ -3085,7 +3085,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "**Title at this revision:** Example copied from docs",
       "",
-      "Not a Lore revision.",
+      "Not a Kennen revision.",
     ].join("\n")
     const { client, updateMarkdownSpy, updateSpy } = makeUpsertClient({
       findResults: [existing],
@@ -3126,7 +3126,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "**Title at this revision:** Example copied from docs",
       "",
-      "Not a Lore revision.",
+      "Not a Kennen revision.",
     ].join("\n")
     const existing = buildExistingMemoryPage("existing-mem", {
       topicKey: "runbook/db-migration",
@@ -3144,7 +3144,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "## Revision 2 (2026-04-30)",
       "",
-      `<!-- lore-topic-upsert-sha256: ${testTopicUpsertFingerprint({
+      `<!-- kennen-topic-upsert-sha256: ${testTopicUpsertFingerprint({
         kind: "runbook",
         title: "DB migration",
         content: copiedExample,
@@ -3189,7 +3189,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       "",
       "**Title at this revision:** Example copied from docs",
       "",
-      "Not a Lore revision.",
+      "Not a Kennen revision.",
     ].join("\n")
     const existing = buildExistingMemoryPage("existing-mem", {
       topicKey: "runbook/db-migration",
@@ -3786,7 +3786,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
     // `<this-memory-id>` at render time, so the service-layer string
     // carries the placeholder verbatim.
     expect(result.promotionAdvisory!.suggestion).toBe(
-      "Consider promoting via lore-decision action='create' " +
+      "Consider promoting via kennen-decision action='create' " +
         "with supersedesIds: [<this-memory-id>], or splitting " +
         "the topic into narrower topicKeys."
     )
@@ -3896,7 +3896,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
     expect(result.promotionAdvisory).toBeNull()
   })
 
-  describe("LORE_USE_RUNTOOL_BLOCK_EDIT (issue #534)", () => {
+  describe("KENNEN_USE_RUNTOOL_BLOCK_EDIT (issue #534)", () => {
     /** Build a body containing a fingerprinted revision-1 block whose
      * fingerprint matches the existing memory's effective snapshot.
      * The `pickRevisionAppendAnchor` helper requires a fingerprint
@@ -3931,7 +3931,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
         "",
         "## Revision 1 (2026-04-01)",
         "",
-        `<!-- lore-topic-upsert-sha256: ${fp} -->`,
+        `<!-- kennen-topic-upsert-sha256: ${fp} -->`,
         "",
         `**Title at this revision:** ${opts.title}`,
         "",
@@ -3958,8 +3958,8 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
     }
 
     afterEach(() => {
-      delete process.env.LORE_USE_RUNTOOL_BLOCK_EDIT
-      delete process.env.LORE_USE_RUNTOOL
+      delete process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT
+      delete process.env.KENNEN_USE_RUNTOOL
     })
 
     it("uses update_content via RunTool when the flag is on and a fingerprinted anchor exists", async () => {
@@ -3968,7 +3968,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       // flag on the body write goes through `client.request` (RunTool)
       // and `pages.updateMarkdown` is NOT called — the issue #534
       // round-trip-reduction acceptance criterion.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const existing = buildExistingMemoryPage("11111111111111111111111111111111", {
         topicKey: "decision/jwt",
         projectIds: ["P1"],
@@ -4012,12 +4012,12 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
     })
 
     it("falls back to full-body replace when no fingerprinted revision exists", async () => {
-      // Pre-fingerprint legacy bodies (no `<!-- lore-topic-upsert-sha256:`
+      // Pre-fingerprint legacy bodies (no `<!-- kennen-topic-upsert-sha256:`
       // marker) cannot anchor safely; the helper returns null and the
       // canonical full-body path takes over. The flag-on test still
       // produces correctly-revised output — the flag toggle must never
       // break the save.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const existing = buildExistingMemoryPage("11111111111111111111111111111111", {
         topicKey: "decision/legacy",
         projectIds: ["P1"],
@@ -4051,7 +4051,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       // server saw a different body. Falling back to the full-body
       // path lets the save land — anchored failures must NOT leave
       // the revision unwritten.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const existing = buildExistingMemoryPage("11111111111111111111111111111111", {
         topicKey: "decision/jwt",
         projectIds: ["P1"],
@@ -4100,7 +4100,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       // 401 / 5xx must reach the auth-refresh proxy and the caller's
       // normal error path. Silently falling back here would mask a
       // genuine outage and could lead to runaway retries.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const existing = buildExistingMemoryPage("11111111111111111111111111111111", {
         topicKey: "decision/jwt",
         projectIds: ["P1"],
@@ -4180,7 +4180,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
         // rejection that the auth-refresh proxy cannot repair).
         // Pinning all three at the integration boundary catches
         // narrowing of the catch, e.g. on `kind === "no_match"` only.
-        process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+        process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
         const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
         try {
           const existing = buildExistingMemoryPage("11111111111111111111111111111111", {
@@ -4239,7 +4239,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       // kind: "deletion_warning" })`; the call site falls back so
       // the existing SDK path's `allow_deleting_content: true`
       // posture applies.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const existing = buildExistingMemoryPage("11111111111111111111111111111111", {
         topicKey: "decision/jwt",
         projectIds: ["P1"],
@@ -4300,7 +4300,7 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       // Phase 1: with the flag ON, the fingerprinted body MUST drive
       // a RunTool dispatch. If it doesn't, the fixture is broken and
       // the flag-off assertion below is meaningless.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const baseOn = makeUpsertClient({
         findResults: [existing],
         existingBody: body,
@@ -4321,8 +4321,8 @@ describe("MemoryService.upsertByTopicKey (0.9.0/06)", () => {
       // check in `memory.ts` would make this test fail.
       // Issue #543 flipped the default to ON, so flag-off must be
       // set explicitly here rather than relying on env-unset.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "0"
-      process.env.LORE_USE_RUNTOOL = "0"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "0"
+      process.env.KENNEN_USE_RUNTOOL = "0"
       const baseOff = makeUpsertClient({
         findResults: [existing],
         existingBody: body,
@@ -4431,7 +4431,7 @@ describe("computePromotionAdvisory (0.9.0/15)", () => {
     // service-layer return MUST carry the placeholder verbatim so the
     // boundary substitution is observable to tests. Decision-kind
     // memories are the ONLY topic-key-chain kind for which
-    // `lore-decision action='create' supersedesIds: [...]` is a valid
+    // `kennen-decision action='create' supersedesIds: [...]` is a valid
     // ready-to-paste command (DecisionService.getById throws for
     // non-decision kinds), so the placeholder lives in this branch
     // alone.
@@ -4441,7 +4441,7 @@ describe("computePromotionAdvisory (0.9.0/15)", () => {
       kind: "decision",
     })
     expect(advisory!.suggestion).toBe(
-      "Consider promoting via lore-decision action='create' " +
+      "Consider promoting via kennen-decision action='create' " +
         "with supersedesIds: [<this-memory-id>], or splitting " +
         "the topic into narrower topicKeys."
     )
@@ -4454,7 +4454,7 @@ describe("computePromotionAdvisory (0.9.0/15)", () => {
       // README's `runbook/database-migration`,
       // `incident/login-redirect-502`, `postmortem/payment-gateway-timeout`,
       // `policy/code-review-min-reviewers` examples) but
-      // `lore-decision action='create' supersedesIds: [<id>]` rejects
+      // `kennen-decision action='create' supersedesIds: [<id>]` rejects
       // a non-decision id at the `DecisionService.getById` resolver
       // step — handing the operator a broken ready-to-paste command.
       // The non-decision branch drops the supersedesIds wording and
@@ -4467,7 +4467,7 @@ describe("computePromotionAdvisory (0.9.0/15)", () => {
       })
       expect(advisory!.suggestion).toBe(
         "Consider splitting the topic into narrower topicKeys, " +
-          "or archiving this chain via lore-memory action='archive' " +
+          "or archiving this chain via kennen-memory action='archive' " +
           "and starting a fresh chain with a more specific topicKey."
       )
       // The placeholder appears in the decision branch only — no
@@ -5039,7 +5039,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
     expect(updateMarkdownSpy).not.toHaveBeenCalled()
   })
 
-  describe("LORE_USE_RUNTOOL_BLOCK_EDIT (issue #534)", () => {
+  describe("KENNEN_USE_RUNTOOL_BLOCK_EDIT (issue #534)", () => {
     function makeRekeyRunToolClient(
       base: ReturnType<typeof makeRekeyClient>,
       runToolBehavior: (body: unknown) => unknown = () => ({ page_id: "ok" })
@@ -5056,8 +5056,8 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
     }
 
     afterEach(() => {
-      delete process.env.LORE_USE_RUNTOOL_BLOCK_EDIT
-      delete process.env.LORE_USE_RUNTOOL
+      delete process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT
+      delete process.env.KENNEN_USE_RUNTOOL
     })
 
     it("uses update_content via RunTool when the flag is on and the body has a unique tail anchor", async () => {
@@ -5065,7 +5065,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
       // uniqueness check (one occurrence). The audit append rides
       // through `client.request` and the canonical
       // `pages.updateMarkdown` path is NOT called.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const target = buildMemoryPage("11111111111111111111111111111111", {
         title: "Use JWT",
         topicKey: "decision/jwt-old",
@@ -5103,7 +5103,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
       // auditBlock` runs. Mirrors the default-off behavior shape so a
       // re-key against a freshly-seeded body still produces the audit
       // block.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const target = buildMemoryPage("11111111111111111111111111111111", {
         title: "Use JWT",
         topicKey: "decision/jwt-old",
@@ -5133,7 +5133,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
       // path's failures wrap as `RekeyAuditError` exactly as before.
       // Here we force the canonical path to fail too so the error
       // shape is observable end-to-end with the flag on.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const target = buildMemoryPage("11111111111111111111111111111111", {
         title: "Use JWT",
         topicKey: "decision/jwt-old",
@@ -5185,7 +5185,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
       // wrote, audit didn't), so the operator gets the same
       // diagnostic surface regardless of which transport the audit
       // attempt used.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const target = buildMemoryPage("11111111111111111111111111111111", {
         title: "Use JWT",
         topicKey: "decision/jwt-old",
@@ -5278,7 +5278,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
         // future contributor narrowing the catch is caught by a
         // failing test, not by a production false-positive
         // partial-state error.
-        process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+        process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
         const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
         try {
           const target = buildMemoryPage("11111111111111111111111111111111", {
@@ -5325,16 +5325,16 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
       }
     )
 
-    it("emits a LORE_DEBUG-gated stderr line when the rekey anchor is not unique (Principal review #4)", async () => {
+    it("emits a KENNEN_DEBUG-gated stderr line when the rekey anchor is not unique (Principal review #4)", async () => {
       // Operator observability for the anchor-miss case. The
       // pickRekeyAuditAnchor fall-back is silent under default
       // logging (correct; not noisy on every common case) but emits
-      // one stderr line under LORE_DEBUG=1 so an operator running
+      // one stderr line under KENNEN_DEBUG=1 so an operator running
       // dogfood can distinguish "RunTool engaged" from "anchor
       // missed → REST fallback ran" without inspecting the wire.
-      const priorDebug = process.env.LORE_DEBUG
-      process.env.LORE_DEBUG = "1"
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      const priorDebug = process.env.KENNEN_DEBUG
+      process.env.KENNEN_DEBUG = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
       try {
         const target = buildMemoryPage("11111111111111111111111111111111", {
@@ -5366,8 +5366,8 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
         expect(requestSpy).not.toHaveBeenCalled()
         expect(base.updateMarkdownSpy).toHaveBeenCalledTimes(1)
       } finally {
-        if (priorDebug === undefined) delete process.env.LORE_DEBUG
-        else process.env.LORE_DEBUG = priorDebug
+        if (priorDebug === undefined) delete process.env.KENNEN_DEBUG
+        else process.env.KENNEN_DEBUG = priorDebug
         stderrSpy.mockRestore()
       }
     })
@@ -5388,7 +5388,7 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
         "Body content that is unique end-to-end so the tail anchor is well-formed."
 
       // Phase 1: flag ON — must dispatch RunTool.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
       const baseOn = makeRekeyClient({
         targetMemory: target,
         targetMarkdown,
@@ -5405,8 +5405,8 @@ describe("MemoryService.rekeyTopicKey (0.9.0/14)", () => {
       // canonical path. Issue #543 flipped the default to ON, so
       // flag-off must be set explicitly here rather than relying on
       // env-unset.
-      process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "0"
-      process.env.LORE_USE_RUNTOOL = "0"
+      process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "0"
+      process.env.KENNEN_USE_RUNTOOL = "0"
       const baseOff = makeRekeyClient({
         targetMemory: target,
         targetMarkdown,
@@ -5672,8 +5672,8 @@ describe("MemoryService.recordReview", () => {
     // `Kind = decision` so the inbox count and slice surfaces
     // never include proposed-state decisions. The mutation path
     // must enforce the same contract — without this guard, an
-    // operator running `lore inbox approve <decision-id>` or
-    // `lore-memory action='reject' memoryId='<decision-id>'`
+    // operator running `kennen inbox approve <decision-id>` or
+    // `kennen-memory action='reject' memoryId='<decision-id>'`
     // would mutate the decision lifecycle through the memory inbox
     // path, bypassing the decision surface that owns governance.
     // Two stub calls (one per service.recordReview invocation) so
@@ -5719,7 +5719,7 @@ describe("MemoryService.recordReview", () => {
     expect(retrieveMarkdownSpy).not.toHaveBeenCalled()
     // Error message redirects at the decision-lifecycle surface.
     expect((caught as Error).message).toContain('Kind is "decision"')
-    expect((caught as Error).message).toContain("lore-decision action='supersede'")
+    expect((caught as Error).message).toContain("kennen-decision action='supersede'")
   })
 
   it("rejects archived memory pages with the live-memory error before the Status guard runs", async () => {
@@ -6000,13 +6000,13 @@ describe("MemoryService.search", () => {
 
   it("semantic mode paginates client.search until the requested limit is satisfied", async () => {
     // Issue #192: workspace-wide search returns relevance-ranked pages
-    // across the entire workspace; Lore filters those down to the
+    // across the entire workspace; Kennen filters those down to the
     // Memories DS afterwards. When the first 100 raw hits are dominated
-    // by non-Lore pages, matching memories on the second page must
+    // by non-Kennen pages, matching memories on the second page must
     // still surface — single-page fetch silently starved them pre-fix.
     //
     // Setup: page 1 is all non-memory pages (filtered out client-side);
-    // page 2 carries the matching Lore memories. The caller asks for 2.
+    // page 2 carries the matching Kennen memories. The caller asks for 2.
     const page1 = Array.from({ length: 100 }, (_, i) =>
       buildSearchPage(`other-${i}`, `other ${i}`, { parentDb: "some-other-db" })
     )
@@ -6205,7 +6205,7 @@ describe("MemoryService.search", () => {
 
   it("semantic mode does not fire a second client.search when the first page already saturates the limit", async () => {
     // Saturation path: the first raw page already carries enough
-    // post-filtered Lore memories. Pagination must short-circuit before
+    // post-filtered Kennen memories. Pagination must short-circuit before
     // burning a second round-trip — otherwise rate-limit cost compounds
     // on every common-case query.
     const page1 = [
@@ -6326,12 +6326,12 @@ describe("MemoryService.search", () => {
     expect(result.pages.length).toBeLessThanOrEqual(109)
   })
 
-  it("semantic mode logs a stderr signal under LORE_DEBUG=1 when the scan cap fires without saturating", async () => {
+  it("semantic mode logs a stderr signal under KENNEN_DEBUG=1 when the scan cap fires without saturating", async () => {
     // Operator-triage signal: when the cap fires with
     // `accumulated.length < limit`, a caller cannot distinguish "no
     // matches in workspace" from "pathological query, cap fired,
-    // matches may exist past 500 rows." The `[lore]
-    // semantic-search-cap-fired:` line under LORE_DEBUG=1 closes the
+    // matches may exist past 500 rows." The `[kennen]
+    // semantic-search-cap-fired:` line under KENNEN_DEBUG=1 closes the
     // gap. Format mirrors `debugLogHybridBranchFailure`.
     const allOther = Array.from({ length: 100 }, (_, i) =>
       buildSearchPage(`other-${i}`, `other ${i}`, { parentDb: "some-other-db" })
@@ -6348,8 +6348,8 @@ describe("MemoryService.search", () => {
     const service = new MemoryService(client, db)
 
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       await service.search({ query: "q", limit: 10, mode: "semantic" })
 
@@ -6364,16 +6364,16 @@ describe("MemoryService.search", () => {
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
 
-  it("semantic mode does NOT log the cap-fired signal under LORE_DEBUG=1 when the loop saturates", async () => {
+  it("semantic mode does NOT log the cap-fired signal under KENNEN_DEBUG=1 when the loop saturates", async () => {
     // Saturation is the success path; logging here would be noise on
-    // every common-case query an operator runs with LORE_DEBUG=1 set.
+    // every common-case query an operator runs with KENNEN_DEBUG=1 set.
     const page1 = [
       buildSearchPage("mem-1", "Mem one"),
       buildSearchPage("mem-2", "Mem two"),
@@ -6390,8 +6390,8 @@ describe("MemoryService.search", () => {
     const service = new MemoryService(client, db)
 
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       await service.search({ query: "q", limit: 2, mode: "semantic" })
 
@@ -6400,15 +6400,15 @@ describe("MemoryService.search", () => {
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
 
-  it("semantic mode does NOT log the cap-fired signal when LORE_DEBUG is unset", async () => {
-    // Without `LORE_DEBUG=1`, even a cap-fire stays silent — operators
+  it("semantic mode does NOT log the cap-fired signal when KENNEN_DEBUG is unset", async () => {
+    // Without `KENNEN_DEBUG=1`, even a cap-fire stays silent — operators
     // who don't opt in shouldn't see search internals on stderr.
     const allOther = Array.from({ length: 100 }, (_, i) =>
       buildSearchPage(`other-${i}`, `other ${i}`, { parentDb: "some-other-db" })
@@ -6425,8 +6425,8 @@ describe("MemoryService.search", () => {
     const service = new MemoryService(client, db)
 
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    delete process.env["LORE_DEBUG"]
+    const original = process.env["KENNEN_DEBUG"]
+    delete process.env["KENNEN_DEBUG"]
     try {
       await service.search({ query: "q", limit: 10, mode: "semantic" })
 
@@ -6434,7 +6434,7 @@ describe("MemoryService.search", () => {
       expect(lines.some((l) => l.includes("semantic-search-cap-fired"))).toBe(false)
     } finally {
       stderrSpy.mockRestore()
-      if (original !== undefined) process.env["LORE_DEBUG"] = original
+      if (original !== undefined) process.env["KENNEN_DEBUG"] = original
     }
   })
 })
@@ -6558,7 +6558,7 @@ describe("MemoryService.search — contains mode", () => {
     })
     expect(filter?.and).toContainEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
   })
 
@@ -6653,7 +6653,7 @@ describe("MemoryService.search — contains mode", () => {
     })
     expect(filter?.and).toContainEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
   })
 
@@ -8155,8 +8155,8 @@ describe("MemoryService.searchWithExplain — branch-field rules and explain ali
     expect(explain[0].containsRank).toBeNull()
   })
 
-  it("SearchExplain field names are canonical to lore (containsRank, not lexRank)", async () => {
-    // qmd uses `lexRank` for the contains lane. Pin lore's vocabulary so
+  it("SearchExplain field names are canonical to kennen (containsRank, not lexRank)", async () => {
+    // qmd uses `lexRank` for the contains lane. Pin kennen's vocabulary so
     // a future contributor doesn't silently rename chasing qmd's words.
     const querySpy = vi.fn(async () => ({
       results: [buildPageInDb("a", "first")],
@@ -8305,13 +8305,13 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     }
   })
 
-  it("LORE_DEBUG=1 emits one stderr line per failing branch with branch= and error=", async () => {
-    // Operator observability: under LORE_DEBUG=1 a failed branch logs
+  it("KENNEN_DEBUG=1 emits one stderr line per failing branch with branch= and error=", async () => {
+    // Operator observability: under KENNEN_DEBUG=1 a failed branch logs
     // exactly one line so log aggregators can correlate transient blips
-    // without the caller seeing them. No log line under default LORE_DEBUG.
+    // without the caller seeing them. No log line under default KENNEN_DEBUG.
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       const querySpy = vi.fn(async () => ({
         results: [
@@ -8348,20 +8348,20 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
 
-  it("emits no stderr line when LORE_DEBUG is unset (default-quiet)", async () => {
+  it("emits no stderr line when KENNEN_DEBUG is unset (default-quiet)", async () => {
     // The default operator experience: a transient blip degrades to a
     // surviving-branch-only result with zero stderr noise. Operators
-    // who want visibility opt in via LORE_DEBUG=1.
+    // who want visibility opt in via KENNEN_DEBUG=1.
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    delete process.env["LORE_DEBUG"]
+    const original = process.env["KENNEN_DEBUG"]
+    delete process.env["KENNEN_DEBUG"]
     try {
       const querySpy = vi.fn(async () => ({
         results: [
@@ -8395,9 +8395,9 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
@@ -8407,11 +8407,11 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     // distinguish "contains down + no semantic match" from "clean miss".
     // This is by design — the surviving branch's empty result IS the
     // honest answer to the query — but pinning the contract here keeps
-    // the tradeoff greppable. LORE_DEBUG=1 is the operator-side
+    // the tradeoff greppable. KENNEN_DEBUG=1 is the operator-side
     // mitigation; the production followup is an error-counter dashboard.
     //
-    // stderrSpy is defensive: under default LORE_DEBUG the partial-failure
-    // helper is a no-op, but a parent test that leaks LORE_DEBUG=1 (or a
+    // stderrSpy is defensive: under default KENNEN_DEBUG the partial-failure
+    // helper is a no-op, but a parent test that leaks KENNEN_DEBUG=1 (or a
     // future vitest pool config flip from `forks` to `threads`) would let
     // stderr noise pollute test output. Cheap insurance.
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
@@ -8435,7 +8435,7 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
 
       // Zero rows surfaced — same shape a genuine clean-miss would return.
       // The caller cannot tell the difference; only the operator can, via
-      // the LORE_DEBUG=1 stderr line covered by a separate test.
+      // the KENNEN_DEBUG=1 stderr line covered by a separate test.
       expect(results).toEqual([])
       expect(querySpy).toHaveBeenCalledTimes(1)
       expect(searchSpy).toHaveBeenCalledTimes(1)
@@ -8444,16 +8444,16 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     }
   })
 
-  it("both-fail emits a [lore] both-failure line UNCONDITIONALLY (not gated on LORE_DEBUG)", async () => {
+  it("both-fail emits a [kennen] both-failure line UNCONDITIONALLY (not gated on KENNEN_DEBUG)", async () => {
     // Reviewer concern: the both-fail case is the worst-case scenario —
     // there is no surviving response to mask noise on, the caller's
     // try/catch only sees the chosen throw, and the operator needs every
-    // rejection reason on stderr regardless of LORE_DEBUG. Logging
+    // rejection reason on stderr regardless of KENNEN_DEBUG. Logging
     // unconditionally is the right tradeoff here even though the
     // partial-failure path stays opt-in.
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    delete process.env["LORE_DEBUG"]
+    const original = process.env["KENNEN_DEBUG"]
+    delete process.env["KENNEN_DEBUG"]
     try {
       const querySpy = vi.fn(async () => {
         throw new Error("contains-down")
@@ -8474,7 +8474,7 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
 
       const bothFailureLines = stderrSpy.mock.calls
         .map((c) => String(c[0]))
-        .filter((l) => l.includes("[lore] both-failure:"))
+        .filter((l) => l.includes("[kennen] both-failure:"))
       expect(bothFailureLines).toHaveLength(1)
       const line = bothFailureLines[0]
       // Both rejection messages on the single line — operators see the
@@ -8486,9 +8486,9 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
@@ -8498,8 +8498,8 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     // would otherwise read `error=undefined`, which is parsable but not
     // diagnostic. Plain-string rejections pass through unchanged.
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       const querySpy = vi.fn(async () => ({
         results: [
@@ -8534,9 +8534,9 @@ describe("MemoryService.search — hybrid single-branch resilience (PF3-03)", ()
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
@@ -8566,7 +8566,7 @@ describe("MemoryService.search — hybrid abort on contains saturation (issue #4
 
   // Build a PageObjectResponse whose parent is the test's Memories DS so
   // `applySemanticPostFilters` keeps it. `client.search` returns
-  // workspace-wide results that Lore filters down — fixtures that don't
+  // workspace-wide results that Kennen filters down — fixtures that don't
   // set the parent correctly are silently dropped and confuse abort
   // tests.
   function buildSemanticPage(id: string, title: string): PageObjectResponse {
@@ -8839,16 +8839,16 @@ describe("MemoryService.search — hybrid abort on contains saturation (issue #4
     expect(searchSpy).toHaveBeenCalledTimes(2)
   })
 
-  it("LORE_DEBUG=1 does NOT log the cooperative abort as a partial-failure", async () => {
+  it("KENNEN_DEBUG=1 does NOT log the cooperative abort as a partial-failure", async () => {
     // The abort signal we raise on contains saturation produces an
     // AbortError-shaped rejection on the semantic Promise — but it's
     // a cooperative discard, not a real branch failure. Logging it
-    // under LORE_DEBUG=1 would drown the legitimate transient blip
+    // under KENNEN_DEBUG=1 would drown the legitimate transient blip
     // signal in operator-issued cancellations on every saturating
     // hybrid call.
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       const { service, searchSpy } = buildHybridSearchTestRig({
         contains: {
@@ -8879,30 +8879,30 @@ describe("MemoryService.search — hybrid abort on contains saturation (issue #4
         limit: 10,
       })
 
-      // Strong assertion: zero `[lore]`-prefixed lines landed at all.
+      // Strong assertion: zero `[kennen]`-prefixed lines landed at all.
       // The earlier shape of this test asserted only the
       // `source=hybrid-search` filter, which a refactor moving the
       // log line to a different surface (structured logger, prefix
       // change, alternate event marker) would have silently passed.
-      // The `[lore]` prefix is the broader greppable contract every
+      // The `[kennen]` prefix is the broader greppable contract every
       // hybrid-search log line shares — pinning it catches both the
       // current path and any near-future variant. Two checks, one
       // contract: the prefix-level pin is the strong invariant; the
       // surface-specific pin remains as a localized regression
       // signal.
       const allLines = stderrSpy.mock.calls.map((c) => String(c[0]))
-      const loreLines = allLines.filter((l) => l.includes("[lore]"))
+      const kennenLines = allLines.filter((l) => l.includes("[kennen]"))
       const hybridLines = allLines.filter((l) => l.includes("source=hybrid-search"))
-      expect(loreLines).toHaveLength(0)
+      expect(kennenLines).toHaveLength(0)
       expect(hybridLines).toHaveLength(0)
       // Sanity: the abort actually fired (one client.search call).
       expect(searchSpy).toHaveBeenCalledTimes(1)
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
@@ -8937,7 +8937,7 @@ describe("MemoryService.search — hybrid abort on contains saturation (issue #4
     })
 
     // Stub stderr so the partial-failure log doesn't pollute test
-    // output (LORE_DEBUG is unset by default in this test, so nothing
+    // output (KENNEN_DEBUG is unset by default in this test, so nothing
     // would write — but defensive against env leakage between tests).
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     try {
@@ -9217,7 +9217,7 @@ const defaultKnowledgeRecallFilterClauses = [
 
 const cleanupOrphanFilterClause = {
   property: "Keywords",
-  rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+  rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
 }
 
 describe("MemoryService.list — default-excludes review-terminal statuses", () => {
@@ -9226,7 +9226,7 @@ describe("MemoryService.list — default-excludes review-terminal statuses", () 
   it("emits Status does_not_equal clauses for both proposed and rejected by default", async () => {
     // Phase 4 of issue #281 broadened the default-exclude from
     // `Status = proposed` to the review-terminal pair (`proposed` +
-    // `rejected`). Without this, a `lore inbox reject <id>` flips
+    // `rejected`). Without this, a `kennen inbox reject <id>` flips
     // the row to `rejected` but leaves it eligible for default
     // recall.
     const query = vi
@@ -9406,7 +9406,7 @@ describe("MemoryService.search — default-excludes Status = proposed (contains)
 describe("MemoryService.list — excludeKinds (issue #281)", () => {
   // Pin the per-kind `does_not_equal` clauses emitted by the
   // `excludeKinds` parameter. The wake-up Proposed Memories slice and
-  // `lore inbox list` rely on this knob to mirror
+  // `kennen inbox list` rely on this knob to mirror
   // `proposedMemoryFilter()`'s `Kind != decision` half. Without this
   // unit test, a future refactor that swaps the per-kind loop for an
   // unsupported `not_in` operator (or drops the loop entirely) would
@@ -9708,8 +9708,8 @@ describe("MemoryService.list — archived filter", () => {
     } as unknown as Client
     const service = new MemoryService(client, db)
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       const { items, nextCursor, capped } = await service.list({
         limit: 3,
@@ -9726,9 +9726,9 @@ describe("MemoryService.list — archived filter", () => {
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
@@ -10505,7 +10505,7 @@ describe("MemoryService.getTitleById — title cache", () => {
   it("25-UUID repeat wake-up (24 present + 1 archived) issues zero pages.retrieve on the second run", async () => {
     // Integration-level acceptance criterion for PF1-07: repeat
     // `resolveTitles` calls (the render-layer batch used by
-    // `lore-wake-up`) over the same id set must hit the cache on the
+    // `kennen-wake-up`) over the same id set must hit the cache on the
     // second run.
     //
     // The mixed id is *archived*, not a 404 — Notion returns a full
@@ -10940,7 +10940,7 @@ describe("MemoryService.getPropertiesById", () => {
 })
 
 // ---------------------------------------------------------------------------
-// getManyById — batched fetch used by `lore-query action='ask'` to seed
+// getManyById — batched fetch used by `kennen-query action='ask'` to seed
 // `touchOnRead` (issue 0.8.0/05). Pinned here so a future refactor of
 // the underlying `getById` semantics surfaces the round-trip + 404
 // filter contract this method publishes.
@@ -11034,7 +11034,7 @@ describe("MemoryService.getManyById", () => {
   })
 
   it("dispatches retrieve calls in parallel — every fetch starts before any returns", async () => {
-    // Mirrors the lore-expand parallel-dispatch invariant: a serial
+    // Mirrors the kennen-expand parallel-dispatch invariant: a serial
     // `for await` loop would only kick off one fetch at a time.
     const inflight = new Map<string, () => void>()
     const started: string[] = []
@@ -11062,7 +11062,7 @@ describe("MemoryService.getManyById", () => {
   })
 
   it("dedupes repeated input ids before dispatching — one fetch per distinct id", async () => {
-    // Mirrors `lore-memory action='expand'`'s dedup-on-input contract:
+    // Mirrors `kennen-memory action='expand'`'s dedup-on-input contract:
     // a caller passing `["a", "a", "b"]` gets one fetch per distinct
     // id and one Memory per distinct id back. Saves an unnecessary
     // Notion round-trip when the upstream collector hasn't deduped.
@@ -11306,7 +11306,7 @@ describe("MemoryService.listAllForBackfill", () => {
     expect(query.mock.calls[0]![0]).toMatchObject({
       filter: {
         property: "Keywords",
-        rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+        rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
       },
     })
   })
@@ -11626,18 +11626,18 @@ describe("MemoryService.countProposed", () => {
         Agent: { type: "rich_text", rich_text: [{ plain_text: "Claude Code" }] },
         Keywords: {
           type: "rich_text",
-          rich_text: [{ plain_text: "auth __lore-cleanup-orphan" }],
+          rich_text: [{ plain_text: "auth __kennen-cleanup-orphan" }],
         },
       },
     } as unknown as PageObjectResponse
     // The mock simulates Notion's server-side filter enforcement: when
-    // the query carries `does_not_contain "__lore-cleanup-orphan"`,
+    // the query carries `does_not_contain "__kennen-cleanup-orphan"`,
     // the row with the sentinel keyword is filtered out of the
     // response. The test thereby covers BOTH the filter contract AND
     // the count semantic.
     const query = vi.fn().mockImplementation(async (args: { filter: unknown }) => {
       const serialized = JSON.stringify(args.filter)
-      if (serialized.includes("__lore-cleanup-orphan")) {
+      if (serialized.includes("__kennen-cleanup-orphan")) {
         return { results: [], has_more: false, next_cursor: null }
       }
       return { results: [sentinelRow], has_more: false, next_cursor: null }
@@ -11656,7 +11656,7 @@ describe("MemoryService.countProposed", () => {
     expect(args.filter.and).toBeDefined()
     expect(args.filter.and).toContainEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
     // Count semantic: zero rows because the only candidate carries the
     // sentinel and Notion's server-side filter excluded it.
@@ -11685,7 +11685,7 @@ describe("MemoryService.countProposed", () => {
     expect(args.filter.and).toHaveLength(4)
     expect(args.filter.and).toContainEqual({
       property: "Keywords",
-      rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+      rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
     })
     // No element of the outer `and:` is itself wrapped in `{ and: }`.
     for (const clause of args.filter.and!) {
@@ -13271,7 +13271,7 @@ describe("recordSupersedence (0.9.0/05)", () => {
     const compareNotes = appendCompareNotes.mock.calls[0]![1] as string
     expect(compareNotes).toContain('"entryType":"compare_dispatch"')
     expect(compareNotes).toContain('"affected":"old-decision"')
-    // Fact uses IDs (matching `lore-decision action='supersede'`'s
+    // Fact uses IDs (matching `kennen-decision action='supersede'`'s
     // existing shape) so the supersession edge in the decision graph
     // is canonically identified by id, not title.
     expect(createWithDedup.mock.calls[0]![0]).toMatchObject({
@@ -13544,7 +13544,7 @@ describe("MemoryService.listForScan (0.9.0/09)", () => {
         { property: "Project", relation: { contains: "P1" } },
         {
           property: "Keywords",
-          rich_text: { does_not_contain: "__lore-cleanup-orphan" },
+          rich_text: { does_not_contain: "__kennen-cleanup-orphan" },
         },
       ],
     })
@@ -14156,12 +14156,12 @@ describe("MemoryService.update — read-only enforcement (issue #282)", () => {
       expect(ro.message).toContain("Team policies")
       // Pins the corrected recovery hint introduced after the
       // the override action is
-      // `lore-pinned action='update' force=true`, NOT the
-      // nonexistent `lore-memory action='update-pinned'`. A
+      // `kennen-pinned action='update' force=true`, NOT the
+      // nonexistent `kennen-memory action='update-pinned'`. A
       // future contributor reverting the wording would fail
       // this test loudly.
       expect(ro.message).toContain("force=true")
-      expect(ro.message).toContain("lore-pinned action='update'")
+      expect(ro.message).toContain("kennen-pinned action='update'")
       expect(ro.message).not.toContain("update-pinned")
     }
   })

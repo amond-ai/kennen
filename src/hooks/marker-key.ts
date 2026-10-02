@@ -174,13 +174,13 @@ const TRUNCATE_HASH_LENGTH = 8
  * contains emoji or other supplementary-plane characters. Don't add `u`
  * unless that migration is being made deliberately.
  *
- * **POSIX-only.** Lore is POSIX-targeted (`process.kill` PID liveness
+ * **POSIX-only.** Kennen is POSIX-targeted (`process.kill` PID liveness
  * probe, `os.tmpdir()` state-dir convention, Stop-hook lifecycle); this
  * sanitizer reflects that. Windows OS-reserved device names (`CON`,
  * `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`) pass through the
  * regex unchanged because every character is in the allowed set, so a
  * sessionId of `CON` would land as `CON.lock` — which on NTFS resolves
- * to a device handle, not a file. If Lore ever ships a Windows-targeted
+ * to a device handle, not a file. If Kennen ever ships a Windows-targeted
  * hook runner, layer a reserved-name check on top of this regex at the
  * same boundary; don't widen the regex itself, because the case-
  * insensitive Windows reserved set isn't something a regex over the

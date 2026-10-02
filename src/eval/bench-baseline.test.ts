@@ -36,7 +36,7 @@ function buildArtifact(overrides: Partial<BenchRunArtifact> = {}): BenchRunArtif
         promptShas: { recall: "b".repeat(64), abstention: "c".repeat(64) },
       },
       ingestion: {
-        strategy: "lore-mine",
+        strategy: "kennen-mine",
         memoryCaptureMode: "durable",
         seam: "runConversationMining",
         temporalApproach: "C-caveat-only",

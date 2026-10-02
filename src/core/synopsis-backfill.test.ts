@@ -95,13 +95,13 @@ function makeClient(
   } as unknown as Client & MockClient
 }
 
-function setLoreDebugForTest(value: string | undefined): () => void {
-  const previous = process.env["LORE_DEBUG"]
-  if (value === undefined) delete process.env["LORE_DEBUG"]
-  else process.env["LORE_DEBUG"] = value
+function setKennenDebugForTest(value: string | undefined): () => void {
+  const previous = process.env["KENNEN_DEBUG"]
+  if (value === undefined) delete process.env["KENNEN_DEBUG"]
+  else process.env["KENNEN_DEBUG"] = value
   return () => {
-    if (previous === undefined) delete process.env["LORE_DEBUG"]
-    else process.env["LORE_DEBUG"] = previous
+    if (previous === undefined) delete process.env["KENNEN_DEBUG"]
+    else process.env["KENNEN_DEBUG"] = previous
   }
 }
 
@@ -450,7 +450,7 @@ describe("backfillSynopses — claude apply path", () => {
     // batch must complete and write successfully, the failed row
     // must be re-picked-up by a second run, and the second run's
     // synthesis succeeds (proving the failure was non-poisoning)."
-    const restoreDebug = setLoreDebugForTest("1")
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     const pages = [
@@ -494,7 +494,7 @@ describe("backfillSynopses — claude apply path", () => {
   })
 
   it("synthesis failure (synthesizer throws) is counted, logged, continues", async () => {
-    const restoreDebug = setLoreDebugForTest("1")
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     const client = makeClient([memoryPage({ id: "m1", title: "First" })])
@@ -524,7 +524,7 @@ describe("backfillSynopses — claude apply path", () => {
   })
 
   it("scaffolding leak in synthesizer output increments scaffoldingRejected", async () => {
-    const restoreDebug = setLoreDebugForTest("1")
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     const client = makeClient([memoryPage({ id: "m1", title: "First" })])
@@ -555,7 +555,7 @@ describe("backfillSynopses — claude apply path", () => {
   })
 
   it("write failure on the claude apply path increments writeFailed and continues", async () => {
-    const restoreDebug = setLoreDebugForTest("1")
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     let updateCallCount = 0
@@ -728,7 +728,7 @@ describe("backfillSynopses — placeholder backend", () => {
     // placeholder fixture where one specific row's `pages.update`
     // rejects — surrounding 4 rows must complete with the sentinel
     // written, the failed row stays empty"
-    const restoreDebug = setLoreDebugForTest("1")
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     let updateCallCount = 0
@@ -840,7 +840,7 @@ describe("backfillSynopses — partial-failure log line shape", () => {
     // leaving the other three lulled into a false-pass. Pin all
     // four together with a deterministic id↔phase mapping so the
     // contract is enforced as a single set.
-    const restoreDebug = setLoreDebugForTest("1")
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     const pages = [
@@ -913,16 +913,18 @@ describe("backfillSynopses — partial-failure log line shape", () => {
     // Pin the canonical line shape too — the prefix and the field
     // ordering are what `grep`-based aggregators rely on.
     for (const line of lines) {
-      if (line.startsWith("[lore] synopsis-backfill:")) {
-        expect(line).toMatch(/^\[lore\] synopsis-backfill: id=\S+ phase=\w+ error=.+\n$/)
+      if (line.startsWith("[kennen] synopsis-backfill:")) {
+        expect(line).toMatch(
+          /^\[kennen\] synopsis-backfill: id=\S+ phase=\w+ error=.+\n$/
+        )
       }
     }
     stderrSpy.mockRestore()
     restoreDebug()
   })
 
-  it("stays silent on stderr when LORE_DEBUG is unset", async () => {
-    const restoreDebug = setLoreDebugForTest(undefined)
+  it("stays silent on stderr when KENNEN_DEBUG is unset", async () => {
+    const restoreDebug = setKennenDebugForTest(undefined)
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     const client = makeClient([memoryPage({ id: "m-write", title: "Write fail" })], {
       updateImpl: async () => {
@@ -941,8 +943,8 @@ describe("backfillSynopses — partial-failure log line shape", () => {
     restoreDebug()
   })
 
-  it("redacts error details and normalizes fields when LORE_DEBUG is enabled", async () => {
-    const restoreDebug = setLoreDebugForTest("1")
+  it("redacts error details and normalizes fields when KENNEN_DEBUG is enabled", async () => {
+    const restoreDebug = setKennenDebugForTest("1")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     const pageId = "1234567890abcdef1234567890abcdef"
     const token = "development_ntn_abcdefghijklmnopqrstuvwxyz"

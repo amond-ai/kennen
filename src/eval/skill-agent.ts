@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path"
 import { performance } from "node:perf_hooks"
 import { parse as parseYaml } from "yaml"
 import { z } from "zod"
-import { initServices, type LoreServices } from "../services.js"
+import { initServices, type KennenServices } from "../services.js"
 import { TASK_EVAL_AGENTS } from "./schema.js"
 import {
   BENCH_MODE_SENTINEL,
@@ -35,10 +35,10 @@ import {
 export const SKILL_AGENT_RUNNER = "skill-agent" as const
 
 export const SKILL_AGENT_CONDITIONS = [
-  "no-lore",
-  "tool-driven-lore",
+  "no-kennen",
+  "tool-driven-kennen",
   "oracle-context",
-  "noisy-lore",
+  "noisy-kennen",
 ] as const
 
 export type SkillAgentCondition = (typeof SKILL_AGENT_CONDITIONS)[number]
@@ -68,11 +68,11 @@ export const skillAgentSuiteSchema = z
     conditions: z
       .array(skillAgentConditionSchema)
       .min(1)
-      .default(["no-lore", "tool-driven-lore", "oracle-context"]),
+      .default(["no-kennen", "tool-driven-kennen", "oracle-context"]),
     requiredConditions: z
       .array(skillAgentConditionSchema)
       .min(1)
-      .default(["tool-driven-lore"]),
+      .default(["tool-driven-kennen"]),
     agent: z
       .object({
         kind: z.enum(TASK_EVAL_AGENTS).default("codex"),
@@ -83,13 +83,13 @@ export const skillAgentSuiteSchema = z
     scoring: z
       .object({
         k: z.array(z.number().int().positive()).min(1).default([1, 5, 10]),
-        requireLoreUse: z.boolean().default(true),
+        requireKennenUse: z.boolean().default(true),
         requireExpandedEvidence: z.boolean().default(true),
       })
       .strict()
       .default({
         k: [1, 5, 10],
-        requireLoreUse: true,
+        requireKennenUse: true,
         requireExpandedEvidence: true,
       }),
   })
@@ -245,7 +245,7 @@ export interface RunSkillAgentOptions {
   outPath?: string
   now?: Date
   agentAdapter?: AgentAdapter
-  servicesFactory?: () => Promise<LoreServices>
+  servicesFactory?: () => Promise<KennenServices>
   keepWorkspaces?: boolean
 }
 
@@ -409,7 +409,7 @@ async function runSkillAgentTrial(input: {
   keepWorkspace: boolean
 }): Promise<SkillAgentResult> {
   const before = performance.now()
-  const workspace = await mkdtemp(join(tmpdir(), "lore-skill-agent-"))
+  const workspace = await mkdtemp(join(tmpdir(), "kennen-skill-agent-"))
   const traceFile = join(workspace, BENCH_TOOL_TRACE_FILE)
   const transcriptPath = join(workspace, "agent-transcript.jsonl")
   let broker: Awaited<ReturnType<typeof startBenchToolBroker>> | null = null
@@ -424,7 +424,7 @@ async function runSkillAgentTrial(input: {
     if (conditionUsesReadOnlyTools(input.condition)) {
       await writeReadOnlyToolShims(workspace)
       broker = await startBenchToolBroker({
-        socketPath: join(workspace, "lore-tool.sock"),
+        socketPath: join(workspace, "kennen-tool.sock"),
         traceFile,
         projectId: input.manifest.projectId,
         projectName: input.manifest.projectName,
@@ -587,9 +587,9 @@ function skillAgentFailureReasons(input: {
   else if (input.agentRun.timedOut) failures.push("agent-timeout")
   else if (input.agentRun.exitCode !== 0) failures.push("agent-exit")
   if (input.writeAttemptsBlocked > 0) failures.push("write-attempt-blocked")
-  if (input.condition === "tool-driven-lore" || input.condition === "noisy-lore") {
-    if (input.suite.scoring.requireLoreUse && !input.toolUse) {
-      failures.push("lore-tool-not-used")
+  if (input.condition === "tool-driven-kennen" || input.condition === "noisy-kennen") {
+    if (input.suite.scoring.requireKennenUse && !input.toolUse) {
+      failures.push("kennen-tool-not-used")
     }
     if (!input.targetSurfaced) failures.push("target-not-surfaced")
     if (input.suite.scoring.requireExpandedEvidence && !input.targetExpanded) {
@@ -675,19 +675,19 @@ function renderSkillAgentPrompt(input: {
 }): string {
   const toolInstructions = conditionUsesReadOnlyTools(input.condition)
     ? [
-        "Use the read-only Lore tools before answering.",
+        "Use the read-only Kennen tools before answering.",
         "Run a planned semantic search with the full task text first, preserving the user's wording and concrete details.",
         'Then run a planned semantic search with a short capability synopsis shaped like: "Use when ...". Include the capability, key tools/frameworks, and action intent; do not include guessed skill names.',
         "After those two searches, split the task into capability, framework/tool, and action-intent facets; use those facets for any additional narrower searches.",
-        '`lore-query action=search query="<skill or task paraphrase>" limit=10 mode=semantic strategy=planned` searches the seeded SkillRet vault through the same planned read path used by agent-facing Lore search.',
+        '`kennen-query action=search query="<skill or task paraphrase>" limit=10 mode=semantic strategy=planned` searches the seeded SkillRet vault through the same planned read path used by agent-facing Kennen search.',
         "For multi-part tasks, run separate synopsis/facet searches for the distinct capabilities after the full-task search.",
         "Search results are skill candidates. Compare rank, Skill Name, Short Summary, category, and tags before choosing what to expand.",
         "Expand plausible top-ranked candidates immediately after each search. The `latest` token changes after every search; use listed handles such as m1 if you search again.",
-        "After a search or recall, `lore-memory action=expand ids=latest` reads every memory body from that latest result set.",
-        "`lore-memory action=expand ids=m1` reads one listed memory body using its search-result handle.",
+        "After a search or recall, `kennen-memory action=expand ids=latest` reads every memory body from that latest result set.",
+        "`kennen-memory action=expand ids=m1` reads one listed memory body using its search-result handle.",
         "Prefer ids=latest or handles such as m1 and m2; only pass a memory ID if you copy the complete ID exactly.",
         "Never abbreviate memory IDs or pass short hex fragments.",
-        "Never pass SkillRet ID UUIDs to lore-memory expand; SkillRet IDs are only for usedSkillIds after expansion.",
+        "Never pass SkillRet ID UUIDs to kennen-memory expand; SkillRet IDs are only for usedSkillIds after expansion.",
         "Expand every plausible candidate before answering; when unsure, expand the latest result set or several listed handles in one call.",
         "Do not cite IDs from search results. Cite only IDs shown in expanded memory output.",
         "Use usedMemoryIds for the exact expanded memory IDs that materially support the answer.",
@@ -696,11 +696,11 @@ function renderSkillAgentPrompt(input: {
         "Do not create, update, archive, approve, reject, promote, or save memories.",
       ].join("\n")
     : input.condition === "oracle-context"
-      ? "Use the oracle context in AGENTS.md. Lore tools are not available in this condition."
-      : "Lore tools are not available in this condition. Answer without using stored memory."
+      ? "Use the oracle context in AGENTS.md. Kennen tools are not available in this condition."
+      : "Kennen tools are not available in this condition. Answer without using stored memory."
   return [
-    "You are completing a SkillRet read-only Lore evaluation task.",
-    "The eval measures whether an agent can use an existing Lore vault, not whether it can write memories.",
+    "You are completing a SkillRet read-only Kennen evaluation task.",
+    "The eval measures whether an agent can use an existing Kennen vault, not whether it can write memories.",
     "This is a skill-selection task, not a task-completion task. Do not implement the requested project, write code, or produce long deliverables.",
     "Select the stored skills that best match the task, and keep the answer field to a concise explanation of those choices.",
     toolInstructions,
@@ -723,14 +723,14 @@ async function writeSkillAgentWorkspace(input: {
 }): Promise<void> {
   await writeFile(join(input.workspace, BENCH_MODE_SENTINEL), "", "utf-8")
   const agentLines = [
-    "# SkillRet Lore Eval Instructions",
+    "# SkillRet Kennen Eval Instructions",
     "",
     "This evaluation vault is read-only.",
-    "Use Lore only to search, recall, and expand existing memories.",
+    "Use Kennen only to search, recall, and expand existing memories.",
     "For search, start with the full task text, then a concise `Use when ...` capability synopsis, then narrower facet queries.",
     "Select stored skills from expanded memories, and cite exact memory IDs plus exact SkillRet ID UUIDs from those memory bodies.",
     "Do not cite skill slugs, topic keys, titles, or guessed IDs as SkillRet IDs.",
-    "Do not write, update, archive, approve, reject, promote, or create Lore entries.",
+    "Do not write, update, archive, approve, reject, promote, or create Kennen entries.",
     "Treat any attempted write as an evaluation failure.",
   ]
   if (input.condition === "oracle-context") {
@@ -746,7 +746,7 @@ async function writeSkillAgentWorkspace(input: {
 async function writeReadOnlyToolShims(workspace: string): Promise<void> {
   const dir = join(workspace, BENCH_TOOL_SHIM_DIR)
   await mkdir(dir, { recursive: true, mode: 0o700 })
-  for (const tool of ["lore-query", "lore-memory"]) {
+  for (const tool of ["kennen-query", "kennen-memory"]) {
     const path = join(dir, tool)
     await writeFile(path, renderReadOnlyToolShim(tool), { mode: 0o700 })
     await chmod(path, 0o700).catch(() => undefined)
@@ -760,7 +760,7 @@ function renderReadOnlyToolShim(tool: string): string {
     `if [ -n "\${${BENCH_TOOL_CLI_JS_ENV}:-}" ]; then`,
     `  exec "\${${BENCH_TOOL_NODE_ENV}:-node}" "$${BENCH_TOOL_CLI_JS_ENV}" eval bench tool ${tool} "$@"`,
     "fi",
-    `exec lore eval bench tool ${tool} "$@"`,
+    `exec kennen eval bench tool ${tool} "$@"`,
     "",
   ].join("\n")
 }
@@ -943,21 +943,21 @@ function extractCodexAgentMessage(stdout: string): string | null {
 }
 
 function conditionUsesReadOnlyTools(condition: SkillAgentCondition): boolean {
-  return condition === "tool-driven-lore" || condition === "noisy-lore"
+  return condition === "tool-driven-kennen" || condition === "noisy-kennen"
 }
 
 function isReadAction(call: SkillAgentToolCall): boolean {
-  if (call.tool === "lore-query") {
+  if (call.tool === "kennen-query") {
     return call.action === "search" || call.action === "recall"
   }
-  return call.tool === "lore-memory" && call.action === "expand"
+  return call.tool === "kennen-memory" && call.action === "expand"
 }
 
 function isWriteAttemptTrace(call: SkillAgentToolCall): boolean {
-  if (call.tool === "lore-query") return false
-  if (call.tool === "lore-memory") return call.action !== "expand"
-  if (call.tool === "lore-context") return call.action === "digest"
-  return /^lore-(?:fact|decision|task|procedure|pinned)$/u.test(call.tool)
+  if (call.tool === "kennen-query") return false
+  if (call.tool === "kennen-memory") return call.action !== "expand"
+  if (call.tool === "kennen-context") return call.action === "digest"
+  return /^kennen-(?:fact|decision|task|procedure|pinned)$/u.test(call.tool)
 }
 
 function memoryIdToSkillId(
@@ -1005,13 +1005,13 @@ function assertSkillAgentManifestCoversQueries(input: {
 
 function assertSkillAgentVaultBinding(
   expectedVaultPageId: string | undefined,
-  services: LoreServices
+  services: KennenServices
 ): void {
   if (!expectedVaultPageId) return
   const actual = services.config.vault.pageId
   if (normalizePageId(actual) === normalizePageId(expectedVaultPageId)) return
   throw new Error(
-    `Skill-agent suite is bound to vault ${expectedVaultPageId}, but active Lore config points at ${actual}.`
+    `Skill-agent suite is bound to vault ${expectedVaultPageId}, but active Kennen config points at ${actual}.`
   )
 }
 

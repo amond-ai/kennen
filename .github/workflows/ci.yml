@@ -5,7 +5,7 @@ name: CI
 # Before adding a step, read docs/ci.md and confirm it satisfies all seven
 # rules in "Rules for new CI steps". Steps that need internal state belong
 # in a *separate workflow* that does NOT run on `pull_request` (a bare
-# `github.repository == 'makenotion/lore'` check is NOT fork-safe when the
+# `github.repository == 'amond-ai/kennen'` check is NOT fork-safe when the
 # workflow runs on `pull_request` — see docs/ci.md "Adding internal-state
 # workflows" for the safe shapes).
 
@@ -106,11 +106,11 @@ jobs:
         run: npm run build
 
       - name: Eval starter suite
-        run: node dist/cli.js eval run evals/suites/lore-core.yaml --out evals/results/lore-core-ci.json --min-lift 0.5 --max-harm 0.0 --baseline evals/baselines/lore-core.json
+        run: node dist/cli.js eval run evals/suites/kennen-core.yaml --out evals/results/kennen-core-ci.json --min-lift 0.5 --max-harm 0.0 --baseline evals/baselines/kennen-core.json
 
       - name: Upload eval artifact
-        if: ${{ always() && hashFiles('evals/results/lore-core-ci.json') != '' }}
+        if: ${{ always() && hashFiles('evals/results/kennen-core-ci.json') != '' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: lore-core-eval-result
-          path: evals/results/lore-core-ci.json
+          name: kennen-core-eval-result
+          path: evals/results/kennen-core-ci.json

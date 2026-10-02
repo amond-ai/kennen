@@ -1,7 +1,7 @@
 /**
  * Classify a bearer token by its prefix.
  *
- * Three on-the-wire bearer shapes Lore can encounter:
+ * Three on-the-wire bearer shapes Kennen can encounter:
  *
  * - `ntn_…` — prod personal-access tokens (PATs) issued at
  *   `notion.so/developers/tokens` AND prod `ntn`-issued bot tokens.
@@ -18,14 +18,14 @@
  * The classifier is display-only — it does NOT change the resolved
  * `AuthSource`, does NOT route tokens through different code paths,
  * and does NOT influence rate-limit or retry semantics on the wire. It
- * exists so `lore auth --whoami` can surface a one-line label that
+ * exists so `kennen auth --whoami` can surface a one-line label that
  * lets an operator self-diagnose the "I pasted an integration token
  * instead of a PAT" failure mode without reading the docs.
  *
  * Returns `"unknown"` for tokens that don't match any recognized shape
  * (a future Notion shape, a malformed paste, or a non-Notion bearer).
  * Callers render "unknown" as the bare empty-suffix label rather than
- * something alarming — Lore intentionally accepts any non-empty bearer
+ * something alarming — Kennen intentionally accepts any non-empty bearer
  * value to stay forward-compatible with future Notion changes.
  */
 export type TokenPrefixKind =
@@ -49,7 +49,7 @@ export function classifyTokenPrefix(token: string): TokenPrefixKind {
 
 /**
  * Render a token-prefix classification as a human-readable label, for
- * the parenthetical suffix in `lore auth --whoami` output.
+ * the parenthetical suffix in `kennen auth --whoami` output.
  *
  * Examples (single-line, suitable for `(${label})` wrapping):
  *   `personal token — ntn_`
@@ -66,7 +66,7 @@ export function classifyTokenPrefix(token: string): TokenPrefixKind {
  * can render a bare identity without an unhelpful "(unknown token)"
  * suffix when a non-Notion bearer (or a future Notion shape) is in
  * play. Stays forward-compatible with future Notion changes — a new
- * prefix Lore doesn't yet recognize falls back to the bare identity
+ * prefix Kennen doesn't yet recognize falls back to the bare identity
  * rather than mislabelling.
  */
 export function describeTokenPrefix(kind: TokenPrefixKind): string {
@@ -92,7 +92,7 @@ export function describeTokenPrefix(kind: TokenPrefixKind): string {
 export function tokenPrefixAdvisory(kind: TokenPrefixKind): string | null {
   if (kind !== "integration") return null
   return (
-    "[lore] Heads up: `secret_…` integration tokens are rate-limited per integration. " +
+    "[kennen] Heads up: `secret_…` integration tokens are rate-limited per integration. " +
     "For per-user isolation, rotate to a PAT at https://www.notion.so/developers/tokens."
   )
 }

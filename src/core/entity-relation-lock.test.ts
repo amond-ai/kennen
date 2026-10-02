@@ -23,7 +23,9 @@ function delay(ms: number): Promise<void> {
 let stateDir: string
 
 beforeEach(() => {
-  stateDir = mkdtempSync(join(process.env["TMPDIR"] ?? "/tmp", "lore-entity-lock-test-"))
+  stateDir = mkdtempSync(
+    join(process.env["TMPDIR"] ?? "/tmp", "kennen-entity-lock-test-")
+  )
   vi.stubEnv("HOME", stateDir)
 })
 
@@ -158,7 +160,7 @@ describe("withEntityRelationLocks", () => {
   it("does not steal an old lock whose owner pid is still alive", async () => {
     vi.useFakeTimers()
     const path = __entityRelationLockPathForTests("ent-live")
-    mkdirSync(join(stateDir, ".lore", "entity-relation-locks"), { recursive: true })
+    mkdirSync(join(stateDir, ".kennen", "entity-relation-locks"), { recursive: true })
     writeFileSync(
       path,
       JSON.stringify({
@@ -175,7 +177,7 @@ describe("withEntityRelationLocks", () => {
 
   it("removes a stale live-pid lock whose heartbeat stopped", () => {
     const path = __entityRelationLockPathForTests("ent-reused-pid")
-    mkdirSync(join(stateDir, ".lore", "entity-relation-locks"), { recursive: true })
+    mkdirSync(join(stateDir, ".kennen", "entity-relation-locks"), { recursive: true })
     writeFileSync(
       path,
       JSON.stringify({
@@ -194,7 +196,7 @@ describe("withEntityRelationLocks", () => {
 
   it("removes an old lock whose owner pid is dead", () => {
     const path = __entityRelationLockPathForTests("ent-dead")
-    mkdirSync(join(stateDir, ".lore", "entity-relation-locks"), { recursive: true })
+    mkdirSync(join(stateDir, ".kennen", "entity-relation-locks"), { recursive: true })
     writeFileSync(
       path,
       JSON.stringify({
@@ -210,7 +212,7 @@ describe("withEntityRelationLocks", () => {
   })
 
   it("waits on a fresh malformed lock instead of deleting it immediately", () => {
-    const lockRoot = join(stateDir, ".lore", "entity-relation-locks")
+    const lockRoot = join(stateDir, ".kennen", "entity-relation-locks")
     mkdirSync(lockRoot, { recursive: true })
     const path = __entityRelationLockPathForTests("ent-malformed")
     writeFileSync(path, "{", { flag: "w" })
@@ -221,7 +223,7 @@ describe("withEntityRelationLocks", () => {
   })
 
   it("removes a lock path whose stat target is gone", () => {
-    const lockRoot = join(stateDir, ".lore", "entity-relation-locks")
+    const lockRoot = join(stateDir, ".kennen", "entity-relation-locks")
     mkdirSync(lockRoot, { recursive: true })
     const path = __entityRelationLockPathForTests("ent-broken-symlink")
     symlinkSync(join(lockRoot, "missing-target"), path)
@@ -233,7 +235,7 @@ describe("withEntityRelationLocks", () => {
   })
 
   it("removes an old malformed lock", () => {
-    const lockRoot = join(stateDir, ".lore", "entity-relation-locks")
+    const lockRoot = join(stateDir, ".kennen", "entity-relation-locks")
     mkdirSync(lockRoot, { recursive: true })
     const path = __entityRelationLockPathForTests("ent-malformed-old")
     writeFileSync(path, "{", { flag: "w" })

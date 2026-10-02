@@ -156,7 +156,7 @@ export function statusLabel(status: HookStatus, legacyPaths: boolean): string {
 /**
  * Post-write status line for the install summary. Differentiates
  * "rewrote a legacy-current entry to bin-dispatch" from a fresh write
- * so an operator running `lore install` after upgrading from 0.10.x
+ * so an operator running `kennen install` after upgrading from 0.10.x
  * sees an explicit signal that their committed config diff is
  * intentional, not a hand-rolled drift fix.
  */

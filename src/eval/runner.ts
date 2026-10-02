@@ -825,7 +825,7 @@ function taskMemoryLift(task: EvalTask, results: EvalTaskResult[]): number | nul
   const helpful = scenarioExpectedRecall(task.id, "helpful-memory", helpfulIds, results)
   if (helpful === null) return null
 
-  const requiredBaselineScenarios = ["no-lore", "empty-lore"]
+  const requiredBaselineScenarios = ["no-kennen", "empty-kennen"]
   const optionalBaselineScenarios = ["noisy-memory"].filter(
     (scenario) => task.memoryScenarios[scenario] !== undefined
   )
@@ -840,7 +840,7 @@ function taskMemoryLift(task: EvalTask, results: EvalTaskResult[]): number | nul
 }
 
 function taskMemoryHarm(task: EvalTask, results: EvalTaskResult[]): number | null {
-  const baseline = scenarioSuccessRate(task.id, "empty-lore", results)
+  const baseline = scenarioSuccessRate(task.id, "empty-kennen", results)
   if (baseline === null) return null
   const harmScenarios = ["noisy-memory", "stale-memory"]
   const deltas: number[] = []
@@ -904,14 +904,14 @@ async function findRepoRoot(start: string): Promise<string> {
       const parsed = JSON.parse(await readFile(packageJsonPath, "utf-8")) as {
         name?: unknown
       }
-      if (parsed.name === "@notionhq/lore") return dir
+      if (parsed.name === "@amond-ai/kennen") return dir
     } catch {
       // Keep walking. A missing or unrelated package.json is not the repo root.
     }
     const parent = dirname(dir)
     if (parent === dir || dir === parse(dir).root) {
       throw new Error(
-        `Could not find @notionhq/lore package root from ${start}; pass --out to choose an artifact path.`
+        `Could not find @amond-ai/kennen package root from ${start}; pass --out to choose an artifact path.`
       )
     }
     dir = parent

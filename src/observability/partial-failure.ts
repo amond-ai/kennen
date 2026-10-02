@@ -4,11 +4,11 @@ import { redactDebugError } from "../debug-redact.js"
  * Opt-in operator observability for recoverable partial failures. Partial
  * failures surface to the agent via warnings or command output, which is right
  * for UX but leaves ops blind: one 429 on fan-out hydration and a pathological
- * corrupted-page situation can otherwise look identical. When `LORE_DEBUG=1`,
+ * corrupted-page situation can otherwise look identical. When `KENNEN_DEBUG=1`,
  * this helper emits one stderr line per failing root so an operator running one
  * session can see which shape they're dealing with.
  *
- * Format: `[lore] partial-failure: root=<rootId> error=<message> tool=<toolName>`
+ * Format: `[kennen] partial-failure: root=<rootId> error=<message> tool=<toolName>`
  *
  * Only `error.message` is logged — not `error.stack`, `.body`, `.headers`, or
  * the full error object. The message is then routed through
@@ -29,10 +29,10 @@ export function debugLogPartialFailures(
   toolName: string,
   failures: ReadonlyArray<{ rootId: string; error: unknown }>
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   for (const { rootId, error } of failures) {
     process.stderr.write(
-      `[lore] partial-failure: root=${oneLine(rootId)} error=${oneLine(redactDebugError(error))} tool=${toolName}\n`
+      `[kennen] partial-failure: root=${oneLine(rootId)} error=${oneLine(redactDebugError(error))} tool=${toolName}\n`
     )
   }
 }

@@ -6,7 +6,7 @@ import { runProfileEvalSuite } from "./profile-runner.js"
 
 describe("runProfileEvalSuite", () => {
   it("runs the committed support suite and records profile metadata", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-profile-eval-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-profile-eval-"))
     const outPath = join(dir, "support-profile.json")
 
     const { artifact } = await runProfileEvalSuite("evals/profile-suites/support.yaml", {

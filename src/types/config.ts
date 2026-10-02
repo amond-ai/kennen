@@ -6,7 +6,7 @@ import type { Vault } from "./persistence.js"
 import type { MemoryCaptureMode } from "../memory-capture-mode.js"
 
 // ---------------------------------------------------------------------------
-// Config (.lore.yaml)
+// Config (.kennen.yaml)
 // ---------------------------------------------------------------------------
 
 export interface ProjectConfig {
@@ -61,8 +61,8 @@ export type ProfilesAllowedInstallSource =
 
 export interface ProfilesConfig {
   /**
-   * Closed allow-list of install sources that `lore profile install --yes`
-   * may write under `<configRoot>/.lore/profiles/installed/`. The CLI
+   * Closed allow-list of install sources that `kennen profile install --yes`
+   * may write under `<configRoot>/.kennen/profiles/installed/`. The CLI
    * stages the source, validates it, computes its `manifestDigest`, and
    * requires an exact entry match before writing anything to disk.
    * Interactive installs without `--yes` print the digest so an operator
@@ -71,36 +71,36 @@ export interface ProfilesConfig {
   allowedInstallSources?: ProfilesAllowedInstallSource[]
 }
 
-export interface LoreFeatureConfig {
+export interface KennenFeatureConfig {
   /**
    * Advisory near-duplicate probes for saves, decisions, autosave-learning
    * dedup, and task duplicate/cross-reference helpers. Default: true.
-   * `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1` forces this off.
+   * `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1` forces this off.
    */
   nearDuplicateProbe?: boolean
   /**
    * Structural deduplication for background autosave atomic-learning notes.
-   * Default: true. `LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1` forces this off.
+   * Default: true. `KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1` forces this off.
    */
   autosaveLearningDedup?: boolean
   /**
    * Automatic `mentions` fact emission from memory title/keywords/synopsis.
-   * Default: true. `LORE_DISABLE_AUTO_MENTIONS=1` forces this off.
+   * Default: true. `KENNEN_DISABLE_AUTO_MENTIONS=1` forces this off.
    */
   autoMentions?: boolean
   /**
    * Exact active-task reuse instead of creating duplicate task rows.
-   * Default: true. `LORE_DISABLE_TASK_REUSE=1` forces this off.
+   * Default: true. `KENNEN_DISABLE_TASK_REUSE=1` forces this off.
    */
   taskReuse?: boolean
   /**
    * Related-task cross-reference footers on memory saves.
-   * Default: true. `LORE_DISABLE_TASK_CROSSREF=1` forces this off.
+   * Default: true. `KENNEN_DISABLE_TASK_CROSSREF=1` forces this off.
    */
   taskCrossref?: boolean
   /**
    * Stop-hook atomic-learning extraction. Default: true.
-   * `LORE_DISABLE_LEARNING_EXTRACTION=1` forces this off.
+   * `KENNEN_DISABLE_LEARNING_EXTRACTION=1` forces this off.
    */
   learningExtraction?: boolean
   /**
@@ -111,9 +111,9 @@ export interface LoreFeatureConfig {
   /**
    * Force every memory search request through semantic mode instead of
    * contains/hybrid modes. This does not disable RunTool search; use
-   * `LORE_USE_RUNTOOL_SEARCH=0` or `LORE_USE_RUNTOOL=0` to bypass the
+   * `KENNEN_USE_RUNTOOL_SEARCH=0` or `KENNEN_USE_RUNTOOL=0` to bypass the
    * RunTool search transport. Default: false.
-   * `LORE_FORCE_SEMANTIC_SEARCH=1` forces semantic mode on.
+   * `KENNEN_FORCE_SEMANTIC_SEARCH=1` forces semantic mode on.
    */
   forceSemanticSearch?: boolean
   /**
@@ -152,7 +152,7 @@ export interface CostTrackingConfig {
    */
   enabled?: boolean
   /**
-   * Ledger JSONL path. Defaults to ~/.local/share/lore/cost-ledger.jsonl when
+   * Ledger JSONL path. Defaults to ~/.local/share/kennen/cost-ledger.jsonl when
    * tracking is enabled.
    */
   ledgerPath?: string
@@ -161,14 +161,14 @@ export interface CostTrackingConfig {
 
 export interface MemoryAuthoringConfig {
   /**
-   * Maximum characters accepted for `lore-memory` synopses on save/update.
+   * Maximum characters accepted for `kennen-memory` synopses on save/update.
    * Defaults to 150 so wake-up and recall stay scan-friendly. May be raised
    * up to the structural `SYNOPSIS_MAX` storage ceiling.
    */
   synopsisMaxChars?: number
 }
 
-export interface LoreConfig {
+export interface KennenConfig {
   vault: {
     pageId: string
   }
@@ -181,15 +181,15 @@ export interface LoreConfig {
   /**
    * Optional profile distribution settings (Phase 3). Currently scoped to
    * `allowedInstallSources`, the closed allow-list that authorizes
-   * `lore profile install --yes` to write under
-   * `<configRoot>/.lore/profiles/installed/`.
+   * `kennen profile install --yes` to write under
+   * `<configRoot>/.kennen/profiles/installed/`.
    */
   profiles?: ProfilesConfig
   /**
    * Runtime feature flags. Environment variables remain supported for
    * env-backed feature controls.
    */
-  features?: LoreFeatureConfig
+  features?: KennenFeatureConfig
   /**
    * Local-only cost and usage ledger. Disabled by default and must not store
    * raw prompts, MCP argument bodies, MCP result bodies, memory/fact text,
@@ -197,7 +197,7 @@ export interface LoreConfig {
    */
   costTracking?: CostTrackingConfig
   /**
-   * Memory-authoring policy knobs. These affect plain `lore-memory` writes,
+   * Memory-authoring policy knobs. These affect plain `kennen-memory` writes,
    * not decision/task services that have their own synopsis surfaces.
    */
   memory?: MemoryAuthoringConfig
@@ -222,7 +222,7 @@ export interface LoreConfig {
      * workspaces. Optional; falls back to `NOTION_WORKSPACE_ID` env, then
      * to single-workspace auto-pick. Has no effect on `NOTION_API_TOKEN`,
      * which carries whatever workspace the operator's token was issued
-     * against and Lore can't introspect that without an API call.
+     * against and Kennen can't introspect that without an API call.
      */
     workspaceId?: string
   }
@@ -241,7 +241,7 @@ export interface LoreConfig {
        * gate. Token-bucket refill rate enforced by `createLimitedClient`.
        * Defaults to `DEFAULT_NOTION_REQUESTS_PER_SECOND`. Distinct from
        * `concurrency`: the latter caps fan-out memory; this caps
-       * throughput. Per-process budget; multiple concurrent Lore
+       * throughput. Per-process budget; multiple concurrent Kennen
        * processes on one Notion token (MCP server + CLI + hooks)
        * compose additively at the server-side bucket and may need
        * tighter tuning to stay under the per-token ceiling.
@@ -292,8 +292,8 @@ export interface LoreConfig {
     /**
      * Background digest synthesizer scheduled by the Stop hook. Fires at
      * most once per project per 7 days via a filesystem marker. Default:
-     * true. Honors `LORE_AUTO_DIGEST=false` env override as well — either
-     * disables the auto-spawn without affecting the manual `lore digest` CLI.
+     * true. Honors `KENNEN_AUTO_DIGEST=false` env override as well — either
+     * disables the auto-spawn without affecting the manual `kennen digest` CLI.
      */
     autoDigest?: boolean
     /**
@@ -302,7 +302,7 @@ export interface LoreConfig {
      * single-fact discoveries and save each as its own `note` memory, in
      * addition to the session synopsis it already writes. When false, the
      * autosave reproduces the synopsis-only shape. Honors
-     * `LORE_DISABLE_LEARNING_EXTRACTION=1` env override — either knob set
+     * `KENNEN_DISABLE_LEARNING_EXTRACTION=1` env override — either knob set
      * to disabled wins (AND-of-permissive).
      */
     learningExtraction?: boolean
@@ -313,7 +313,7 @@ export interface LoreConfig {
      * vault" posture is preserved. When `true`, the prompt instructs
      * the sub-agent to set `status: "proposed"` on every
      * atomic-learning save, routing the row into the review inbox
-     * surfaced by `lore status`'s `Proposed memories` line and the
+     * surfaced by `kennen status`'s `Proposed memories` line and the
      * wake-up `Proposed Memories` section. Has no effect when
      * `learningExtraction` is `false` — there are no learning saves
      * to gate.
@@ -337,7 +337,7 @@ export interface LoreConfig {
     /** Real user messages between structured AI-driven saves. Default: 5. */
     saveInterval?: number
     /**
-     * Background-agent worker configuration. Lore's autosave
+     * Background-agent worker configuration. Kennen's autosave
      * and auto-digest paths shell out to a detached agent CLI to do the
      * structured save / digest synthesis. Defaults to `claude -p` with the
      * shape Claude Code installs assume. Codex-only operators (or anyone
@@ -346,8 +346,8 @@ export interface LoreConfig {
      * flags. Each spawn substitutes `{{allowedTools}}` in `args` for the
      * tool allowlist string — operators whose CLI does not accept an
      * allowlist flag should omit the placeholder. Honors
-     * `LORE_BACKGROUND_COMMAND` env override on `command` for ad-hoc
-     * experimentation without editing .lore.yaml.
+     * `KENNEN_BACKGROUND_COMMAND` env override on `command` for ad-hoc
+     * experimentation without editing .kennen.yaml.
      */
     backgroundAgent?: {
       /** Binary name (resolved on PATH) or absolute path. Default: "claude". */

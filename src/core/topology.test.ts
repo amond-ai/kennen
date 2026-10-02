@@ -4,11 +4,11 @@ import {
   buildVaultTopology,
   hasConfiguredTopology,
 } from "./topology.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 
 describe("buildVaultTopology", () => {
   it("returns only the primary vault for single-vault configs", () => {
-    const config: LoreConfig = { vault: { pageId: "primary-page" } }
+    const config: KennenConfig = { vault: { pageId: "primary-page" } }
 
     const topology = buildVaultTopology(config)
 
@@ -47,7 +47,7 @@ describe("buildVaultTopology", () => {
   })
 
   it("normalizes promotion targets", () => {
-    const config: LoreConfig = {
+    const config: KennenConfig = {
       vault: { pageId: "primary-page" },
       promotionTargets: [
         { name: "Team", pageId: "team-page", requireReview: true },

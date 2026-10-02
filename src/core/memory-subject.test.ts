@@ -7,12 +7,12 @@ describe("subjectToTopicKey", () => {
   })
 
   it("normalizes multi-word subjects into stable ASCII slugs", () => {
-    expect(subjectToTopicKey("Lore PAT auth")).toBe("state/lore-pat-auth")
+    expect(subjectToTopicKey("Kennen PAT auth")).toBe("state/kennen-pat-auth")
     expect(subjectToTopicKey("Café auth / PAT")).toBe("state/cafe-auth-pat")
   })
 
   it("passes through already-canonical state topic keys", () => {
-    expect(subjectToTopicKey("state/lore-auth")).toBe("state/lore-auth")
+    expect(subjectToTopicKey("state/kennen-auth")).toBe("state/kennen-auth")
   })
 
   it("rejects subjects that cannot produce an ASCII slug", () => {

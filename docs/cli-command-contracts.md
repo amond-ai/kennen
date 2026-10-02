@@ -52,12 +52,12 @@ Keep this index focused on cross-command invariants, routing, and a short summar
   shell use. Keep body-source exclusivity, closed-vocabulary tag validation, and
   JSON output contracts aligned with [`memory-workflows.md`](memory-workflows.md).
 - `pinned list` is read-only in the CLI; pin, unpin, and update operations live
-  on the `lore-pinned` MCP tool surface.
+  on the `kennen-pinned` MCP tool surface.
 - `debt scan` and `debt create-tasks` follow the audit categories, score rules,
   task creation cap, and idempotency contract in [`memory-debt.md`](memory-debt.md).
 - `procedures scan/propose/deprecate` promote durable procedures through the
   proposed-memory review workflow; approval still routes through
-  `lore inbox approve <id>`.
+  `kennen inbox approve <id>`.
 - `entities merge` plans by default, then repoints fact relations, preserves
   aliases, writes a merge note, and archives the loser only with `--yes`.
 - `vault ensure-entities` is the legacy four-database cutover helper; it should

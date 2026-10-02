@@ -40,23 +40,23 @@ function warnInvalidateMissingColumnOnce(propertyName: string | null): void {
   invalidateMissingColumnWarned.add(key)
   if (propertyName === null) {
     process.stderr.write(
-      "[lore] fact-invalidate: vault schema lacks at least one of the " +
+      "[kennen] fact-invalidate: vault schema lacks at least one of the " +
         "Issue #284 transaction-time columns (Invalidated At / Invalidated " +
         "By) or DEFERRED-02 columns (Confidence Score / Last Referenced " +
-        "At); falling back to a bare `Valid Until` write. Run `lore migrate" +
-        " --backfill-fact-observed-at` and `lore migrate --build-fact-" +
+        "At); falling back to a bare `Valid Until` write. Run `kennen migrate" +
+        " --backfill-fact-observed-at` and `kennen migrate --build-fact-" +
         "confidence-scores` to seed the missing columns.\n"
     )
     return
   }
   const hint =
     propertyName === "Invalidated At" || propertyName === "Invalidated By"
-      ? "Run `lore migrate --backfill-fact-observed-at` to seed transaction-time columns."
+      ? "Run `kennen migrate --backfill-fact-observed-at` to seed transaction-time columns."
       : propertyName === "Confidence Score" || propertyName === "Last Referenced At"
-        ? "Run `lore migrate --build-fact-confidence-scores` to seed DEFERRED-02 columns."
-        : "Run `lore migrate` to add the missing column."
+        ? "Run `kennen migrate --build-fact-confidence-scores` to seed DEFERRED-02 columns."
+        : "Run `kennen migrate` to add the missing column."
   process.stderr.write(
-    `[lore] fact-invalidate: vault schema lacks \`${propertyName}\`; ` +
+    `[kennen] fact-invalidate: vault schema lacks \`${propertyName}\`; ` +
       `dropping that column from the invalidate write. ${hint}\n`
   )
 }

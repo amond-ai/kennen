@@ -1,13 +1,13 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-memory-contract-v2
+name: kennen-longitudinal-github-cli-memory-contract-v2
 description: "Memory-contract v2 pilot: Phase A explicitly captures the same
   feature contract that seeded context and hidden verifiers measure."
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: gh-cli-autolink-edit-replacement-memory-contract-v2
     difficulty: hard
@@ -58,7 +58,7 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: >
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
 
           new file mode 100644
 
@@ -66,7 +66,7 @@ scenarios:
 
           --- /dev/null
 
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
 
           @@ -0,0 +1,30 @@
 
@@ -146,7 +146,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/repo/autolink/...
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/repo/autolink/...
         timeoutMs: 300000
   - id: gh-cli-key-add-dry-run-fingerprint-memory-contract-v2
     difficulty: hard
@@ -189,7 +189,7 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: >
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
 
           new file mode 100644
 
@@ -197,7 +197,7 @@ scenarios:
 
           --- /dev/null
 
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
 
           @@ -0,0 +1,28 @@
 
@@ -268,7 +268,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/ssh-key/add
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/ssh-key/add
             ./pkg/cmd/gpg-key/add
         timeoutMs: 300000
   - id: gh-cli-api-jq-paginate-stream-memory-contract-v2
@@ -313,7 +313,7 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: >
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
 
           new file mode 100644
 
@@ -321,7 +321,7 @@ scenarios:
 
           --- /dev/null
 
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
 
           @@ -0,0 +1,25 @@
 
@@ -386,7 +386,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/api
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/api
         timeoutMs: 300000
   - id: gh-cli-pr-merge-queue-plan-memory-contract-v2
     difficulty: hard
@@ -432,11 +432,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,28 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -469,7 +469,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/pr/merge
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/pr/merge
         timeoutMs: 300000
   - id: gh-cli-secret-variable-env-file-plan-memory-contract-v2
     difficulty: hard
@@ -514,7 +514,7 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: >
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
 
           new file mode 100644
 
@@ -522,7 +522,7 @@ scenarios:
 
           --- /dev/null
 
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
 
           @@ -0,0 +1,29 @@
 
@@ -600,7 +600,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/secret/set
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/secret/set
             ./pkg/cmd/variable/set ./pkg/cmd/secret/shared
             ./pkg/cmd/variable/shared
         timeoutMs: 300000
@@ -647,11 +647,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,25 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -681,7 +681,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/repo/create
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/repo/create
         timeoutMs: 300000
   - id: gh-cli-repo-fork-dry-run-json-plan-memory-contract-v2
     difficulty: hard
@@ -724,11 +724,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,24 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -757,7 +757,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/repo/fork
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/repo/fork
         timeoutMs: 300000
   - id: gh-cli-cache-delete-older-than-dry-run-json-memory-contract-v2
     difficulty: hard
@@ -800,11 +800,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,16 @@
           +import fs from 'node:fs';
           +const NL = String.fromCharCode(10);
@@ -825,7 +825,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/cache/delete ./pkg/cmd/cache/shared
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/cache/delete ./pkg/cmd/cache/shared
         timeoutMs: 300000
   - id: gh-cli-label-sync-file-plan-memory-contract-v2
     difficulty: hard
@@ -871,11 +871,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,27 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -907,7 +907,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/label/...
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/label/...
         timeoutMs: 300000
   - id: gh-cli-status-json-aggregate-memory-contract-v2
     difficulty: hard
@@ -949,11 +949,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,14 @@
           +import fs from 'node:fs';
           +const NL = String.fromCharCode(10);
@@ -972,7 +972,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/status
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/status
         timeoutMs: 300000
   - id: gh-cli-issue-create-dry-run-json-metadata-memory-contract-v2
     difficulty: hard
@@ -1014,11 +1014,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,17 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -1040,7 +1040,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/issue/create ./pkg/cmd/pr/shared
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/issue/create ./pkg/cmd/pr/shared
         timeoutMs: 300000
   - id: gh-cli-workflow-run-dry-run-json-dispatch-memory-contract-v2
     difficulty: hard
@@ -1086,11 +1086,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,14 @@
           +import fs from 'node:fs';
           +const NL = String.fromCharCode(10);
@@ -1109,7 +1109,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/workflow/run
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/workflow/run
         timeoutMs: 300000
   - id: gh-cli-run-rerun-dry-run-json-selection-memory-contract-v2
     difficulty: hard
@@ -1149,11 +1149,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,14 @@
           +import fs from 'node:fs';
           +const NL = String.fromCharCode(10);
@@ -1172,7 +1172,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/run/rerun
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/run/rerun
         timeoutMs: 300000
   - id: gh-cli-release-create-dry-run-json-assets-memory-contract-v2
     difficulty: hard
@@ -1217,11 +1217,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,18 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -1244,7 +1244,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/release/create ./pkg/cmd/release/shared
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/release/create ./pkg/cmd/release/shared
         timeoutMs: 300000
   - id: gh-cli-release-upload-dry-run-json-clobber-memory-contract-v2
     difficulty: hard
@@ -1287,11 +1287,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,14 @@
           +import fs from 'node:fs';
           +const NL = String.fromCharCode(10);
@@ -1310,7 +1310,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/release/upload ./pkg/cmd/release/shared
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/release/upload ./pkg/cmd/release/shared
         timeoutMs: 300000
   - id: gh-cli-codespace-create-dry-run-json-plan-memory-contract-v2
     difficulty: hard
@@ -1354,11 +1354,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,17 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -1380,7 +1380,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/codespace
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/codespace
         timeoutMs: 300000
   - id: gh-cli-extension-install-dry-run-json-resolution-memory-contract-v2
     difficulty: hard
@@ -1425,11 +1425,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,20 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -1454,6 +1454,6 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/extension ./pkg/extensions
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/extension ./pkg/extensions
         timeoutMs: 300000
 costKillSwitchUsd: 2500

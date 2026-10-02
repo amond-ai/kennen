@@ -101,7 +101,7 @@ export class MemoryResultHandleStore {
         ok: false,
         message:
           `Result handle ${handle} is not available in this MCP process. ` +
-          "Run lore-query recall/search again and use a returned handle.",
+          "Run kennen-query recall/search again and use a returned handle.",
       }
     }
 

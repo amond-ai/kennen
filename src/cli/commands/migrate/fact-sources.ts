@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import type { Fact, Memory } from "../../../types.js"
 
 export interface FactMatchCandidate {
@@ -16,10 +16,10 @@ export interface FactMatchCandidate {
  *
  * This is best-effort triage for the orphan backlog surfaced in the
  * internal vault audit — not a substitute for the write-side `sourceMemoryId`
- * discipline now enforced on `lore-fact action='create'`.
+ * discipline now enforced on `kennen-fact action='create'`.
  */
 export async function backfillFactSources(
-  services: LoreServices,
+  services: KennenServices,
   opts: { apply: boolean; projectId?: string }
 ): Promise<void> {
   const orphans = opts.projectId
@@ -95,14 +95,14 @@ export async function backfillFactSources(
  * Returns `null` memory when no candidate survives the title-match check.
  * False positives are more damaging than false negatives here — an orphan
  * fact is recoverable; a mis-linked Source distorts
- * `lore-query action='ask'` outputs for the lifetime of the fact.
+ * `kennen-query action='ask'` outputs for the lifetime of the fact.
  *
  * Assumes autosave is not creating facts concurrently. `setSource` at the
  * call site in `backfillFactSources` overwrites without re-checking, which
  * is safe when the backfill is operator-run during a quiet window.
  */
 export async function proposeSourceMemory(
-  services: Pick<LoreServices, "memories">,
+  services: Pick<KennenServices, "memories">,
   fact: Fact
 ): Promise<FactMatchCandidate> {
   const search = async (query: string): Promise<Memory | null> => {

@@ -97,7 +97,7 @@ function buildReadOnlyPrompt(prompt) {
   return `${prompt}
 
 [Memory-quality replay mode]
-Do not call tools. Do not mutate any Lore vault. Output the exact lore-* calls you would make as plain text, or exactly "No Lore context to save."`
+Do not call tools. Do not mutate any Kennen vault. Output the exact kennen-* calls you would make as plain text, or exactly "No Kennen context to save."`
 }
 
 function scoreRun(caseResults) {
@@ -252,7 +252,7 @@ for (const seed of args.seeds) {
       { extractLearnings: true, proposeLearnings: false }
     )
     assertPromptQualityGate(prompt, testCase.id)
-    if (!prompt.includes("[Lore autosave]")) {
+    if (!prompt.includes("[Kennen autosave]")) {
       throw new Error(`Case ${testCase.id} did not render an autosave prompt`)
     }
     const output = runProvider(args.provider, prompt, testCase, seed)

@@ -6,7 +6,7 @@ import {
   findEvalVault,
   loadEvalVaultRegistry,
   renderEvalVaultEnv,
-  renderEvalVaultLoreConfig,
+  renderEvalVaultKennenConfig,
   resolveDefaultEvalVaultRegistryPath,
 } from "./vaults.js"
 
@@ -17,16 +17,16 @@ describe("eval vault registry", () => {
     process.chdir(originalCwd)
   })
 
-  it("loads the committed Lore dev sandbox vault", async () => {
+  it("loads the committed Kennen dev sandbox vault", async () => {
     const registry = await loadEvalVaultRegistry()
-    const vault = findEvalVault(registry, "lore-dev-sandbox")
+    const vault = findEvalVault(registry, "kennen-dev-sandbox")
 
     expect(vault).toMatchObject({
       notionEnv: "dev",
       notionWorkspaceId: "415fc269-e68f-4da0-b3e3-b1273b741a7f",
       vaultPageId: "360b35e6-e67f-8156-aa0e-f3763246719d",
       defaultProjectName: "Eval Sandbox",
-      defaultProjectEnvVar: "LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT",
+      defaultProjectEnvVar: "KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT",
       lastValidation: {
         kind: "smoke",
         scenarios: 4,
@@ -46,7 +46,7 @@ describe("eval vault registry", () => {
       notionWorkspaceId: "415fc269-e68f-4da0-b3e3-b1273b741a7f",
       vaultPageId: "374b35e6-e67f-8108-beb4-dec11f2f5d28",
       defaultProjectName: "SkillRet Eval",
-      defaultProjectEnvVar: "LORE_EVAL_SKILLRET_PROJECT",
+      defaultProjectEnvVar: "KENNEN_EVAL_SKILLRET_PROJECT",
       supportedRuns: [
         {
           id: "skillret-notion-ai",
@@ -54,7 +54,7 @@ describe("eval vault registry", () => {
           suite: "evals/skill-retrieval/skillret-notion-ai.yaml",
           sandboxProjectName: "SkillRet Eval",
           requiredEnv: {
-            LORE_EVAL_SKILLRET_REAL: "1",
+            KENNEN_EVAL_SKILLRET_REAL: "1",
           },
         },
       ],
@@ -62,12 +62,12 @@ describe("eval vault registry", () => {
   })
 
   it("loads the default registry when cwd is outside the checkout root", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-vaults-cwd-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-vaults-cwd-"))
     process.chdir(dir)
 
     const registry = await loadEvalVaultRegistry()
 
-    expect(findEvalVault(registry, "lore-dev-sandbox")).toBeDefined()
+    expect(findEvalVault(registry, "kennen-dev-sandbox")).toBeDefined()
     expect(await resolveDefaultEvalVaultRegistryPath()).toMatch(/evals\/vaults\.yaml$/)
   })
 
@@ -81,10 +81,10 @@ describe("eval vault registry", () => {
 
   it("renders local config without embedding auth tokens", async () => {
     const registry = await loadEvalVaultRegistry()
-    const vault = findEvalVault(registry, "lore-dev-sandbox")
+    const vault = findEvalVault(registry, "kennen-dev-sandbox")
     expect(vault).toBeDefined()
 
-    const config = renderEvalVaultLoreConfig(vault!)
+    const config = renderEvalVaultKennenConfig(vault!)
     expect(config).toContain("pageId: 360b35e6-e67f-8156-aa0e-f3763246719d")
     expect(config).toContain("workspaceId: 415fc269-e68f-4da0-b3e3-b1273b741a7f")
     expect(config).not.toMatch(/token|ntn_|secret_/i)
@@ -92,14 +92,14 @@ describe("eval vault registry", () => {
 
   it("renders the environment selectors for the sandbox vault", async () => {
     const registry = await loadEvalVaultRegistry()
-    const vault = findEvalVault(registry, "lore-dev-sandbox")
+    const vault = findEvalVault(registry, "kennen-dev-sandbox")
     expect(vault).toBeDefined()
 
     expect(renderEvalVaultEnv(vault!)).toBe(
       [
         "export NOTION_ENV='dev'",
         "export NOTION_WORKSPACE_ID='415fc269-e68f-4da0-b3e3-b1273b741a7f'",
-        "export LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT='Eval Sandbox'",
+        "export KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT='Eval Sandbox'",
         "",
       ].join("\n")
     )
@@ -114,14 +114,14 @@ describe("eval vault registry", () => {
       [
         "export NOTION_ENV='dev'",
         "export NOTION_WORKSPACE_ID='415fc269-e68f-4da0-b3e3-b1273b741a7f'",
-        "export LORE_EVAL_SKILLRET_PROJECT='SkillRet Eval'",
+        "export KENNEN_EVAL_SKILLRET_PROJECT='SkillRet Eval'",
         "",
       ].join("\n")
     )
   })
 
   it("rejects duplicate vault ids", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-vaults-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-vaults-"))
     const path = join(dir, "vaults.yaml")
     await writeFile(
       path,

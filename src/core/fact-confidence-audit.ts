@@ -1,4 +1,4 @@
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { FactConfidence, FactPredicate } from "../types.js"
 import {
   CONFIDENCE_DISPLAY_THRESHOLD,
@@ -102,7 +102,7 @@ interface RunningScoreSummary {
 }
 
 export async function runFactConfidenceAudit(opts: {
-  services: LoreServices
+  services: KennenServices
   projectId?: string
   today?: string
 }): Promise<FactConfidenceAuditReport> {

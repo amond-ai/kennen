@@ -1,6 +1,6 @@
 import { Command } from "commander"
 import { runAsk } from "../../core/ask.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import type { CliParseResult } from "../parse.js"
 import { parsePositiveDecimalInteger } from "../parse.js"
 import { validateNonBlank, validateYmd } from "./common.js"
@@ -14,7 +14,7 @@ export interface AskCliOptions {
 }
 
 export async function runAskCli(
-  services: LoreServices,
+  services: KennenServices,
   opts: AskCliOptions
 ): Promise<Awaited<ReturnType<typeof runAsk>>> {
   return runAsk(services, {

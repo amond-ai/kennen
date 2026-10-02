@@ -53,7 +53,7 @@ export const evalBaselineSnapshotSchema = z
     /**
      * Runner mode that produced this baseline. Cross-runner comparisons
      * are rejected by `compareToEvalBaseline` because retrieval-mode
-     * baselines key results by ablation scenario (`no-lore`,
+     * baselines key results by ablation scenario (`no-kennen`,
      * `helpful-memory`, ...) while a notion-mode baseline would
      * key on `live-vault` — direct comparison would surface every
      * result as either new or removed and trip the drift gate for the
@@ -121,7 +121,7 @@ export class BaselineRunnerMismatchError extends Error {
   ) {
     super(
       `Baseline at ${baselinePath} was captured in "${baselineRunner}" mode but the current run is "${currentRunner}". ` +
-        `Capture a runner-matched baseline (lore eval baseline --runner ${currentRunner} ...) before comparing.`
+        `Capture a runner-matched baseline (kennen eval baseline --runner ${currentRunner} ...) before comparing.`
     )
     this.name = "BaselineRunnerMismatchError"
   }
@@ -230,7 +230,7 @@ export function compareToEvalBaseline(input: {
   baselinePath: string
 }): BaselineDriftReport {
   // Suite identity must match. The result keys are scoped to a suite,
-  // so a baseline captured against `lore-core` cannot meaningfully
+  // so a baseline captured against `kennen-core` cannot meaningfully
   // compare against a different suite — the row keys would happen to
   // align by coincidence. Without this check, a CI command pointed at
   // the wrong baseline file silently passes the drift gate.

@@ -1,7 +1,7 @@
 // ABOUTME: Owns normalized vault topology references for primary, upstream, and promotion-target vaults.
 // ABOUTME: Edit when config roles, defaults, or topology validation rules change.
 
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 
 export const DEFAULT_UPSTREAM_PRIORITY = 100
 
@@ -31,7 +31,7 @@ export interface VaultTopology {
   promotionTargets: PromotionTargetTopologyRef[]
 }
 
-export function buildVaultTopology(config: LoreConfig): VaultTopology {
+export function buildVaultTopology(config: KennenConfig): VaultTopology {
   const upstreams = (config.upstreamVaults ?? [])
     .map((vault, index) => ({
       vault: {
@@ -63,7 +63,7 @@ export function buildVaultTopology(config: LoreConfig): VaultTopology {
   }
 }
 
-export function hasConfiguredTopology(config: LoreConfig): boolean {
+export function hasConfiguredTopology(config: KennenConfig): boolean {
   return (
     (config.upstreamVaults?.length ?? 0) > 0 || (config.promotionTargets?.length ?? 0) > 0
   )
