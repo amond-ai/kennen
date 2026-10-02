@@ -2,6 +2,11 @@
 
 AI memory backed by Notion.
 
+> This project started as a fork of
+> [makenotion/lore](https://github.com/makenotion/lore) and is now maintained
+> independently by PassionFactory Corp. It is not affiliated with or endorsed
+> by Notion Labs, Inc.
+
 Lore gives your AI assistants a persistent, shared memory: it stores
 conversations, decisions, follow-up tasks, and durable relationships as Notion
 pages that any teammate or agent session can read back. Anything you use with
@@ -33,8 +38,8 @@ Public npm requires no registry configuration or package token.
 #### Build from source
 
 ```bash
-git clone https://github.com/makenotion/lore.git
-cd lore && npm install && npm run build && npm link
+git clone https://github.com/amond-ai/memory.git
+cd memory && npm install && npm run build && npm link
 ```
 
 `npm link` makes `lore` available globally on your `PATH` from the clone.
@@ -576,4 +581,6 @@ Notable user-facing changes are recorded in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 
-MIT
+[MIT](LICENSE). Copyright (c) 2026 PassionFactory Corp. Portions derived from
+[makenotion/lore](https://github.com/makenotion/lore) remain Copyright (c) 2026
+Notion Labs, Inc. and are used under the same MIT License.
