@@ -25,7 +25,7 @@ import {
   buildClaudeHookCommand,
   detectClaudeHook,
   removeClaudeScriptEntries,
-  stripLoreOwnedSessionEndEntries,
+  stripKennenOwnedSessionEndEntries,
   upsertClaudeHookCommand,
   type ClaudeHookEntry,
 } from "./hooks.js"
@@ -43,7 +43,7 @@ interface ClaudeMcpEntry {
    * Absolute (or `${HOME}`-prefixed) directory the legacy launcher
    * cd's into before invoking the absolute-path MCP entry. Bin-
    * dispatch entries omit this field — the host assistant's launch
-   * cwd (typically the project root) is correct for .lore.yaml
+   * cwd (typically the project root) is correct for .kennen.yaml
    * discovery, and pinning a specific cwd would defeat the
    * portability the bin-dispatch shape provides.
    */
@@ -52,20 +52,20 @@ interface ClaudeMcpEntry {
 }
 
 /**
- * Build the bin-dispatch .mcp.json entry for Lore. Emits
- * `{ command: "lore", args: ["mcp"], env: ... }` for `shape: "bare"`
- * (default), or `{ command: "yarn", args: ["lore", "mcp"], env: ... }`
+ * Build the bin-dispatch .mcp.json entry for Kennen. Emits
+ * `{ command: "kennen", args: ["mcp"], env: ... }` for `shape: "bare"`
+ * (default), or `{ command: "yarn", args: ["kennen", "mcp"], env: ... }`
  * for `shape: "yarn"` (Yarn Berry PnP consumers — see
  * `BinDispatchShape`). The env block carries:
  *   - Conditional `${NOTION_API_TOKEN}` /
- *     `${LORE_NOTION_BASE_URL}` placeholders for keys the operator
+ *     `${KENNEN_NOTION_BASE_URL}` placeholders for keys the operator
  *     had set at install time.
- *   - Always-on `LORE_CONFIG_ROOT` (literal vault directory) and
- *     `LORE_SUPPRESS_DEPRECATIONS=1`.
+ *   - Always-on `KENNEN_CONFIG_ROOT` (literal vault directory) and
+ *     `KENNEN_SUPPRESS_DEPRECATIONS=1`.
  *
- * Hosts resolve `lore` through the consumer repo's
- * `node_modules/.bin/lore` symlink in the bare shape, or through
- * `yarn run lore` PnPAPI resolution in the yarn shape. Both produce
+ * Hosts resolve `kennen` through the consumer repo's
+ * `node_modules/.bin/kennen` symlink in the bare shape, or through
+ * `yarn run kennen` PnPAPI resolution in the yarn shape. Both produce
  * committed config that is portable across every engineer's checkout
  * regardless of the absolute path of the consumer repo on disk.
  */
@@ -78,29 +78,29 @@ export function buildClaudeMcpEntry(
 ): ClaudeMcpEntry {
   const build = buildMcpEnv(configRoot, envSource, {
     // PnP entries are committed to the workspace root and shared
-    // across developers; an absolute `LORE_CONFIG_ROOT` would leak
+    // across developers; an absolute `KENNEN_CONFIG_ROOT` would leak
     // one developer's machine path into everyone else's checkout.
     // The `yarn run -T` launch always lands at workspace root, so
     // the spawned MCP server's `findConfigFile(cwd)` walk resolves
-    // .lore.yaml without help.
+    // .kennen.yaml without help.
     omitConfigRoot: shape === "yarn",
     authSource,
     notionBaseUrlLiteral,
   })
   const env = mergeMcpEnvForClaudeOrCursor(build)
   if (shape === "yarn") {
-    return { command: "yarn", args: ["run", "-T", "lore", "mcp"], env }
+    return { command: "yarn", args: ["run", "-T", "kennen", "mcp"], env }
   }
-  return { command: "lore", args: ["mcp"], env }
+  return { command: "kennen", args: ["mcp"], env }
 }
 
 /**
  * Legacy absolute-path .mcp.json shape used to detect and upgrade
- * `~/.lore` consumers.
+ * `~/.kennen` consumers.
  *
  * The 0.10.0 ntn-first env shape applies on this path too — the MCP
- * server's startup `resolveAuth` consults `LORE_CONFIG_ROOT` to find
- * .lore.yaml regardless of which launch shape the host uses.
+ * server's startup `resolveAuth` consults `KENNEN_CONFIG_ROOT` to find
+ * .kennen.yaml regardless of which launch shape the host uses.
  */
 export function buildLegacyClaudeMcpEntry(
   mcpJsPath: string,
@@ -186,9 +186,9 @@ export async function runClaudeInstall(
 
   // Active SessionEnd registration was removed in 0.6.0. The cleanup planner
   // returns the post-cleanup array (or undefined when every entry was
-  // Lore-owned and the SessionEnd key should be deleted) along with flags
+  // Kennen-owned and the SessionEnd key should be deleted) along with flags
   // describing what was removed for the status output below.
-  const sessionEndCleanup = stripLoreOwnedSessionEndEntries(hooks["SessionEnd"])
+  const sessionEndCleanup = stripKennenOwnedSessionEndEntries(hooks["SessionEnd"])
   const hasSessionEndShim = sessionEndCleanup.removedShim
   const hasLegacySessionEndAutosave = sessionEndCleanup.removedLegacyAutosave
   const hasLegacyAutosave =
@@ -198,11 +198,11 @@ export async function runClaudeInstall(
   const hasLegacyPreCompact =
     detectClaudeHook(hooks["PreCompact"], "autosave.sh", "") !== "missing"
   const hasLegacyMcp = Boolean(
-    (settings.mcpServers as Record<string, unknown> | undefined)?.["lore"]
+    (settings.mcpServers as Record<string, unknown> | undefined)?.["kennen"]
   )
 
   const mcpServers = (mcpJson.mcpServers ?? {}) as Record<string, unknown>
-  const existingMcp = mcpServers["lore"] as Record<string, unknown> | undefined
+  const existingMcp = mcpServers["kennen"] as Record<string, unknown> | undefined
   const portableMcpJsPath = toPortablePath(context.mcpJsPath)
   const portablePkgRoot = toPortablePath(context.pkgRoot)
   const binMcpEntry = buildClaudeMcpEntry(
@@ -250,13 +250,13 @@ export async function runClaudeInstall(
   if (hasLegacyMcp)
     console.log("  Legacy MCP:        settings.json -> will migrate to .mcp.json")
   // Surface background-agent install-time health on Claude Code
-  // installs too. An operator who set `LORE_BACKGROUND_COMMAND` or
+  // installs too. An operator who set `KENNEN_BACKGROUND_COMMAND` or
   // overrode `hooks.backgroundAgent` on a Claude Code project is just
   // as exposed as a `--client codex` operator — the configuration
   // applies regardless of which host registered the hook.
   printBackgroundAgentSummary(await resolveBackgroundAgentForInstall(context))
   // Surface hook-side-effects disclosure at install time, not just
-  // at `lore init`. Operators who clone a teammate's repo or upgrade
+  // at `kennen init`. Operators who clone a teammate's repo or upgrade
   // an existing install pass through here, and the hooks start
   // firing the moment this install completes.
   printHookDisclosure()
@@ -280,7 +280,7 @@ export async function runClaudeInstall(
   console.log()
   const proceed = await confirm(
     rl,
-    "Install Lore Claude Code integration for this project?"
+    "Install Kennen Claude Code integration for this project?"
   )
   if (!proceed) {
     console.log("  Skipped.")
@@ -338,8 +338,8 @@ export async function runClaudeInstall(
     )
     if (!mergedHooks["PreToolUse"]) delete mergedHooks["PreToolUse"]
   }
-  // Lore does not register a SessionEnd hook. The pre-computed cleanup
-  // result strips Lore-owned entries (both the `session-end.sh` shim
+  // Kennen does not register a SessionEnd hook. The pre-computed cleanup
+  // result strips Kennen-owned entries (both the `session-end.sh` shim
   // path and the older `autosave.sh`-on-SessionEnd legacy path) while
   // preserving unrelated user hooks on the same event.
   if (hasSessionEndShim || hasLegacySessionEndAutosave) {
@@ -361,7 +361,7 @@ export async function runClaudeInstall(
 
   if (hasLegacyMcp) {
     const stale = { ...((settings.mcpServers as Record<string, unknown>) ?? {}) }
-    delete stale["lore"]
+    delete stale["kennen"]
     if (Object.keys(stale).length > 0) {
       merged.mcpServers = stale
     } else {
@@ -378,7 +378,7 @@ export async function runClaudeInstall(
     const mergedMcpJson: Record<string, unknown> = { ...mcpJson }
     mergedMcpJson.mcpServers = {
       ...((mcpJson.mcpServers as Record<string, unknown>) ?? {}),
-      lore: desiredMcpEntry,
+      kennen: desiredMcpEntry,
     }
 
     const mcpJsonDisplay = displayHomePath(mcpJsonPath)
@@ -387,11 +387,11 @@ export async function runClaudeInstall(
 
     if (context.legacyPaths && !portableMcpJsPath.startsWith("${HOME}")) {
       console.warn()
-      console.warn("  Warning: lore is installed outside your home directory")
+      console.warn("  Warning: kennen is installed outside your home directory")
       console.warn(`    (${context.pkgRoot}).`)
       console.warn("  The generated .mcp.json uses an absolute path and is not")
       console.warn("  portable across machines - avoid committing it, or reinstall")
-      console.warn("  lore under ~/.lore so the path can use ${HOME}.")
+      console.warn("  kennen under ~/.kennen so the path can use ${HOME}.")
     }
   }
 

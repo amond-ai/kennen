@@ -2,15 +2,15 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore digest` gathers recent project activity and spawns a background
+`kennen digest` gathers recent project activity and spawns a background
 synthesizer that saves a distilled `source: digest` memory back to the vault.
-The digest is what `lore-context action='wake-up'` surfaces in its fast path, so
+The digest is what `kennen-context action='wake-up'` surfaces in its fast path, so
 the output goal is signal density: non-obvious findings, decisions, active
 tasks, and emerging themes rather than a chronological session log.
 
 Contracts:
 
-- Data gathering is shared with `lore-context action='digest'` through
+- Data gathering is shared with `kennen-context action='digest'` through
   [`src/core/digest.ts`](../../../src/core/digest.ts).
 - The synthesizer prompt lives in
   [`src/hooks/prompts.ts`](../../../src/hooks/prompts.ts) and uses the same

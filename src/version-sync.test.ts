@@ -45,12 +45,12 @@ function versionFiles(version: string): Record<string, string> {
     [PATHS.packageJson]: JSON.stringify({ version }, null, 2),
     [PATHS.packageLock]: JSON.stringify(
       {
-        name: "@notionhq/lore",
+        name: "@amond-ai/kennen",
         version,
         lockfileVersion: 3,
         packages: {
           "": {
-            name: "@notionhq/lore",
+            name: "@amond-ai/kennen",
             version,
           },
         },
@@ -58,9 +58,9 @@ function versionFiles(version: string): Record<string, string> {
       null,
       2
     ),
-    [PATHS.mcpServer]: `new McpServer({ name: "lore", version: "${version}" }, {})`,
-    [PATHS.cliIndex]: `program.name("lore").version("${version}")`,
-    [PATHS.notionClient]: `const USER_AGENT = "lore/${version}"`,
+    [PATHS.mcpServer]: `new McpServer({ name: "kennen", version: "${version}" }, {})`,
+    [PATHS.cliIndex]: `program.name("kennen").version("${version}")`,
+    [PATHS.notionClient]: `const USER_AGENT = "kennen/${version}"`,
   }
 }
 
@@ -85,7 +85,7 @@ describe("version sync guard", () => {
   it("rejects divergent version literals", async () => {
     const { validateVersionSources } = await loadVersionSyncModule()
     const files = versionFiles("0.14.0")
-    files[PATHS.cliIndex] = 'program.name("lore").version("0.15.0")'
+    files[PATHS.cliIndex] = 'program.name("kennen").version("0.15.0")'
 
     const errors = validateVersionSources(files)
 
@@ -128,12 +128,12 @@ describe("version sync guard", () => {
 
     const errors = validateVersionSources(files)
 
-    expect(errors.join("\n")).toContain('USER_AGENT = "lore/..."')
+    expect(errors.join("\n")).toContain('USER_AGENT = "kennen/..."')
   })
 
   it("validates the staged index for pre-commit checks", async () => {
     const { validateVersionSync } = await loadVersionSyncModule()
-    const repo = scratchDir("lore-version-sync-staged-")
+    const repo = scratchDir("kennen-version-sync-staged-")
     execFileSync("git", ["init"], { cwd: repo, stdio: "ignore" })
 
     writeVersionFiles(repo, "1.2.3")
@@ -146,7 +146,7 @@ describe("version sync guard", () => {
       "src/notion/client.ts",
     ])
 
-    writeFileSync(join(repo, PATHS.cliIndex), 'program.name("lore").version("9.9.9")')
+    writeFileSync(join(repo, PATHS.cliIndex), 'program.name("kennen").version("9.9.9")')
     expect(validateVersionSync({ cwd: repo, staged: true })).toEqual([])
 
     git(repo, ["add", PATHS.cliIndex])
@@ -156,7 +156,7 @@ describe("version sync guard", () => {
 
   it("validates staged lockfile versions for pre-commit checks", async () => {
     const { validateVersionSync } = await loadVersionSyncModule()
-    const repo = scratchDir("lore-version-sync-staged-lockfile-")
+    const repo = scratchDir("kennen-version-sync-staged-lockfile-")
     execFileSync("git", ["init"], { cwd: repo, stdio: "ignore" })
 
     writeVersionFiles(repo, "1.2.3")

@@ -10,7 +10,7 @@ import {
   type ScanReport,
   type ScanStats,
 } from "./conflicts.js"
-import type { LoreServices } from "../../services.js"
+import type { KennenServices } from "../../services.js"
 import type { Memory } from "../../types.js"
 import * as conflictModule from "../../core/conflict.js"
 
@@ -75,11 +75,11 @@ interface MakeServicesOpts {
 }
 
 /**
- * Build a `LoreServices`-shaped stub narrow to what `runScan` reads:
+ * Build a `KennenServices`-shaped stub narrow to what `runScan` reads:
  * `projects.findByName` (when --project), `projects.list()` (vault-wide),
  * and `memories.listForScan`. Anything else is cast through `unknown`.
  */
-function makeServices(opts: MakeServicesOpts): LoreServices {
+function makeServices(opts: MakeServicesOpts): KennenServices {
   const findByName = vi.fn(
     async (name: string, options?: { includeArchived?: boolean }) => {
       if (options?.includeArchived) {
@@ -112,7 +112,7 @@ function makeServices(opts: MakeServicesOpts): LoreServices {
   return {
     projects: { findByName, list },
     memories: { listForScan },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("parseScanCliOptions", () => {
@@ -234,10 +234,10 @@ describe("resolveScanProjects", () => {
     expect(refs).toEqual([{ id: "p-widget", label: "Widget" }])
   })
 
-  it("throws with a 'lore status' hint when --project is unknown", async () => {
+  it("throws with a 'kennen status' hint when --project is unknown", async () => {
     const services = makeServices({ projectsByName: {} })
     await expect(resolveScanProjects(services, "Nope")).rejects.toThrow(
-      /Project "Nope" could not be resolved.*lore status projects/
+      /Project "Nope" could not be resolved.*kennen status projects/
     )
   })
 
@@ -262,7 +262,7 @@ describe("resolveScanProjects", () => {
   it("scopes the all-projects branch to active projects (calls projects.list with 'active' status)", async () => {
     // Without the explicit "active" filter, archived projects walk
     // through the conflict-scan pipeline paying for paginated Memory
-    // walks against retired contexts. `lore status projects` already
+    // walks against retired contexts. `kennen status projects` already
     // uses `-a` to opt INTO archived; the conflict scan inherits the
     // active-by-default convention.
     const list = vi.fn().mockResolvedValue([])
@@ -272,7 +272,7 @@ describe("resolveScanProjects", () => {
         list,
       },
       memories: {},
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await resolveScanProjects(services, undefined)
     expect(list).toHaveBeenCalledTimes(1)
@@ -912,7 +912,7 @@ describe("renderScanJson", () => {
 
   it("emits a top-level compareContract block listing asymmetric and symmetric verdicts", () => {
     const out = JSON.parse(renderScanJson(buildReport()))
-    expect(out.compareContract.tool).toBe("lore-memory")
+    expect(out.compareContract.tool).toBe("kennen-memory")
     expect(out.compareContract.action).toBe("compare")
     expect(out.compareContract.verdicts.asymmetric).toEqual([
       "conflicts_with",
@@ -1012,7 +1012,7 @@ describe("renderScanMarkdown", () => {
     // counts; matches the spec's example "0 pairs surfaced").
     expect(md).toContain("0 pairs surfaced")
     expect(md).toContain("docs/memory-workflows.md#conflict-verdicts")
-    expect(md).toContain("lore-memory action='compare'")
+    expect(md).toContain("kennen-memory action='compare'")
     expect(md).toContain("No candidate pairs to surface")
     expect(md).toContain("exhausted the scan scope")
     expect(md.endsWith("\n")).toBe(true)
@@ -1086,7 +1086,7 @@ describe("renderScanMarkdown", () => {
     expect(md).toContain("- title trigram: 0.78")
     expect(md).toContain("- shared tags: auth")
     // The action prompt names the compare tool.
-    expect(md).toContain("call `lore-memory action='compare'`")
+    expect(md).toContain("call `kennen-memory action='compare'`")
     // Output ends with a trailing newline regardless of pair count.
     expect(md.endsWith("\n")).toBe(true)
   })

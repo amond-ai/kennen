@@ -1,14 +1,14 @@
-export type LoreErrorDetailPrimitive = string | number | boolean | null
+export type KennenErrorDetailPrimitive = string | number | boolean | null
 
-export type LoreErrorDetailValue =
-  | LoreErrorDetailPrimitive
-  | readonly LoreErrorDetailValue[]
-  | { readonly [key: string]: LoreErrorDetailValue | undefined }
+export type KennenErrorDetailValue =
+  | KennenErrorDetailPrimitive
+  | readonly KennenErrorDetailValue[]
+  | { readonly [key: string]: KennenErrorDetailValue | undefined }
 
-export interface LoreErrorDetailsByKind {
+export interface KennenErrorDetailsByKind {
   "validation-error": {
     readonly field?: string
-    readonly value?: LoreErrorDetailValue
+    readonly value?: KennenErrorDetailValue
   }
   "similar-topic": {
     readonly attempted: string
@@ -162,29 +162,29 @@ export interface LoreErrorDetailsByKind {
   }
 }
 
-export type LoreErrorKind = keyof LoreErrorDetailsByKind
-export type LoreErrorDetails<TKind extends LoreErrorKind = LoreErrorKind> =
-  LoreErrorDetailsByKind[TKind]
+export type KennenErrorKind = keyof KennenErrorDetailsByKind
+export type KennenErrorDetails<TKind extends KennenErrorKind = KennenErrorKind> =
+  KennenErrorDetailsByKind[TKind]
 
-export class LoreError<TKind extends LoreErrorKind = LoreErrorKind> extends Error {
+export class KennenError<TKind extends KennenErrorKind = KennenErrorKind> extends Error {
   readonly kind: TKind
-  readonly details: Readonly<LoreErrorDetails<TKind>>
+  readonly details: Readonly<KennenErrorDetails<TKind>>
 
   constructor(
     kind: TKind,
     message: string,
-    details: LoreErrorDetails<TKind>,
+    details: KennenErrorDetails<TKind>,
     options?: { cause?: unknown }
   ) {
     super(message, options)
-    this.name = `LoreError(${kind})`
+    this.name = `KennenError(${kind})`
     this.kind = kind
     this.details = details
   }
 }
 
-export function isLoreError(err: unknown): err is LoreError {
-  return err instanceof LoreError
+export function isKennenError(err: unknown): err is KennenError {
+  return err instanceof KennenError
 }
 
 export function errorCauseMessage(cause: unknown, fallback = "unknown error"): string {
@@ -194,7 +194,7 @@ export function errorCauseMessage(cause: unknown, fallback = "unknown error"): s
   return String(cause)
 }
 
-const USER_ERROR_KINDS = new Set<LoreErrorKind>([
+const USER_ERROR_KINDS = new Set<KennenErrorKind>([
   "validation-error",
   "similar-topic",
   "procedure-source-resolution",
@@ -205,15 +205,15 @@ const USER_ERROR_KINDS = new Set<LoreErrorKind>([
   "pinned-cap-exceeded",
 ])
 
-const TEMPORARY_FAILURE_KINDS = new Set<LoreErrorKind>([
+const TEMPORARY_FAILURE_KINDS = new Set<KennenErrorKind>([
   "autosave-learning-duplicate-probe",
   "autosave-learning-lock-timeout",
   "transient-project-resolution",
   "write-budget-exceeded",
 ])
 
-export function loreErrorExitCode(err: unknown, fallback = 1): number {
-  if (!isLoreError(err)) return fallback
+export function kennenErrorExitCode(err: unknown, fallback = 1): number {
+  if (!isKennenError(err)) return fallback
   if (USER_ERROR_KINDS.has(err.kind)) return 2
   if (TEMPORARY_FAILURE_KINDS.has(err.kind)) return 75
   return fallback

@@ -1,5 +1,5 @@
 /**
- * Core domain types for Lore.
+ * Core domain types for Kennen.
  *
  * Vault → Project → Topic → Memory
  * → Fact (knowledge graph)
@@ -76,7 +76,7 @@ export type Tag = (typeof DEFAULT_TAG_VOCABULARY)[number]
 
 /**
  * Structural cap on the Synopsis property. The Notion rich_text per-block
- * ceiling is 2000; 500 is Lore's storage/rendering ceiling for this field.
+ * ceiling is 2000; 500 is Kennen's storage/rendering ceiling for this field.
  * Normal memory authoring uses `DEFAULT_MEMORY_SYNOPSIS_MAX` unless the
  * vault opts into a different `memory.synopsisMaxChars` value.
  *
@@ -86,7 +86,7 @@ export type Tag = (typeof DEFAULT_TAG_VOCABULARY)[number]
 export const SYNOPSIS_MAX = 500
 
 /**
- * Default authoring cap for `lore-memory` synopses. Wake-up, recall, and
+ * Default authoring cap for `kennen-memory` synopses. Wake-up, recall, and
  * downstream index mirrors render synopses as scan hooks, so fresh memory
  * writes default to a tighter budget than the structural storage ceiling.
  */
@@ -98,9 +98,9 @@ export const DEFAULT_MEMORY_SYNOPSIS_MAX = 150
  * Conservative: 30 days is long enough to absorb a vacation or a
  * context-switched project, short enough to flag truly-forgotten work.
  * Read by the `taskDaysStale` helper, the wake-up Tasks rendering, and
- * the `lore status` / `lore-context action='status'` task summary line.
+ * the `kennen status` / `kennen-context action='status'` task summary line.
  *
- * A future operator-tuning knob (`hooks.staleTaskDays` in .lore.yaml)
+ * A future operator-tuning knob (`hooks.staleTaskDays` in .kennen.yaml)
  * is the next step if real-vault feedback shows 30 is wrong; the const
  * is the single source of truth.
  */
@@ -166,7 +166,7 @@ export type MemorySource =
 
 /**
  * What kind of memory this is. Used as a server-side discriminator so
- * tools like `lore-decision action='list'` can filter without post-processing.
+ * tools like `kennen-decision action='list'` can filter without post-processing.
  *
  * `procedure` memories are reviewed, fleet-wide operating knowledge
  * promoted from resolved episodes (closed tasks, resolved incidents,
@@ -219,7 +219,7 @@ export type MemoryKind =
  * - `in-progress` — actively being worked.
  * - `blocked` — waiting on an external dependency. Pair with `Blocked By`
  * to name the blocker (PR number, person, service).
- * - `done` — closed successfully. `lore-task action='close'` writes this.
+ * - `done` — closed successfully. `kennen-task action='close'` writes this.
  * - `cancelled` — dropped without completion. Distinct from `done` so
  * metrics distinguish "shipped" from "abandoned".
  *
@@ -229,7 +229,7 @@ export type MemoryKind =
 export type TaskState = "open" | "in-progress" | "blocked" | "done" | "cancelled"
 
 /** Task states that count as "still owing work" — surfaced by
- * `lore-task action='list'` and the wake-up Tasks section by default. */
+ * `kennen-task action='list'` and the wake-up Tasks section by default. */
 export const ACTIVE_TASK_STATES: TaskState[] = ["open", "in-progress", "blocked"]
 
 /**
@@ -252,17 +252,17 @@ export type MemoryStatus =
  * Mutability for a pinned context block.
  *
  * - `mutable` (default) — pinned block can be updated via the normal
- * `lore-memory action='update'` and `lore-pinned action='update'`
+ * `kennen-memory action='update'` and `kennen-pinned action='update'`
  * paths.
- * - `read-only` — protected from `lore-memory action='update'` and
- * from the generic `lore-pinned action='update'` mutation path
+ * - `read-only` — protected from `kennen-memory action='update'` and
+ * from the generic `kennen-pinned action='update'` mutation path
  * unless the caller explicitly opts in via
  * `allowReadOnlyUpdate: true`. The override on
- * `lore-pinned action='update'` is `force: true`; every forced
+ * `kennen-pinned action='update'` is `force: true`; every forced
  * write lands a `> Forced read-only update` audit line on the
  * memory body so the override is recoverable from the row
  * itself. The override is a stop-sign visible in the audit trail,
- * not an access-control gate — Lore writes through one operator
+ * not an access-control gate — Kennen writes through one operator
  * bearer token, so any MCP caller can flip the flag. See AC #4
  * for the visibility model.
  *
@@ -337,7 +337,7 @@ export interface Memory {
    * Free-form space-separated tokens for things that don't belong in the
    * closed `Tags` vocabulary — PR numbers, ticket IDs, file paths, class or
    * function names, session identifiers. Indexed by Notion's text search so
-   * `lore-query action='search'` finds them, but kept out of the tag index.
+   * `kennen-query action='search'` finds them, but kept out of the tag index.
    */
   keywords: string
   /**
@@ -376,7 +376,7 @@ export interface Memory {
   /**
    * Normalized subject the task is about. Matches the legacy fact
    * Subject field for migrated tasks. Empty string when not set;
-   * `lore-query action='ask'` and `lore-task action='list'` filter
+   * `kennen-query action='ask'` and `kennen-task action='list'` filter
    * against this column server-side.
    */
   entity: string
@@ -385,7 +385,7 @@ export interface Memory {
    * (legacy rows and saves without an explicit key). Distinct from the
    * `Topic` relation column — Topic is a faceted-browsing axis,
    * Topic Key groups revisions of the same canonical concept so
-   * `lore-memory action='save'` can append-revision instead of
+   * `kennen-memory action='save'` can append-revision instead of
    * creating a new row. Format is kebab-case path like
    * `decision/jwt-auth`, enforced at save-path validation.
    */
@@ -399,7 +399,7 @@ export interface Memory {
   revisionCount: number
   /**
    * Memory page IDs this memory has been judged against by
-   * `lore-memory action='compare'`. Empty for legacy rows and for
+   * `kennen-memory action='compare'`. Empty for legacy rows and for
    * memories that have never been compared. The relation is
    * `single_property` on the Notion side, so the calling code is
    * responsible for symmetric writes (A→B and B→A).
@@ -407,7 +407,7 @@ export interface Memory {
   comparedWith: string[]
   /**
    * Append-only NDJSON audit trail for compare verdicts. Final audit
-   * lines use one JSON line per call to `lore-memory action='compare'`:
+   * lines use one JSON line per call to `kennen-memory action='compare'`:
    * `{"verdict": ..., "target": ..., "reason": ..., "judgedAt": ...,
    * "promptVersion": ...}`. Actionable verdicts may also append
    * internal `{"entryType":"compare_dispatch", ...}` ledger lines
@@ -473,7 +473,7 @@ export interface Memory {
  * Callers that need the body either pass `includeContent: true` to
  * `MemoryService.list` (when the body is small or the count is
  * bounded), or fetch the bodies separately via
- * `lore-memory action='expand'` / `MemoryService.getById` after
+ * `kennen-memory action='expand'` / `MemoryService.getById` after
  * triaging the title tier.
  */
 export type MemoryWithoutContent = Omit<Memory, "content"> & { content: "" }
@@ -508,7 +508,7 @@ export interface CreateMemoryInput {
   tags?: string[]
   keywords?: string
   /**
-   * 1–2 sentence synopsis. `lore-memory` authoring defaults to 150 chars
+   * 1–2 sentence synopsis. `kennen-memory` authoring defaults to 150 chars
    * and can opt up through `memory.synopsisMaxChars`; 500 remains the
    * structural storage ceiling.
    */
@@ -577,7 +577,7 @@ export interface CreateMemoryInput {
    * block" — the common case. Pass an object with `priority` /
    * `mutability` to create a pinned row in one step; the more common
    * path is to create the memory normally and then call
-   * `lore-pinned action='pin'` to convert.
+   * `kennen-pinned action='pin'` to convert.
    */
   pinned?: MemoryPinnedInput
 }
@@ -657,7 +657,7 @@ export interface UpdateMemoryInput {
    * `MemoryPinnedInput` write semantics. When the target row has
    * `Mutability = read-only`, every update path rejects with
    * `MemoryReadOnlyError` unless `allowReadOnlyUpdate` is set; the
-   * `lore-pinned action='update'` MCP surface exposes the
+   * `kennen-pinned action='update'` MCP surface exposes the
    * override behind an explicit `force: true` flag so the
    * read-only stop-sign isn't silently bypassed by generic update
    * calls.
@@ -667,10 +667,10 @@ export interface UpdateMemoryInput {
    * Escape hatch for editing a `Mutability = read-only` pinned
    * block. When `false` / omitted (the default), update calls
    * against read-only rows reject with `MemoryReadOnlyError`. Set
-   * to `true` to bypass the gate — the MCP `lore-pinned
+   * to `true` to bypass the gate — the MCP `kennen-pinned
    * action='update'` action threads it through behind an explicit
    * `force: true` so the override lands a visible audit line.
-   * Not an access-control gate (Lore uses one operator bearer
+   * Not an access-control gate (Kennen uses one operator bearer
    * token); the audit line IS the contract.
    */
   allowReadOnlyUpdate?: boolean
@@ -809,7 +809,7 @@ export type Task = Memory & {
 /**
  * Lightweight task summary — no markdown body. Returned by
  * `TaskService.list()` for the index-tier triage paths
- * (`lore-task action='list'`, wake-up Tasks section) so they don't
+ * (`kennen-task action='list'`, wake-up Tasks section) so they don't
  * pay an N+1 `retrieveMarkdown` cost.
  */
 export type TaskSummary = Omit<Task, "content">
@@ -827,7 +827,7 @@ export interface CreateTaskInput {
   blockedBy?: string
   /**
    * Normalized entity name the task is about. Defaults to `subject` when
-   * omitted so `lore-query action='ask'` always has something to match.
+   * omitted so `kennen-query action='ask'` always has something to match.
    */
   entity?: string
   /** Due date / next review. Maps to the `Review By` column. */
@@ -891,9 +891,9 @@ export interface ListTasksOpts {
    * recall the same task set. Deduplicated and trimmed by the caller —
    * `TaskService.list` lifts an empty list to "no entity filter."
    *
-   * Singular-input call sites (`lore-task action='list'`) wrap their
+   * Singular-input call sites (`kennen-task action='list'`) wrap their
    * one user-facing string into a one-element array; alias-expanding
-   * call sites (`lore-query action='ask'`) hand in the canonical name
+   * call sites (`kennen-query action='ask'`) hand in the canonical name
    * plus aliases from `EntityService`. Caps live at the boundary that
    * owns the expansion in `expandEntityQueryVariants`.
    */
@@ -906,7 +906,7 @@ export interface ListTasksOpts {
   dueAfterOrEmpty?: string
   /**
    * Sort order for index-tier task listings. Defaults to `reviewByAsc`,
-   * the triage-list order used by `lore-task action='list'`.
+   * the triage-list order used by `kennen-task action='list'`.
    */
   sortBy?: "reviewByAsc" | "updatedAtAsc" | "updatedAtDesc"
   limit?: number
@@ -1060,7 +1060,7 @@ export interface Fact {
   confidence: FactConfidence
   /**
    * System-managed numeric confidence in [0, 1]. `null` until the fact has
-   * been touched once by a read path (or backfilled by `lore migrate
+   * been touched once by a read path (or backfilled by `kennen migrate
    * --build-fact-confidence-scores`). Read surfaces combine this value with
    * `Last Referenced At` for ranking and trust-line display. Distinct from
    * the agent-curated `confidence` categorical above. Optional on the type for the same
@@ -1072,7 +1072,7 @@ export interface Fact {
   /**
    * Most-recent read-citation date in `YYYY-MM-DD` form; `null` until the
    * fact has been touched once by a read path (or backfilled by
-   * `lore migrate --build-fact-confidence-scores`). Distinct from `validFrom`
+   * `kennen migrate --build-fact-confidence-scores`). Distinct from `validFrom`
    * (relationship-validity start) and Notion's `last_edited_time` (write
    * timestamp). Optional for backward compat; `pageToFact` always populates.
    */
@@ -1100,7 +1100,7 @@ export interface Fact {
   createdAt?: string
   /**
    * Entity ID the fact's Subject relates to. Populated by the
-   * build-entities migration and by `lore-fact action='create'`
+   * build-entities migration and by `kennen-fact action='create'`
    * after the resolver runs. `null` on unbackfilled rows; queries that
    * filter by entity must accept that and fall back to the SubjectKey /
    * Subject substring path.
@@ -1126,8 +1126,8 @@ export interface Fact {
   /**
    * Transaction-time observation timestamp in `YYYY-MM-DD` form.
    * `null` on rows whose vault has not yet been backfilled by
-   * `lore migrate --backfill-fact-observed-at`. Distinct from `validFrom`
-   * (domain-truth start) — `observedAt` answers "when did Lore learn this
+   * `kennen migrate --backfill-fact-observed-at`. Distinct from `validFrom`
+   * (domain-truth start) — `observedAt` answers "when did Kennen learn this
    * fact?" while `validFrom` answers "when did the fact start being true
    * in the world?". Optional on the public type for the same
    * backward-compat reason as `subjectEntityId`.
@@ -1137,7 +1137,7 @@ export interface Fact {
    * Transaction-time invalidation timestamp in `YYYY-MM-DD` form.
    * `null` for live facts and for invalidated facts on vaults without
    * the column. Distinct from `validUntil` (domain-truth end) —
-   * `invalidatedAt` answers "when did Lore learn this fact stopped
+   * `invalidatedAt` answers "when did Kennen learn this fact stopped
    * being true?" while `validUntil` answers "when did the fact stop
    * being true in the world?". `FactService.invalidate` writes this
    * alongside `validUntil` in a single atomic update.

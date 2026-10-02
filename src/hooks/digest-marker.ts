@@ -1,6 +1,6 @@
 /**
  * Shared filesystem debounce marker for digest synthesis. Both the
- * Stop-triggered auto-digest helper and the `lore digest` CLI write this
+ * Stop-triggered auto-digest helper and the `kennen digest` CLI write this
  * marker so the "≤ 1 digest per project per 7 days" guarantee is respected
  * even when an operator runs the CLI explicitly mid-week.
  *
@@ -13,7 +13,7 @@
  * length and the sanitization charset.
  *
  * The state dir is resolved per-call via `getStateDir()` so
- * `LORE_HOOK_STATE_DIR` overrides (used by parallel test files for
+ * `KENNEN_HOOK_STATE_DIR` overrides (used by parallel test files for
  * isolation) flow through automatically.
  */
 

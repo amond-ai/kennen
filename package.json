@@ -1,10 +1,10 @@
 {
-  "name": "@notionhq/lore",
+  "name": "@amond-ai/kennen",
   "version": "1.0.0",
   "description": "AI memory system backed by Notion",
   "type": "module",
   "bin": {
-    "lore": "./dist/cli.js"
+    "kennen": "./dist/cli.js"
   },
   "exports": {
     ".": {
@@ -17,7 +17,7 @@
     }
   },
   "files": [
-    ".lore.example.yaml",
+    ".kennen.example.yaml",
     "AGENTS.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
@@ -75,20 +75,20 @@
     "node": ">=20"
   },
   "license": "MIT",
-  "author": "Notion Labs, Inc.",
+  "author": "PassionFactory Corp.",
   "keywords": [
     "notion",
     "mcp",
     "claude-code",
     "cursor"
   ],
-  "homepage": "https://github.com/makenotion/lore#readme",
+  "homepage": "https://github.com/amond-ai/kennen#readme",
   "bugs": {
-    "url": "https://github.com/makenotion/lore/issues"
+    "url": "https://github.com/amond-ai/kennen/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/makenotion/lore.git"
+    "url": "git+https://github.com/amond-ai/kennen.git"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",

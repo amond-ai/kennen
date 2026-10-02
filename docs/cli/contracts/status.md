@@ -2,7 +2,7 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore status` prints vault metadata, active profile, database counts, active
+`kennen status` prints vault metadata, active profile, database counts, active
 projects, task summaries, proposed-memory review counts, wake-up coverage,
 digest/drift watermarks, topology health, and recent background failures where
 configured.
@@ -28,7 +28,7 @@ Proposed-memory inbox count:
   recall exclusion, wake-up surfacing, status counts, CLI review, and MCP review
   actions must compose the same predicate rather than re-deriving it.
 - `formatProposedInboxStatus` returns no lines for `total === 0`; an empty
-  inbox is silent in `lore status`.
+  inbox is silent in `kennen status`.
 - Prefix inflects as `Proposed memory:` for one and `Proposed memories:` for
   more than one.
 - Rendered examples:
@@ -48,7 +48,7 @@ Proposed-memory inbox count:
 
 Wake-up coverage:
 
-- `lore status` calls `loadWakeUpData` with `includeMemoryContent: false` and
+- `kennen status` calls `loadWakeUpData` with `includeMemoryContent: false` and
   `includeCoverage: true`.
 - The section must not leak titles, fact text, query text, or page bodies.
 
@@ -71,20 +71,20 @@ Digest and drift watermarks:
   sub-projects.
 - Drift status wording says "next fire on next debounced session" because drift
   can run from any debounced caller, not only Stop hooks.
-- `lore status` itself touches the drift marker before loading drift status, so
+- `kennen status` itself touches the drift marker before loading drift status, so
   the rendered section reflects what later debounced callers will see.
-- If there is no configured `.lore.yaml` root, drift status returns no lines and
+- If there is no configured `.kennen.yaml` root, drift status returns no lines and
   the section is suppressed.
 
 Cost tracking:
 
-- `lore status` renders a compact cost section only when
+- `kennen status` renders a compact cost section only when
   `costTracking.enabled` is true. Disabled or omitted cost tracking is silent.
 - The section reads the local ledger only; it must not initialize any extra
   Notion clients beyond the status probes already running for the command.
 - The configured `costTracking.ledgerPath` is displayed as the ledger family
   root; status reads that legacy root file plus matching per-process shards.
-- The line reports today's Lore-owned model spend, wake-up estimated tokens,
+- The line reports today's Kennen-owned model spend, wake-up estimated tokens,
   MCP call count, and Notion writes. A month-to-date line appears only when the
   current month has ledger entries. Autosave and digest model spend is labeled
   as a background prompt estimate; it may exclude completion tokens,
@@ -97,7 +97,7 @@ Cost tracking:
 - Missing, empty, or malformed ledger rows must not fail status output.
   Malformed or schema-invalid non-blank rows render a redacted warning with only
   the skipped-line count.
-- If a previous ledger append failed, `lore status` shows a warning while the
+- If a previous ledger append failed, `kennen status` shows a warning while the
   append-error marker exists. A later successful append clears the marker.
 - The append-error marker only reflects append operations that threw. It does
   not prove successful appends were forced to stable storage; a host crash or

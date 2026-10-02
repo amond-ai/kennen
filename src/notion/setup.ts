@@ -1,5 +1,5 @@
 /**
- * Create and verify the Notion database structure for a Lore vault.
+ * Create and verify the Notion database structure for a Kennen vault.
  *
  * A vault is a Notion page containing five child databases:
  * Projects, Topics, Memories, Entities, Facts — linked by relations.
@@ -148,17 +148,17 @@ function formatMissingVaultDatabasesMessage(
 ): string {
   const prefix = `Vault at ${formatVaultPageIdForMessage(pageId)} is missing databases: ${missing.join(", ")}.`
   if (present.length === 0) {
-    return `${prefix} Run 'lore init' to create them.`
+    return `${prefix} Run 'kennen init' to create them.`
   }
   return (
-    `${prefix} Found existing Lore databases: ${present.join(", ")}. ` +
-    "This is a partial vault schema; do not run 'lore init' on this page because it would create duplicate databases. " +
+    `${prefix} Found existing Kennen databases: ${present.join(", ")}. ` +
+    "This is a partial vault schema; do not run 'kennen init' on this page because it would create duplicate databases. " +
     "Follow docs/team-rollout.md#entities-database-cutover to add or repair the missing databases, then rerun."
   )
 }
 
 function formatVaultPageIdForMessage(pageId: string): string {
-  if (process.env["LORE_DEBUG"] === "1") return pageId
+  if (process.env["KENNEN_DEBUG"] === "1") return pageId
   if (pageId.length <= 12) return pageId
   return `${pageId.slice(0, 4)}...${pageId.slice(-4)}`
 }
@@ -233,7 +233,7 @@ function createDbArgs(
 }
 
 /**
- * Create all five Lore databases inside a Notion page.
+ * Create all five Kennen databases inside a Notion page.
  */
 export async function createVaultDatabases(
   client: Client,
@@ -301,7 +301,7 @@ export async function createVaultDatabases(
   // 5. Facts (depends on Projects + Memories + Entities). The Facts DB
   // gains `SubjectEntity` / `ObjectEntity` relation columns post-PF3-01;
   // wiring them up at creation time means new vaults skip the
-  // `lore migrate --build-entities` schema-drift detour entirely.
+  // `kennen migrate --build-entities` schema-drift detour entirely.
   const factsDb = await client.databases.create(
     createDbArgs(
       pageId,
@@ -658,7 +658,7 @@ function verifyAppliedSchemaWrites(
 /**
  * Compare the expected property schema against each live data source and
  * add any properties or select options that are missing. Never renames or
- * removes anything — additions only, to keep vaults stable across Lore
+ * removes anything — additions only, to keep vaults stable across Kennen
  * versions.
  *
  * Idempotent: re-running against an up-to-date vault issues no writes.

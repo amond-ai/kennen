@@ -14,7 +14,7 @@ vi.mock("../../core/promote.js", async () => {
 })
 
 /**
- * MCP `lore-memory action='promote'` dispatch tests (issue #286).
+ * MCP `kennen-memory action='promote'` dispatch tests (issue #286).
  *
  * The service-layer invariants (audit-block format, primary-vault
  * rejection, projectIds/tags drop, source live-page validation) are
@@ -91,7 +91,7 @@ function makePromoteServices(
   }
 }
 
-describe("lore-memory action='promote' dispatch", () => {
+describe("kennen-memory action='promote' dispatch", () => {
   beforeEach(() => {
     vi.mocked(promoteMemory).mockReset()
   })
@@ -112,7 +112,7 @@ describe("lore-memory action='promote' dispatch", () => {
       }) as never
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Mistype",
@@ -135,7 +135,7 @@ describe("lore-memory action='promote' dispatch", () => {
       }) as never
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",
@@ -145,11 +145,11 @@ describe("lore-memory action='promote' dispatch", () => {
     expect(isError(result)).toBe(true)
     const text = extractText(result)
     expect(text).toContain("no promoter identity")
-    expect(text).toContain("LORE_USER_NAME")
+    expect(text).toContain("KENNEN_USER_NAME")
     // Routes operators wanting an explicit override at the CLI's
     // `--promoter` flag — the MCP boundary deliberately does not
     // accept a client-supplied promoter (audit-forgery defense).
-    expect(text).toContain("lore promote --promoter")
+    expect(text).toContain("kennen promote --promoter")
   })
 
   it("uses the server-resolved identity (NOT any client-supplied promoter)", async () => {
@@ -172,7 +172,7 @@ describe("lore-memory action='promote' dispatch", () => {
       status: "accepted",
     })
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",
@@ -203,7 +203,7 @@ describe("lore-memory action='promote' dispatch", () => {
       status: "proposed",
     })
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",
@@ -229,7 +229,7 @@ describe("lore-memory action='promote' dispatch", () => {
       status: "accepted",
     })
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "abc12345-6789-4def-8123-456789012345",
       targetName: "Team",
@@ -262,7 +262,7 @@ describe("lore-memory action='promote' dispatch", () => {
       status: "accepted",
     })
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",
@@ -290,7 +290,7 @@ describe("lore-memory action='promote' dispatch", () => {
       new Error("Memory mem-1 is not in the Memories database.")
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",
@@ -310,7 +310,7 @@ describe("lore-memory action='promote' dispatch", () => {
       }) as never
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
     })
@@ -318,7 +318,7 @@ describe("lore-memory action='promote' dispatch", () => {
     expect(promoteMemory).not.toHaveBeenCalled()
     expect(isError(result)).toBe(true)
     const text = extractText(result)
-    expect(text).toContain("lore-memory")
+    expect(text).toContain("kennen-memory")
     expect(text).toContain("targetName")
   })
 
@@ -342,7 +342,7 @@ describe("lore-memory action='promote' dispatch", () => {
       )
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "SameAsPrimary",
@@ -368,7 +368,7 @@ describe("lore-memory action='promote' dispatch", () => {
       }) as never
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",
@@ -413,7 +413,7 @@ describe("lore-memory action='promote' dispatch", () => {
       }) as never
     )
 
-    const result = await mock.get("lore-memory")({
+    const result = await mock.get("kennen-memory")({
       action: "promote",
       memoryId: "mem-1",
       targetName: "Team",

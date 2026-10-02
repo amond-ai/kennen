@@ -11,8 +11,8 @@ import type {
 } from "../types.js"
 import { buildMemoryProps, MEMORY_PROPS } from "../notion/schema.js"
 import { decodeTextEntities } from "../notion/html-entities.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
-import type { LoreFeatureFlags } from "../feature-flags.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
+import type { KennenFeatureFlags } from "../feature-flags.js"
 import { validateRichTextMetadataFields } from "./rich-text-schema.js"
 import { DEFAULT_MEMORY_SYNOPSIS_MAX } from "../types.js"
 import {
@@ -49,7 +49,7 @@ function parseNonNegativeIntegerEnv(name: string, fallback: number): number {
 
 function autosaveLearningPostCreateStabilizeMs(): number {
   return parseNonNegativeIntegerEnv(
-    "LORE_AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS",
+    "KENNEN_AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS",
     AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS
   )
 }
@@ -163,7 +163,7 @@ function decodeMemoryTextFields(input: CreateMemoryInput): {
  * properties-only orphan in the vault that a naive retry would
  * duplicate rather than reuse.
  */
-export class MemoryCreatePartialFailureError extends LoreError<"memory-create-partial"> {
+export class MemoryCreatePartialFailureError extends KennenError<"memory-create-partial"> {
   readonly pageId: string
   readonly cleanedUp: boolean
   readonly bodyWriteError: unknown
@@ -209,7 +209,7 @@ export class MemoryCreate {
   constructor(
     private readonly client: Client,
     private readonly db: DatabaseRef,
-    private readonly features: LoreFeatureFlags,
+    private readonly features: KennenFeatureFlags,
     private readonly deps: MemoryCreateDeps,
     private readonly options: { synopsisMaxChars?: number } = {}
   ) {}
@@ -440,7 +440,7 @@ export class MemoryCreate {
         // `rich_text` segment cap is 2000 chars
         // (`RICH_TEXT_PROPERTY_MAX_LEN`), and the MCP boundary's
         // `keywordsSchema` accepts keywords up to exactly that cap.
-        // Concatenating ` __lore-cleanup-orphan` (22 chars) onto a
+        // Concatenating ` __kennen-cleanup-orphan` (22 chars) onto a
         // 2000-char keyword string would produce a 2022-char single
         // segment that Notion rejects with a validation error. A
         // rejected cleanup write means `cleanedUp = false` and the

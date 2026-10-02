@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-jinja2-modelhard-v1
+name: kennen-longitudinal-jinja2-modelhard-v1
 description: >-
   Model-hard Jinja2 longitudinal suite. Scenarios pin a stable Jinja2 revision
   and ask the agent to implement a small templating module against an intrinsic
@@ -13,8 +13,8 @@ description: >-
 seededCorpus: ../vault-seeds/jinja2-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: jinja2-set-in-loop-scoping-v1
     difficulty: hard
@@ -39,7 +39,7 @@ scenarios:
     phaseB:
       promptId: jinja2-set-in-loop-scoping-v1-use
       prompt: >-
-        Implement a new module `lore_solution.py` at the repository root that
+        Implement a new module `kennen_solution.py` at the repository root that
         renders a membership report using a single Jinja2 template. Provide a
         module-level function `render_scan_report(items, target)` that uses one
         `Environment().from_string(...).render(...)` call over a template which
@@ -55,7 +55,7 @@ scenarios:
         pre-computing it in Python before rendering and not by passing a Python
         boolean into the context. The result for a given call must not be
         influenced by any previous call. Do not edit files outside
-        `lore_solution.py`.
+        `kennen_solution.py`.
     expectedContext:
       description: >-
         A Jinja2 variable assigned with `{% set %}` inside a `{% for %}` loop
@@ -76,12 +76,12 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_jinja_scan.py b/lore_eval_hidden_jinja_scan.py
+          diff --git a/kennen_eval_hidden_jinja_scan.py b/kennen_eval_hidden_jinja_scan.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_jinja_scan.py
+          +++ b/kennen_eval_hidden_jinja_scan.py
           @@ -0,0 +1,40 @@
-          +from lore_solution import render_scan_report
+          +from kennen_solution import render_scan_report
           +
           +
           +def test_reports_match_when_target_in_middle():
@@ -130,7 +130,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_jinja_scan.py
+          - kennen_eval_hidden_jinja_scan.py
           - -q
         timeoutMs: 300000
 
@@ -157,7 +157,7 @@ scenarios:
     phaseB:
       promptId: jinja2-default-filter-falsy-fallback-v1-use
       prompt: >-
-        Implement a new module `lore_solution.py` at the repository root that
+        Implement a new module `kennen_solution.py` at the repository root that
         renders a settings summary with Jinja2. Provide a module-level function
         `render_settings(values)` where `values` maps field names to supplied
         values. Render exactly one `key=value` line per field, newline-separated,
@@ -171,7 +171,7 @@ scenarios:
 
         Drive the blank-detection through the template's own value-substitution
         machinery rather than branching on each value in Python before rendering.
-        Do not edit files outside `lore_solution.py`.
+        Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         Jinja2's `default` filter substitutes only when the variable is
@@ -192,12 +192,12 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_jinja_settings.py b/lore_eval_hidden_jinja_settings.py
+          diff --git a/kennen_eval_hidden_jinja_settings.py b/kennen_eval_hidden_jinja_settings.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_jinja_settings.py
+          +++ b/kennen_eval_hidden_jinja_settings.py
           @@ -0,0 +1,43 @@
-          +from lore_solution import render_settings
+          +from kennen_solution import render_settings
           +
           +
           +def _lines(out):
@@ -249,7 +249,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_jinja_settings.py
+          - kennen_eval_hidden_jinja_settings.py
           - -q
         timeoutMs: 300000
 
@@ -276,7 +276,7 @@ scenarios:
     phaseB:
       promptId: jinja2-autoescape-html-output-v1-use
       prompt: >-
-        Implement a new module `lore_solution.py` at the repository root that
+        Implement a new module `kennen_solution.py` at the repository root that
         renders user comments into an HTML page fragment with Jinja2. Provide a
         module-level function `render_comment(author, comment)` that renders both
         `author` and `comment` into an HTML fragment of the form
@@ -290,7 +290,7 @@ scenarios:
         as an actual `<script>` element. Achieve this through the Jinja2
         environment's own configuration; do not hand-roll an HTML-escaping pass
         over the values before passing them into the template. Do not edit files
-        outside `lore_solution.py`.
+        outside `kennen_solution.py`.
     expectedContext:
       description: >-
         A bare `jinja2.Environment()` has `autoescape=False`, so rendering
@@ -310,12 +310,12 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_jinja_comment.py b/lore_eval_hidden_jinja_comment.py
+          diff --git a/kennen_eval_hidden_jinja_comment.py b/kennen_eval_hidden_jinja_comment.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_jinja_comment.py
+          +++ b/kennen_eval_hidden_jinja_comment.py
           @@ -0,0 +1,30 @@
-          +from lore_solution import render_comment
+          +from kennen_solution import render_comment
           +
           +
           +def test_script_tag_is_escaped():
@@ -356,6 +356,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_jinja_comment.py
+          - kennen_eval_hidden_jinja_comment.py
           - -q
         timeoutMs: 300000

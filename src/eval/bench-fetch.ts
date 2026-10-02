@@ -1,5 +1,5 @@
 /**
- * `lore eval bench fetch longmemeval` — download the LongMemEval
+ * `kennen eval bench fetch longmemeval` — download the LongMemEval
  * cleaned corpus from the HF revision pinned in `checksums.json`,
  * verify sha256, and write to `evals/bench-corpora/longmemeval/`.
  *

@@ -2,7 +2,7 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore tasks` is the CLI surface for task lifecycle operations.
+`kennen tasks` is the CLI surface for task lifecycle operations.
 
 Contracts:
 

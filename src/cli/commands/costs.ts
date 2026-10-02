@@ -26,7 +26,8 @@ function warnForMalformedLedgerLines(malformedLineCount: number): void {
 
 async function loadCostTracking(): Promise<ResolvedCostTracking> {
   const found = await findConfigFile(process.cwd())
-  if (!found) throw new Error("No .lore.yaml found. Run `lore init` to set up a vault.")
+  if (!found)
+    throw new Error("No .kennen.yaml found. Run `kennen init` to set up a vault.")
   const config = await loadConfig(found.path)
   return resolveCostTracking(config, found.root)
 }
@@ -44,7 +45,7 @@ function parseRange(
 }
 
 export const costsCommand = new Command("costs").description(
-  "Inspect the opt-in local Lore cost ledger"
+  "Inspect the opt-in local Kennen cost ledger"
 )
 
 costsCommand

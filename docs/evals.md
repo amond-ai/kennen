@@ -1,6 +1,6 @@
-# Lore Evals
+# Kennen Evals
 
-Lore evals measure whether memory changes agent outcomes, not just whether
+Kennen evals measure whether memory changes agent outcomes, not just whether
 search returns plausible rows. The default harness is the **retrieval runner**:
 it reads committed YAML fixtures, loads them into fixture-backed services,
 runs the production `loadWakeUpData` wake-up retrieval composition, scores
@@ -37,7 +37,7 @@ hot-path gate.
 
 ```bash
 npm run build
-node dist/cli.js eval run evals/suites/lore-core.yaml
+node dist/cli.js eval run evals/suites/kennen-core.yaml
 ```
 
 The starter retrieval suite writes a JSON artifact under `evals/results/` by
@@ -45,8 +45,8 @@ default. Pass `--out <path>` to choose a deterministic artifact path for CI or
 comparison runs:
 
 ```bash
-node dist/cli.js eval run evals/suites/lore-core.yaml \
-  --out evals/results/lore-core-latest.json \
+node dist/cli.js eval run evals/suites/kennen-core.yaml \
+  --out evals/results/kennen-core-latest.json \
   --json
 ```
 
@@ -63,16 +63,16 @@ context-enabled answerability rather than wake-up surfaced memory ids:
 | Runner                | What it exercises                                                                                                                                                                                                                          | Where to use it                                                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `retrieval` (default) | Fixture-backed `loadWakeUpData` with deterministic token-overlap search. No Notion calls.                                                                                                                                                  | Per-PR CI; the inner-loop fast feedback.                                                                                                                                |
-| `notion`              | Real `loadWakeUpData` against `LoreServices` initialized from `.lore.yaml`. Hits Notion.                                                                                                                                                   | Nightly CI; PRs that touch retrieval composition or ranking.                                                                                                            |
+| `notion`              | Real `loadWakeUpData` against `KennenServices` initialized from `.kennen.yaml`. Hits Notion.                                                                                                                                                   | Nightly CI; PRs that touch retrieval composition or ranking.                                                                                                            |
 | `task`                | End-to-end agent run against a synthetic workspace, scored by deterministic verifiers. Shells out to `codex exec`.                                                                                                                         | Nightly CI; opt-in PRs. Slow + model-cost; not the per-PR hot path.                                                                                                     |
-| `bench`               | End-to-end LongMemEval bench: per-example ingest + recall through Lore MCP + judge. Hits Notion + OpenAI.                                                                                                                                  | Operator-dispatched only (workflow_dispatch). A narrow conversation-memory reference, not the headline SkillRet/Lore or formation-transfer measurement.                 |
+| `bench`               | End-to-end LongMemEval bench: per-example ingest + recall through Kennen MCP + judge. Hits Notion + OpenAI.                                                                                                                                  | Operator-dispatched only (workflow_dispatch). A narrow conversation-memory reference, not the headline SkillRet/Kennen or formation-transfer measurement.                 |
 | `profile`             | Deterministic profile-owned extraction artifacts scored against taxonomy, required-field, and hallucination expectations. No Notion or model calls.                                                                                        | Per-profile support suites and PRs that change profile manifests, schemas, or extraction contracts.                                                                     |
 | `retrieval-quality`   | Labeled live-vault query → expected-memory checks through the real `MemoryService.searchWithExplain` path. Computes target rank, recall@1/5/10, NDCG@10, harmful@k, and MRR across product, RunTool AI, and REST keyword lanes.            | PRs and release checks that touch search transport or ranking. Read-only but live-vault-backed, so run deliberately against an operator-approved vault.                 |
-| `skill-retrieval`     | SkillRet memory-as-skill corpus ranking. The `keyword` lane is offline; the `notion-ai` lane imports SkillRet into a persistent Lore eval vault and scores Notion AI search through `MemoryService.searchWithExplain`.                     | Public-scale substrate/candidate-recall diagnostic for memory-as-skill ranking. Does not measure representative Lore agent use.                                         |
+| `skill-retrieval`     | SkillRet memory-as-skill corpus ranking. The `keyword` lane is offline; the `notion-ai` lane imports SkillRet into a persistent Kennen eval vault and scores Notion AI search through `MemoryService.searchWithExplain`.                     | Public-scale substrate/candidate-recall diagnostic for memory-as-skill ranking. Does not measure representative Kennen agent use.                                         |
 | `skill-use`           | Offline no-context / oracle-context / retrieved-context / harmful-context answerability over labeled support sets. Computes success, answer accuracy, context sufficiency, harmful context rate, and retrieval gap to oracle.              | Deterministic context-use proxy for memory-as-skill evidence. Does not measure live Notion behavior or a powered agent unless a separate answerer is plugged in.        |
-| `skill-agent`         | SkillRet tasks as read-only seeded-vault Lore use. The agent receives Lore read instructions plus read-only search/expand tools, writes are blocked, and scoring separates tool use, target surfaced, target selected, and answer applied. | Representative SkillRet/Lore eval for fixed vaults. It measures whether an instructed agent can use an existing Lore vault, not whether Lore forms or mutates memories. |
+| `skill-agent`         | SkillRet tasks as read-only seeded-vault Kennen use. The agent receives Kennen read instructions plus read-only search/expand tools, writes are blocked, and scoring separates tool use, target surfaced, target selected, and answer applied. | Representative SkillRet/Kennen eval for fixed vaults. It measures whether an instructed agent can use an existing Kennen vault, not whether Kennen forms or mutates memories. |
 
-The longitudinal `lore-full-loop` task condition is not a headline
+The longitudinal `kennen-full-loop` task condition is not a headline
 formation-transfer metric when Phase A only inspects a workspace. A defensible
 formation-transfer measurement needs separate gates for prior-task success,
 formed-memory quality, retrieval, and Phase B use. Keep public skill
@@ -86,7 +86,7 @@ fusion, ranking) against an operator-maintained sandbox vault. Per-task results
 collapse to a single synthetic `live-vault` scenario; the runner uses the
 helpful-memory expectation as the live-vault assertion **because the live vault
 IS the "memory is present" state by definition**. The other ablations
-(`no-lore`, `empty-lore`, `noisy-memory`, `stale-memory`) cannot be replayed
+(`no-kennen`, `empty-kennen`, `noisy-memory`, `stale-memory`) cannot be replayed
 against a single live vault state without seed/cleanup infrastructure, so
 notion-mode is structurally one-scenario-per-task. Lift / harm metrics therefore
 stay `null` in notion mode. `shouldNotSurface` lists from the helpful-memory
@@ -109,7 +109,7 @@ project by name, runs the real search path, and emits one result per lane.
 
 ```bash
 npm run build
-LORE_CONFIG_ROOT=~/Developer/Notion/Mail \
+KENNEN_CONFIG_ROOT=~/Developer/Notion/Mail \
 node dist/cli.js eval run evals/retrieval-quality/mail.yaml
 ```
 
@@ -117,7 +117,7 @@ The default lanes are:
 
 | Lane           | What it measures                                                                                                        |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `product`      | The shipped `lore search` / `lore-query action='search'` path: semantic mode with the process's resolved feature flags. |
+| `product`      | The shipped `kennen search` / `kennen-query action='search'` path: semantic mode with the process's resolved feature flags. |
 | `runtool-ai`   | Semantic mode with RunTool search forced on, proving Notion AI search can rank the target.                              |
 | `rest-keyword` | Contains-mode `dataSources.query` keyword search, retained as a comparison lane rather than a required pass condition.  |
 
@@ -143,7 +143,7 @@ substrate recall diagnostic: it imports each SkillRet skill as a `procedure` mem
 persistent Notion-backed eval vault, adds SkillRet taxonomy topics, topic keys,
 tags, keywords, and body metadata, stores the skill-id to memory-id mapping in
 a local manifest, and then scores returned memories from Notion AI search.
-It does not measure an LLM agent deciding to use Lore or applying a retrieved
+It does not measure an LLM agent deciding to use Kennen or applying a retrieved
 memory.
 
 ```bash
@@ -158,12 +158,12 @@ Run the Notion AI lane against the registered persistent SkillRet eval vault:
 npm run build
 node dist/cli.js eval skill-retrieval fetch skillret
 
-mkdir -p /tmp/lore-eval-vaults/skillret-dev-eval
+mkdir -p /tmp/kennen-eval-vaults/skillret-dev-eval
 node dist/cli.js eval vaults show skillret-dev-eval --config \
-  > /tmp/lore-eval-vaults/skillret-dev-eval/.lore.yaml
+  > /tmp/kennen-eval-vaults/skillret-dev-eval/.kennen.yaml
 
 NOTION_ENV=dev \
-LORE_CONFIG_ROOT=/tmp/lore-eval-vaults/skillret-dev-eval \
+KENNEN_CONFIG_ROOT=/tmp/kennen-eval-vaults/skillret-dev-eval \
 node dist/cli.js eval skill-retrieval import \
   evals/skill-retrieval/skillret-notion-ai.yaml \
   --yes \
@@ -171,14 +171,14 @@ node dist/cli.js eval skill-retrieval import \
   --parallel 3
 
 NOTION_ENV=dev \
-LORE_CONFIG_ROOT=/tmp/lore-eval-vaults/skillret-dev-eval \
-LORE_EVAL_SKILLRET_REAL=1 \
+KENNEN_CONFIG_ROOT=/tmp/kennen-eval-vaults/skillret-dev-eval \
+KENNEN_EVAL_SKILLRET_REAL=1 \
 node dist/cli.js eval run evals/skill-retrieval/skillret-notion-ai.yaml
 ```
 
 The committed `skillret-notion-ai` suite is bound to the registered
 `skillret-dev-eval` vault page id, so import and run fail if the active
-`.lore.yaml` points at a different vault. The suite imports rows into taxonomy
+`.kennen.yaml` points at a different vault. The suite imports rows into taxonomy
 topics while leaving search project-scoped (`searchTopicScoped: false`) so the
 AI lane can retrieve across the full SkillRet corpus. Full-corpus live runs are
 paced by `queryDelayMs` to avoid intentionally saturating the Notion rate
@@ -228,46 +228,46 @@ The `notion-ai` lane requires a retrieval window of at most 25, matching the
 RunTool search return cap. It also records a mechanism trace and counts
 mechanism failures when RunTool AI search did not dispatch as expected. Report
 this runner as public-scale candidate recall only. It does not show that the
-agent used the memory correctly, that Lore formed the memory autonomously, or
-that the normal Lore instructions caused an agent to query the vault.
+agent used the memory correctly, that Kennen formed the memory autonomously, or
+that the normal Kennen instructions caused an agent to query the vault.
 
 ## Skill-Agent Runner
 
 `skill-agent` suites live under `evals/skill-agent/`. They are the
-representative SkillRet/Lore eval path for fixed evaluation vaults. The vault is
+representative SkillRet/Kennen eval path for fixed evaluation vaults. The vault is
 a read-only seeded fixture: agents may search, recall, and expand existing
 memories, but they may not create, update, archive, approve, reject, promote,
-mine, autosave, or otherwise mutate Lore state. Any write attempt is blocked by
+mine, autosave, or otherwise mutate Kennen state. Any write attempt is blocked by
 the harness and counted in the artifact.
 
 ```bash
 npm run build
 NOTION_ENV=dev \
-LORE_CONFIG_ROOT=/tmp/lore-eval-vaults/skillret-dev-eval \
-LORE_EVAL_BENCH_REAL=1 \
+KENNEN_CONFIG_ROOT=/tmp/kennen-eval-vaults/skillret-dev-eval \
+KENNEN_EVAL_BENCH_REAL=1 \
 node dist/cli.js eval run evals/skill-agent/skillret-readonly-agent.yaml
 ```
 
 The runner reuses the SkillRet import manifest declared by the linked
-`skill-retrieval` suite. It validates that the active Lore config points at the
+`skill-retrieval` suite. It validates that the active Kennen config points at the
 suite's registered vault, that the manifest covers every selected query's qrels,
 and that the selected agent conditions run against the same fixed corpus
 revision.
 
 The default committed suite uses:
 
-- `no-lore`: baseline model/task prior with no Lore tools.
-- `tool-driven-lore`: headline condition. The agent receives read-only Lore
+- `no-kennen`: baseline model/task prior with no Kennen tools.
+- `tool-driven-kennen`: headline condition. The agent receives read-only Kennen
   instructions and read-only search/expand tools. Search uses the agent-facing
-  `lore-query action='search'` behavior, including planned semantic query
+  `kennen-query action='search'` behavior, including planned semantic query
   variants unless query planning is disabled.
 - `oracle-context`: diagnostic ceiling where the target procedure body is
   injected directly.
 
 Artifacts score separate layers so a retrieved-but-unused memory is not counted
-as Lore success:
+as Kennen success:
 
-- `toolUse`: a successful read-only Lore tool call happened.
+- `toolUse`: a successful read-only Kennen tool call happened.
 - `targetSurfaced`: an expected SkillRet memory appeared in tool results.
 - `targetExpanded`: the agent read the expected memory body.
 - `targetSelected`: the final structured answer cited the expected memory or
@@ -276,7 +276,7 @@ as Lore success:
 - `writeAttemptsBlocked`: attempted write-path calls rejected by the harness.
 
 Keep `skill-agent` reports separate from `skill-retrieval` reports. Raw Notion
-search recall is useful for diagnosing the substrate, but the headline Lore
+search recall is useful for diagnosing the substrate, but the headline Kennen
 claim is read-only agent use over a stable seeded vault.
 
 ## Skill-Use Runner
@@ -340,14 +340,14 @@ and judge behavior become part of the measurement.
 ## Sandbox Vault Discipline
 
 Notion-mode suites typically live alongside the fixture suite but reference
-**real Notion page ids** in `shouldSurface`. The committed `lore-core` suite
+**real Notion page ids** in `shouldSurface`. The committed `kennen-core` suite
 uses synthetic ids (e.g. `decision/auth-model`) and will not match anything on
 a real vault -- author a parallel suite under `evals/suites/<name>-sandbox.yaml`
 whose `shouldSurface` lists the actual ids from the operator's sandbox vault.
 
 The CLI rejects project names that don't **word-boundary**-match one of
 `sandbox`, `eval`, `test`, `scratch`, `staging`, `dev`, or `playground` unless
-`LORE_EVAL_NOTION_ALLOW_PRODUCTION=1` is set in the environment. Notion-mode
+`KENNEN_EVAL_NOTION_ALLOW_PRODUCTION=1` is set in the environment. Notion-mode
 reads are technically read-only, but pointing the runner at a production vault
 still hammers per-token rate limits and surfaces misleading "drift" against
 fixture-shaped expectations -- the env-var gate forces an explicit decision.
@@ -365,7 +365,7 @@ Shared live eval vault locators live in
 [`evals/vaults.yaml`](../evals/vaults.yaml). The registry may commit Notion
 workspace ids and vault page ids because they are access locators, not bearer
 credentials; operators still need matching Notion auth and page access. Never
-commit tokens or generated `.lore.yaml` files.
+commit tokens or generated `.kennen.yaml` files.
 
 List the registered vaults:
 
@@ -377,46 +377,46 @@ node dist/cli.js eval vaults
 Materialize a local config root for the seeded dev sandbox:
 
 ```bash
-mkdir -p /tmp/lore-eval-vaults/lore-dev-sandbox
-node dist/cli.js eval vaults show lore-dev-sandbox --config \
-  > /tmp/lore-eval-vaults/lore-dev-sandbox/.lore.yaml
-node dist/cli.js eval vaults show lore-dev-sandbox --env
+mkdir -p /tmp/kennen-eval-vaults/kennen-dev-sandbox
+node dist/cli.js eval vaults show kennen-dev-sandbox --config \
+  > /tmp/kennen-eval-vaults/kennen-dev-sandbox/.kennen.yaml
+node dist/cli.js eval vaults show kennen-dev-sandbox --env
 ```
 
-Live evals that are measuring cost should opt into Lore's local cost ledger in
+Live evals that are measuring cost should opt into Kennen's local cost ledger in
 that sandbox config root before running:
 
 ```yaml
 costTracking:
   enabled: true
-  ledgerPath: /tmp/lore-eval-vaults/lore-dev-sandbox/eval-costs.jsonl
+  ledgerPath: /tmp/kennen-eval-vaults/kennen-dev-sandbox/eval-costs.jsonl
 ```
 
 Run the live longitudinal suite against that vault by pointing
-`LORE_EVAL_LONGITUDINAL_CONFIG_ROOT` at the generated config root, exporting the
+`KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT` at the generated config root, exporting the
 vault selector env, and opting into the live task runner:
 
 ```bash
 NOTION_ENV=dev \
 NOTION_WORKSPACE_ID=415fc269-e68f-4da0-b3e3-b1273b741a7f \
-LORE_EVAL_LONGITUDINAL_CONFIG_ROOT=/tmp/lore-eval-vaults/lore-dev-sandbox \
-LORE_EVAL_TASK_REAL=1 \
-LORE_EVAL_LONGITUDINAL_REAL=1 \
-LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \
+KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT=/tmp/kennen-eval-vaults/kennen-dev-sandbox \
+KENNEN_EVAL_TASK_REAL=1 \
+KENNEN_EVAL_LONGITUDINAL_REAL=1 \
+KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \
 node dist/cli.js eval run --runner task evals/task-suites/longitudinal.yaml
 ```
 
 The initial seeded-vault validation recorded in the registry is a smoke run,
 not a statistically powered benchmark: it ran all 4 scenarios in the committed
 longitudinal suite across both conditions (8 condition runs total). On
-2026-05-14, `no-memory` passed 3/4 scenarios, `lore-full-loop` passed 4/4
+2026-05-14, `no-memory` passed 3/4 scenarios, `kennen-full-loop` passed 4/4
 scenarios, and the observed success-rate lift was +25 percentage points.
 
 An OSS direction-setting pilot lives at
 `evals/task-suites/longitudinal-github-cli-pilot.yaml`. It materializes GitHub
 CLI (`cli/cli`) at pinned commit
 `9a593ce81b593dee752cc11737d1a3ef768e52b3` and runs five scenarios across
-`no-memory`, `seeded-lore`, and `lore-full-loop`. Treat this suite as pilot
+`no-memory`, `seeded-kennen`, and `kennen-full-loop`. Treat this suite as pilot
 instrumentation only: it is meant to estimate verifier stability, paired
 discordance, token cost, and runtime before choosing the powered sample size for
 the 15 percentage point MDE benchmark. It is not a statistically powered result.
@@ -438,13 +438,13 @@ request. Do not publish it as the powered benchmark result until candidates
 have been validated for prompt bounds, no-op baseline failure, verifier
 stability, runtime, and cost.
 
-The primary powered comparison is `lore-full-loop` vs. `no-memory`, because it
-measures Lore's end-to-end formation/retrieval/use loop. `seeded-lore` is an
+The primary powered comparison is `kennen-full-loop` vs. `no-memory`, because it
+measures Kennen's end-to-end formation/retrieval/use loop. `seeded-kennen` is an
 ablation for separating vault availability from memory formation quality.
 The 2026-05-27 GitHub CLI checkpoint is recorded in
 [`docs/evals-github-cli-powered-20260527.md`](evals-github-cli-powered-20260527.md).
-`lore-full-loop` scenarios should validate durable cross-session learnings that
-Lore is designed to capture, such as decisions, conventions, gotchas,
+`kennen-full-loop` scenarios should validate durable cross-session learnings that
+Kennen is designed to capture, such as decisions, conventions, gotchas,
 workarounds, and explicit future follow-ups. They should not require generic
 project facts or Phase B-only feature details to be captured unless Phase A
 makes that durable follow-up explicit. Before a powered run, pre-register the
@@ -457,8 +457,8 @@ prompt out-of-bounds behavior, flake rate, runtime, or cost.
 Phase B starts from a clean rematerialization of the original workspace source,
 not the Phase A workspace. Phase A edits are preserved only as transcript and
 patch evidence for adjudication; they must not become implicit implementation
-state for `no-memory`, `seeded-lore`, or `lore-full-loop`. Any cross-session
-benefit must therefore flow through seeded context or Lore formation/wake-up.
+state for `no-memory`, `seeded-kennen`, or `kennen-full-loop`. Any cross-session
+benefit must therefore flow through seeded context or Kennen formation/wake-up.
 
 Keep raw and adjudicated measurements separate. If a run fails because of
 harness validation, infrastructure, or an over-narrow verifier, preserve the raw
@@ -470,7 +470,7 @@ repaired verifier, an adjudicated score may be reported without rerunning that
 condition. Final reports should include raw, adjudicated, and exclusion-only
 sensitivity views.
 
-For `lore-full-loop`, formation and wake-up phase errors are product failures
+For `kennen-full-loop`, formation and wake-up phase errors are product failures
 unless they were caused by external infrastructure or harness setup. Expected
 context matching is diagnostic, not an outcome override: missing expected memory
 can explain a verifier failure, but it does not turn a verifier-passing task
@@ -482,10 +482,10 @@ after temporary workspaces are cleaned up.
 npm run build
 NOTION_ENV=dev \
 NOTION_WORKSPACE_ID=415fc269-e68f-4da0-b3e3-b1273b741a7f \
-LORE_EVAL_LONGITUDINAL_CONFIG_ROOT=/tmp/lore-eval-vaults/lore-dev-sandbox \
-LORE_EVAL_TASK_REAL=1 \
-LORE_EVAL_LONGITUDINAL_REAL=1 \
-LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \
+KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT=/tmp/kennen-eval-vaults/kennen-dev-sandbox \
+KENNEN_EVAL_TASK_REAL=1 \
+KENNEN_EVAL_LONGITUDINAL_REAL=1 \
+KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \
 node dist/cli.js eval run --runner task \
   evals/task-suites/longitudinal-github-cli-pilot.yaml \
   --out evals/results/longitudinal-github-cli-pilot.json
@@ -523,17 +523,17 @@ Operators can override the suite value for a run with
 
 Cost is split across two surfaces. Primary Phase A/Phase B agent spend is
 recorded in the eval artifact under each phase's `cost` object using Codex
-`turn.completed` usage when available. Lore-owned spend is recorded in the
+`turn.completed` usage when available. Kennen-owned spend is recorded in the
 local cost ledger: post-session mining rows use
 `eval.mining.background_model`, and MCP/Notion activity appears as
-`mcp.invocation` rows. Inspect the Lore-owned side from the sandbox config root:
+`mcp.invocation` rows. Inspect the Kennen-owned side from the sandbox config root:
 
 ```bash
-LORE_REPO=$PWD
-cd /tmp/lore-eval-vaults/lore-dev-sandbox
-node "$LORE_REPO/dist/cli.js" costs summary --since 24h
-node "$LORE_REPO/dist/cli.js" costs export --since 24h --format csv \
-  > /tmp/lore-eval-vaults/lore-dev-sandbox/eval-costs.csv
+KENNEN_REPO=$PWD
+cd /tmp/kennen-eval-vaults/kennen-dev-sandbox
+node "$KENNEN_REPO/dist/cli.js" costs summary --since 24h
+node "$KENNEN_REPO/dist/cli.js" costs export --since 24h --format csv \
+  > /tmp/kennen-eval-vaults/kennen-dev-sandbox/eval-costs.csv
 ```
 
 After a pilot artifact exists, estimate the powered run size, budget fit,

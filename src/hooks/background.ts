@@ -5,7 +5,7 @@
  * the helper carries the concurrency machinery (per-session lock, global
  * cap, per-session stderr log) plus the digest extensions: a configurable
  * allowlist (so the digest can run against a narrower tool surface than
- * the catch-all save) and a configurable log label (so `[lore]` stderr
+ * the catch-all save) and a configurable log label (so `[kennen]` stderr
  * lines tell a background-save failure apart from a digest failure
  * without having to grep the PID).
  *
@@ -13,7 +13,7 @@
  * to `codex exec --sandbox workspace-write --skip-git-repo-check` for Codex
  * installs via the hook config resolver. Operators can override the
  * command/args through
- * `hooks.backgroundAgent` or `LORE_BACKGROUND_COMMAND`.
+ * `hooks.backgroundAgent` or `KENNEN_BACKGROUND_COMMAND`.
  *
  * Lives in its own module because the hook-helpers entry runs `main()`
  * when invoked as the Node entry point, which would happen at import
@@ -53,28 +53,28 @@ import { HOOK_STATE_FILE_MODE, openHookStateFileSync } from "./marker-key.js"
  * The save prompt teaches the polymorphic surface, so the spawned subagent
  * calls these names directly.
  *
- * `lore-query` is included so the atomic-learning extraction path can
+ * `kennen-query` is included so the atomic-learning extraction path can
  * dedup candidate learnings against the existing vault before saving —
- * the prompt instructs the sub-agent to probe `lore-query action='search'`
+ * the prompt instructs the sub-agent to probe `kennen-query action='search'`
  * for each candidate (memory-shaped near-matches scoped to the project);
  * the allowlist is what makes that probe callable.
  */
 export const DEFAULT_SAVE_ALLOWLIST = [
-  "mcp__lore__lore-memory",
-  "mcp__lore__lore-fact",
-  "mcp__lore__lore-decision",
-  "mcp__lore__lore-task",
-  "mcp__lore__lore-query",
+  "mcp__kennen__kennen-memory",
+  "mcp__kennen__kennen-fact",
+  "mcp__kennen__kennen-decision",
+  "mcp__kennen__kennen-task",
+  "mcp__kennen__kennen-query",
 ].join(",")
 
 /**
  * Tool allowlist for the digest synthesizer. Narrower than the background
  * save allowlist so a bad synthesizer prompt violation (e.g. trying to
- * call `lore-fact` action='create') becomes a tool-call error, not a
+ * call `kennen-fact` action='create') becomes a tool-call error, not a
  * silent extra write. The `buildDigestPrompt` builder already instructs
  * this; the allowlist is defense in depth.
  */
-export const DIGEST_ALLOWLIST = ["mcp__lore__lore-memory"].join(",")
+export const DIGEST_ALLOWLIST = ["mcp__kennen__kennen-memory"].join(",")
 
 export function findBackgroundBinary(name: string): string | null {
   if (isAbsolute(name)) {
@@ -108,12 +108,12 @@ export interface SpawnBackgroundSaveOptions {
   /**
    * Tool allowlist for the spawned `claude -p`. Defaults to
    * `DEFAULT_SAVE_ALLOWLIST`. Pass `DIGEST_ALLOWLIST` for the digest path
-   * so a synthesizer that violates the prompt's "single lore-memory action='save'"
+   * so a synthesizer that violates the prompt's "single kennen-memory action='save'"
    * rule gets a tool-call error rather than a silent stray write.
    */
   allowedTools?: string
   /**
-   * Prefix for `[lore]` stderr lines — `"background save"`, `"digest"`, etc.
+   * Prefix for `[kennen]` stderr lines — `"background save"`, `"digest"`, etc.
    * Lets operators distinguish failures across paths without grepping PIDs.
    */
   logLabel?: string
@@ -125,7 +125,7 @@ export interface SpawnBackgroundSaveOptions {
   agent?: BackgroundAgentConfig
   /**
    * Auth source the foreground resolved through. Mirrors the
-   * `lore install` partition `buildMcpEnv` applies for MCP config:
+   * `kennen install` partition `buildMcpEnv` applies for MCP config:
    * under `ntn-auth-json` the spawned child's `resolveAuth` re-reads
    * ntn's on-disk auth file directly (priority 2), so forwarding
    * bearer tokens via env is dead weight that increases blast radius
@@ -160,9 +160,9 @@ export interface SpawnBackgroundSaveOptions {
  * doing the work, and callers should roll back any optimistically-claimed
  * state so the next trigger retries. `lock-path-too-long` is structurally
  * sticky — the next trigger hits the same ENAMETOOLONG until the operator
- * shortens `LORE_HOOK_STATE_DIR` — but that's still the right posture: the
+ * shortens `KENNEN_HOOK_STATE_DIR` — but that's still the right posture: the
  * caller surfaces the failure marker, and the next operator-visible
- * surface (`lore status`) shows the structural cause.
+ * surface (`kennen status`) shows the structural cause.
  */
 export type SpawnResult =
   /** Child started and (when `lockKey` was passed) holds the session lock. */
@@ -175,7 +175,7 @@ export type SpawnResult =
   | { kind: "race-lost" }
   /**
    * Lock path exceeded the host filesystem's syscall limit
-   * (`LORE_HOOK_STATE_DIR` close to `PATH_MAX`); child was SIGTERMed. NOT a
+   * (`KENNEN_HOOK_STATE_DIR` close to `PATH_MAX`); child was SIGTERMed. NOT a
    * benign race — there is no peer doing the work, so callers must roll
    * back optimistically-claimed state (digest marker freshness) and record
    * a background-failure marker. The next trigger will hit the same
@@ -199,7 +199,7 @@ export type SpawnResult =
  * with optimistically-claimed state (digest marker, save counter) must NOT
  * roll back on these kinds — the peer's success covers the window.
  *
- * Centralized so digest-scheduler.ts and the `lore digest` CLI agree on the
+ * Centralized so digest-scheduler.ts and the `kennen digest` CLI agree on the
  * benign-race set; adding a seventh `SpawnResult` variant in the future
  * will require explicit triage at this single site rather than diverging
  * silently across consumers.
@@ -213,7 +213,7 @@ export function isBenignRace(result: SpawnResult): boolean {
   // `lock-path-too-long` is intentionally NOT here. There is no peer doing
   // the work when the lock path exceeds the syscall limit; classifying it
   // as benign would silently feed the digest scheduler's peer-active
-  // branch (leaving the digest marker fresh) and the `lore digest` CLI's
+  // branch (leaving the digest marker fresh) and the `kennen digest` CLI's
   // "Digest already in flight" message.
 }
 
@@ -252,9 +252,9 @@ export function spawnBackgroundSave(
   const binary = findBackgroundBinary(agentConfig.command)
   if (!binary) {
     process.stderr.write(
-      `[lore] ${logLabel}: background command "${agentConfig.command}" not found on PATH, skipping. ` +
-        `Install the binary or override hooks.backgroundAgent.command in .lore.yaml ` +
-        `(or set LORE_BACKGROUND_COMMAND).\n`
+      `[kennen] ${logLabel}: background command "${agentConfig.command}" not found on PATH, skipping. ` +
+        `Install the binary or override hooks.backgroundAgent.command in .kennen.yaml ` +
+        `(or set KENNEN_BACKGROUND_COMMAND).\n`
     )
     return { kind: "binary-missing" }
   }
@@ -271,7 +271,7 @@ export function spawnBackgroundSave(
   // O_EXCL (`wx+`) defeats symlink TOCTOU on shared `/tmp` deployments.
   const promptFile = join(
     tmpdir(),
-    `lore-prompt-${Date.now()}-${process.pid}-${Math.random().toString(36).slice(2, 8)}.txt`
+    `kennen-prompt-${Date.now()}-${process.pid}-${Math.random().toString(36).slice(2, 8)}.txt`
   )
   let stdinFd: number
   // Tracked separately so the catch path can clean up after a failure at
@@ -316,7 +316,7 @@ export function spawnBackgroundSave(
       }
     }
     process.stderr.write(
-      `[lore] ${logLabel}: failed to prepare prompt file: ${redactDebugError(err)}\n`
+      `[kennen] ${logLabel}: failed to prepare prompt file: ${redactDebugError(err)}\n`
     )
     return { kind: "tempfile-failed" }
   }
@@ -325,7 +325,7 @@ export function spawnBackgroundSave(
 
   // Minimal env — only what the background process needs. Auth /
   // workspace / environment selectors flow through `buildSafeEnv`,
-  // the single source of truth shared by every Lore-spawned-child
+  // the single source of truth shared by every Kennen-spawned-child
   // path. Under `authSource: "ntn-auth-json"` the auth-token subset
   // is dropped because the child re-reads ntn's on-disk auth file
   // directly; workspace + base-URL + attribution selectors still
@@ -391,8 +391,8 @@ export function spawnBackgroundSave(
             // Child already gone.
           }
           // logLabel-aware so the operator sees the right surface:
-          // autosave Stop hooks emit `[lore] background save: ...`,
-          // digest spawns emit `[lore] digest: ...`, etc. A hardcoded
+          // autosave Stop hooks emit `[kennen] background save: ...`,
+          // digest spawns emit `[kennen] digest: ...`, etc. A hardcoded
           // "autosave" framing would be wrong on every non-autosave
           // caller. Truncate the lockKey preview so a hostile
           // multi-kilobyte payload can't itself swamp stderr.
@@ -402,8 +402,8 @@ export function spawnBackgroundSave(
               ? `${err.lockKey.slice(0, previewLen)}...`
               : err.lockKey
           process.stderr.write(
-            `[lore] ${logLabel}: lock path too long (${err.code}) for "${preview}"; ` +
-              `skipping spawn. Check LORE_HOOK_STATE_DIR length.\n`
+            `[kennen] ${logLabel}: lock path too long (${err.code}) for "${preview}"; ` +
+              `skipping spawn. Check KENNEN_HOOK_STATE_DIR length.\n`
           )
           return {
             kind: "lock-path-too-long",
@@ -432,7 +432,7 @@ export function spawnBackgroundSave(
     child.unref()
     return { kind: "spawned" }
   } catch (err) {
-    process.stderr.write(`[lore] ${logLabel}: spawn failed: ${redactDebugError(err)}\n`)
+    process.stderr.write(`[kennen] ${logLabel}: spawn failed: ${redactDebugError(err)}\n`)
     // If we got past `spawn` but never claimed the lock, the child is
     // running but no debounce / accounting points at it. SIGTERM the
     // orphan so it can't silently spend tokens or duplicate work on the

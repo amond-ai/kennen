@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-contracts-v1
+name: kennen-longitudinal-github-cli-contracts-v1
 description: >-
   GitHub CLI command/output-contract longitudinal suite. Phase B asks for a
   concrete behavior whose non-inferable rule (inverted payload field, unset
@@ -12,8 +12,8 @@ description: >-
 seededCorpus: ../vault-seeds/github-cli-contracts-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: gh-cli-repo-deploy-key-add-dry-run-json-readonly-inversion-v1
     difficulty: hard
@@ -62,11 +62,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,26 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -96,7 +96,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/repo/deploy-key/add -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/repo/deploy-key/add -count=1
         timeoutMs: 300000
   - id: gh-cli-pr-revert-dry-run-json-merged-default-preservation-v1
     difficulty: hard
@@ -147,11 +147,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,26 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -181,7 +181,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/pr/revert -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/pr/revert -count=1
         timeoutMs: 300000
   - id: gh-cli-browse-line-range-plain-anchor-url-contract-v1
     difficulty: hard
@@ -231,11 +231,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,23 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -263,7 +263,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/browse -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/browse -count=1
         timeoutMs: 300000
   - id: gh-cli-gist-clone-enterprise-subdomain-url-contract-v1
     difficulty: hard
@@ -311,11 +311,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,22 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -342,7 +342,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/gist/clone -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/gist/clone -count=1
         timeoutMs: 300000
   - id: gh-cli-pr-checks-watch-flag-precedence-pending-exit-v1
     difficulty: hard
@@ -391,11 +391,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,24 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -424,7 +424,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/pr/checks -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/pr/checks -count=1
         timeoutMs: 300000
   - id: gh-cli-issue-pr-lock-reason-enum-snakecase-contract-v1
     difficulty: hard
@@ -474,11 +474,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,24 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -506,5 +506,5 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/issue/lock -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/issue/lock -count=1
         timeoutMs: 300000

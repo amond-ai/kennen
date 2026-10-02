@@ -1,5 +1,5 @@
 /**
- * Lore MCP server — the primary interface for AI assistants.
+ * Kennen MCP server — the primary interface for AI assistants.
  *
  * Runs as a stdio process. AI assistants connect to it and use tools
  * to save, search, and recall memories from a Notion-backed vault.
@@ -8,7 +8,7 @@
  *   - Legacy absolute-path launcher: `node` against the standalone
  *     built MCP entry. The `isEntryPoint()` guard at the bottom of
  *     this file runs `main()` for that path.
- *   - Bin-dispatch: `lore mcp` (the default for current installs).
+ *   - Bin-dispatch: `kennen mcp` (the default for current installs).
  *     The CLI command lazy-imports `startServer` from this module.
  */
 
@@ -19,7 +19,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { z } from "zod"
 
 import { redactDebugMessage } from "../debug-redact.js"
-import { type LoreServices, initServices } from "../services.js"
+import { type KennenServices, initServices } from "../services.js"
 
 import { registerContextTools } from "./tools/context.js"
 import { registerMemoryTools } from "./tools/memory.js"
@@ -36,7 +36,7 @@ import { formatFatalErrorLine } from "./fatal-error.js"
 import type { CostOutputCounts } from "../core/cost-ledger.js"
 
 // Re-export for consumers that already import from this module
-export type { LoreServices } from "../services.js"
+export type { KennenServices } from "../services.js"
 export { initServices } from "../services.js"
 
 type ToolResult = {
@@ -46,15 +46,15 @@ type ToolResult = {
 }
 
 const DIAGNOSTIC_TOOL_NAMES = [
-  "lore-context",
-  "lore-memory",
-  "lore-pinned",
-  "lore-query",
-  "lore-fact",
-  "lore-decision",
-  "lore-project",
-  "lore-task",
-  "lore-procedure",
+  "kennen-context",
+  "kennen-memory",
+  "kennen-pinned",
+  "kennen-query",
+  "kennen-fact",
+  "kennen-decision",
+  "kennen-project",
+  "kennen-task",
+  "kennen-procedure",
 ] as const
 
 const DIAGNOSTIC_INPUT_SCHEMA = z
@@ -75,7 +75,7 @@ export async function startServer(): Promise<void> {
   // so reconnecting clients always observe the same string the rest
   // of the build advertises.
   const server = new McpServer(
-    { name: "lore", version: "1.0.0" },
+    { name: "kennen", version: "1.0.0" },
     {
       capabilities: {
         tools: {},
@@ -84,7 +84,7 @@ export async function startServer(): Promise<void> {
     }
   )
 
-  let services: LoreServices | null = null
+  let services: KennenServices | null = null
 
   try {
     // MCP startup is a hot path — every reconnecting client kicks off a
@@ -94,7 +94,7 @@ export async function startServer(): Promise<void> {
     // most once per `DRIFT_DEBOUNCE_DAYS`.
     services = await initServices(undefined, { driftCheck: "debounced" })
   } catch (err) {
-    if (process.env["LORE_BACKGROUND_AGENT"] === "true") {
+    if (process.env["KENNEN_BACKGROUND_AGENT"] === "true") {
       throw err
     }
 
@@ -106,7 +106,7 @@ export async function startServer(): Promise<void> {
     // operator (or agent) can act on.
     const initErrorDetails = formatInitErrorDetails(err)
     console.error(
-      `[lore] Failed to initialize; starting diagnostic MCP server:\n${initErrorDetails}`
+      `[kennen] Failed to initialize; starting diagnostic MCP server:\n${initErrorDetails}`
     )
     registerStartupDiagnosticTools(server, formatStartupDiagnostic(err, initErrorDetails))
   }
@@ -116,7 +116,7 @@ export async function startServer(): Promise<void> {
       installCostTrackingToolWrapper(server, services)
     }
     // Register every polymorphic dispatcher. Each register* call below
-    // adds exactly one `lore-*` tool name to the agent-visible surface;
+    // adds exactly one `kennen-*` tool name to the agent-visible surface;
     // the polymorphic dispatch pattern multiplexes per-tool actions
     // behind a single registration so per-session prompt overhead stays
     // bounded. The canonical contract — names, actions, and exhaustive
@@ -154,9 +154,9 @@ function registerStartupDiagnosticTool(
   server.registerTool(
     name,
     {
-      title: "Lore setup diagnostics",
+      title: "Kennen setup diagnostics",
       description:
-        "Lore could not finish startup. Any action or arguments return the initialization error and recovery steps.",
+        "Kennen could not finish startup. Any action or arguments return the initialization error and recovery steps.",
       inputSchema: DIAGNOSTIC_INPUT_SCHEMA,
       annotations: { readOnlyHint: true },
     },
@@ -171,21 +171,21 @@ function formatStartupDiagnostic(
   error: unknown,
   details = formatInitErrorDetails(error)
 ): string {
-  const configRoot = process.env["LORE_CONFIG_ROOT"]?.trim()
+  const configRoot = process.env["KENNEN_CONFIG_ROOT"]?.trim()
   const recoverySteps = [
-    "- Preferred local follow-up: run `lore doctor` from the project directory for grouped config, auth, vault, MCP, and hook diagnostics.",
-    "- If the error says no `.lore.yaml` was found, run `lore init` from the project directory or re-run `lore install` from the configured vault project.",
-    "- If the error mentions Notion auth, run `lore auth --login` or set `NOTION_API_TOKEN` with a Notion Personal Access Token from notion.so/developers/tokens.",
+    "- Preferred local follow-up: run `kennen doctor` from the project directory for grouped config, auth, vault, MCP, and hook diagnostics.",
+    "- If the error says no `.kennen.yaml` was found, run `kennen init` from the project directory or re-run `kennen install` from the configured vault project.",
+    "- If the error mentions Notion auth, run `kennen auth --login` or set `NOTION_API_TOKEN` with a Notion Personal Access Token from notion.so/developers/tokens.",
     "- If the error mentions an invalid Notion API base URL, fix or unset the named base-URL environment variable, or use `NOTION_ENV=prod`, `NOTION_ENV=dev`, or `NOTION_ENV=stg`.",
-    "- If the error mentions missing `Entities`, run `lore vault ensure-entities`, then `lore migrate --build-entities --allow-unscoped --yes` in a quiet window.",
-    "- If `LORE_CONFIG_ROOT` points at the wrong directory, re-run `lore install` from the project directory or unset `LORE_CONFIG_ROOT` so Lore can search upward from the MCP process cwd.",
-    "- After fixing setup, restart or reconnect the MCP client so Lore can register the full tool surface.",
+    "- If the error mentions missing `Entities`, run `kennen vault ensure-entities`, then `kennen migrate --build-entities --allow-unscoped --yes` in a quiet window.",
+    "- If `KENNEN_CONFIG_ROOT` points at the wrong directory, re-run `kennen install` from the project directory or unset `KENNEN_CONFIG_ROOT` so Kennen can search upward from the MCP process cwd.",
+    "- After fixing setup, restart or reconnect the MCP client so Kennen can register the full tool surface.",
   ]
 
   return [
-    "# Lore MCP Startup Diagnostic",
+    "# Kennen MCP Startup Diagnostic",
     "",
-    "Lore MCP server started in diagnostic mode because service initialization failed.",
+    "Kennen MCP server started in diagnostic mode because service initialization failed.",
     "",
     "## Initialization Error",
     "",
@@ -194,7 +194,7 @@ function formatStartupDiagnostic(
     "## Environment",
     "",
     `- Current working directory: ${process.cwd()}`,
-    `- LORE_CONFIG_ROOT: ${configRoot || "not set"}`,
+    `- KENNEN_CONFIG_ROOT: ${configRoot || "not set"}`,
     "",
     "## Recovery Steps",
     "",

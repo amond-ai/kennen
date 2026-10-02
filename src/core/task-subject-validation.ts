@@ -105,7 +105,7 @@ export function pointerSubjectRejectionMessage(subject: string): string {
   return (
     `"${subject.replaceAll('"', '\\"')}" looks like a code pointer rather than a task. ` +
     "If you want to track a concern about a code location, use " +
-    "lore-fact action='create' with subject=<entity>, " +
+    "kennen-fact action='create' with subject=<entity>, " +
     "predicate=<writable predicate for this vault>, object=<your note>. " +
     "If this really is a task, restate it as an imperative, for example " +
     '"Audit countColumnValuesForThreadAttributeID for missing index". ' +

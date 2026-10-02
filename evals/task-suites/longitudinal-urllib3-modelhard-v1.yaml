@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-urllib3-modelhard-v1
+name: kennen-longitudinal-urllib3-modelhard-v1
 description: >-
   Model-hard urllib3 longitudinal suite. Scenarios are pinned before real
   upstream fixes whose correct behavior is counterintuitive to a strong model
@@ -10,8 +10,8 @@ description: >-
 seededCorpus: ../vault-seeds/urllib3-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: urllib3-retry-after-http-date-utc-v1
     difficulty: hard
@@ -61,10 +61,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/test/test_lore_hidden_retry_after.py b/test/test_lore_hidden_retry_after.py
+          diff --git a/test/test_kennen_hidden_retry_after.py b/test/test_kennen_hidden_retry_after.py
           new file mode 100644
           --- /dev/null
-          +++ b/test/test_lore_hidden_retry_after.py
+          +++ b/test/test_kennen_hidden_retry_after.py
           @@ -0,0 +1,68 @@
           +import time
           +
@@ -144,6 +144,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - test/test_lore_hidden_retry_after.py
+          - test/test_kennen_hidden_retry_after.py
           - -q
         timeoutMs: 300000

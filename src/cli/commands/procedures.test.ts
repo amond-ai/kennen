@@ -546,7 +546,7 @@ describe("proceduresCommand deprecate action", () => {
     await proceduresCommand.parseAsync(["deprecate", VALID_ID], { from: "user" })
     const errorText = errorSpy.mock.calls.flat().join("\n")
     expect(errorText).toContain("Status: proposed and must leave the inbox via review")
-    expect(errorText).toContain("lore inbox reject")
+    expect(errorText).toContain("kennen inbox reject")
     expect(exitTrap.exitCodes).toEqual([1])
     expect(services.memories.update).not.toHaveBeenCalled()
   })

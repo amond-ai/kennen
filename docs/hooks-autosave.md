@@ -7,7 +7,7 @@ digest, lock, marker, and log details in `docs/hooks-background.md`.
 ## Autosave Flow
 
 Autosave fires on `Stop` only and spawns a detached background sub-agent that
-writes structured content through Lore MCP tools. The main agent is never
+writes structured content through Kennen MCP tools. The main agent is never
 blocked.
 
 | Hook            | Trigger                                                                         | Prompt builder              |
@@ -23,28 +23,28 @@ inline through the prompt.
 The detached child resolves its own credentials at startup through the same
 `resolveAuth` path the parent uses, against `event.cwd`.
 `spawnBackgroundSave` passes `cwd` directly to `child_process.spawn`, and the
-child's `findConfigFile` walks upward from that cwd to locate `.lore.yaml`.
-`LORE_CONFIG_ROOT` is not forwarded.
+child's `findConfigFile` walks upward from that cwd to locate `.kennen.yaml`.
+`KENNEN_CONFIG_ROOT` is not forwarded.
 
-This differs from the long-running MCP server child that `lore install` writes
-config for. MCP server children may receive static `LORE_CONFIG_ROOT` values
+This differs from the long-running MCP server child that `kennen install` writes
+config for. MCP server children may receive static `KENNEN_CONFIG_ROOT` values
 because they are launched by a host-controlled cwd and can outlive the current
 project shell. Hook autosave children run once per Stop event and inherit the
-parent hook cwd, so upward `.lore.yaml` discovery is the contract.
+parent hook cwd, so upward `.kennen.yaml` discovery is the contract.
 
 The parent builds a minimal `safeEnv` for the child:
 
 - `PATH`
 - `HOME`
-- `LORE_AUTOSAVE=false`, so the child cannot recursively trigger autosave
-- `LORE_BACKGROUND_AGENT=true`, so the child's MCP server fails fast on init
+- `KENNEN_AUTOSAVE=false`, so the child cannot recursively trigger autosave
+- `KENNEN_BACKGROUND_AGENT=true`, so the child's MCP server fails fast on init
   errors instead of staying alive as a diagnostic server
 - Every non-empty key in `RUNTIME_FORWARDED_KEYS` from
-  `src/auth/forwarded-env.ts`: `NOTION_API_TOKEN`, `LORE_NOTION_BASE_URL`,
+  `src/auth/forwarded-env.ts`: `NOTION_API_TOKEN`, `KENNEN_NOTION_BASE_URL`,
   `NOTION_WORKSPACE_ID`, `NOTION_ENV`, `NOTION_BASE_URL`,
-  `NOTION_API_BASE_URL`, and `LORE_USER_NAME`
+  `NOTION_API_BASE_URL`, and `KENNEN_USER_NAME`
 
-The same allowlist drives `lore install` host-config placeholders, so foreground
+The same allowlist drives `kennen install` host-config placeholders, so foreground
 CLI runs, host-spawned MCP children, and hook workers target the same Notion
 workspace and environment.
 
@@ -62,7 +62,7 @@ token-in-env as part of their contract. If `resolveAuth` fails while deriving
 the Stop auth source, the Stop hot path falls back to the legacy every-key
 forward instead of gaining a new failure mode.
 
-`LORE_USER_NAME` forwards engineer identity into the spawned MCP child through
+`KENNEN_USER_NAME` forwards engineer identity into the spawned MCP child through
 the synchronous env path. When it is unset, the child can still fall through to
 `users.me` if a save omits an explicit author.
 
@@ -108,14 +108,14 @@ override also activates conversational autosave and the proposed-memory default.
 Set `hooks.memoryCaptureMode: durable` explicitly when that profile should apply
 outside hook autosave without broadening Stop-hook capture.
 
-When `hooks.learningExtraction: false` or `LORE_DISABLE_LEARNING_EXTRACTION=1`
+When `hooks.learningExtraction: false` or `KENNEN_DISABLE_LEARNING_EXTRACTION=1`
 is active, conversational capture is suppressed with the learning block. The
 autosave prompt falls back to the durable synopsis-only shape rather than
 running broad recall capture without the per-spawn cap.
 
 The session synopsis is a scan surface, not a session-history surface. It should
 capture durable signal from the transcript, not a chronological "first/then"
-activity log. Log-shaped synopses are reported by `lore debt scan` under
+activity log. Log-shaped synopses are reported by `kennen debt scan` under
 `summary_quality`.
 
 Each autosave run may save at most `PER_SPAWN_LEARNING_LIMIT` atomic learnings
@@ -138,7 +138,7 @@ The service layer repeats the blocking check under a filesystem lock immediately
 before create, then keeps the lock through bounded post-create query-index
 stabilization. Direct-write hook paths must call `MemoryService.create` or
 `createWithResult` instead of bypassing the service. If a later autosave
-restates the same autosave learning, `lore-memory action='save'` returns the
+restates the same autosave learning, `kennen-memory action='save'` returns the
 existing row instead of creating another one.
 
 Project sets have to match exactly. An A-only row does not block an A+B save.
@@ -148,12 +148,12 @@ stays independent from per-learning rows. The prompt must use
 opts out of the structural learning gate and should not be used by autosave
 learning extraction.
 
-The prompt also tells the sub-agent to probe `lore-query action='search'`,
+The prompt also tells the sub-agent to probe `kennen-query action='search'`,
 scoped to the same project and seeded by the candidate's title or distinctive
 terms, for older or cross-session near-matches. `action='search'` is the right
 probe because `action='ask'` walks the fact and task graph by entity and would
-miss foreground `lore-memory action='save'` rows whose titles do not already
-carry matching fact edges. `lore-query` remains in `DEFAULT_SAVE_ALLOWLIST` for
+miss foreground `kennen-memory action='save'` rows whose titles do not already
+carry matching fact edges. `kennen-query` remains in `DEFAULT_SAVE_ALLOWLIST` for
 that cross-session check.
 
 Atomic learnings use `source: "autosave_learning"`. The source marker lets the
@@ -161,9 +161,9 @@ save path apply autosave-specific duplicate blocking without overloading memory
 confidence or ordinary conversation saves.
 
 Vaults with autosave learnings written by older releases can run
-`lore migrate --backfill-autosave-learning-source --project <name>` to preview
+`kennen migrate --backfill-autosave-learning-source --project <name>` to preview
 rows that still carry the retired autosave marker shape. Apply with
-`lore migrate --backfill-autosave-learning-source --project <name> --yes` in a
+`kennen migrate --backfill-autosave-learning-source --project <name> --yes` in a
 quiet window. Use `--allow-unscoped` instead of `--project <name>` only for an
 intentional vault-wide backfill.
 
@@ -176,9 +176,9 @@ not be extracted by a later Stop autosave.
 Two coordinated knobs disable the extraction block. Either disabled setting
 wins; both must be permissive for learning extraction to run.
 
-- `LORE_DISABLE_LEARNING_EXTRACTION=1`: runtime override. Only the literal
+- `KENNEN_DISABLE_LEARNING_EXTRACTION=1`: runtime override. Only the literal
   string `"1"` disables extraction.
-- `hooks.learningExtraction: false`: persistent `.lore.yaml` setting. Defaults
+- `hooks.learningExtraction: false`: persistent `.kennen.yaml` setting. Defaults
   to `true` in `mergeHookDefaults`.
 
 When either knob disables extraction, `helpers.ts` passes
@@ -188,8 +188,8 @@ uses the synopsis-only shape.
 Two rollback knobs disable the structural autosave-learning reuse gate without
 turning off extraction:
 
-- `LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1`
-- `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1`
+- `KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1`
+- `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1`
 
 Both disable same-session, project-scoped, and vault-scoped reuse for autosave
 learning rows.
@@ -204,7 +204,7 @@ prompt builder adds `status: "proposed"` to the per-learning save block.
 
 The autosave sub-agent then writes each atomic learning with `Status = proposed`.
 Those rows stay out of default recall until a reviewer approves them via
-`lore inbox approve <id>` or `lore-memory action='approve'`, or rejects them
-through the matching surfaces. Inbox depth appears in `lore status`, and the
+`kennen inbox approve <id>` or `kennen-memory action='approve'`, or rejects them
+through the matching surfaces. Inbox depth appears in `kennen status`, and the
 MCP wake-up surface can render the Proposed Memories section for review. Default
 is `false`, so existing installs keep the normal autosave behavior.

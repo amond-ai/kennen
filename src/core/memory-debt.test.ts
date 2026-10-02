@@ -16,7 +16,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { Decision, DecisionSummary, Fact, Memory, TaskSummary } from "../types.js"
 import { findSimilarTopicGroups } from "./topic-merge.js"
 import {
@@ -173,7 +173,7 @@ interface StubOpts {
   scopeColumnsPresent?: boolean
 }
 
-function makeStubServices(opts: StubOpts = {}): LoreServices {
+function makeStubServices(opts: StubOpts = {}): KennenServices {
   const projects = opts.projects ?? [{ id: "proj-a", name: "Mail" }]
   const memoriesStub = {
     listForScan: vi.fn(async () => opts.scanMemoriesByProject ?? projects.map(() => [])),
@@ -369,7 +369,7 @@ function makeStubServices(opts: StubOpts = {}): LoreServices {
     projects: projectsStub,
     vault,
     client,
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("priorityForScore", () => {
@@ -513,7 +513,7 @@ describe("scanDebt — category detection", () => {
   })
 
   it("threads projectId into findSimilarTopicGroups on project-scoped scans", async () => {
-    // Issue #585 review: a `lore debt scan --project Mail` must not
+    // Issue #585 review: a `kennen debt scan --project Mail` must not
     // surface topic-sprawl groups from unrelated projects (e.g.
     // Calendar). The fix threads `opts.projectId` into the helper so
     // the underlying Topics-DS query filters server-side by
@@ -715,7 +715,7 @@ describe("scanDebt — category detection", () => {
       id: "op1",
       title: "pr receipt",
       kind: "operational",
-      expiresOn: "pr-closed:Iron-Ham/lore#899",
+      expiresOn: "pr-closed:Iron-Ham/kennen#899",
     })
     const services = makeStubServices({ operationalMemories: [operational] })
 
@@ -725,11 +725,11 @@ describe("scanDebt — category detection", () => {
     expect(items.length).toBe(1)
     expect(items[0]!.reasons.join(" ")).toContain("Linked PR is closed")
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.github.com/repos/Iron-Ham/lore/pulls/899",
+      "https://api.github.com/repos/Iron-Ham/kennen/pulls/899",
       expect.objectContaining({
         headers: expect.objectContaining({
           accept: "application/vnd.github+json",
-          "user-agent": "lore-memory-debt-scan",
+          "user-agent": "kennen-memory-debt-scan",
         }),
       })
     )
@@ -747,7 +747,7 @@ describe("scanDebt — category detection", () => {
       id: "op1",
       title: "open pr receipt",
       kind: "operational",
-      expiresOn: "pr-closed:Iron-Ham/lore#899",
+      expiresOn: "pr-closed:Iron-Ham/kennen#899",
     })
     const services = makeStubServices({ operationalMemories: [operational] })
 
@@ -991,7 +991,7 @@ describe("scanDebt — category filter", () => {
   it("does NOT mark scopeAnomalies as null when scope_anomaly is filtered out", async () => {
     // Issue #585 round-7 review blocker: a `--category orphan_fact`
     // scan must NOT leave `stats.scopeAnomalies = null` and trigger
-    // the renderer's `lore migrate` prompt. The probe was skipped,
+    // the renderer's `kennen migrate` prompt. The probe was skipped,
     // not degraded — those are different states. Default `0` +
     // `scopeAnomalyProbeSkipped: true` is the disambiguator.
     const services = makeStubServices()

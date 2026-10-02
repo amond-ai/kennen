@@ -8,10 +8,10 @@ vi.mock("../../services.js", () => ({
 }))
 
 /**
- * `lore inbox` CLI tests. The MCP-side dispatch surface is covered by
+ * `kennen inbox` CLI tests. The MCP-side dispatch surface is covered by
  * `src/mcp/tools/polymorphic.test.ts`; this file pins the CLI-only
  * branches: the archive Status guard, the audit-error exit-code-2
- * split, the reviewer-fallback chain, and the `lore inbox list`
+ * split, the reviewer-fallback chain, and the `kennen inbox list`
  * filter shape (Kind != decision, oldest-first ordering).
  */
 
@@ -49,7 +49,7 @@ describe("inboxCommand", () => {
       // the listing surface and the count surface must agree on
       // what counts as inbox memories. Without `excludeKinds:
       // ["decision"]`, a proposed-state decision row would surface
-      // here but not in `lore status`'s count.
+      // here but not in `kennen status`'s count.
       // `direction: "ascending"` aligns with the wake-up Proposed
       // Memories section so stale review debt surfaces first.
       const { logSpy } = makeHarness()
@@ -81,9 +81,9 @@ describe("inboxCommand", () => {
   describe("inbox archive", () => {
     it("rejects a non-proposed memory with exit 1 and a clear redirect", async () => {
       // Inbox-only contract: an operator who fat-fingers an
-      // accepted memory's UUID into `lore inbox archive` must hit
+      // accepted memory's UUID into `kennen inbox archive` must hit
       // a Status guard before the soft-delete fires. Pin the exit
-      // code (1) and the redirect-to-`lore-memory action='archive'`
+      // code (1) and the redirect-to-`kennen-memory action='archive'`
       // text so a future refactor can't loosen the guard.
       const { errorSpy, exitCodes } = makeHarness()
       const archive = vi.fn(async () => undefined)
@@ -107,7 +107,7 @@ describe("inboxCommand", () => {
       expect(exitCodes[0]).toBe(1)
       const errText = errorSpy.mock.calls.map((c) => String(c[0])).join("\n")
       expect(errText).toContain('current status is "accepted"')
-      expect(errText).toContain("lore-memory action='archive'")
+      expect(errText).toContain("kennen-memory action='archive'")
     })
 
     it("archives a proposed memory and emits a success line", async () => {
@@ -160,7 +160,7 @@ describe("inboxCommand", () => {
       expect(exitCodes[0]).toBe(1)
       const errText = errorSpy.mock.calls.map((c) => String(c[0])).join("\n")
       expect(errText).toContain('Kind is "decision"')
-      expect(errText).toContain("lore-decision action='supersede'")
+      expect(errText).toContain("kennen-decision action='supersede'")
     })
   })
 

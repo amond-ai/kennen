@@ -103,22 +103,22 @@ function makeAiSearchResponse(
 }
 
 describe("isRunToolSearchEnabled", () => {
-  it("inherits from LORE_USE_RUNTOOL when the sub-flag is unset", () => {
-    expect(isRunToolSearchEnabled({ LORE_USE_RUNTOOL: "1" })).toBe(true)
-    expect(isRunToolSearchEnabled({ LORE_USE_RUNTOOL: "0" })).toBe(false)
+  it("inherits from KENNEN_USE_RUNTOOL when the sub-flag is unset", () => {
+    expect(isRunToolSearchEnabled({ KENNEN_USE_RUNTOOL: "1" })).toBe(true)
+    expect(isRunToolSearchEnabled({ KENNEN_USE_RUNTOOL: "0" })).toBe(false)
   })
 
-  it("lets LORE_USE_RUNTOOL_SEARCH override the parent flag", () => {
+  it("lets KENNEN_USE_RUNTOOL_SEARCH override the parent flag", () => {
     expect(
       isRunToolSearchEnabled({
-        LORE_USE_RUNTOOL: "1",
-        LORE_USE_RUNTOOL_SEARCH: "0",
+        KENNEN_USE_RUNTOOL: "1",
+        KENNEN_USE_RUNTOOL_SEARCH: "0",
       })
     ).toBe(false)
     expect(
       isRunToolSearchEnabled({
-        LORE_USE_RUNTOOL: "0",
-        LORE_USE_RUNTOOL_SEARCH: "1",
+        KENNEN_USE_RUNTOOL: "0",
+        KENNEN_USE_RUNTOOL_SEARCH: "1",
       })
     ).toBe(true)
   })
@@ -129,8 +129,8 @@ describe("isRunToolSearchEnabled", () => {
   })
 
   it("ignores unrecognized values, falling through to the default-on parent", () => {
-    expect(isRunToolSearchEnabled({ LORE_USE_RUNTOOL: "maybe" })).toBe(true)
-    expect(isRunToolSearchEnabled({ LORE_USE_RUNTOOL_SEARCH: "garbage" })).toBe(true)
+    expect(isRunToolSearchEnabled({ KENNEN_USE_RUNTOOL: "maybe" })).toBe(true)
+    expect(isRunToolSearchEnabled({ KENNEN_USE_RUNTOOL_SEARCH: "garbage" })).toBe(true)
   })
 })
 
@@ -356,7 +356,7 @@ describe("searchViaRunTool — error classification", () => {
     ).rejects.toThrow(/malformed response/i)
   })
 
-  it("rejects user_search discriminator (Lore only consumes internal search)", async () => {
+  it("rejects user_search discriminator (Kennen only consumes internal search)", async () => {
     const { client } = makeStubClient(() => ({
       type: "user_search",
       results: [],

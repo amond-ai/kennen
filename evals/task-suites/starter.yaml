@@ -1,11 +1,11 @@
 version: 1
-name: lore-task-starter
+name: kennen-task-starter
 description: |
   End-to-end task-eval suite. Five tasks across the same scenario types
   as the retrieval suite (debugging, refactor, design decision, code
   review, incident response), each exercised against the full memory-
-  condition matrix (no-lore / helpful / noisy / stale). Real Codex runs
-  require LORE_EVAL_TASK_REAL=1; otherwise CodexAgentAdapter exits with
+  condition matrix (no-kennen / helpful / noisy / stale). Real Codex runs
+  require KENNEN_EVAL_TASK_REAL=1; otherwise CodexAgentAdapter exits with
   a recognizable refusal so misconfigured CI never racks up unbounded
   model spend.
 
@@ -14,14 +14,14 @@ tasks:
     prompt: |
       The repository at the working directory is a synthetic Node package.
       Add a README.md to the root that explains what the `greet` function
-      in `index.js` does. Mention the package name "lore-eval-add-readme"
+      in `index.js` does. Mention the package name "kennen-eval-add-readme"
       somewhere in the README so reviewers can identify the package. Do
-      not modify index.js or package.json. If `.lore-memories.json`
+      not modify index.js or package.json. If `.kennen-memories.json`
       exists, follow any non-superseded memory's guidance.
     agent: codex
     workspace: ../workspaces/add-readme
     memoryConditions:
-      no-lore: ../task-memory/no-lore.json
+      no-kennen: ../task-memory/no-kennen.json
       helpful: ../task-memory/helpful-add-readme.json
       noisy: ../task-memory/noisy-add-readme.json
       stale: ../task-memory/stale-add-readme.json
@@ -30,7 +30,7 @@ tasks:
         path: README.md
       - type: file-contents-match
         path: README.md
-        pattern: lore-eval-add-readme
+        pattern: kennen-eval-add-readme
       - type: file-contents-match
         path: README.md
         pattern: greet
@@ -44,12 +44,12 @@ tasks:
       `index.js` imports `greet` from `./missing/helpers.js`, which does
       not exist. The real helpers module lives at `./helpers.js`. Fix
       the import path in `index.js` so the module resolves. Do not
-      modify `helpers.js` or `package.json`. If `.lore-memories.json`
+      modify `helpers.js` or `package.json`. If `.kennen-memories.json`
       exists, follow any non-superseded memory's guidance.
     agent: codex
     workspace: ../workspaces/fix-import
     memoryConditions:
-      no-lore: ../task-memory/no-lore.json
+      no-kennen: ../task-memory/no-kennen.json
       helpful: ../task-memory/helpful-fix-import.json
       noisy: ../task-memory/noisy-fix-import.json
       stale: ../task-memory/stale-fix-import.json
@@ -79,12 +79,12 @@ tasks:
     prompt: |
       Add a `fetchUserProfile(userId)` function to `service.js` that
       returns a Result by calling the helpers from `result.js` (`ok` /
-      `err`). Do not modify `result.js`. If `.lore-memories.json`
+      `err`). Do not modify `result.js`. If `.kennen-memories.json`
       exists, follow any non-superseded memory's guidance.
     agent: codex
     workspace: ../workspaces/typed-result
     memoryConditions:
-      no-lore: ../task-memory/no-lore.json
+      no-kennen: ../task-memory/no-kennen.json
       helpful: ../task-memory/helpful-typed-result.json
       noisy: ../task-memory/noisy-typed-result.json
       stale: ../task-memory/stale-typed-result.json
@@ -110,12 +110,12 @@ tasks:
     prompt: |
       Update `logger.js` so the JSON payload uses snake_case field
       names (e.g., `event_name` instead of `eventName`). Keep the
-      function signature the same. If `.lore-memories.json` exists,
+      function signature the same. If `.kennen-memories.json` exists,
       follow any non-superseded memory's guidance.
     agent: codex
     workspace: ../workspaces/log-format
     memoryConditions:
-      no-lore: ../task-memory/no-lore.json
+      no-kennen: ../task-memory/no-kennen.json
       helpful: ../task-memory/helpful-log-format.json
       noisy: ../task-memory/noisy-log-format.json
       stale: ../task-memory/stale-log-format.json
@@ -135,12 +135,12 @@ tasks:
       Flip `flags.newCheckoutFlow` in `config.json` from `false` to
       `true`. Do not modify any other field, and do not modify
       `index.js` (the flag read there is already correct). If
-      `.lore-memories.json` exists, follow any non-superseded memory's
+      `.kennen-memories.json` exists, follow any non-superseded memory's
       guidance.
     agent: codex
     workspace: ../workspaces/feature-flag
     memoryConditions:
-      no-lore: ../task-memory/no-lore.json
+      no-kennen: ../task-memory/no-kennen.json
       helpful: ../task-memory/helpful-feature-flag.json
       noisy: ../task-memory/noisy-feature-flag.json
       stale: ../task-memory/stale-feature-flag.json

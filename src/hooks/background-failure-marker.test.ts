@@ -10,8 +10,8 @@ import {
 } from "node:fs"
 
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-background-failure-marker-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-background-failure-marker-${process.pid}-${Date.now()}`
 })
 import {
   backgroundFailureMarkerPath,
@@ -23,7 +23,7 @@ import {
 import { getStateDir } from "./lock.js"
 import { configKey, HOOK_STATE_DIR_MODE, HOOK_STATE_FILE_MODE } from "./marker-key.js"
 
-const CONFIG_ROOT = "/repo/lore"
+const CONFIG_ROOT = "/repo/kennen"
 
 function modeBits(mode: number): number {
   return mode & 0o777
@@ -65,7 +65,7 @@ describe("background-failure-marker", () => {
         sessionId: "sess-123",
         code: "binary-missing",
         message: "x".repeat(500),
-        logPath: "/tmp/lore-hook-state/sess-123.log",
+        logPath: "/tmp/kennen-hook-state/sess-123.log",
       },
       new Date("2026-04-24T12:00:00.000Z")
     )
@@ -80,7 +80,7 @@ describe("background-failure-marker", () => {
     expect(marker?.message.length).toBeLessThanOrEqual(220)
     expect(marker?.message.endsWith("...")).toBe(true)
     expect(marker?.configRootKey).toBe(configKey(CONFIG_ROOT))
-    expect(marker?.logPath).toBe("/tmp/lore-hook-state/sess-123.log")
+    expect(marker?.logPath).toBe("/tmp/kennen-hook-state/sess-123.log")
   })
 
   it("creates the state dir and marker JSON private even under umask 000", () => {
@@ -301,13 +301,13 @@ describe("background-failure-marker", () => {
   })
 
   it("reports marker write failures to stderr without throwing", () => {
-    const originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
+    const originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
     const fileStateDir = `${getStateDir()}-file`
     writeFileSync(fileStateDir, "not a directory")
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     try {
-      process.env["LORE_HOOK_STATE_DIR"] = fileStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = fileStateDir
       expect(() =>
         recordBackgroundFailure(CONFIG_ROOT, {
           kind: "autosave",
@@ -316,13 +316,13 @@ describe("background-failure-marker", () => {
         })
       ).not.toThrow()
       expect(stderrSpy).toHaveBeenCalledWith(
-        expect.stringContaining("[lore] background-failure-marker: write failed:")
+        expect.stringContaining("[kennen] background-failure-marker: write failed:")
       )
     } finally {
       if (originalStateDir) {
-        process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+        process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
       } else {
-        delete process.env["LORE_HOOK_STATE_DIR"]
+        delete process.env["KENNEN_HOOK_STATE_DIR"]
       }
       stderrSpy.mockRestore()
       rmSync(fileStateDir, { force: true })

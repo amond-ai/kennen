@@ -1,10 +1,10 @@
 /**
  * Single source of truth for the hook-disclosure copy that
- * `lore init` and `lore install --client {claude, codex}` both print,
- * and that .lore.example.yaml parallels as a prose block. Centralized
+ * `kennen init` and `kennen install --client {claude, codex}` both print,
+ * and that .kennen.example.yaml parallels as a prose block. Centralized
  * here so a typo fix in one surface cannot silently desync the others.
  *
- * Cursor's MCP runtime does not activate Lore's Stop / UserPromptSubmit
+ * Cursor's MCP runtime does not activate Kennen's Stop / UserPromptSubmit
  * hooks, so `runCursorInstall` deliberately does NOT print this block
  * — there's nothing to disclose on that host.
  *
@@ -15,7 +15,7 @@
  */
 
 /**
- * The four `.lore.yaml > hooks` knobs whose schema default is `true`
+ * The four `.kennen.yaml > hooks` knobs whose schema default is `true`
  * (`mergeHookDefaults`). Every entry here
  * triggers a background side effect — either a write to the operator's
  * Notion vault, a read from it, or both. Adding a fifth default-true
@@ -24,14 +24,14 @@
  * structural guard.
  */
 export interface HookDisclosureRow {
-  /** `hooks.<name>` knob in .lore.yaml. Used in the disable hint. */
+  /** `hooks.<name>` knob in .kennen.yaml. Used in the disable hint. */
   readonly knob: string
   /** One-sentence description of the side effect. */
   readonly description: string
   /**
-   * Optional per-session env-var override. `LORE_AUTOSAVE=false` and
+   * Optional per-session env-var override. `KENNEN_AUTOSAVE=false` and
    * friends short-circuit the hook without editing config. Not every
-   * hook has one — `wakeUp` is governed by .lore.yaml only.
+   * hook has one — `wakeUp` is governed by .kennen.yaml only.
    */
   readonly envOverride?: string
 }
@@ -41,7 +41,7 @@ export const HOOK_DISCLOSURE_ROWS: readonly HookDisclosureRow[] = [
     knob: "autoSave",
     description:
       "on assistant Stop, a detached sub-agent writes a session synopsis to your vault as Memory rows.",
-    envOverride: "LORE_AUTOSAVE=false",
+    envOverride: "KENNEN_AUTOSAVE=false",
   },
   {
     knob: "wakeUp",
@@ -52,13 +52,13 @@ export const HOOK_DISCLOSURE_ROWS: readonly HookDisclosureRow[] = [
     knob: "autoDigest",
     description:
       "after autosave, regenerates the weekly project digest in a detached background spawn.",
-    envOverride: "LORE_AUTO_DIGEST=false",
+    envOverride: "KENNEN_AUTO_DIGEST=false",
   },
   {
     knob: "learningExtraction",
     description:
       "the autosave sub-agent extracts atomic single-fact learnings from the transcript (up to 5 per save).",
-    envOverride: "LORE_DISABLE_LEARNING_EXTRACTION=1",
+    envOverride: "KENNEN_DISABLE_LEARNING_EXTRACTION=1",
   },
 ]
 
@@ -68,11 +68,11 @@ export const HOOK_DISCLOSURE_ROWS: readonly HookDisclosureRow[] = [
  * operator's own Notion vault) but misleading about the autosave /
  * learning-extraction LLM call, which sends the transcript to whichever
  * background-agent CLI the operator has configured (Claude API by
- * default, Codex if `LORE_AGENT_NAME=Codex`, or a custom command under
+ * default, Codex if `KENNEN_AGENT_NAME=Codex`, or a custom command under
  * `hooks.backgroundAgent.command`).
  */
 export const HOOK_PRIVACY_FRAMING =
-  "Writes land in your Notion vault; transcript content is sent to your configured background-agent LLM (Claude API by default; Codex if LORE_AGENT_NAME=Codex)."
+  "Writes land in your Notion vault; transcript content is sent to your configured background-agent LLM (Claude API by default; Codex if KENNEN_AGENT_NAME=Codex)."
 
 /** Canonical documentation link surfaced in every disclosure surface. */
 export const HOOK_DOCS_REFERENCE = "Full reference: docs/hooks.md."
@@ -93,14 +93,14 @@ export function buildOptOutHint(): string[] {
     r.envOverride ? [r.envOverride] : []
   ).join(" / ")
   return [
-    `Disable in .lore.yaml with any of: ${knobs}.`,
+    `Disable in .kennen.yaml with any of: ${knobs}.`,
     `Per-session env overrides: ${envs}.`,
   ]
 }
 
 /**
- * Lines printed to stdout by `lore init` (both no-arg and explicit-page
- * paths) and `lore install --client {claude,codex}`. Two-space indent
+ * Lines printed to stdout by `kennen init` (both no-arg and explicit-page
+ * paths) and `kennen install --client {claude,codex}`. Two-space indent
  * on the bullets matches the existing `Next steps:` / install summary
  * shape; bullets use ASCII `-` because `•` mojibakes on legacy Windows
  * consoles, and the CLI does run on Windows even though the hook

@@ -9,7 +9,7 @@ import {
 import { redactDebugExtraInfo, redactDebugMessage } from "../debug-redact.js"
 import { normalizeNotionApiBaseUrl } from "../auth/oauth.js"
 
-const USER_AGENT = "lore/1.0.0"
+const USER_AGENT = "kennen/1.0.0"
 
 export interface ClientAuthSnapshot {
   token: string
@@ -46,14 +46,14 @@ export interface AuthRefreshingClientDeps {
  * The SDK's `makeConsoleLogger` writes INFO-level messages via
  * `console.info`, which lands on stdout in Node — that would silently
  * pollute the stdout of any CLI command piped into a parser when
- * `LORE_DEBUG=1` is set. Routing to stderr keeps the report on stdout
- * and the diagnostics on stderr, matching the `[lore] partial-failure:`
+ * `KENNEN_DEBUG=1` is set. Routing to stderr keeps the report on stdout
+ * and the diagnostics on stderr, matching the `[kennen] partial-failure:`
  * shape used elsewhere in the codebase so existing log-aggregation
  * patterns keep working.
  *
  * Both `message` and `extraInfo` are routed through the same
  * `redactDebugMessage` / `redactDebugExtraInfo` defenses every other
- * `LORE_DEBUG`-gated emitter uses. This is the strictly-worst leak
+ * `KENNEN_DEBUG`-gated emitter uses. This is the strictly-worst leak
  * vector covered by the redaction defenses: the SDK's INFO-level
  * "Retrying request" trace passes `path` like `/v1/pages/<32-hex>` on
  * every retry — a structurally-guaranteed page-id leak that the per-
@@ -86,12 +86,12 @@ export const stderrSdkLogger: Logger = (level, message, extraInfo) => {
       suffix = " [unserializable extraInfo]"
     }
   }
-  process.stderr.write(`[lore] notion-sdk ${level}: ${redactedMessage}${suffix}\n`)
+  process.stderr.write(`[kennen] notion-sdk ${level}: ${redactedMessage}${suffix}\n`)
 }
 
 /**
  * Resolve the SDK debug-logging options from the current environment.
- * `LORE_DEBUG=1` opts in to `LogLevel.INFO`, which exposes the SDK's
+ * `KENNEN_DEBUG=1` opts in to `LogLevel.INFO`, which exposes the SDK's
  * per-retry trace ("retrying request" with `{ method, path, attempt,
  * delayMs }`) — the diagnostic that distinguishes a quiet
  * `Retry-After`-induced sleep from a genuine hang. Any other value (or
@@ -103,7 +103,7 @@ export const stderrSdkLogger: Logger = (level, message, extraInfo) => {
 export function resolveSdkDebugOptions(
   env: NodeJS.ProcessEnv = process.env
 ): { logLevel: LogLevel; logger: Logger } | null {
-  if (env["LORE_DEBUG"] !== "1") return null
+  if (env["KENNEN_DEBUG"] !== "1") return null
   return { logLevel: LogLevel.INFO, logger: stderrSdkLogger }
 }
 
@@ -112,10 +112,10 @@ export function resolveSdkDebugOptions(
  *
  * Base URL is resolved from (in order):
  * 1. Explicit `baseUrl` parameter
- * 2. `LORE_NOTION_BASE_URL` env var
+ * 2. `KENNEN_NOTION_BASE_URL` env var
  * 3. Default (api.notion.so)
  *
- * `LORE_DEBUG=1` enables the SDK's INFO-level log stream over stderr —
+ * `KENNEN_DEBUG=1` enables the SDK's INFO-level log stream over stderr —
  * use this when a Notion call appears to hang. The most common cause is
  * the SDK absorbing 429s with a `Retry-After`-driven sleep (capped at
  * the SDK's `DEFAULT_MAX_RETRY_DELAY_MS` of 60s); without the trace
@@ -126,8 +126,8 @@ export function createClient(token: string, baseUrl?: string): Client {
     baseUrl !== undefined
       ? normalizeNotionApiBaseUrl(baseUrl, "createClient baseUrl parameter")
       : normalizeNotionApiBaseUrl(
-          process.env["LORE_NOTION_BASE_URL"],
-          "LORE_NOTION_BASE_URL"
+          process.env["KENNEN_NOTION_BASE_URL"],
+          "KENNEN_NOTION_BASE_URL"
         )
   const debugOptions = resolveSdkDebugOptions()
 
@@ -413,22 +413,22 @@ function isUnauthorizedError(err: unknown): boolean {
 function defaultOnRefresh(event: AuthRefreshEvent): void {
   if (event.kind === "refreshed") {
     process.stderr.write(
-      `[lore] auth: refreshed ntn token after 401 (source=${event.source})\n`
+      `[kennen] auth: refreshed ntn token after 401 (source=${event.source})\n`
     )
     return
   }
 
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
 
   const reason = event.reason === "unchanged" ? "token unchanged" : "auth unavailable"
   // The auth-resolver's failure surface is the same SDK / network /
-  // config-walk path that produces the messages every other LORE_DEBUG
+  // config-walk path that produces the messages every other KENNEN_DEBUG
   // emitter scrubs. Route the suffix through the shared
   // redactor so an auth.json read failure that surfaces a path or a
   // `users.me` error carrying a workspace id doesn't bypass the helper
   // just because this emitter sits in src/notion/ rather than src/mcp/.
   const suffix = event.errorMessage ? `: ${redactDebugMessage(event.errorMessage)}` : ""
-  process.stderr.write(`[lore] auth: 401 refresh skipped (${reason})${suffix}\n`)
+  process.stderr.write(`[kennen] auth: 401 refresh skipped (${reason})${suffix}\n`)
 }
 
 function emitRefreshEvent(

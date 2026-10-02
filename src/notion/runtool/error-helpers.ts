@@ -106,7 +106,7 @@ export function isSqlValidationError(err: unknown): boolean {
 }
 
 /**
- * Emit a one-line `[lore] partial-failure: …` stderr notice whenever
+ * Emit a one-line `[kennen] partial-failure: …` stderr notice whenever
  * a flagged-on RunTool path hands the call to REST/SDK. Used by the
  * SQL-then-REST fallback paths so an operator can distinguish a
  * transient blip from a sustained capability-gate problem.
@@ -123,7 +123,7 @@ export function logRunToolFallback(source: string, err: unknown): void {
   const status = (err as { status?: number } | null | undefined)?.status
   const code = (err as { code?: unknown } | null | undefined)?.code
   process.stderr.write(
-    `[lore] partial-failure: source=${oneLine(source)} ` +
+    `[kennen] partial-failure: source=${oneLine(source)} ` +
       `status=${oneLine(String(status ?? "unknown"))} ` +
       `code=${oneLine(String(code ?? "unknown"))} ` +
       `reason=${runToolFallbackReason(err)} ` +
@@ -208,7 +208,7 @@ export function warnRunToolRestrictedResourceOnce(
     ? "runtool-fallback=1 used-rest=1"
     : "runtool-error=1 used-rest=0"
   process.stderr.write(
-    `[lore] runtool: 403 RestrictedResource on ${source}; ${outcome}. ` +
+    `[kennen] runtool: 403 RestrictedResource on ${source}; ${outcome}. ` +
       `RunTool returned 403 RestrictedResource. ` +
       `The server-reported error is included below.` +
       detail +

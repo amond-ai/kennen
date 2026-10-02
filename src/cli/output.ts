@@ -1,5 +1,5 @@
 /**
- * CLI rendering helpers shared across `lore` commands.
+ * CLI rendering helpers shared across `kennen` commands.
  *
  * The OSC 8 hyperlink path is the load-bearing surface here. The pure
  * `maybeTerminalLink` accepts injected `{ isTTY, env }` so tests don't mutate
@@ -36,9 +36,9 @@ function sanitizeLinkUrl(s: string): string {
 }
 
 /**
- * Treat `LORE_NO_HYPERLINKS=0` / `=false` / empty as "not disabled". A bare
+ * Treat `KENNEN_NO_HYPERLINKS=0` / `=false` / empty as "not disabled". A bare
  * truthiness check would treat any non-empty string as "set", so an operator
- * who exports `LORE_NO_HYPERLINKS=0` to be explicit about *off* would get
+ * who exports `KENNEN_NO_HYPERLINKS=0` to be explicit about *off* would get
  * the opposite of what they expected. `NO_COLOR` stays presence-only because
  * that's the documented convention for the third-party flag.
  */
@@ -68,7 +68,7 @@ export function maybeTerminalLink(
 ): string {
   if (!ctx.isTTY) return text
   if (ctx.env["NO_COLOR"]) return text
-  if (envDisablesHyperlinks(ctx.env["LORE_NO_HYPERLINKS"])) return text
+  if (envDisablesHyperlinks(ctx.env["KENNEN_NO_HYPERLINKS"])) return text
 
   const safeUrl = sanitizeLinkUrl(url)
   // Empty target would render as a "link to nowhere" on supporting

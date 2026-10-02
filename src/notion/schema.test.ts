@@ -105,8 +105,8 @@ describe("memoriesProperties — Last Referenced At column (0.8.0/02)", () => {
   it("declares Last Referenced At on the legacy-vault (no self-relation) shape too", () => {
     // The two-arg overload is what `verifyVaultDatabases` uses on a vault
     // that pre-dates self-relations. The column ships in both shapes so a
-    // legacy vault running `lore migrate` surfaces the missing column on
-    // the same code path as a fresh `lore init`.
+    // legacy vault running `kennen migrate` surfaces the missing column on
+    // the same code path as a fresh `kennen init`.
     const props = memoriesProperties("p-ds", "t-ds")
     expect(props["Last Referenced At"]).toEqual({ date: {} })
   })
@@ -161,8 +161,8 @@ describe("memoriesProperties — Done At column (#07)", () => {
   it("declares Done At as a date column on the legacy-vault (no self-relation) shape too", () => {
     // The two-arg overload is what `verifyVaultDatabases` uses on a vault
     // that pre-dates self-relations. Done At ships in both shapes so a
-    // legacy vault running `lore migrate` surfaces the missing column on
-    // the same code path as a fresh `lore init`.
+    // legacy vault running `kennen migrate` surfaces the missing column on
+    // the same code path as a fresh `kennen init`.
     const props = memoriesProperties("p-ds", "t-ds")
     expect(props["Done At"]).toEqual({ date: {} })
   })
@@ -267,8 +267,8 @@ describe("memoriesProperties — Topic Key + Revision Count columns (0.9.0/01)",
   it("declares both columns on the legacy two-arg overload (so drift detection picks them up)", () => {
     // `verifyVaultDatabases` uses the two-arg overload on a vault that
     // pre-dates self-relations. Both columns ship in both shapes so a
-    // legacy vault running `lore migrate` surfaces the missing columns
-    // on the same code path as a fresh `lore init`.
+    // legacy vault running `kennen migrate` surfaces the missing columns
+    // on the same code path as a fresh `kennen init`.
     const props = memoriesProperties("p-ds", "t-ds")
     expect(props["Topic Key"]).toEqual({ rich_text: {} })
     expect(props["Revision Count"]).toEqual({ number: { format: "number" } })
@@ -377,8 +377,8 @@ describe("memoriesProperties — Compare Notes column (0.9.0/02)", () => {
   it("declares Compare Notes on the legacy-vault (no self-relation) shape too", () => {
     // The two-arg overload is what `verifyVaultDatabases` uses on a vault
     // that pre-dates self-relations. The column ships in both shapes so a
-    // legacy vault running `lore migrate` surfaces the missing column on
-    // the same code path as a fresh `lore init`.
+    // legacy vault running `kennen migrate` surfaces the missing column on
+    // the same code path as a fresh `kennen init`.
     const props = memoriesProperties("p-ds", "t-ds")
     expect(props["Compare Notes"]).toEqual({ rich_text: {} })
   })

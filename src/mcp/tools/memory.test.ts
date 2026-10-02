@@ -144,9 +144,9 @@ function createMockServer() {
   }
 }
 
-describe("lore-remember session recording", () => {
+describe("kennen-remember session recording", () => {
   it("records the created memory with project scope into sessionMemories", async () => {
-    // Integration point for P1-09 auto-link: lore-learn reads back the
+    // Integration point for P1-09 auto-link: kennen-learn reads back the
     // {memoryId, projectIds} entry. Project scope is what drives the
     // cross-project safety check on auto-link.
     const mockServer = createMockServer()
@@ -168,7 +168,7 @@ describe("lore-remember session recording", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Saved",
@@ -199,7 +199,7 @@ describe("lore-remember session recording", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const save = mockServer.getActionHandler("lore-memory", "save")
+    const save = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await save({
       title: "Saved",
@@ -236,7 +236,7 @@ describe("lore-remember session recording", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({ title: "No session", content: "body" } as never)
 
@@ -247,7 +247,7 @@ describe("lore-remember session recording", () => {
   })
 })
 
-describe("lore-memory action='save' digest idempotency", () => {
+describe("kennen-memory action='save' digest idempotency", () => {
   it("updates an existing same-day digest instead of creating another row", async () => {
     const mockServer = createMockServer()
     const title = "Digest — 2026-05-29 — Mail"
@@ -298,7 +298,7 @@ describe("lore-memory action='save' digest idempotency", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const save = mockServer.getActionHandler("lore-memory", "save")
+    const save = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await save({
       title,
@@ -346,7 +346,7 @@ describe("lore-memory action='save' digest idempotency", () => {
   })
 })
 
-describe("lore-memory action='archive'", () => {
+describe("kennen-memory action='archive'", () => {
   it("clears the decision cache after archiving a memory", async () => {
     const mockServer = createMockServer()
     const archive = vi.fn().mockResolvedValue(undefined)
@@ -357,7 +357,7 @@ describe("lore-memory action='archive'", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const archiveMemory = mockServer.getActionHandler("lore-memory", "archive")
+    const archiveMemory = mockServer.getActionHandler("kennen-memory", "archive")
 
     const result = await archiveMemory({ memoryId: "dec-cached" } as never)
 
@@ -381,7 +381,7 @@ describe("lore-memory action='archive'", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const archiveMemory = mockServer.getActionHandler("lore-memory", "archive")
+    const archiveMemory = mockServer.getActionHandler("kennen-memory", "archive")
 
     const result = await archiveMemory({ memoryId: "dec-cached" } as never)
 
@@ -392,7 +392,7 @@ describe("lore-memory action='archive'", () => {
   })
 })
 
-describe("lore-remember forceNewTopic (issue #109)", () => {
+describe("kennen-remember forceNewTopic (issue #109)", () => {
   it("forwards forceNewTopic to topics.getOrCreate as { forceNew: true }", async () => {
     // The MCP boundary takes a `forceNewTopic` flag; the service-layer
     // contract is `forceNew`. This test pins the rename so a future
@@ -418,7 +418,7 @@ describe("lore-remember forceNewTopic (issue #109)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Wakeup hook crash diagnosis",
@@ -457,7 +457,7 @@ describe("lore-remember forceNewTopic (issue #109)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Eval testing rollout",
@@ -487,7 +487,7 @@ describe("lore-remember forceNewTopic (issue #109)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "unscoped topic skip",
@@ -533,7 +533,7 @@ describe("lore-remember forceNewTopic (issue #109)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateMemory = mockServer.getActionHandler("lore-memory", "update")
+    const updateMemory = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateMemory({
       memoryId: "mem-unscoped-update",
@@ -581,7 +581,7 @@ describe("lore-remember forceNewTopic (issue #109)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "irrelevant",
@@ -602,7 +602,7 @@ describe("lore-remember forceNewTopic (issue #109)", () => {
   })
 })
 
-describe("lore-remember near-duplicate probe", () => {
+describe("kennen-remember near-duplicate probe", () => {
   it("surfaces candidates whose title trigram similarity meets the 0.7 threshold", async () => {
     // The probe scans the recent memories in the same project + top-2
     // tags, flags any that look similar to the title being saved, and
@@ -632,7 +632,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Wakeup hook swallows errors silently",
@@ -648,8 +648,8 @@ describe("lore-remember near-duplicate probe", () => {
     expect(text).toContain("existing memory looks similar")
     expect(text).toContain("mem-old")
     // Post-P3-01 the recommendation points at the polymorphic tool, with
-    // the legacy `lore-update` flow surfaced via `action: 'update'`.
-    expect(text).toContain("lore-memory")
+    // the legacy `kennen-update` flow surfaced via `action: 'update'`.
+    expect(text).toContain("kennen-memory")
     expect(text).toContain("action: 'update'")
     // Probe scoped to project + top-2 tags — crucially, NOT narrowed by
     // kind. The spec's motivating duplicate chain spans note/note/agent_diary
@@ -669,7 +669,7 @@ describe("lore-remember near-duplicate probe", () => {
   it("does not narrow the probe by kind even when the caller passes kind=runbook", async () => {
     // Regression test against the earlier implementation that forwarded
     // `kind` to `memories.list()`. Passing `kind: "runbook"` on
-    // `lore-remember` should still surface near-identical notes — the
+    // `kennen-remember` should still surface near-identical notes — the
     // spec is "same project + top-2 tags", full stop.
     const mockServer = createMockServer()
     const created = makeMemory("mem-new", {
@@ -698,7 +698,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Wakeup hook swallows errors silently",
@@ -715,10 +715,10 @@ describe("lore-remember near-duplicate probe", () => {
     expect(list.mock.calls[0][0].kind).toBeUndefined()
   })
 
-  it("drops Kind=decision rows from the memory probe (decisions are lore-decide's domain)", async () => {
+  it("drops Kind=decision rows from the memory probe (decisions are kennen-decide's domain)", async () => {
     // A note titled identically to a governing decision shouldn't light
     // up that decision as a near-dup candidate — decisions surface via
-    // `lore-decide`, not `lore-update`.
+    // `kennen-decide`, not `kennen-update`.
     const mockServer = createMockServer()
     const created = makeMemory("mem-new", {
       title: "Replace auth middleware",
@@ -753,7 +753,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Replace auth middleware",
@@ -793,7 +793,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Wakeup hook swallows errors silently",
@@ -830,7 +830,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({ title: "Vault-wide note", content: "body" } as never)
 
@@ -866,7 +866,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({ title: "Same title", content: "body" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -894,7 +894,7 @@ describe("lore-remember near-duplicate probe", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({ title: "Some title", content: "body" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -917,11 +917,11 @@ describe("lore-remember near-duplicate probe", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -947,7 +947,7 @@ describe("lore-remember near-duplicate probe", () => {
   })
 })
 
-describe("lore-memory action='save' autosave-learning structural dedup", () => {
+describe("kennen-memory action='save' autosave-learning structural dedup", () => {
   it("returns same-session duplicates with the dropped metadata footer", async () => {
     const mockServer = createMockServer()
     const existing = makeMemory("mem-existing", {
@@ -972,11 +972,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1025,11 +1025,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1044,7 +1044,7 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       expect(text).toContain("Reused existing autosave learning")
       expect(text).toContain("cross-session duplicate")
       expect(text).toContain("mem-existing")
-      expect(text).toContain("LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1")
+      expect(text).toContain("KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1")
       expect(create).not.toHaveBeenCalled()
       expect(record).toHaveBeenCalledWith(
         { agent: "Codex", session: "session-2" },
@@ -1098,11 +1098,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       facts: makeFactsMock(),
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1162,11 +1162,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1233,11 +1233,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1304,11 +1304,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1370,11 +1370,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1434,7 +1434,7 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "relation filters reject empty arrays",
@@ -1502,11 +1502,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       facts: makeFactsMock(),
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1572,11 +1572,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "session synopsis",
@@ -1621,11 +1621,11 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
-    vi.stubEnv("LORE_BACKGROUND_AGENT", "true")
+    vi.stubEnv("KENNEN_BACKGROUND_AGENT", "true")
     try {
       registerMemoryTools(mockServer.server, services as never)
       registerQueryTools(mockServer.server, services as never)
-      const remember = mockServer.getActionHandler("lore-memory", "save")
+      const remember = mockServer.getActionHandler("kennen-memory", "save")
 
       const result = await remember({
         title: "relation filters reject empty arrays",
@@ -1644,7 +1644,7 @@ describe("lore-memory action='save' autosave-learning structural dedup", () => {
   })
 })
 
-describe("lore-recall topicName resolution", () => {
+describe("kennen-recall topicName resolution", () => {
   it("resolves topicName globally (not scoped to the ambient project) so multi-project topics work", async () => {
     const mockServer = createMockServer()
     const topic = makeTopic("topic-1", {
@@ -1667,7 +1667,7 @@ describe("lore-recall topicName resolution", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     await recall({ topicName: "OAuth" } as never)
 
@@ -1695,7 +1695,7 @@ describe("lore-recall topicName resolution", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ topicName: "NonExistent" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1719,7 +1719,7 @@ describe("lore-recall topicName resolution", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     await recall({} as never)
 
@@ -1730,7 +1730,7 @@ describe("lore-recall topicName resolution", () => {
   })
 })
 
-describe("lore-recall projectName resolution", () => {
+describe("kennen-recall projectName resolution", () => {
   it("returns an explicit error when projectName does not resolve (no silent fall-through)", async () => {
     const mockServer = createMockServer()
     const projectsFindByName = vi.fn().mockResolvedValue(null)
@@ -1748,7 +1748,7 @@ describe("lore-recall projectName resolution", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ projectName: "Typo" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1773,7 +1773,7 @@ describe("lore-recall projectName resolution", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({
       projectName: "Typo",
@@ -1789,7 +1789,7 @@ describe("lore-recall projectName resolution", () => {
   })
 })
 
-describe("lore-recall cursor pagination", () => {
+describe("kennen-recall cursor pagination", () => {
   it("appends a fenced json `nextCursor` footer when the service reports more pages", async () => {
     const mockServer = createMockServer()
     const memory = makeMemory("mem-1", { title: "first page" })
@@ -1807,7 +1807,7 @@ describe("lore-recall cursor pagination", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1830,7 +1830,7 @@ describe("lore-recall cursor pagination", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1852,7 +1852,7 @@ describe("lore-recall cursor pagination", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     await recall({ startCursor: "resume-here" } as never)
 
@@ -1880,7 +1880,7 @@ describe("lore-recall cursor pagination", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1906,7 +1906,7 @@ describe("lore-recall cursor pagination", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1916,7 +1916,7 @@ describe("lore-recall cursor pagination", () => {
   })
 })
 
-describe("lore-search projectName resolution", () => {
+describe("kennen-search projectName resolution", () => {
   it("returns an error when projectName does not resolve", async () => {
     const mockServer = createMockServer()
     const projectsFindByName = vi.fn().mockResolvedValue(null)
@@ -1933,7 +1933,7 @@ describe("lore-search projectName resolution", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "anything", projectName: "Typo" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1945,7 +1945,7 @@ describe("lore-search projectName resolution", () => {
   })
 })
 
-describe("lore-memory action='search'", () => {
+describe("kennen-memory action='search'", () => {
   it("dispatches the OMP-compatible direct search payload", async () => {
     const mockServer = createMockServer()
     const memoriesSearch = vi.fn(async (input: { mode?: string }) =>
@@ -1961,7 +1961,7 @@ describe("lore-memory action='search'", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-memory", "search")
+    const search = mockServer.getActionHandler("kennen-memory", "search")
 
     const result = await search({
       query: "marker-a",
@@ -2006,7 +2006,7 @@ describe("lore-memory action='search'", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-memory", "search")
+    const search = mockServer.getActionHandler("kennen-memory", "search")
     const result = await search({
       query: "marker-b",
       mode: "contains",
@@ -2021,7 +2021,7 @@ describe("lore-memory action='search'", () => {
   })
 })
 
-describe("lore-recall content-off default", () => {
+describe("kennen-recall content-off default", () => {
   // The default `includeContent: false` keeps the hot path at one Notion
   // round-trip per page. Eager bodies are opt-in because agents almost
   // always triage titles first and expand one or two rows.
@@ -2040,7 +2040,7 @@ describe("lore-recall content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     await recall({ limit: 10 } as never)
 
@@ -2067,7 +2067,7 @@ describe("lore-recall content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2098,7 +2098,7 @@ describe("lore-recall content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2107,7 +2107,7 @@ describe("lore-recall content-off default", () => {
     expect(handle).toBeDefined()
     expect(text).toContain("Result set: `rs_")
     expect(text).toContain(`Handle: \`${handle}\``)
-    expect(text).toContain(`lore-memory action='expand' ids=["${handle}"]`)
+    expect(text).toContain(`kennen-memory action='expand' ids=["${handle}"]`)
     expect(memoryResultHandles.resolve(handle as string)).toEqual({
       ok: true,
       id: "mem-1",
@@ -2129,7 +2129,7 @@ describe("lore-recall content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ includeContent: true } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2142,9 +2142,9 @@ describe("lore-recall content-off default", () => {
   })
 })
 
-describe("lore-recall tag rendering", () => {
+describe("kennen-recall tag rendering", () => {
   // Post-P1-01, each row is title + meta only — tags are load-bearing for
-  // triage and must surface in the meta line. Mirrors lore-search's shape so
+  // triage and must surface in the meta line. Mirrors kennen-search's shape so
   // agents parse one pattern across both tools.
   it("renders tags in the meta line for a tagged memory", async () => {
     const mockServer = createMockServer()
@@ -2166,7 +2166,7 @@ describe("lore-recall tag rendering", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2191,7 +2191,7 @@ describe("lore-recall tag rendering", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2202,7 +2202,7 @@ describe("lore-recall tag rendering", () => {
     expect(text).not.toMatch(/\|\s*\*/)
   })
 
-  it("emits identical meta ordering to lore-search for the same memory", async () => {
+  it("emits identical meta ordering to kennen-search for the same memory", async () => {
     // Symmetry guard: if someone re-orders one renderer and not the other,
     // this test fails. The meta contract is shared across the two tools.
     const tagged = makeMemory("mem-1", {
@@ -2223,7 +2223,7 @@ describe("lore-recall tag rendering", () => {
     }
     registerMemoryTools(recallServer.server, recallServices as never)
     registerQueryTools(recallServer.server, recallServices as never)
-    const recall = recallServer.getActionHandler("lore-query", "recall")
+    const recall = recallServer.getActionHandler("kennen-query", "recall")
 
     const searchServer = createMockServer()
     const searchServices = {
@@ -2237,7 +2237,7 @@ describe("lore-recall tag rendering", () => {
     }
     registerMemoryTools(searchServer.server, searchServices as never)
     registerQueryTools(searchServer.server, searchServices as never)
-    const search = searchServer.getActionHandler("lore-query", "search")
+    const search = searchServer.getActionHandler("kennen-query", "search")
 
     const recallResult = await recall({} as never)
     const searchResult = await search({ query: "anything" } as never)
@@ -2256,7 +2256,7 @@ describe("lore-recall tag rendering", () => {
     expect(searchMeta).toBe(recallMeta)
   })
 })
-describe("lore-search content-off default", () => {
+describe("kennen-search content-off default", () => {
   it("passes includeContent: false to the service by default", async () => {
     const mockServer = createMockServer()
     const memoriesSearch = vi
@@ -2272,7 +2272,7 @@ describe("lore-search content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "anything" } as never)
 
@@ -2296,7 +2296,7 @@ describe("lore-search content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "anything" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2323,7 +2323,7 @@ describe("lore-search content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "anything" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2355,7 +2355,7 @@ describe("lore-search content-off default", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "anything", includeContent: true } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2368,7 +2368,7 @@ describe("lore-search content-off default", () => {
   })
 })
 
-describe("lore-search mode parameter", () => {
+describe("kennen-search mode parameter", () => {
   it("defaults mode to semantic and forwards it to the service", async () => {
     // The MCP layer resolves the default explicitly so the service sees the
     // same mode shape as callers that pass a mode themselves.
@@ -2386,7 +2386,7 @@ describe("lore-search mode parameter", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "q" } as never)
 
@@ -2407,7 +2407,7 @@ describe("lore-search mode parameter", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "q" } as never)
     expect(memoriesSearch).toHaveBeenLastCalledWith(
@@ -2436,7 +2436,7 @@ describe("lore-search mode parameter", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({
       query: "PR-25650",
@@ -2470,7 +2470,7 @@ describe("lore-search mode parameter", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "q", limit: 5, mode: "semantic" } as never)
     expect(memoriesSearch).toHaveBeenLastCalledWith(
@@ -2501,7 +2501,7 @@ describe("lore-search mode parameter", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "q", topicName: "GraphQL" } as never)
 
@@ -2524,7 +2524,7 @@ describe("lore-search mode parameter", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "q", topicName: "Nope" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2535,7 +2535,7 @@ describe("lore-search mode parameter", () => {
   })
 })
 
-describe("lore-expand", () => {
+describe("kennen-expand", () => {
   // UUIDs valid per z.string().uuid() — Notion returns dashed UUIDs from
   // page.id, so these match the shape agents would actually pass in.
   const ID_A = "11111111-1111-4111-8111-111111111111"
@@ -2567,7 +2567,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const result = await expand({ ids: [ID_A, ID_B, ID_C] } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2605,7 +2605,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const result = await expand({ ids: [resultSet.handles[0], ID_B] } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2643,7 +2643,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const staleHandle = "rs_0123456789abcdef:m1"
     const result = await expand({ ids: [staleHandle, ID_A] } as never)
@@ -2654,12 +2654,12 @@ describe("lore-expand", () => {
     expect(getById).toHaveBeenCalledWith(ID_A)
     expect(text).toContain("Expanded 1/2 memories (1 unresolved)")
     expect(text).toContain(`### (unresolved: ${staleHandle})`)
-    expect(text).toContain("Run lore-query recall/search again")
+    expect(text).toContain("Run kennen-query recall/search again")
     expect(text).toContain(`Body ${ID_A}`)
   })
 
   it("enforces the 20-ID cap at the dispatcher's discriminated union", async () => {
-    // Validation lives in the polymorphic `lore-memory` dispatcher's
+    // Validation lives in the polymorphic `kennen-memory` dispatcher's
     // discriminated union (`ids: array(notionPageIdSchema).min(1).max(20)`
     // on the `expand` branch). Drive the handler so the test follows the
     // same path production callers do — schema-only `safeParse` would
@@ -2676,7 +2676,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     // Build 21 distinct dashed-UUID-shaped ids to push past the cap.
     // Notion page ids are 8-4-4-4-12 hex; any hex value satisfies the
@@ -2733,7 +2733,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const undashed = "1f1e2d3c4b5a69788796a5b4c3d2e1f0"
     const dashed = "1f1e2d3c-4b5a-6978-8796-a5b4c3d2e1f0"
@@ -2767,7 +2767,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const mixedDashed = "AaBbCcDd-1234-5678-9aBc-DeF012345678"
     const lowerUndashed = "aabbccdd123456789abcdef012345678"
@@ -2797,7 +2797,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const isErr = (r: unknown): boolean => (r as { isError?: boolean }).isError === true
 
@@ -2829,7 +2829,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const goodId = "11111111-1111-1111-1111-111111111111"
     const result = await expand({ ids: [goodId, "not-a-page-id"] } as never)
@@ -2872,7 +2872,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const pending = expand({ ids: [ID_A, ID_B, ID_C] } as never)
     // Let the microtask queue flush so any already-kicked-off fetches land
@@ -2914,7 +2914,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const result = await expand({ ids: [ID_A, ID_B, ID_C] } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2948,7 +2948,7 @@ describe("lore-expand", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const result = await expand({ ids: [ID_A, ID_A, ID_B] } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -2962,7 +2962,7 @@ describe("lore-expand", () => {
   })
 })
 
-describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
+describe("kennen-memory active-task cross-reference (issue 0.7.0/11)", () => {
   // The save response surfaces active tasks tracking the same entity
   // the just-saved memory describes — anchoring closure CTAs at the
   // resolution moment. Probe runs in parallel with the create + the
@@ -3042,7 +3042,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Merged PR #1234: outlook label.applied classifier",
@@ -3056,7 +3056,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     expect(text).toContain("close any that this memory resolves")
     // Per-task line carries title, state, and copy-paste closure CTA.
     expect(text).toContain('"Track PR #1234 review" [in-progress]')
-    expect(text).toContain("lore-task({ action: 'close', taskId: 'task-1' })")
+    expect(text).toContain("kennen-task({ action: 'close', taskId: 'task-1' })")
     // Probe was scoped to project + ACTIVE_TASK_STATES, with extracted
     // entities including PR #1234.
     expect(tasksList).toHaveBeenCalledWith(
@@ -3102,7 +3102,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Shipped",
@@ -3144,7 +3144,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Merged PR #1234",
@@ -3184,7 +3184,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Merged PR #1234",
@@ -3197,7 +3197,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     expect((result as { isError?: boolean }).isError).not.toBe(true)
   })
 
-  it("LORE_DISABLE_TASK_CROSSREF=1 skips the probe without making a Notion call", async () => {
+  it("KENNEN_DISABLE_TASK_CROSSREF=1 skips the probe without making a Notion call", async () => {
     const mockServer = createMockServer()
     const created = makeMemory("mem-new", {
       title: "Merged PR #1234",
@@ -3225,9 +3225,9 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
-    vi.stubEnv("LORE_DISABLE_TASK_CROSSREF", "1")
+    vi.stubEnv("KENNEN_DISABLE_TASK_CROSSREF", "1")
     try {
       const result = await remember({
         title: "Merged PR #1234",
@@ -3288,7 +3288,7 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const pending = remember({
       title: "Merged PR #1234",
@@ -3317,10 +3317,10 @@ describe("lore-memory active-task cross-reference (issue 0.7.0/11)", () => {
   })
 })
 
-describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
+describe("kennen-memory auto-mentions emission (issue 0.8.0/07)", () => {
   // The save handler now auto-emits one `mentions` fact per entity
   // surfaced by `extractEntityCandidates` over the saved memory's
-  // title / keywords / synopsis. This widens `lore-ask`'s structural
+  // title / keywords / synopsis. This widens `kennen-ask`'s structural
   // recall surface without an LLM call (the extractor is regex-based)
   // and without changing the retrieval pipeline.
 
@@ -3353,7 +3353,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Investigated PR #1234 latency regression",
@@ -3408,7 +3408,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Shipped PR #1 PR #2 PR #3 PR #4 PR #5 PR #6 PR #7",
@@ -3445,7 +3445,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "ok",
@@ -3489,7 +3489,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Reviewed PR #1234 against SENTRY-1234",
@@ -3508,9 +3508,9 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     expect(text).toMatch(/Auto-mentions: \d+\/\d+ attempted/)
   })
 
-  it("LORE_DISABLE_AUTO_MENTIONS=1 skips both extraction and fact creation entirely", async () => {
-    // Same posture as `LORE_DISABLE_NEAR_DUPLICATE_PROBE` /
-    // `LORE_DISABLE_TASK_CROSSREF`. Single-axis kill switch lets an
+  it("KENNEN_DISABLE_AUTO_MENTIONS=1 skips both extraction and fact creation entirely", async () => {
+    // Same posture as `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE` /
+    // `KENNEN_DISABLE_TASK_CROSSREF`. Single-axis kill switch lets an
     // operator distrust the regex-based entity tokenizer
     // independently of the other advisory probes. Distinct from
     // those two knobs: an operator may trust the deterministic
@@ -3539,9 +3539,9 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
-    vi.stubEnv("LORE_DISABLE_AUTO_MENTIONS", "1")
+    vi.stubEnv("KENNEN_DISABLE_AUTO_MENTIONS", "1")
     try {
       const result = await remember({
         title: "Investigated PR #1234",
@@ -3591,7 +3591,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Reviewed",
@@ -3639,7 +3639,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Reviewed PR #1234",
@@ -3695,7 +3695,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const args = { title: "Investigated PR #1234", content: "body" }
     const result1 = await remember(args as never)
@@ -3749,7 +3749,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
   })
 
-  it("LORE_DISABLE_NEAR_DUPLICATE_PROBE=1 does NOT disable auto-mentions emission (single-axis kill switches)", async () => {
+  it("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1 does NOT disable auto-mentions emission (single-axis kill switches)", async () => {
     // Pin the single-axis contract the in-code comment and
     // AGENTS.md doc both lean on: an operator who distrusts the
     // near-duplicate substring probe must NOT lose auto-mentions
@@ -3783,9 +3783,9 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "1")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "1")
     try {
       await remember({
         title: "Reviewed PR #1234",
@@ -3801,7 +3801,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
   })
 
-  it("LORE_DISABLE_TASK_CROSSREF=1 does NOT disable auto-mentions emission (single-axis kill switches)", async () => {
+  it("KENNEN_DISABLE_TASK_CROSSREF=1 does NOT disable auto-mentions emission (single-axis kill switches)", async () => {
     // Mirror of the near-dup single-axis test above — distrust of
     // the active-task cross-reference probe must NOT cascade to
     // auto-mentions. Same two-axis independence the AGENTS.md doc
@@ -3831,9 +3831,9 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
-    vi.stubEnv("LORE_DISABLE_TASK_CROSSREF", "1")
+    vi.stubEnv("KENNEN_DISABLE_TASK_CROSSREF", "1")
     try {
       await remember({
         title: "Reviewed PR #1234",
@@ -3849,7 +3849,7 @@ describe("lore-memory auto-mentions emission (issue 0.8.0/07)", () => {
   })
 })
 
-describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => {
+describe("kennen-memory auto-mentions re-emission on update (DEFERRED-03)", () => {
   // Update-time re-emission of `mentions` facts uses the symmetric
   // diff-and-invalidate contract (issue #491). Pre-query
   // source-scoped live `mentions` facts via
@@ -3858,7 +3858,7 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
   // graph doesn't already cover), and invalidate `previous − current`
   // (existing facts whose Object is no longer surfaced by the
   // post-update extraction). The whole branch is gated behind
-  // `LORE_DISABLE_AUTO_MENTIONS=1`, which disables both extraction
+  // `KENNEN_DISABLE_AUTO_MENTIONS=1`, which disables both extraction
   // AND the pre-query so an operator distrusting the tokenizer
   // skips every per-entity write the diff would otherwise emit.
   //
@@ -3893,9 +3893,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-1",
       title: "Investigated PR #1234 latency regression",
     } as never)
@@ -3938,7 +3938,7 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     // ever invalidates auto-emitted `mentions` facts. That contract
     // rests on two things: (1) `mentions` is excluded from the
     // active profile's writable fact predicates, so manual
-    // `lore-fact action='create'` calls cannot land a `mentions`
+    // `kennen-fact action='create'` calls cannot land a `mentions`
     // row, and (2) the pre-query passes `predicates: ['mentions']`
     // to `queryBySourceMemory`, so the response set never includes
     // manual `uses` / `depends_on` / `causes` facts pointing at
@@ -3974,9 +3974,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-predicate-pin",
       title: "Reviewed PR #1234",
     } as never)
@@ -4030,9 +4030,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-cover",
       title: "Investigated PR #1234 again",
     } as never)
@@ -4085,9 +4085,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-stale",
       title: "Investigated PR #1234",
     } as never)
@@ -4140,9 +4140,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-strip-all",
       title: "Generic refactor notes",
     } as never)
@@ -4199,9 +4199,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-rename",
       title: "Investigated PR #25800 follow-up regression",
     } as never)
@@ -4269,9 +4269,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-invalidate-partial",
       title: "Investigated SENTRY-1234",
     } as never)
@@ -4323,9 +4323,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-invalidate-full",
       title: "Generic refactor notes",
     } as never)
@@ -4375,9 +4375,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-update-mixed",
       title: "Reviewed PR #1234 against SENTRY-1234",
     } as never)
@@ -4422,9 +4422,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-update-fields",
       keywords: "PR #1234",
       synopsis: "Closes SENTRY-1234.",
@@ -4437,7 +4437,7 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     expect(objects).toContain("SENTRY-1234")
   })
 
-  it("LORE_DISABLE_AUTO_MENTIONS=1 skips both pre-query and per-entity emission entirely", async () => {
+  it("KENNEN_DISABLE_AUTO_MENTIONS=1 skips both pre-query and per-entity emission entirely", async () => {
     // Same kill switch as save — single-axis disable for the regex
     // tokenizer. Pinning that update-time emission honors the same
     // env var lets an operator distrust the tokenizer end-to-end with
@@ -4463,11 +4463,11 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    vi.stubEnv("LORE_DISABLE_AUTO_MENTIONS", "1")
+    vi.stubEnv("KENNEN_DISABLE_AUTO_MENTIONS", "1")
     try {
-      const result = await lore({
+      const result = await kennen({
         memoryId: "mem-update-disabled",
         title: "Investigated PR #1234",
       } as never)
@@ -4519,9 +4519,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-partial",
       title: "Investigated PR #1234",
     } as never)
@@ -4563,9 +4563,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-partial",
       title: "Updated title",
       content: "Updated body",
@@ -4613,9 +4613,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-probefail",
       title: "Reviewed PR #1234",
     } as never)
@@ -4660,9 +4660,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-noentities",
       title: "ok",
     } as never)
@@ -4709,9 +4709,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-update-vaultwide",
       title: "Reviewed PR #1234",
     } as never)
@@ -4755,9 +4755,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-metadata-only",
     } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -4812,9 +4812,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-update-decoded",
       title: "Café &amp; Bar review",
     } as never)
@@ -4829,7 +4829,7 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
   })
 
   it("decodes HTML entities on existing facts so the stale-set check matches the decoded extraction (no invalidate-and-replace churn on pre-migration vaults)", async () => {
-    // The inverse of the candidate-decode test above. Pre-`lore
+    // The inverse of the candidate-decode test above. Pre-`kennen
     // migrate --fix-fact-encoding` vaults still carry `mentions`
     // facts whose `Object` is HTML-entity-encoded on disk; the
     // post-update extraction always lives in the decoded namespace
@@ -4883,9 +4883,9 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-update-encoded-existing",
       title: `Reviewed ${encodedUrl}`,
     } as never)
@@ -4921,7 +4921,7 @@ describe("lore-memory auto-mentions re-emission on update (DEFERRED-03)", () => 
   })
 })
 
-describe("lore-memory action='update' date clearing (issue #271)", () => {
+describe("kennen-memory action='update' date clearing (issue #271)", () => {
   function setUpUpdateHarness() {
     const mockServer = createMockServer()
     const update = vi.fn().mockResolvedValue(makeMemory("mem-1"))
@@ -4938,16 +4938,16 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     return {
-      lore: mockServer.getActionHandler("lore-memory", "update"),
-      inputSchema: mockServer.getInputSchema("lore-memory"),
+      kennen: mockServer.getActionHandler("kennen-memory", "update"),
+      inputSchema: mockServer.getInputSchema("kennen-memory"),
       update,
     }
   }
 
   it("threads reviewBy: null through to memories.update as an explicit clear", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
-    await lore({ memoryId: "mem-1", reviewBy: null } as never)
+    await kennen({ memoryId: "mem-1", reviewBy: null } as never)
 
     expect(update).toHaveBeenCalledWith(
       "mem-1",
@@ -4956,9 +4956,9 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 
   it("threads decidedAt: null through to memories.update as an explicit clear", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
-    await lore({ memoryId: "mem-1", decidedAt: null } as never)
+    await kennen({ memoryId: "mem-1", decidedAt: null } as never)
 
     expect(update).toHaveBeenCalledWith(
       "mem-1",
@@ -4967,9 +4967,9 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 
   it("normalizes reviewBy: empty string to an explicit clear", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
-    await lore({ memoryId: "mem-1", reviewBy: "" } as never)
+    await kennen({ memoryId: "mem-1", reviewBy: "" } as never)
 
     expect(update).toHaveBeenCalledWith(
       "mem-1",
@@ -4978,9 +4978,9 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 
   it("normalizes decidedAt: empty string to an explicit clear", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
-    await lore({ memoryId: "mem-1", decidedAt: "" } as never)
+    await kennen({ memoryId: "mem-1", decidedAt: "" } as never)
 
     expect(update).toHaveBeenCalledWith(
       "mem-1",
@@ -4989,9 +4989,9 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 
   it("clears reviewBy and decidedAt in the same update call", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
-    await lore({
+    await kennen({
       memoryId: "mem-1",
       reviewBy: null,
       decidedAt: null,
@@ -5004,9 +5004,9 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 
   it("omitted reviewBy and decidedAt stay undefined", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
-    await lore({ memoryId: "mem-1", title: "Renamed" } as never)
+    await kennen({ memoryId: "mem-1", title: "Renamed" } as never)
 
     const [, args] = update.mock.calls[0]
     expect(args.reviewBy).toBeUndefined()
@@ -5057,13 +5057,13 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 
   it("still rejects malformed date strings before any update", async () => {
-    const { lore, update } = setUpUpdateHarness()
+    const { kennen, update } = setUpUpdateHarness()
 
     for (const args of [
       { memoryId: "mem-1", reviewBy: "05-03-2026" },
       { memoryId: "mem-1", decidedAt: "2026/05/03" },
     ]) {
-      const result = await lore(args as never)
+      const result = await kennen(args as never)
 
       expect((result as { isError?: boolean }).isError).toBe(true)
     }
@@ -5084,7 +5084,7 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Saved",
@@ -5111,7 +5111,7 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Saved",
@@ -5125,7 +5125,7 @@ describe("lore-memory action='update' date clearing (issue #271)", () => {
   })
 })
 
-describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
+describe("kennen-memory synopsis surface (issue 0.7.0/02)", () => {
   it("threads synopsis on action='save' through to memories.create", async () => {
     const mockServer = createMockServer()
     const created = makeMemory("mem-with-synopsis", {
@@ -5144,7 +5144,7 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Saved",
@@ -5175,9 +5175,9 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-1",
       synopsis: "New synopsis",
     } as never)
@@ -5205,9 +5205,9 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({ memoryId: "mem-1", synopsis: "" } as never)
+    await kennen({ memoryId: "mem-1", synopsis: "" } as never)
 
     expect(update).toHaveBeenCalledWith(
       "mem-1",
@@ -5229,9 +5229,9 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({ memoryId: "mem-1", title: "Just renaming" } as never)
+    await kennen({ memoryId: "mem-1", title: "Just renaming" } as never)
 
     const [, args] = update.mock.calls[0]
     expect(args.synopsis).toBeUndefined()
@@ -5253,7 +5253,7 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
     const overCap = "x".repeat(151)
 
     const result = await remember({
@@ -5270,7 +5270,7 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     expect(services.memories.create).not.toHaveBeenCalled()
   })
 
-  it("honors memory.synopsisMaxChars when validating lore-memory input", async () => {
+  it("honors memory.synopsisMaxChars when validating kennen-memory input", async () => {
     const mockServer = createMockServer()
     const services = {
       projects: { findByName: vi.fn() },
@@ -5286,7 +5286,7 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Saved",
@@ -5308,7 +5308,7 @@ describe("lore-memory synopsis surface (issue 0.7.0/02)", () => {
   // Keep the proof at the seam, not at the helper.
 })
 
-describe("lore-memory action='update' Alternatives/Consequences rich_text cap (#270)", () => {
+describe("kennen-memory action='update' Alternatives/Consequences rich_text cap (#270)", () => {
   function setUpUpdateHarness() {
     const mockServer = createMockServer()
     const update = vi.fn().mockResolvedValue(makeMemory("mem-1"))
@@ -5323,7 +5323,7 @@ describe("lore-memory action='update' Alternatives/Consequences rich_text cap (#
     }
     registerMemoryTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-memory", "update"),
+      handler: mockServer.getActionHandler("kennen-memory", "update"),
       update,
     }
   }
@@ -5401,7 +5401,7 @@ describe("lore-memory action='update' Alternatives/Consequences rich_text cap (#
   })
 })
 
-describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
+describe("kennen-recall synopsis rendering (issue 0.7.0/03)", () => {
   // Pins the four-cell `includeContent` × synopsis-non-empty matrix on
   // the recall surface. The pre-#03 cells (no synopsis) must remain
   // byte-identical so existing fixtures and agent expectations don't
@@ -5425,7 +5425,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5445,7 +5445,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5469,7 +5469,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ includeContent: true } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5492,7 +5492,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ includeContent: true } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5517,7 +5517,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({ includeSynopsis: false } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5539,7 +5539,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({
       includeContent: true,
@@ -5575,7 +5575,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5608,7 +5608,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     await recall({} as never)
 
@@ -5617,7 +5617,7 @@ describe("lore-recall synopsis rendering (issue 0.7.0/03)", () => {
   })
 })
 
-describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
+describe("kennen-search synopsis rendering (issue 0.7.0/03)", () => {
   function buildSearchServices(memory: Memory) {
     const memoriesSearch = vi.fn().mockResolvedValue([memory])
     return {
@@ -5640,7 +5640,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "auth" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5661,7 +5661,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "auth", includeContent: true } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5717,7 +5717,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "auth", explain: true } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5763,7 +5763,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "auth middleware" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5801,7 +5801,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: `debug ${token}` } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5833,7 +5833,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "archived", mode: "contains" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5855,7 +5855,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({
       query: "auth",
@@ -5879,7 +5879,7 @@ describe("lore-search synopsis rendering (issue 0.7.0/03)", () => {
 // not the algebra.
 // ---------------------------------------------------------------------------
 
-describe("lore-query action='recall' — touch-on-read wiring (issue 0.8.0/05)", () => {
+describe("kennen-query action='recall' — touch-on-read wiring (issue 0.8.0/05)", () => {
   it("touches every returned memory after recall composes its response", async () => {
     const mockServer = createMockServer()
     const m1 = makeMemory("mem-1", { title: "A" })
@@ -5896,7 +5896,7 @@ describe("lore-query action='recall' — touch-on-read wiring (issue 0.8.0/05)",
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     expect((result as { isError?: boolean }).isError).not.toBe(true)
@@ -5919,7 +5919,7 @@ describe("lore-query action='recall' — touch-on-read wiring (issue 0.8.0/05)",
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     await recall({} as never)
     // Empty-input touchOnRead is a no-op at the data layer, but the
@@ -5947,7 +5947,7 @@ describe("lore-query action='recall' — touch-on-read wiring (issue 0.8.0/05)",
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -5956,7 +5956,7 @@ describe("lore-query action='recall' — touch-on-read wiring (issue 0.8.0/05)",
   })
 })
 
-describe("lore-query action='search' — touch-on-read wiring (issue 0.8.0/05)", () => {
+describe("kennen-query action='search' — touch-on-read wiring (issue 0.8.0/05)", () => {
   it("touches every returned search result after the response composes", async () => {
     const mockServer = createMockServer()
     const m1 = makeMemory("mem-1", { title: "Hit one" })
@@ -5973,7 +5973,7 @@ describe("lore-query action='search' — touch-on-read wiring (issue 0.8.0/05)",
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "auth" } as never)
     expect(touchOnRead).toHaveBeenCalledTimes(1)
@@ -6005,7 +6005,7 @@ describe("lore-query action='search' — touch-on-read wiring (issue 0.8.0/05)",
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     await search({ query: "auth", limit: 2, mode: "semantic" } as never)
     const passed = touchOnRead.mock.calls[0]![0] as Memory[]
@@ -6013,7 +6013,7 @@ describe("lore-query action='search' — touch-on-read wiring (issue 0.8.0/05)",
   })
 })
 
-describe("lore-memory action='expand' — touch-on-read wiring (issue 0.8.0/05)", () => {
+describe("kennen-memory action='expand' — touch-on-read wiring (issue 0.8.0/05)", () => {
   const ID_A = "11111111-1111-4111-8111-111111111111"
   const ID_B = "22222222-2222-4222-8222-222222222222"
 
@@ -6035,7 +6035,7 @@ describe("lore-memory action='expand' — touch-on-read wiring (issue 0.8.0/05)"
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     await expand({ ids: [ID_A, ID_B] } as never)
     expect(touchOnRead).toHaveBeenCalledTimes(1)
@@ -6066,7 +6066,7 @@ describe("lore-memory action='expand' — touch-on-read wiring (issue 0.8.0/05)"
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     await expand({ ids: [ID_A, ID_B] } as never)
     const passed = touchOnRead.mock.calls[0]![0] as Memory[]
@@ -6091,7 +6091,7 @@ describe("lore-memory action='expand' — touch-on-read wiring (issue 0.8.0/05)"
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const expand = mockServer.getActionHandler("lore-memory", "expand")
+    const expand = mockServer.getActionHandler("kennen-memory", "expand")
 
     const result = await expand({ ids: [ID_A] } as never)
     expect((result as { isError?: boolean }).isError).not.toBe(true)
@@ -6099,7 +6099,7 @@ describe("lore-memory action='expand' — touch-on-read wiring (issue 0.8.0/05)"
   })
 })
 
-describe("lore-recall / lore-search revision marker (issue 0.9.0/10)", () => {
+describe("kennen-recall / kennen-search revision marker (issue 0.9.0/10)", () => {
   // Surface-pin: the rev-N marker must reach recall and search via the
   // shared `formatMemoryListItem` path. Lives at the surface so a
   // future contributor swapping either handler away from the helper
@@ -6130,7 +6130,7 @@ describe("lore-recall / lore-search revision marker (issue 0.9.0/10)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -6163,7 +6163,7 @@ describe("lore-recall / lore-search revision marker (issue 0.9.0/10)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const recall = mockServer.getActionHandler("lore-query", "recall")
+    const recall = mockServer.getActionHandler("kennen-query", "recall")
 
     const result = await recall({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -6198,7 +6198,7 @@ describe("lore-recall / lore-search revision marker (issue 0.9.0/10)", () => {
 
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const search = mockServer.getActionHandler("lore-query", "search")
+    const search = mockServer.getActionHandler("kennen-query", "search")
 
     const result = await search({ query: "anything" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -6209,7 +6209,7 @@ describe("lore-recall / lore-search revision marker (issue 0.9.0/10)", () => {
   })
 })
 
-describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
+describe("kennen-memory action='save' topic-key upsert (0.9.0/06)", () => {
   it("dispatches to upsertByTopicKey when topicKey is set; create is NOT called", async () => {
     // The handler's dispatch should route topicKey-bearing saves to
     // the upsert path. The fresh-create path must not fire when a
@@ -6244,7 +6244,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "JWT auth model with refresh rotation",
@@ -6299,7 +6299,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "JWT auth model",
@@ -6316,10 +6316,10 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
   it("maps subject-canonical replace saves onto state topic-key upserts", async () => {
     const mockServer = createMockServer()
     const upserted = makeMemory("mem-state", {
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       projectIds: ["proj-a"],
       kind: "state",
-      topicKey: "state/lore-auth",
+      topicKey: "state/kennen-auth",
       revisionCount: 2,
     })
     const upsertByTopicKey = vi.fn().mockResolvedValue({
@@ -6345,26 +6345,26 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       content: "PATs are primary for external operators.",
-      subject: "Lore auth",
+      subject: "Kennen auth",
       replace: true,
     } as never)
 
     expect(upsertByTopicKey).toHaveBeenCalledTimes(1)
     expect(create).not.toHaveBeenCalled()
     const args = upsertByTopicKey.mock.calls[0]![0]
-    expect(args.topicKey).toBe("state/lore-auth")
+    expect(args.topicKey).toBe("state/kennen-auth")
     expect(args.kind).toBe("state")
     expect(args.projectIds).toEqual(["proj-a"])
 
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("Appended as revision 2")
-    expect(text).toContain("subject 'Lore auth'")
-    expect(text).toContain("topic key 'state/lore-auth'")
+    expect(text).toContain("subject 'Kennen auth'")
+    expect(text).toContain("topic key 'state/kennen-auth'")
   })
 
   it("rejects subject-canonical saves unless replace=true is explicit", async () => {
@@ -6386,10 +6386,10 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       content: "body",
       subject: "auth",
     } as never)
@@ -6424,13 +6424,13 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       content: "body",
       kind: "state",
-      topicKey: "state/lore-auth",
+      topicKey: "state/kennen-auth",
     } as never)
 
     expect((result as { isError?: boolean }).isError).toBe(true)
@@ -6469,7 +6469,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Legacy save",
@@ -6507,7 +6507,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     for (const bad of [
       "Decision/JWT",
@@ -6564,7 +6564,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "JWT auth with PR-123 refresh rotation",
@@ -6593,7 +6593,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
       .fn()
       .mockRejectedValue(
         new Error(
-          "Kind cannot change on upsert. Existing: 'decision'; input: 'runbook'. Pick a new topicKey for the new kind, or supersede via lore-decision action='create'."
+          "Kind cannot change on upsert. Existing: 'decision'; input: 'runbook'. Pick a new topicKey for the new kind, or supersede via kennen-decision action='create'."
         )
       )
     const services = {
@@ -6613,7 +6613,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "x",
@@ -6627,7 +6627,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect(text).toContain("Kind cannot change on upsert")
   })
 
-  it("rejects kind: 'procedure' on save with a redirect to lore-procedure action='propose'", async () => {
+  it("rejects kind: 'procedure' on save with a redirect to kennen-procedure action='propose'", async () => {
     // The generic save path bypasses every safety property of the
     // procedure-promotion workflow: source-memory live-row
     // validation (`resolveProcedureSources`), the
@@ -6657,7 +6657,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Cache miss procedure",
@@ -6669,7 +6669,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("does not accept kind: 'procedure'")
-    expect(text).toContain("lore-procedure action='propose'")
+    expect(text).toContain("kennen-procedure action='propose'")
     expect(create).not.toHaveBeenCalled()
     expect(upsertByTopicKey).not.toHaveBeenCalled()
   })
@@ -6737,7 +6737,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -6748,7 +6748,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot promote kind='note' to kind='procedure'")
-    expect(text).toContain("lore-procedure action='propose'")
+    expect(text).toContain("kennen-procedure action='propose'")
     expect(update).not.toHaveBeenCalled()
   })
 
@@ -6780,7 +6780,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -6817,7 +6817,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -6860,7 +6860,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -6905,7 +6905,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -6951,7 +6951,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -6995,7 +6995,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "11111111111111111111111111111111",
@@ -7015,7 +7015,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     // Approval is the inbox-review path — recordReview writes the
     // `## Reviewed (YYYY-MM-DD)` audit block. A bare status flip
     // via update would erase that audit, so reject and redirect to
-    // lore-memory action='approve'.
+    // kennen-memory action='approve'.
     const mockServer = createMockServer()
     const update = vi.fn()
     const services = {
@@ -7070,7 +7070,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "22222222222222222222222222222222",
@@ -7080,13 +7080,13 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot flip a procedure to status='accepted'")
-    expect(text).toContain("lore-memory action='approve'")
+    expect(text).toContain("kennen-memory action='approve'")
     expect(update).not.toHaveBeenCalled()
   })
 
   it("rejects update with status='rejected' on a proposed procedure (must use reject)", async () => {
     // Symmetric with the proposed→accepted gate.
-    // `lore-memory action='reject'` (`recordReview`) is the path
+    // `kennen-memory action='reject'` (`recordReview`) is the path
     // that writes the `## Reviewed (YYYY-MM-DD)` audit; a bare
     // status flip on update would erase that audit.
     const mockServer = createMockServer()
@@ -7143,7 +7143,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "44444444444444444444444444444444",
@@ -7153,11 +7153,11 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot flip a proposed procedure to status='rejected'")
-    expect(text).toContain("lore-memory action='reject'")
+    expect(text).toContain("kennen-memory action='reject'")
     expect(update).not.toHaveBeenCalled()
   })
 
-  it("rejects update with status='deprecated' on a procedure (must use lore-procedure deprecate)", async () => {
+  it("rejects update with status='deprecated' on a procedure (must use kennen-procedure deprecate)", async () => {
     // A bare status flip would skip the `## Deprecated (YYYY-MM-DD)`
     // audit block AND the status-boundary gate `handleDeprecate`
     // enforces.
@@ -7215,7 +7215,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "55555555555555555555555555555555",
@@ -7225,7 +7225,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot flip a procedure to status='deprecated'")
-    expect(text).toContain("lore-procedure action='deprecate'")
+    expect(text).toContain("kennen-procedure action='deprecate'")
     expect(update).not.toHaveBeenCalled()
   })
 
@@ -7289,7 +7289,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "77777777777777777777777777777777",
@@ -7299,8 +7299,8 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     expect((result as { isError?: boolean }).isError).toBe(true)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot flip a procedure to status='superseded'")
-    expect(text).toContain("lore-procedure action='propose'")
-    expect(text).toContain("lore-procedure action='deprecate'")
+    expect(text).toContain("kennen-procedure action='propose'")
+    expect(text).toContain("kennen-procedure action='deprecate'")
     expect(update).not.toHaveBeenCalled()
   })
 
@@ -7362,7 +7362,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "66666666666666666666666666666666",
@@ -7373,7 +7373,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot demote a procedure")
     expect(text).toContain("kind='runbook'")
-    expect(text).toContain("lore-procedure action='deprecate'")
+    expect(text).toContain("kennen-procedure action='deprecate'")
     expect(update).not.toHaveBeenCalled()
   })
 
@@ -7438,7 +7438,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "88888888888888888888888888888888",
@@ -7449,7 +7449,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     const text = (result as { content: Array<{ text: string }> }).content[0].text
     expect(text).toContain("cannot reset a procedure to status='proposed'")
     expect(text).toContain("current: deprecated")
-    expect(text).toContain("lore-procedure action='propose'")
+    expect(text).toContain("kennen-procedure action='propose'")
     expect(text).toContain("supersedesIds")
     expect(update).not.toHaveBeenCalled()
   })
@@ -7552,7 +7552,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "33333333333333333333333333333333",
@@ -7630,7 +7630,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     const result = await updateHandler({
       memoryId: "55555555555555555555555555555555",
@@ -7710,7 +7710,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     return updateHandler({
       memoryId: "66666666666666666666666666666666",
@@ -7811,7 +7811,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const updateHandler = mockServer.getActionHandler("lore-memory", "update")
+    const updateHandler = mockServer.getActionHandler("kennen-memory", "update")
 
     // topicKey + kind is rejected upfront by handleUpdate so the
     // closest worst-case combination that fires all three handler
@@ -7865,7 +7865,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Wakeup hook diagnosis",
@@ -7905,7 +7905,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "A note about something",
@@ -7959,7 +7959,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Topic-key with default note kind",
@@ -8011,7 +8011,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Task-shaped memory",
@@ -8059,7 +8059,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "x",
@@ -8076,7 +8076,7 @@ describe("lore-memory action='save' topic-key upsert (0.9.0/06)", () => {
   })
 })
 
-describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () => {
+describe("kennen-memory action='save' promotion advisory footer (0.9.0/15)", () => {
   // The advisory is a response-footer addition on the topic-key
   // upsert path. The pure-function `computePromotionAdvisory` is
   // tested in `src/core/memory.test.ts`; these tests pin the MCP
@@ -8100,7 +8100,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
       promotionAdvisory: {
         reasons: ["5 revisions accumulated", "body length 5832 chars"],
         suggestion:
-          "Consider promoting via lore-decision action='create' " +
+          "Consider promoting via kennen-decision action='create' " +
           "with supersedesIds: [<this-memory-id>], or splitting " +
           "the topic into narrower topicKeys.",
       },
@@ -8122,7 +8122,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "JWT auth model",
@@ -8178,7 +8178,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "JWT auth model",
@@ -8220,7 +8220,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     // 6KB body — would cross PROMOTE_BODY_LENGTH_THRESHOLD if the
     // path applied. It does NOT, because non-topicKey saves don't
@@ -8271,7 +8271,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "Foo",
@@ -8289,7 +8289,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     // Topic-key chains support runbook/incident/postmortem/policy
     // alongside decision (per the README's family table). Only the
     // decision kind gets the `supersedesIds` suggestion because
-    // `lore-decision action='create'` resolves every supersedesIds
+    // `kennen-decision action='create'` resolves every supersedesIds
     // entry through `DecisionService.getById`, which throws on
     // non-decision kinds — the principal review on PR #166 caught
     // that the original spec wording handed runbook operators a
@@ -8319,7 +8319,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
         reasons: ["5 revisions accumulated"],
         suggestion:
           "Consider splitting the topic into narrower topicKeys, " +
-          "or archiving this chain via lore-memory action='archive' " +
+          "or archiving this chain via kennen-memory action='archive' " +
           "and starting a fresh chain with a more specific topicKey.",
       },
     })
@@ -8340,7 +8340,7 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     const result = await remember({
       title: "DB migration runbook",
@@ -8356,11 +8356,11 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
     expect(text).toContain("archiving this chain")
     // Critical: the user-facing CTA must NOT contain the broken
     // decision-only path. A regression here means an operator pastes
-    // a `lore-decision action='create' supersedesIds: [<runbook-id>]`
+    // a `kennen-decision action='create' supersedesIds: [<runbook-id>]`
     // command and gets a `not a decision` rejection from
     // `DecisionService.getById`.
     expect(text).not.toContain("supersedesIds")
-    expect(text).not.toContain("lore-decision action='create'")
+    expect(text).not.toContain("kennen-decision action='create'")
     // No placeholder leak — `replaceAll` should no-op when the
     // suggestion carries no placeholder, but pinning explicitly
     // catches a future where a contributor mis-edits the
@@ -8370,11 +8370,11 @@ describe("lore-memory action='save' promotion advisory footer (0.9.0/15)", () =>
   })
 })
 
-describe("lore-memory action='history' subject-canonical state", () => {
+describe("kennen-memory action='history' subject-canonical state", () => {
   it("finds the state topic key for the current project and returns the full revision body", async () => {
     const mockServer = createMockServer()
     const propertyOnly = makeMemory("mem-state", {
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       projectIds: ["proj-a"],
       kind: "state",
       topicKey: "state/auth",
@@ -8382,7 +8382,7 @@ describe("lore-memory action='history' subject-canonical state", () => {
       content: "",
     })
     const hydrated = makeMemory("mem-state", {
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       projectIds: ["proj-a"],
       kind: "state",
       topicKey: "state/auth",
@@ -8394,7 +8394,7 @@ describe("lore-memory action='history' subject-canonical state", () => {
         "",
         "## Revision 2 (2026-05-21)",
         "",
-        "**Title at this revision:** Lore auth current state",
+        "**Title at this revision:** Kennen auth current state",
         "",
         "PATs are primary for external operators.",
       ].join("\n"),
@@ -8405,14 +8405,14 @@ describe("lore-memory action='history' subject-canonical state", () => {
       projects: { findByName: vi.fn() },
       topics: { getOrCreate: vi.fn() },
       memories: { findByTopicKey, getById },
-      context: { project: { id: "proj-a", name: "Lore" }, isCatchAllFallback: false },
+      context: { project: { id: "proj-a", name: "Kennen" }, isCatchAllFallback: false },
       config: { projects: [] },
       sessionMemories: { record: vi.fn(), get: vi.fn() },
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const history = mockServer.getActionHandler("lore-memory", "history")
+    const history = mockServer.getActionHandler("kennen-memory", "history")
 
     const result = await history({ subject: "auth" } as never)
 
@@ -8443,14 +8443,14 @@ describe("lore-memory action='history' subject-canonical state", () => {
       projects: { findByName: vi.fn() },
       topics: { getOrCreate: vi.fn() },
       memories: { findByTopicKey, getById },
-      context: { project: { id: "proj-a", name: "Lore" }, isCatchAllFallback: false },
+      context: { project: { id: "proj-a", name: "Kennen" }, isCatchAllFallback: false },
       config: { projects: [] },
       sessionMemories: { record: vi.fn(), get: vi.fn() },
       identity: { resolveAuthor: vi.fn(async () => null), clearCache: vi.fn() },
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const history = mockServer.getActionHandler("lore-memory", "history")
+    const history = mockServer.getActionHandler("kennen-memory", "history")
 
     const result = await history({ subject: "auth" } as never)
 
@@ -8462,7 +8462,7 @@ describe("lore-memory action='history' subject-canonical state", () => {
   })
 })
 
-describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", () => {
+describe("kennen-memory action='update' — topicKey re-keying (issue 0.9.0/14)", () => {
   // Conservative re-key path: an agent that picks the wrong topic
   // key on first save can switch to the canonical key without
   // abandoning the row. The MCP-layer tests pin the dispatch
@@ -8514,9 +8514,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/jwt-auth-model",
     } as never)
@@ -8576,9 +8576,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/jwt-auth",
     } as never)
@@ -8618,9 +8618,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new-key",
       kind: "decision",
@@ -8659,9 +8659,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new",
       projectName: "Missing",
@@ -8698,9 +8698,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new",
       projectName: "",
@@ -8782,9 +8782,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/jwt-auth-model",
       content: "New body content",
@@ -8849,9 +8849,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new",
       content: "New body content",
@@ -8880,7 +8880,7 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
         new Error(
           "Re-key target 'decision/new' is already in use by " +
             "memory mem-collider in this project-set. " +
-            "Lore does not auto-merge — archive one or pick a different key."
+            "Kennen does not auto-merge — archive one or pick a different key."
         )
       )
     const rekeyTopicKey = vi.fn()
@@ -8898,9 +8898,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new",
       content: "New body that should NOT land",
@@ -8966,9 +8966,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new",
       title: "Updated title",
@@ -9009,9 +9009,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({ memoryId: "mem-1", title: "New title" } as never)
+    await kennen({ memoryId: "mem-1", title: "New title" } as never)
 
     expect(validateRekey).not.toHaveBeenCalled()
     expect(rekeyTopicKey).not.toHaveBeenCalled()
@@ -9087,9 +9087,9 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    const result = await lore({
+    const result = await kennen({
       memoryId: "mem-1",
       topicKey: "decision/new",
       title: "Updated title",
@@ -9116,7 +9116,7 @@ describe("lore-memory action='update' — topicKey re-keying (issue 0.9.0/14)", 
   })
 })
 
-describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
+describe("kennen-memory action='compare' (issue 0.9.0/05)", () => {
   function makeServicesForCompare(
     a: Memory,
     b: Memory,
@@ -9170,7 +9170,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9213,7 +9213,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, appendCompareNotes, createWithDedup } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     await compare({
       memoryIdA: "page-a",
@@ -9238,7 +9238,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, getById, appendCompareNotes } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9262,7 +9262,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, getById } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9285,7 +9285,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, getById } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9318,7 +9318,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9340,7 +9340,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
 
   it("supersedes verdict on a decision-kind affected memory dispatches through decisions.supersede + fact + compare notes", async () => {
     // Reviewer #1 P1 #1 pinned: supersedes must route through the
-    // existing `lore-decision action='supersede'` semantics. This
+    // existing `kennen-decision action='supersede'` semantics. This
     // test asserts decisions.supersede(winner.id, loser.id) fires
     // (otherwise the new decision's Supersedes relation is never
     // updated and the old decision's Status stays at "accepted")
@@ -9360,7 +9360,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9377,7 +9377,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     expect(supersede).toHaveBeenCalledWith("page-a", "page-b")
     expect(appendCompareNotes.mock.calls[0]![0]).toBe("page-b")
     // Fact uses IDs (canonical decision-graph identifier) matching
-    // the existing `lore-decision action='supersede'` shape.
+    // the existing `kennen-decision action='supersede'` shape.
     expect(createWithDedup.mock.calls[0]![0]).toMatchObject({
       predicate: "supersedes_decision",
       subject: "page-a",
@@ -9395,7 +9395,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
         makeServicesForCompare(a, b)
 
       registerMemoryTools(mockServer.server, services as never)
-      const compare = mockServer.getActionHandler("lore-memory", "compare")
+      const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
       const result = await compare({
         memoryIdA: a.id,
@@ -9417,7 +9417,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, getById } = makeServicesForCompare(a, a)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9440,7 +9440,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, appendCompareNotes } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9491,7 +9491,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9537,7 +9537,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9631,7 +9631,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9711,7 +9711,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9780,7 +9780,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9845,7 +9845,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -9899,7 +9899,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, recordCompared } = makeServicesForCompare(x, y)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     // Second call with SWAPPED argument order: Y is now memoryIdA.
     // The both-sides gate hits — short-circuits.
@@ -10005,7 +10005,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10095,7 +10095,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services, recordCompared } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10134,7 +10134,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10178,7 +10178,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
       makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10224,7 +10224,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10241,7 +10241,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     expect(text).toContain("dispatch landed but recordCompared failed")
     expect(text).toContain("inconsistentState: true")
     expect(text).toMatch(/inspect/i)
-    expect(text).toMatch(/Retrying the same lore-memory action='compare' is safe/i)
+    expect(text).toMatch(/Retrying the same kennen-memory action='compare' is safe/i)
     // Diagnostic fields the operator needs to reconcile — every one
     // pinned by name + value so it can't silently drop.
     expect(text).toContain("dispatchedFactId=fact-99")
@@ -10287,7 +10287,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10343,7 +10343,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10396,7 +10396,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const first = await compare({
       memoryIdA: "page-a",
@@ -10457,7 +10457,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10568,7 +10568,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10670,7 +10670,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10718,7 +10718,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10848,7 +10848,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10918,7 +10918,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     })
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -10973,7 +10973,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     // First call against project-P pair.
     await compare({
@@ -11006,7 +11006,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     const { services } = makeServicesForCompare(a, b)
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const unknownVerdict = await compare({
       memoryIdA: "page-a",
@@ -11137,7 +11137,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -11200,7 +11200,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
 
     const mockServer = createMockServer()
     registerMemoryTools(mockServer.server, services as never)
-    const compare = mockServer.getActionHandler("lore-memory", "compare")
+    const compare = mockServer.getActionHandler("kennen-memory", "compare")
 
     const result = await compare({
       memoryIdA: "page-a",
@@ -11229,7 +11229,7 @@ describe("lore-memory action='compare' (issue 0.9.0/05)", () => {
 // wins and must not call the resolver.
 // ---------------------------------------------------------------------------
 
-describe("lore-memory action='save' — Author attribution (DEFERRED-ATTRIBUTION)", () => {
+describe("kennen-memory action='save' — Author attribution (DEFERRED-ATTRIBUTION)", () => {
   function setUpSaveHarness(identityAuthor: string | null) {
     const mockServer = createMockServer()
     const created = makeMemory("mem-attrib", { projectIds: [] })
@@ -11248,7 +11248,7 @@ describe("lore-memory action='save' — Author attribution (DEFERRED-ATTRIBUTION
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-memory", "save"),
+      handler: mockServer.getActionHandler("kennen-memory", "save"),
       create,
       resolveAuthor,
     }
@@ -11284,7 +11284,7 @@ describe("lore-memory action='save' — Author attribution (DEFERRED-ATTRIBUTION
   })
 })
 
-describe("lore-memory expiry fields", () => {
+describe("kennen-memory expiry fields", () => {
   it("threads save expiresAt/expiresOn through to memories.create", async () => {
     const mockServer = createMockServer()
     const create = vi.fn().mockResolvedValue(
@@ -11305,21 +11305,21 @@ describe("lore-memory expiry fields", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "PR poll receipt",
       content: "PR #899 is open.",
       kind: "operational",
       expiresAt: "2026-06-01",
-      expiresOn: "pr-closed:Iron-Ham/lore#899",
+      expiresOn: "pr-closed:Iron-Ham/kennen#899",
     } as never)
 
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: "operational",
         expiresAt: "2026-06-01",
-        expiresOn: "pr-closed:Iron-Ham/lore#899",
+        expiresOn: "pr-closed:Iron-Ham/kennen#899",
         scope: expect.objectContaining({
           lifetime: "expires",
           expiresAt: "2026-06-01",
@@ -11342,9 +11342,9 @@ describe("lore-memory expiry fields", () => {
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const lore = mockServer.getActionHandler("lore-memory", "update")
+    const kennen = mockServer.getActionHandler("kennen-memory", "update")
 
-    await lore({
+    await kennen({
       memoryId: "mem-1",
       expiresAt: null,
       expiresOn: null,
@@ -11367,7 +11367,7 @@ describe("lore-memory expiry fields", () => {
 // near-blank rows in Notion; reject at the MCP boundary instead.
 // ---------------------------------------------------------------------------
 
-describe("lore-memory action='save' — nonblank title/content (issue #467)", () => {
+describe("kennen-memory action='save' — nonblank title/content (issue #467)", () => {
   function setUpSaveHarness() {
     const mockServer = createMockServer()
     const create = vi.fn().mockResolvedValue(makeMemory("mem-1", { projectIds: [] }))
@@ -11384,7 +11384,7 @@ describe("lore-memory action='save' — nonblank title/content (issue #467)", ()
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-memory", "save"),
+      handler: mockServer.getActionHandler("kennen-memory", "save"),
       create,
     }
   }
@@ -11461,7 +11461,7 @@ describe("lore-memory action='save' — nonblank title/content (issue #467)", ()
   })
 })
 
-describe("lore-memory action='update' — empty string still clears (issue #467)", () => {
+describe("kennen-memory action='update' — empty string still clears (issue #467)", () => {
   it("update path keeps existing string-clears semantic for title/content", async () => {
     // Update intentionally uses plain `z.string().optional()` so that
     // empty string can serve as the documented clear sentinel for text
@@ -11488,7 +11488,7 @@ describe("lore-memory action='update' — empty string still clears (issue #467)
     }
     registerMemoryTools(mockServer.server, services as never)
     registerQueryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-memory", "update")
+    const handler = mockServer.getActionHandler("kennen-memory", "update")
     const result = (await handler({ memoryId: "mem-1", content: "" } as never)) as {
       isError?: boolean
     }
@@ -11498,7 +11498,7 @@ describe("lore-memory action='update' — empty string still clears (issue #467)
 
 // ===========================================================================
 // Issue #283 round-4 — integration tests pinning scope inheritance on
-// system-managed facts emitted by `lore-memory action='save'` / 'update'.
+// system-managed facts emitted by `kennen-memory action='save'` / 'update'.
 // The contract is implemented via `memoryScopeToInput` in `src/types.ts`;
 // these tests pin the call-site behavior at the MCP handler boundary so a
 // future contributor that forgets to pass `scope:` to a new fact emitter
@@ -11506,7 +11506,7 @@ describe("lore-memory action='update' — empty string still clears (issue #467)
 // scope-inheritance contract.
 // ===========================================================================
 
-describe("lore-memory auto-mentions scope inheritance (issue #283 round-4)", () => {
+describe("kennen-memory auto-mentions scope inheritance (issue #283 round-4)", () => {
   it("Test A — scoped save: auto-emitted mentions facts inherit the memory's scope", async () => {
     const mockServer = createMockServer()
     const created = makeMemory("mem-scoped", {
@@ -11545,7 +11545,7 @@ describe("lore-memory auto-mentions scope inheritance (issue #283 round-4)", () 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const remember = mockServer.getActionHandler("lore-memory", "save")
+    const remember = mockServer.getActionHandler("kennen-memory", "save")
 
     await remember({
       title: "Investigated PR #1234 latency regression",
@@ -11626,7 +11626,7 @@ describe("lore-memory auto-mentions scope inheritance (issue #283 round-4)", () 
     }
 
     registerMemoryTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-memory", "update")
+    const handler = mockServer.getActionHandler("kennen-memory", "update")
 
     await handler({
       memoryId: "mem-rescope",

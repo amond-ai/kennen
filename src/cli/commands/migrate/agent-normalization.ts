@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import type { NormalizableAgentRow } from "../../../core/agent-normalization.js"
 import { printDiscoveryBreadcrumb } from "./shared.js"
 
@@ -11,7 +11,7 @@ import { printDiscoveryBreadcrumb } from "./shared.js"
  * commander's argv plumbing.
  */
 export async function runAgentNormalization(
-  services: LoreServices,
+  services: KennenServices,
   options: { apply: boolean; dryRun?: boolean; projectId?: string }
 ): Promise<void> {
   const planOnly = !options.apply || options.dryRun === true

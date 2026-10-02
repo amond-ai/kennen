@@ -22,10 +22,10 @@
 | [`docs/development.md`](docs/development.md)                                                                                                                                                 | Architecture, commands, conventions, stability rules, troubleshooting                                                        |
 | [`docs/authentication.md`](docs/authentication.md)                                                                                                                                           | Auth priority chain, ntn behavior, `auth.json` contract, rate limits, troubleshooting                                        |
 | [`docs/profiles.md`](docs/profiles.md)                                                                                                                                                       | Default profile selector, profile-owned taxonomy/schema/prompts, no-singleton threading                                      |
-| [`docs/memory-workflows.md`](docs/memory-workflows.md)                                                                                                                                       | Lore memory/fact/decision/task workflow, topic keys, digest                                                                 |
-| [`docs/conflict-detection.md`](docs/conflict-detection.md)                                                                                                                                   | `lore conflicts scan` workflow and compare-verdict contract                                                                  |
-| [`docs/memory-debt.md`](docs/memory-debt.md)                                                                                                                                                 | `lore debt scan` / `create-tasks` audit categories, scoring, recommended maintenance cadence, idempotency contract           |
-| [`docs/topology.md`](docs/topology.md)                                                                                                                                                       | `lore status` topology section, health states, recovery workflow                                                             |
+| [`docs/memory-workflows.md`](docs/memory-workflows.md)                                                                                                                                       | Kennen memory/fact/decision/task workflow, topic keys, digest                                                                 |
+| [`docs/conflict-detection.md`](docs/conflict-detection.md)                                                                                                                                   | `kennen conflicts scan` workflow and compare-verdict contract                                                                  |
+| [`docs/memory-debt.md`](docs/memory-debt.md)                                                                                                                                                 | `kennen debt scan` / `create-tasks` audit categories, scoring, recommended maintenance cadence, idempotency contract           |
+| [`docs/topology.md`](docs/topology.md)                                                                                                                                                       | `kennen status` topology section, health states, recovery workflow                                                             |
 | [`docs/topology-inheritance.md`](docs/topology-inheritance.md)                                                                                                                               | Read-upstream wake-up rendering, trust containment, design rules, opt-out behavior, promotion-target read-upstream carve-out |
 | [`docs/topology-promotion.md`](docs/topology-promotion.md)                                                                                                                                   | Promotion workflow, audit block, guards, dry run, source validation, idempotency, promoter identity, implementation pointers |
 | [`docs/notion-sdk-v5.md`](docs/notion-sdk-v5.md), [`docs/notion-rate-limit.md`](docs/notion-rate-limit.md)                                                                                   | Notion SDK v5 shape differences, rate-limit gates, endpoint overrides, call-site checklist                                   |
@@ -37,13 +37,13 @@
 
 ## Repo At A Glance
 
-Lore is a Notion-backed memory system. It stores knowledge as Notion pages in
+Kennen is a Notion-backed memory system. It stores knowledge as Notion pages in
 five core databases: Projects, Topics, Memories, Entities, and Facts.
 
 The same domain services power three interfaces:
 
 ```text
-.lore.yaml -> config.ts -> services.ts
+.kennen.yaml -> config.ts -> services.ts
                               |
                  +------------+------------+
                  |            |            |
@@ -145,19 +145,19 @@ permission from the human lead first.
 - Update the right AGENTS/doc file when you discover a missing convention,
   workflow, or gotcha. Structural rule changes need human lead approval.
 
-## Lore Usage
+## Kennen Usage
 
-Use Lore for cross-session knowledge when the tools are available:
+Use Kennen for cross-session knowledge when the tools are available:
 
-- At session start, load context with `lore-context action='wake-up'`.
-- Capture architectural choices with `lore-decision action='create'`.
-- Save non-obvious discoveries with `lore-memory action='save'`.
-- Save durable relationships with `lore-fact action='create'`; it requires a
+- At session start, load context with `kennen-context action='wake-up'`.
+- Capture architectural choices with `kennen-decision action='create'`.
+- Save non-obvious discoveries with `kennen-memory action='save'`.
+- Save durable relationships with `kennen-fact action='create'`; it requires a
   supporting memory via `sourceMemoryId` or same-process `agent`+`session`
   auto-link provenance.
-- Track follow-up work with `lore-task action='create'` and close tasks as soon
+- Track follow-up work with `kennen-task action='create'` and close tasks as soon
   as they are done or cancelled.
-- When memories are in tension, use `lore-memory action='compare'` with the
+- When memories are in tension, use `kennen-memory action='compare'` with the
   verdict vocabulary in [`docs/memory-workflows.md`](docs/memory-workflows.md).
 - Do not add visible "Key Learnings" boilerplate to user responses; learning
   extraction happens out of band through hooks.
@@ -166,20 +166,20 @@ Use Lore for cross-session knowledge when the tools are available:
 
 Two operator personas, two recommended paths:
 
-- **Internal Notion engineers** run `lore install --ntn`. `--ntn`
+- **Internal Notion engineers** run `kennen install --ntn`. `--ntn`
   auto-installs `ntn` (if missing), runs `ntn login` with
-  `NOTION_KEYRING=0` forced in the spawn, and Lore reads the resulting
+  `NOTION_KEYRING=0` forced in the spawn, and Kennen reads the resulting
   bearer token from `~/.config/notion/auth.json`. Compose with `--dev`
-  (`lore install --ntn --dev`) to forward `NOTION_ENV=dev` for
+  (`kennen install --ntn --dev`) to forward `NOTION_ENV=dev` for
   dev-environment vaults.
 - **External operators** create a Personal Access Token at
   <https://www.notion.so/developers/tokens> and paste it into
-  `NOTION_API_TOKEN`, then run `lore install` (no flags). **Do not use
+  `NOTION_API_TOKEN`, then run `kennen install` (no flags). **Do not use
   integration tokens from `notion.so/profile/integrations`** — those
   carry `secret_…` shapes and are integration-level rate-limited, which
-  re-collapses Lore into one shared bucket across the team. PATs are
+  re-collapses Kennen into one shared bucket across the team. PATs are
   per-user. The PAT prefix is `ntn_` on prod and `development_ntn_` on
-  the dev environment (use `lore install --dev` for the latter).
+  the dev environment (use `kennen install --dev` for the latter).
 
 The two-source priority chain (highest first) backs both personas:
 
@@ -187,14 +187,14 @@ The two-source priority chain (highest first) backs both personas:
    set this explicitly).
 2. `ntn`-resolved token from `~/.config/notion/auth.json`.
 
-`.lore.yaml` is local-only — keep it out of version control. Copy
-`.lore.example.yaml` to `.lore.yaml` per clone, and distribute shared team
+`.kennen.yaml` is local-only — keep it out of version control. Copy
+`.kennen.example.yaml` to `.kennen.yaml` per clone, and distribute shared team
 values (`vault.pageId`, `auth.workspaceId`) through onboarding docs rather
-than by committing config. The Lore repo gitignores `.lore.yaml` and its
-pre-commit guard (`tools/check-lore-config.mjs`) rejects any staged content.
+than by committing config. The Kennen repo gitignores `.kennen.yaml` and its
+pre-commit guard (`tools/check-kennen-config.mjs`) rejects any staged content.
 The current policy applies even to credential-free shared vault config and
 supersedes older changelog guidance that allowed intentional committed config.
-Lore rejects any `auth.token` value at config-load time.
+Kennen rejects any `auth.token` value at config-load time.
 
 Notion page IDs are access locators, not bearer secrets. Keeping them out of
 git is still the right default so external clones don't auto-target an
@@ -202,8 +202,8 @@ unrelated vault. Accidental maintainer-local or personal scratch page IDs that
 land in history need explicit owner review.
 
 Both `ntn`-issued tokens and PATs inherit the operator's personal Notion
-permissions and carry per-user rate limits. Lore-managed `ntn` spawns force
-`NOTION_KEYRING=0`; direct `ntn login` outside Lore may need the recovery
+permissions and carry per-user rate limits. Kennen-managed `ntn` spawns force
+`NOTION_KEYRING=0`; direct `ntn login` outside Kennen may need the recovery
 path in [`docs/authentication.md`](docs/authentication.md).
 
 See [`docs/authentication.md`](docs/authentication.md) and

@@ -11,11 +11,11 @@ import {
   type EnsureEntitiesDatabaseResult,
   type MigrationDiff,
 } from "../notion/setup.js"
-import type { LoreConfig, Vault } from "../types.js"
+import type { KennenConfig, Vault } from "../types.js"
 
 export interface ConfiguredVaultClient {
   client: Client
-  config: LoreConfig
+  config: KennenConfig
   configRoot: string
 }
 
@@ -28,28 +28,28 @@ export interface EnsureConfiguredEntitiesResult {
 export async function loadConfiguredVaultClient(
   cwd = process.cwd()
 ): Promise<ConfiguredVaultClient> {
-  const rawRoot = process.env["LORE_CONFIG_ROOT"]
+  const rawRoot = process.env["KENNEN_CONFIG_ROOT"]
   const explicitRoot = rawRoot?.trim() ? rawRoot.trim() : undefined
 
   let configRoot: string
-  let config: LoreConfig
+  let config: KennenConfig
   if (explicitRoot) {
     configRoot = resolve(explicitRoot)
-    const configPath = resolve(configRoot, ".lore.yaml")
+    const configPath = resolve(configRoot, ".kennen.yaml")
     try {
       await access(configPath)
     } catch {
       throw new Error(
-        `LORE_CONFIG_ROOT=${configRoot} but no .lore.yaml exists there. ` +
-          "Re-run `lore install` from the project directory or unset " +
-          "LORE_CONFIG_ROOT to fall back to the upward search."
+        `KENNEN_CONFIG_ROOT=${configRoot} but no .kennen.yaml exists there. ` +
+          "Re-run `kennen install` from the project directory or unset " +
+          "KENNEN_CONFIG_ROOT to fall back to the upward search."
       )
     }
     config = await loadConfig(configPath)
   } else {
     const found = await findConfigFile(cwd)
     if (!found) {
-      throw new Error("No .lore.yaml found. Run `lore init` to set up a vault.")
+      throw new Error("No .kennen.yaml found. Run `kennen init` to set up a vault.")
     }
     configRoot = found.root
     config = await loadConfig(found.path)

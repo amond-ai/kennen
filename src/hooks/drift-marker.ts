@@ -13,7 +13,7 @@
  * helper so the truncation tradeoff stays in lockstep across every
  * filesystem marker.
  *
- * Reuses `getStateDir()` so `LORE_HOOK_STATE_DIR` overrides
+ * Reuses `getStateDir()` so `KENNEN_HOOK_STATE_DIR` overrides
  * (parallel test files) flow through automatically.
  */
 

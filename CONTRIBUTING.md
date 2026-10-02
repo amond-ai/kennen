@@ -1,13 +1,13 @@
-# Contributing to Lore
+# Contributing to Kennen
 
-Thanks for helping improve Lore. This project is a Notion-backed memory system
+Thanks for helping improve Kennen. This project is a Notion-backed memory system
 with a CLI, an MCP server, and assistant hook integrations. Start by reading
 [`AGENTS.md`](AGENTS.md), then follow the subsystem guide for the area you are
 changing.
 
 ## Development Setup
 
-Lore requires Node.js 20 or newer.
+Kennen requires Node.js 20 or newer.
 
 ```bash
 npm install
@@ -27,11 +27,11 @@ Useful commands:
 | `npm test`             | Run the Vitest suite                |
 | `npm run dev`          | Rebuild in watch mode               |
 
-`.lore.yaml` is local-only — it's gitignored, the pre-commit hook
-(`tools/check-lore-config.mjs --staged`) rejects any staged index entry,
+`.kennen.yaml` is local-only — it's gitignored, the pre-commit hook
+(`tools/check-kennen-config.mjs --staged`) rejects any staged index entry,
 and `src/config-guard.test.ts > repo invariants > does not track a
-`.lore.yaml` at the repo root` pins the absence on every CI run. Copy
-`.lore.example.yaml` to `.lore.yaml` per clone; don't commit it.
+`.kennen.yaml` at the repo root` pins the absence on every CI run. Copy
+`.kennen.example.yaml` to `.kennen.yaml` per clone; don't commit it.
 
 Do not bump package versions in contribution PRs unless a maintainer explicitly
 asks for a release change.
@@ -81,7 +81,7 @@ broken links, stale commands, and misleading setup instructions.
 
 ## Adding or Changing MCP Tools
 
-Lore exposes a small set of polymorphic MCP tools. See
+Kennen exposes a small set of polymorphic MCP tools. See
 [`docs/mcp-tools.md`](docs/mcp-tools.md) for the current list. Do not add
 single-purpose aliases for actions that belong under an existing family.
 
@@ -109,14 +109,14 @@ Notion vault:
 
 ```bash
 npm run build
-node dist/cli.js eval run evals/suites/lore-core.yaml
+node dist/cli.js eval run evals/suites/kennen-core.yaml
 ```
 
 Use the Notion-backed runner only against an operator-maintained sandbox
 project:
 
 ```bash
-node dist/cli.js eval run evals/suites/lore-core.yaml \
+node dist/cli.js eval run evals/suites/kennen-core.yaml \
   --runner notion \
   --project <SandboxProject>
 ```
@@ -124,7 +124,7 @@ node dist/cli.js eval run evals/suites/lore-core.yaml \
 Task evals run a real headless agent and are intentionally opt-in:
 
 ```bash
-LORE_EVAL_TASK_REAL=1 node dist/cli.js eval run \
+KENNEN_EVAL_TASK_REAL=1 node dist/cli.js eval run \
   --runner task \
   evals/task-suites/starter.yaml
 ```
@@ -135,36 +135,36 @@ and artifact output.
 ## Maintainer Assistant Config Workflow
 
 This section is for Notion maintainers and internal contributors who use this
-repo as the source of their installed `lore` binary. Outside contributors do
-not need a stable `~/.lore` clone to make normal code, docs, fixture, or test
+repo as the source of their installed `kennen` binary. Outside contributors do
+not need a stable `~/.kennen` clone to make normal code, docs, fixture, or test
 changes.
 
-Lore's source repo is its own consumer, and Lore cannot bin-dispatch through
-itself: there is no `node_modules/.bin/lore` in the repo that is publishing
-`lore`. The committed `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`,
-and `.codex/hooks.json` therefore use the legacy `${HOME}/.lore/...`
+Kennen's source repo is its own consumer, and Kennen cannot bin-dispatch through
+itself: there is no `node_modules/.bin/kennen` in the repo that is publishing
+`kennen`. The committed `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`,
+and `.codex/hooks.json` therefore use the legacy `${HOME}/.kennen/...`
 absolute-path shape deliberately.
 
 Maintainers using the committed assistant configs should keep a stable
-`~/.lore` clone for editor and agent integration:
+`~/.kennen` clone for editor and agent integration:
 
 ```bash
-cd ~/.lore
+cd ~/.kennen
 npm install
 npm run build
 ```
 
-Then hack on Lore from any worktree you like. A worktree under
+Then hack on Kennen from any worktree you like. A worktree under
 `~/Developer/...` or anywhere else is independent and does not affect the
 committed assistant config.
 
-If you re-run `lore install` from a different Lore checkout, it will rewrite the
+If you re-run `kennen install` from a different Kennen checkout, it will rewrite the
 committed assistant config files to point at that checkout. Do not commit that
 diff. The expected workflow is:
 
-1. Maintain a stable `~/.lore` clone for editor and agent integration.
-2. Hack on Lore from any worktree you like.
-3. Keep the committed `${HOME}/.lore/...` paths stable for every contributor.
+1. Maintain a stable `~/.kennen` clone for editor and agent integration.
+2. Hack on Kennen from any worktree you like.
+3. Keep the committed `${HOME}/.kennen/...` paths stable for every contributor.
 
 The committed env passthrough assumes the recommended ntn-source path. The
 spawned MCP server reads `~/.config/notion/auth.json` directly, so the shared
@@ -175,7 +175,7 @@ shell does not define them.
 Pass `--project <checkout>` from that clone when updating another local
 worktree. The same local reinstall path applies to contributors who depend on
 `NOTION_WORKSPACE_ID`, `NOTION_ENV`, `NOTION_BASE_URL`,
-`NOTION_API_BASE_URL`, or `LORE_USER_NAME`: the generated env passthrough
+`NOTION_API_BASE_URL`, or `KENNEN_USER_NAME`: the generated env passthrough
 reflects that operator's install-time shell and should remain a personal,
 uncommitted diff.
 

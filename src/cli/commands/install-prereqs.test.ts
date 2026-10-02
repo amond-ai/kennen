@@ -104,7 +104,7 @@ describe("ensurePrerequisites — happy path", () => {
     vi.mocked(checkNtnVersion).mockReturnValue("ok")
     vi.mocked(getNtnVersion).mockReturnValue("0.12.0")
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -137,7 +137,7 @@ describe("ensurePrerequisites — version warning", () => {
   beforeEach(() => {
     vi.mocked(isNtnInstalled).mockReturnValue(true)
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -187,7 +187,7 @@ describe("ensurePrerequisites — version warning", () => {
 describe("ensurePrerequisites — ntn auto-install branch", () => {
   beforeEach(() => {
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -204,7 +204,7 @@ describe("ensurePrerequisites — ntn auto-install branch", () => {
 
   it("auto-installs ntn under --ntn --yes and proceeds", async () => {
     // The auto-install branch is `--ntn`-only since the
-    // 2026-05-13 PAT announcement. Default `lore install` does NOT
+    // 2026-05-13 PAT announcement. Default `kennen install` does NOT
     // run an ntn installer; only the explicit internal-engineer
     // opt-in does.
     vi.mocked(isNtnInstalled).mockReturnValue(false)
@@ -220,7 +220,7 @@ describe("ensurePrerequisites — ntn auto-install branch", () => {
     expect(installNtn).toHaveBeenCalled()
     expect(result.ready).toBe(true)
     const out = captured(consoleLogSpy)
-    expect(out).toContain("sha256 pinned by Lore")
+    expect(out).toContain("sha256 pinned by Kennen")
     expect(out).toMatch(/ntn installed/)
   })
 
@@ -278,11 +278,11 @@ describe("ensurePrerequisites — ntn auto-install branch", () => {
 })
 
 describe("ensurePrerequisites — persona routing (PAT vs ntn vs neither)", () => {
-  // Default `lore install` (no `--ntn`) routes by persona signal:
+  // Default `kennen install` (no `--ntn`) routes by persona signal:
   //
   //   - `NOTION_API_TOKEN` set → external (PAT) path; skip `ntn`.
   //   - `ntn` installed → internal path; preserve backward compat for
-  //     engineers who upgraded Lore without changing their habits.
+  //     engineers who upgraded Kennen without changing their habits.
   //   - Neither → persona prompt; bail with both-paths guidance.
   //
   // `--ntn` forces the internal path regardless of env state.
@@ -292,7 +292,7 @@ describe("ensurePrerequisites — persona routing (PAT vs ntn vs neither)", () =
   beforeEach(() => {
     delete process.env["NOTION_API_TOKEN"]
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -368,7 +368,7 @@ describe("ensurePrerequisites — persona routing (PAT vs ntn vs neither)", () =
     expect(runNtnLogin).not.toHaveBeenCalled()
     const out = captured(consoleLogSpy)
     expect(out).toMatch(/Internal Notion engineer\?/)
-    expect(out).toMatch(/lore install --ntn/)
+    expect(out).toMatch(/kennen install --ntn/)
     expect(out).toMatch(/External operator\?/)
     expect(out).toMatch(/notion\.so\/developers\/tokens/)
     expect(out).toMatch(/Do NOT paste an integration token/)
@@ -386,13 +386,13 @@ describe("ensurePrerequisites — persona routing (PAT vs ntn vs neither)", () =
     const out = captured(consoleLogSpy)
     // The recovery `--ntn` invocation should preserve the operator's
     // `--dev` choice; the PAT example should use the dev prefix.
-    expect(out).toMatch(/lore install --ntn --dev/)
+    expect(out).toMatch(/kennen install --ntn --dev/)
     expect(out).toMatch(/development_ntn_/)
-    expect(out).toMatch(/lore install --dev/)
+    expect(out).toMatch(/kennen install --dev/)
   })
 
   it("falls back to the ntn path when ntn is installed but no PAT is set (backward compat)", async () => {
-    // Internal engineers who upgraded Lore without changing their
+    // Internal engineers who upgraded Kennen without changing their
     // habits keep their existing flow: ntn-resolved auth.json, no
     // `--ntn` flag required. Matches the install behavior before the
     // PAT announcement so the upgrade isn't a surprise.
@@ -413,7 +413,7 @@ describe("ensurePrerequisites — persona routing (PAT vs ntn vs neither)", () =
 
 describe("ensurePrerequisites — --dev flag propagation", () => {
   // `--dev` explicit wins over both `NOTION_ENV` shell var and
-  // `.lore.yaml`'s `auth.baseUrl`. The flag is the most recent
+  // `.kennen.yaml`'s `auth.baseUrl`. The flag is the most recent
   // explicit operator intent — honoring it preserves the principle
   // that "what the operator just typed" beats stored signals.
 
@@ -425,7 +425,7 @@ describe("ensurePrerequisites — --dev flag propagation", () => {
     vi.mocked(checkNtnVersion).mockReturnValue("ok")
     vi.mocked(getNtnVersion).mockReturnValue("0.12.0")
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-flag-test/.lore.yaml",
+      path: "/tmp/dev-flag-test/.kennen.yaml",
       root: "/tmp/dev-flag-test",
     })
     vi.mocked(verifyVaultAccess).mockResolvedValue({ kind: "ok", pageTitle: null })
@@ -466,7 +466,7 @@ describe("ensurePrerequisites — --dev flag propagation", () => {
 
   it("--dev overrides a stale auth.baseUrl pointing at prod", async () => {
     // An operator who explicitly types `--dev` against a project
-    // whose `.lore.yaml` carries `auth.baseUrl: https://api.notion.so`
+    // whose `.kennen.yaml` carries `auth.baseUrl: https://api.notion.so`
     // is saying "ignore that, I want dev today." Honor it.
     vi.mocked(loadConfig).mockResolvedValue({
       vault: { pageId: "page" },
@@ -492,20 +492,20 @@ describe("ensurePrerequisites — --dev / shell-signal conflict guard", () => {
   // `NOTION_BASE_URL=dev` only when no shell signal existed, but
   // `runInstall` always wrote a literal dev `NOTION_BASE_URL` into
   // MCP env. So `--dev` + `NOTION_ENV=prod` (or `NOTION_BASE_URL=prod`,
-  // or `LORE_NOTION_BASE_URL=prod`) preflighted prod and installed
-  // dev MCP config. Worse, `LORE_NOTION_BASE_URL` outranks
+  // or `KENNEN_NOTION_BASE_URL=prod`) preflighted prod and installed
+  // dev MCP config. Worse, `KENNEN_NOTION_BASE_URL` outranks
   // `NOTION_BASE_URL` in `resolveOperatorBaseUrl`'s chain, so the
   // literal would silently lose to the operator's stale signal at
   // MCP-spawn time.
   //
   // Fix: fail-fast at install when `--dev` conflicts with a shell
-  // signal. Operator picks which one is real — Lore won't guess.
+  // signal. Operator picks which one is real — Kennen won't guess.
 
   const PRIOR = {
     NOTION_ENV: process.env["NOTION_ENV"],
     NOTION_BASE_URL: process.env["NOTION_BASE_URL"],
     NOTION_API_BASE_URL: process.env["NOTION_API_BASE_URL"],
-    LORE_NOTION_BASE_URL: process.env["LORE_NOTION_BASE_URL"],
+    KENNEN_NOTION_BASE_URL: process.env["KENNEN_NOTION_BASE_URL"],
     NOTION_API_TOKEN: process.env["NOTION_API_TOKEN"],
   }
 
@@ -513,10 +513,10 @@ describe("ensurePrerequisites — --dev / shell-signal conflict guard", () => {
     delete process.env["NOTION_ENV"]
     delete process.env["NOTION_BASE_URL"]
     delete process.env["NOTION_API_BASE_URL"]
-    delete process.env["LORE_NOTION_BASE_URL"]
+    delete process.env["KENNEN_NOTION_BASE_URL"]
     delete process.env["NOTION_API_TOKEN"]
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/conflict-test/.lore.yaml",
+      path: "/tmp/conflict-test/.kennen.yaml",
       root: "/tmp/conflict-test",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page" } } as never)
@@ -567,14 +567,14 @@ describe("ensurePrerequisites — --dev / shell-signal conflict guard", () => {
     )
   })
 
-  it("aborts when --dev conflicts with shell LORE_NOTION_BASE_URL=prod (the placeholder-outranks-literal case)", async () => {
+  it("aborts when --dev conflicts with shell KENNEN_NOTION_BASE_URL=prod (the placeholder-outranks-literal case)", async () => {
     // The trickiest case from the reviewer's analysis:
-    // `LORE_NOTION_BASE_URL` outranks the literal `NOTION_BASE_URL`
-    // in the resolver chain. Even if Lore wrote dev as a literal,
+    // `KENNEN_NOTION_BASE_URL` outranks the literal `NOTION_BASE_URL`
+    // in the resolver chain. Even if Kennen wrote dev as a literal,
     // the operator's shell would re-route runtime to prod via
     // the higher-priority placeholder. Fail-fast catches it before
     // either side lands.
-    process.env["LORE_NOTION_BASE_URL"] = "https://api.notion.so"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api.notion.so"
     process.env["NOTION_API_TOKEN"] = "ntn_pat-bearer"
 
     const result = await ensurePrerequisites(makeContext(), { yes: true, dev: true })
@@ -582,7 +582,7 @@ describe("ensurePrerequisites — --dev / shell-signal conflict guard", () => {
     expect(result.ready).toBe(false)
     expect(verifyVaultAccess).not.toHaveBeenCalled()
     expect(captured(consoleErrorSpy)).toMatch(
-      /LORE_NOTION_BASE_URL=https:\/\/api\.notion\.so routes auth/
+      /KENNEN_NOTION_BASE_URL=https:\/\/api\.notion\.so routes auth/
     )
   })
 
@@ -600,7 +600,7 @@ describe("ensurePrerequisites — --dev / shell-signal conflict guard", () => {
 
   it("aborts when --dev conflicts with a non-canonical shell base URL (corporate proxy)", async () => {
     // `ntnEnvFromBaseUrl` returns undefined for a corporate proxy
-    // or any URL Lore doesn't recognize. The safe default is to
+    // or any URL Kennen doesn't recognize. The safe default is to
     // refuse rather than guess — the operator's signal might mean
     // dev, prod, or something else entirely.
     process.env["NOTION_BASE_URL"] = "https://corporate-proxy.example/notion"
@@ -647,7 +647,7 @@ describe("ensurePrerequisites — --dev / shell-signal conflict guard", () => {
 
 describe("ensurePrerequisites — --ntn shadow advisory when NOTION_API_TOKEN is set", () => {
   // Reviewer concern: under the resolver chain (`NOTION_API_TOKEN >
-  // ntn-auth-json`), an operator who runs `lore install --ntn` with
+  // ntn-auth-json`), an operator who runs `kennen install --ntn` with
   // a PAT set in their shell silently uses the PAT for the spawned
   // MCP child — not the ntn token they just minted. The describe
   // line was the only signal. Add an explicit advisory naming the
@@ -661,7 +661,7 @@ describe("ensurePrerequisites — --ntn shadow advisory when NOTION_API_TOKEN is
     vi.mocked(checkNtnVersion).mockReturnValue("ok")
     vi.mocked(getNtnVersion).mockReturnValue("0.12.0")
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/shadow-test/.lore.yaml",
+      path: "/tmp/shadow-test/.kennen.yaml",
       root: "/tmp/shadow-test",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page" } } as never)
@@ -724,7 +724,7 @@ describe("ensurePrerequisites — auto-login branch", () => {
     vi.mocked(checkNtnVersion).mockReturnValue("ok")
     vi.mocked(getNtnVersion).mockReturnValue("0.12.0")
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -789,21 +789,21 @@ describe("ensurePrerequisites — auto-login branch", () => {
 
     expect(result.ready).toBe(false)
     // The post-login still-failing path points operators at concrete
-    // diagnostics (auth.json contents + LORE_DEBUG=1) rather than
-    // `lore auth --status` (which lands in #06).
-    expect(captured(consoleErrorSpy)).toMatch(/auth\.json|LORE_DEBUG=1/)
+    // diagnostics (auth.json contents + KENNEN_DEBUG=1) rather than
+    // `kennen auth --status` (which lands in #06).
+    expect(captured(consoleErrorSpy)).toMatch(/auth\.json|KENNEN_DEBUG=1/)
   })
 })
 
 describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
   // The auto-login flow has to choose a NOTION_ENV target before
   // spawning ntn login. Without explicit derivation, ntn defaults
-  // to prod and a `lore install -y` against a dev project mints a
+  // to prod and a `kennen install -y` against a dev project mints a
   // prod token that fails the post-login preflight with a confusing
   // generic vault-not-accessible error. The derivation logic walks:
   //
   //   1. operator's `NOTION_ENV` (highest priority — explicit shell choice)
-  //   2. inferred from `.lore.yaml`'s `auth.baseUrl` via canonical mapping
+  //   2. inferred from `.kennen.yaml`'s `auth.baseUrl` via canonical mapping
   //   3. fall through to ntn's default (prod) when neither signals
   //
   // A non-canonical `auth.baseUrl` (e.g., a corporate proxy) with no
@@ -836,13 +836,13 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
     }
   })
 
-  it("infers env=dev from .lore.yaml auth.baseUrl=https://api-dev.notion.com and passes to runNtnLogin", async () => {
-    // The flagged scenario: `lore install -y` against a dev project
+  it("infers env=dev from .kennen.yaml auth.baseUrl=https://api-dev.notion.com and passes to runNtnLogin", async () => {
+    // The flagged scenario: `kennen install -y` against a dev project
     // must NOT default to prod. The derived NOTION_ENV flows into
     // ntn login's spawn env so the resulting token authorizes
     // against the dev workspace.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -864,7 +864,7 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
 
   it("infers env=stg from a staging baseUrl", async () => {
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/stg-project/.lore.yaml",
+      path: "/tmp/stg-project/.kennen.yaml",
       root: "/tmp/stg-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -888,7 +888,7 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
     // config-derived inference.
     process.env["NOTION_ENV"] = "stg"
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -912,7 +912,7 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
     // visible-but-equivalent) doesn't drift the contract — when
     // there's no signal, we don't fabricate one.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prod-project/.lore.yaml",
+      path: "/tmp/prod-project/.kennen.yaml",
       root: "/tmp/prod-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -929,12 +929,12 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
   })
 
   it("REFUSES auto-login when auth.baseUrl is non-canonical and operator NOTION_ENV is unset", async () => {
-    // Corporate proxy or a future env Lore doesn't map. We can't
+    // Corporate proxy or a future env Kennen doesn't map. We can't
     // safely pick a NOTION_ENV target — minting a prod token for
     // what's clearly NOT a prod project is the worst outcome.
     // Refuse auto-login entirely with explicit recovery copy.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/proxy-project/.lore.yaml",
+      path: "/tmp/proxy-project/.kennen.yaml",
       root: "/tmp/proxy-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -956,10 +956,10 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
     // If the operator HAS set NOTION_ENV explicitly, we trust their
     // choice — even when auth.baseUrl is non-canonical. The proxy
     // case is "I'm tunneling traffic through this URL but the
-    // workspace is genuinely on dev" and Lore shouldn't second-guess.
+    // workspace is genuinely on dev" and Kennen shouldn't second-guess.
     process.env["NOTION_ENV"] = "dev"
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/proxy-project/.lore.yaml",
+      path: "/tmp/proxy-project/.kennen.yaml",
       root: "/tmp/proxy-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -982,7 +982,7 @@ describe("ensurePrerequisites — ntn env derivation for ntn login", () => {
     // command they paste back matches what auto-login would have
     // done.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1014,7 +1014,7 @@ describe("ensurePrerequisites — vault preflight", () => {
     vi.mocked(checkNtnVersion).mockReturnValue("ok")
     vi.mocked(getNtnVersion).mockReturnValue("0.12.0")
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -1100,7 +1100,7 @@ describe("ensurePrerequisites — vault preflight", () => {
     expect(captured(consoleWarnSpy)).toMatch(/rate-limited/)
   })
 
-  it("skips preflight when no .lore.yaml exists (auth resolved without a vault config)", async () => {
+  it("skips preflight when no .kennen.yaml exists (auth resolved without a vault config)", async () => {
     vi.mocked(findConfigFile).mockResolvedValue(null)
     // resolveAuth still works (env-only path); no vault to verify.
     vi.mocked(resolveAuth).mockResolvedValue({
@@ -1129,7 +1129,7 @@ describe("ensurePrerequisites — PAT-source preflight-failure recovery", () => 
     process.env["NOTION_API_TOKEN"] = "ntn_pat-bearer-token"
     vi.mocked(isNtnInstalled).mockReturnValue(false)
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prereqs-fake-project/.lore.yaml",
+      path: "/tmp/prereqs-fake-project/.kennen.yaml",
       root: "/tmp/prereqs-fake-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page-123" } } as never)
@@ -1270,9 +1270,9 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
   // The recovery copy emitted on `not-found` / `unauthorized` MUST
   // be paste-ready for the operator's actual env, not bare
   // `ntn login`. Bare `ntn login` defaults to prod AND writes to
-  // the macOS keychain (Lore can't read keychain auth) — both
+  // the macOS keychain (Kennen can't read keychain auth) — both
   // wrong for a dev project. The regression here pins the
-  // load-bearing case: stale prod ntn-auth-json + dev `.lore.yaml`
+  // load-bearing case: stale prod ntn-auth-json + dev `.kennen.yaml`
   // + preflight `not-found` → recovery names dev env AND keeps
   // the NOTION_KEYRING=0 prefix.
 
@@ -1300,13 +1300,13 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
   it("not-found on dev project with stale prod ntn-auth-json: recovery names dev env + keychain prefix", async () => {
     // The reviewer's flagged scenario. Operator has a stale prod
     // token in auth.json from an earlier `ntn login`; project
-    // `.lore.yaml` says dev. resolveAuth succeeds (token exists),
+    // `.kennen.yaml` says dev. resolveAuth succeeds (token exists),
     // preflight fails because the prod token can't see the dev
     // page. Without env-aware recovery, the operator pastes
     // bare `ntn login` and gets prod again — minting a NEW prod
     // token they still can't use.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1329,7 +1329,7 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
     const err = captured(consoleErrorSpy)
     expect(err).toMatch(/Vault page:\s+✗ not accessible/)
     expect(err).toMatch(/NOTION_KEYRING=0 NOTION_ENV=dev ntn login/)
-    expect(err).toMatch(/dev env inferred from \.lore\.yaml auth\.baseUrl/)
+    expect(err).toMatch(/dev env inferred from \.kennen\.yaml auth\.baseUrl/)
     expect(err).not.toMatch(/Re-run `ntn login`(?!.*NOTION_KEYRING)/)
     expect(err).toMatch(/Refusing to write MCP config/)
   })
@@ -1339,7 +1339,7 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
     // means the operator's resolved token is invalid for dev (or
     // valid for the wrong env entirely). Recovery must name dev.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1364,11 +1364,11 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
   })
 
   it("non-canonical baseUrl on preflight failure: recovery says NOTION_ENV=<env> placeholder + explanation", async () => {
-    // Corporate proxy or a future env Lore doesn't map. Recovery
+    // Corporate proxy or a future env Kennen doesn't map. Recovery
     // can't name a specific env so it directs the operator to
     // substitute one for their workspace.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/proxy-project/.lore.yaml",
+      path: "/tmp/proxy-project/.kennen.yaml",
       root: "/tmp/proxy-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1400,7 +1400,7 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
     // contract should match `runNtnLogin` env-derivation.)
     process.env["NOTION_ENV"] = "stg"
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1428,9 +1428,9 @@ describe("ensurePrerequisites — env-aware preflight-failure recovery", () => {
     // Pinning the prod-default contract: bare command (no NOTION_ENV)
     // is fine when no signal disagrees with prod, but the
     // NOTION_KEYRING=0 prefix is STILL required so the resulting
-    // token lands where Lore can read it.
+    // token lands where Kennen can read it.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prod-project/.lore.yaml",
+      path: "/tmp/prod-project/.kennen.yaml",
       root: "/tmp/prod-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1465,15 +1465,15 @@ describe("ensurePrerequisites — Notion environment display", () => {
   //   - shell env wins for all auth sources (operator-controlled).
   //   - `ntn-auth-json` otherwise reads ntn's `~/.config/notion/config.json`.
   //   - `env-notion-api-token` is shell-only.
-  //   - legacy paths honor `.lore.yaml auth.baseUrl` directly.
+  //   - legacy paths honor `.kennen.yaml auth.baseUrl` directly.
   //
   // The mismatch warning catches the silent footgun where canonical
-  // auth resolves to one deployment but `.lore.yaml auth.baseUrl`
+  // auth resolves to one deployment but `.kennen.yaml auth.baseUrl`
   // declares another — `resolveAuth` intentionally ignores
-  // `auth.baseUrl` on canonical paths for security. `.lore.yaml` is
+  // `auth.baseUrl` on canonical paths for security. `.kennen.yaml` is
   // local-only but still persistent (backed up, synced, pasteable,
   // one `git add -f` away from history), so it's less trusted than
-  // operator env. A `.lore.yaml: auth.baseUrl:
+  // operator env. A `.kennen.yaml: auth.baseUrl:
   // https://attacker.example` could otherwise redirect a bearer
   // token; see `resolveAuth` in `src/config.ts`.
   //
@@ -1484,7 +1484,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
 
   const PRIOR_ENV: Record<string, string | undefined> = {
     NOTION_ENV: process.env["NOTION_ENV"],
-    LORE_NOTION_BASE_URL: process.env["LORE_NOTION_BASE_URL"],
+    KENNEN_NOTION_BASE_URL: process.env["KENNEN_NOTION_BASE_URL"],
     NOTION_BASE_URL: process.env["NOTION_BASE_URL"],
     NOTION_API_BASE_URL: process.env["NOTION_API_BASE_URL"],
   }
@@ -1519,7 +1519,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
     // Display reflects the runtime baseUrl; annotation names ntn's
     // config.json as the source.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "dev-page" } } as never)
@@ -1542,7 +1542,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
     // post-fix the operator sees the explicit "prod" target so
     // there's no doubt about which deployment the install will hit.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prod-project/.lore.yaml",
+      path: "/tmp/prod-project/.kennen.yaml",
       root: "/tmp/prod-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "page" } } as never)
@@ -1559,16 +1559,16 @@ describe("ensurePrerequisites — Notion environment display", () => {
     )
   })
 
-  it("warns when .lore.yaml auth.baseUrl declares a target the canonical auth source ignores (the silent footgun)", async () => {
+  it("warns when .kennen.yaml auth.baseUrl declares a target the canonical auth source ignores (the silent footgun)", async () => {
     // The bug-repro under the corrected contract: operator's
-    // `.lore.yaml` says dev, but ntn-resolved auth landed on prod
+    // `.kennen.yaml` says dev, but ntn-resolved auth landed on prod
     // (operator ran `ntn login` without `NOTION_ENV=dev`). Display
     // is honest about the runtime (prod), AND the warning names the
     // mismatch and the actionable fix. Without this surface the
     // operator hits a generic "vault not accessible" trail with no
-    // signal that `.lore.yaml` was silently dropped.
+    // signal that `.kennen.yaml` was silently dropped.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1585,20 +1585,20 @@ describe("ensurePrerequisites — Notion environment display", () => {
     const out = captured(consoleLogSpy)
     expect(out).toMatch(/Notion environment:\s+prod \(ntn default;/)
     expect(out).toMatch(
-      /! \.lore\.yaml declares auth\.baseUrl=dev but resolved auth targets prod/
+      /! \.kennen\.yaml declares auth\.baseUrl=dev but resolved auth targets prod/
     )
     expect(out).toMatch(/ntn's config\.json/)
     expect(out).toMatch(/set NOTION_ENV in your shell/)
   })
 
-  it("warns when env-notion-api-token resolves prod and .lore.yaml declares dev", async () => {
+  it("warns when env-notion-api-token resolves prod and .kennen.yaml declares dev", async () => {
     // Same security contract as ntn-auth-json — `auth.baseUrl` is
     // intentionally ignored on `env-notion-api-token` per
     // `src/config.ts:357-358`. The mismatch warning fires for this
     // path too, with a different `sourceHint` reflecting the API
     // token environment as the runtime origin.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/dev-project/.lore.yaml",
+      path: "/tmp/dev-project/.kennen.yaml",
       root: "/tmp/dev-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1616,11 +1616,11 @@ describe("ensurePrerequisites — Notion environment display", () => {
     expect(out).toMatch(
       /Notion environment:\s+prod \(default; no shell base-URL override\)/
     )
-    expect(out).toMatch(/! \.lore\.yaml declares auth\.baseUrl=dev/)
+    expect(out).toMatch(/! \.kennen\.yaml declares auth\.baseUrl=dev/)
     expect(out).toMatch(/the NOTION_API_TOKEN environment/)
   })
 
-  it("does NOT warn when .lore.yaml auth.baseUrl matches resolved via the .com prod alias", async () => {
+  it("does NOT warn when .kennen.yaml auth.baseUrl matches resolved via the .com prod alias", async () => {
     // `https://api.notion.com` aliases to prod via
     // `NTN_ENV_BASE_URL_ALIASES`; resolved is also prod (default).
     // The two map to the same canonical env so the mismatch
@@ -1628,7 +1628,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
     // so a future alias-table change can't silently regress to a
     // false-positive warning on the migration window.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prod-project/.lore.yaml",
+      path: "/tmp/prod-project/.kennen.yaml",
       root: "/tmp/prod-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1647,15 +1647,15 @@ describe("ensurePrerequisites — Notion environment display", () => {
     expect(out).not.toMatch(/declares auth\.baseUrl=/)
   })
 
-  it("annotates (from shell LORE_NOTION_BASE_URL) when the shell base-URL var is set, and suppresses any mismatch warning", async () => {
+  it("annotates (from shell KENNEN_NOTION_BASE_URL) when the shell base-URL var is set, and suppresses any mismatch warning", async () => {
     // Operator explicitly steered the runtime via a shell base-URL
     // var. The annotation names the var so an operator who forgot
     // it was set in a stale shell rc can see why the inference is
     // overridden, and the mismatch warning suppresses because this
     // is no longer a silent footgun.
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prod-project/.lore.yaml",
+      path: "/tmp/prod-project/.kennen.yaml",
       root: "/tmp/prod-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1671,7 +1671,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
     await ensurePrerequisites(makeContext(), { yes: true })
 
     const out = captured(consoleLogSpy)
-    expect(out).toMatch(/Notion environment:\s+dev \(from shell LORE_NOTION_BASE_URL\)/)
+    expect(out).toMatch(/Notion environment:\s+dev \(from shell KENNEN_NOTION_BASE_URL\)/)
     expect(out).not.toMatch(/declares auth\.baseUrl=/)
   })
 
@@ -1684,12 +1684,12 @@ describe("ensurePrerequisites — Notion environment display", () => {
     // eligible so the silent-footgun surface this PR exists to
     // expose isn't silenced by garbage shell input. Without this
     // gate, an operator with a typo'd `NOTION_ENV` and a dev-pinned
-    // `.lore.yaml` against a prod ntn login would see
+    // `.kennen.yaml` against a prod ntn login would see
     // `prod (from shell NOTION_ENV=devv)` with no warning — strictly
     // worse than the pre-PR no-line behavior.
     process.env["NOTION_ENV"] = "devv"
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/typo-project/.lore.yaml",
+      path: "/tmp/typo-project/.kennen.yaml",
       root: "/tmp/typo-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1707,7 +1707,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
     expect(out).toMatch(/Notion environment:\s+prod \(ntn default;/)
     expect(out).not.toMatch(/from shell NOTION_ENV=/)
     expect(out).toMatch(
-      /! \.lore\.yaml declares auth\.baseUrl=dev but resolved auth targets prod/
+      /! \.kennen\.yaml declares auth\.baseUrl=dev but resolved auth targets prod/
     )
   })
 
@@ -1718,7 +1718,7 @@ describe("ensurePrerequisites — Notion environment display", () => {
     // sees what's pinned without having to grep their shell rc.
     process.env["NOTION_ENV"] = "stg"
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/stg-project/.lore.yaml",
+      path: "/tmp/stg-project/.kennen.yaml",
       root: "/tmp/stg-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({ vault: { pageId: "stg-page" } } as never)
@@ -1738,9 +1738,9 @@ describe("ensurePrerequisites — Notion environment display", () => {
     // Corporate-proxy / unknown deployment URLs that
     // `ntnEnvFromBaseUrl` can't recognize. Surface the URL itself
     // tagged `non-canonical` so the operator sees what's pinned
-    // even though Lore can't name the env.
+    // even though Kennen can't name the env.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/corp-project/.lore.yaml",
+      path: "/tmp/corp-project/.kennen.yaml",
       root: "/tmp/corp-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({
@@ -1761,14 +1761,14 @@ describe("ensurePrerequisites — Notion environment display", () => {
     )
   })
 
-  it("treats empty-string .lore.yaml auth.baseUrl as no signal (no mismatch warning)", async () => {
+  it("treats empty-string .kennen.yaml auth.baseUrl as no signal (no mismatch warning)", async () => {
     // Defensive pin against a future refactor that switches to a
     // strict `!== undefined` check on the config baseUrl probe.
     // The Zod schema for `auth.baseUrl` allows any URL string, but
     // an empty string slipping through must NOT fire the mismatch
     // warning with a `(non-canonical)` empty-URL message.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/prod-project/.lore.yaml",
+      path: "/tmp/prod-project/.kennen.yaml",
       root: "/tmp/prod-project",
     })
     vi.mocked(loadConfig).mockResolvedValue({

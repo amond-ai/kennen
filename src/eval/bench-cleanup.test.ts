@@ -23,19 +23,19 @@ describe("isInsideSandboxScope", () => {
 describe("runBenchCleanupOrphans", () => {
   let originalEnv: string | undefined
   beforeEach(() => {
-    originalEnv = process.env["LORE_EVAL_BENCH_REAL"]
-    process.env["LORE_EVAL_BENCH_REAL"] = "1"
+    originalEnv = process.env["KENNEN_EVAL_BENCH_REAL"]
+    process.env["KENNEN_EVAL_BENCH_REAL"] = "1"
   })
   afterEach(() => {
-    if (originalEnv === undefined) delete process.env["LORE_EVAL_BENCH_REAL"]
-    else process.env["LORE_EVAL_BENCH_REAL"] = originalEnv
+    if (originalEnv === undefined) delete process.env["KENNEN_EVAL_BENCH_REAL"]
+    else process.env["KENNEN_EVAL_BENCH_REAL"] = originalEnv
   })
 
-  it("refuses to archive without LORE_EVAL_BENCH_REAL", async () => {
-    delete process.env["LORE_EVAL_BENCH_REAL"]
+  it("refuses to archive without KENNEN_EVAL_BENCH_REAL", async () => {
+    delete process.env["KENNEN_EVAL_BENCH_REAL"]
     await expect(
       runBenchCleanupOrphans({ olderThanHours: 24, dryRun: false })
-    ).rejects.toThrow(/LORE_EVAL_BENCH_REAL/)
+    ).rejects.toThrow(/KENNEN_EVAL_BENCH_REAL/)
   })
 
   it.each([0, 1.5, Number.NaN])("rejects invalid --older-than %j", async (value) => {

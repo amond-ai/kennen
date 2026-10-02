@@ -28,24 +28,24 @@ describe("maybeTerminalLink", () => {
     ).toBe("hello")
   })
 
-  it("returns plain text when LORE_NO_HYPERLINKS is set, even under TTY", () => {
+  it("returns plain text when KENNEN_NO_HYPERLINKS is set, even under TTY", () => {
     expect(
       maybeTerminalLink("hello", URL, {
         isTTY: true,
-        env: { LORE_NO_HYPERLINKS: "1" } as NodeJS.ProcessEnv,
+        env: { KENNEN_NO_HYPERLINKS: "1" } as NodeJS.ProcessEnv,
       })
     ).toBe("hello")
   })
 
-  it("treats LORE_NO_HYPERLINKS=0 / =false / empty as NOT disabled", () => {
-    // Operators who export `LORE_NO_HYPERLINKS=0` to be explicit about *off*
+  it("treats KENNEN_NO_HYPERLINKS=0 / =false / empty as NOT disabled", () => {
+    // Operators who export `KENNEN_NO_HYPERLINKS=0` to be explicit about *off*
     // should still see hyperlinks — a bare truthiness check would invert
     // their intent.
     for (const value of ["0", "false", ""]) {
       expect(
         maybeTerminalLink("hello", URL, {
           isTTY: true,
-          env: { LORE_NO_HYPERLINKS: value } as NodeJS.ProcessEnv,
+          env: { KENNEN_NO_HYPERLINKS: value } as NodeJS.ProcessEnv,
         })
       ).toBe(osc8("hello", URL))
     }

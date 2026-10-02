@@ -7,8 +7,8 @@ import { rm, stat, utimes } from "node:fs/promises"
 // would pin the resolved dir before it took effect. `getStateDir()` re-reads
 // the env var on every call so the override flows through.
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-marker-test-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-marker-test-${process.pid}-${Date.now()}`
 })
 
 import {
@@ -37,7 +37,7 @@ async function withUmask<T>(mask: number, fn: () => Promise<T>): Promise<T> {
 // don't collide on the same marker file path.
 const TEST_MARKERS: Array<{ configRoot: string; name: string }> = []
 function uniqueProject(label: string): { configRoot: string; name: string } {
-  const name = `lore-marker-test-${label}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  const name = `kennen-marker-test-${label}-${Date.now()}-${Math.random().toString(36).slice(2)}`
   const entry = { configRoot: "/tmp/test-config-root-" + label, name }
   TEST_MARKERS.push(entry)
   return entry

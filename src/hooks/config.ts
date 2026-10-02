@@ -7,9 +7,9 @@
  */
 
 import { basename, isAbsolute } from "node:path"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 import { canonicalizeAgentName } from "./agent-identity.js"
-import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { resolveFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 import {
   DEFAULT_MEMORY_CAPTURE_MODE,
   type MemoryCaptureMode,
@@ -22,7 +22,7 @@ export const DEFAULT_SAVE_INTERVAL = 5
  * Default background-agent binary. Claude Code's headless
  * `claude -p` is what every Stop-spawn autosave and Stop-spawn digest
  * synthesizer has shelled out to since the hooks layer existed. The
- * `LoreConfig.hooks.backgroundAgent` knob plus `LORE_BACKGROUND_COMMAND`
+ * `KennenConfig.hooks.backgroundAgent` knob plus `KENNEN_BACKGROUND_COMMAND`
  * env override let Codex-only (or other-CLI) operators redirect the spawn
  * without touching the spawn primitive.
  */
@@ -75,7 +75,7 @@ export const DEFAULT_BACKGROUND_ARGS: readonly string[] = [
  *
  * Operators who pin Codex to a different shape (e.g. an older Codex
  * version that uses different flag spelling) override `args` in their
- * .lore.yaml to drop or replace these defaults.
+ * .kennen.yaml to drop or replace these defaults.
  */
 export const CODEX_BACKGROUND_ARGS: readonly string[] = [
   "exec",
@@ -133,22 +133,22 @@ export function lookupCommandPreset(command: string): readonly string[] | undefi
 }
 
 /**
- * Map from canonical agent name (`LORE_AGENT_NAME` env, after
+ * Map from canonical agent name (`KENNEN_AGENT_NAME` env, after
  * `canonicalizeAgentName`) to the background-agent command name that
  * agent's installer should default to. Lets the resolver pick a
- * compatible default WITHOUT requiring per-project .lore.yaml setup
- * or a shell-rc-exported `LORE_BACKGROUND_COMMAND` — a Codex install
- * already prefixes hook commands with `LORE_AGENT_NAME=Codex `, so the
+ * compatible default WITHOUT requiring per-project .kennen.yaml setup
+ * or a shell-rc-exported `KENNEN_BACKGROUND_COMMAND` — a Codex install
+ * already prefixes hook commands with `KENNEN_AGENT_NAME=Codex `, so the
  * hook-fire-time env carries everything needed to derive `command:
  * codex`.
  *
  * Resolution priority (highest first) per `resolveBackgroundAgent`:
- *   1. `LORE_BACKGROUND_COMMAND` env (operator-scoped override)
- *   2. `hooks.backgroundAgent.command` in .lore.yaml (project-scoped)
+ *   1. `KENNEN_BACKGROUND_COMMAND` env (operator-scoped override)
+ *   2. `hooks.backgroundAgent.command` in .kennen.yaml (project-scoped)
  *   3. `AGENT_BACKGROUND_COMMAND[canonicalAgent]` derived default
  *   4. `DEFAULT_BACKGROUND_COMMAND` (`"claude"`, the historical default)
  *
- * Claude Code installs do NOT typically set `LORE_AGENT_NAME` — they
+ * Claude Code installs do NOT typically set `KENNEN_AGENT_NAME` — they
  * rely on `CLAUDECODE=1` / `CLAUDE_CODE_*` runtime markers — so the
  * derived-default tier is a no-op for them and they continue to
  * resolve `claude` from tier 4. Codex installs set the prefix at
@@ -156,7 +156,7 @@ export function lookupCommandPreset(command: string): readonly string[] | undefi
  *
  * Adding a derivation is a one-line change here plus a paired
  * test. The keyspace MUST use canonical agent names —
- * matched against `canonicalizeAgentName(envSource["LORE_AGENT_NAME"])`
+ * matched against `canonicalizeAgentName(envSource["KENNEN_AGENT_NAME"])`
  * — so a future change to canonicalization (e.g., a new Claude
  * variant the regex collapses) doesn't silently shift derivations.
  */
@@ -166,7 +166,7 @@ export const AGENT_BACKGROUND_COMMAND: Readonly<Record<string, string>> = {
 
 /**
  * Resolved background-agent shape consumed by `spawnBackgroundSave`. The
- * config layer collapses the optional `LoreConfig.hooks.backgroundAgent`
+ * config layer collapses the optional `KennenConfig.hooks.backgroundAgent`
  * shape onto this — every field is always present, defaults applied.
  */
 export interface BackgroundAgentConfig {
@@ -182,7 +182,7 @@ export interface HookConfig {
    * Whether the Stop hook may schedule a background digest synthesizer.
    * Orthogonal to `autoSave` so an operator can keep per-session saves
    * while pausing auto-digest (e.g. to audit synthesizer output quality).
-   * The CLI `lore digest` path ignores this flag — manual runs are always
+   * The CLI `kennen digest` path ignores this flag — manual runs are always
    * honored.
    */
   autoDigest: boolean
@@ -190,7 +190,7 @@ export interface HookConfig {
    * Whether the Stop-spawn autosave sub-agent should extract atomic
    * learnings in addition to the session synopsis. Honored by
    * the prompt builder; the helper layer combines this with the
-   * `LORE_DISABLE_LEARNING_EXTRACTION` env override before passing the
+   * `KENNEN_DISABLE_LEARNING_EXTRACTION` env override before passing the
    * resolved boolean to `buildBackgroundSavePrompt`.
    */
   learningExtraction: boolean
@@ -213,8 +213,8 @@ export interface HookConfig {
   /**
    * Resolved background-agent shape. Defaults to
    * `{ command: "claude", args: <DEFAULT_BACKGROUND_ARGS> }`. Honors
-   * `LoreConfig.hooks.backgroundAgent.{command,args}` overrides plus the
-   * `LORE_BACKGROUND_COMMAND` env-var override on `command`. The spawn
+   * `KennenConfig.hooks.backgroundAgent.{command,args}` overrides plus the
+   * `KENNEN_BACKGROUND_COMMAND` env-var override on `command`. The spawn
    * primitive (`spawnBackgroundSave`) consumes this directly.
    */
   backgroundAgent: BackgroundAgentConfig
@@ -223,7 +223,7 @@ export interface HookConfig {
    * config plus env so Stop processing does not consult process.env at
    * each decision point.
    */
-  features: Pick<LoreFeatureFlags, "learningExtraction">
+  features: Pick<KennenFeatureFlags, "learningExtraction">
   /**
    * Name of the catch-all project (path `"."` or `""`) in this workspace, if
    * configured. The save prompts name it explicitly and tell the AI to avoid
@@ -238,7 +238,7 @@ export interface HookConfig {
 }
 
 /**
- * Merge a .lore.yaml hooks section with built-in defaults.
+ * Merge a .kennen.yaml hooks section with built-in defaults.
  *
  * `autoSave`, `wakeUp`, `autoDigest`, and `learningExtraction` default to
  * true: hooks are opt-out, not opt-in, once the integration is installed.
@@ -246,17 +246,17 @@ export interface HookConfig {
  *
  * `envSource` is injectable for test determinism — production callers use
  * `process.env`. The env source is consulted only for
- * `LORE_BACKGROUND_COMMAND`; other env-var overrides
- * (`LORE_AUTO_DIGEST`, `LORE_DISABLE_LEARNING_EXTRACTION`) live at the
+ * `KENNEN_BACKGROUND_COMMAND`; other env-var overrides
+ * (`KENNEN_AUTO_DIGEST`, `KENNEN_DISABLE_LEARNING_EXTRACTION`) live at the
  * spawn / prompt-build layer where they're combined with the merged
  * config.
  */
 export function mergeHookDefaults(
-  hooks: LoreConfig["hooks"] | undefined,
+  hooks: KennenConfig["hooks"] | undefined,
   catchAllName: string | null = null,
   subProjects: string[] = [],
   envSource: NodeJS.ProcessEnv = process.env,
-  featuresConfig: LoreConfig["features"] | undefined = undefined
+  featuresConfig: KennenConfig["features"] | undefined = undefined
 ): HookConfig {
   return {
     saveInterval: hooks?.saveInterval ?? DEFAULT_SAVE_INTERVAL,
@@ -279,18 +279,18 @@ export function mergeHookDefaults(
 
 /**
  * Resolve the background-agent shape from the optional config knob,
- * the `LORE_BACKGROUND_COMMAND` env override, and the agent context
- * derived from `LORE_AGENT_NAME`.
+ * the `KENNEN_BACKGROUND_COMMAND` env override, and the agent context
+ * derived from `KENNEN_AGENT_NAME`.
  *
  * Command resolution chain (highest priority first):
- *   1. `LORE_BACKGROUND_COMMAND` env — operator-scoped ad-hoc override
+ *   1. `KENNEN_BACKGROUND_COMMAND` env — operator-scoped ad-hoc override
  *      (a developer experimenting with a different agent CLI in their
  *      shell rc).
- *   2. `hooks.backgroundAgent.command` in .lore.yaml — project-scoped
+ *   2. `hooks.backgroundAgent.command` in .kennen.yaml — project-scoped
  *      override committed for the whole team.
  *   3. `AGENT_BACKGROUND_COMMAND[canonicalAgent]` — derived from the
- *      `LORE_AGENT_NAME` env the installer set on the host's hook
- *      command prefix (Codex prefixes `LORE_AGENT_NAME=Codex` on every
+ *      `KENNEN_AGENT_NAME` env the installer set on the host's hook
+ *      command prefix (Codex prefixes `KENNEN_AGENT_NAME=Codex` on every
  *      hook entry, which makes `command: codex` the natural default
  *      without per-project setup).
  *   4. `DEFAULT_BACKGROUND_COMMAND` (`"claude"`) — historical default,
@@ -304,7 +304,7 @@ export function mergeHookDefaults(
  * rejects — making the documented common case (swap binary, keep
  * everything else) silently broken. There's no env-var path for args
  * because the value is a structured array (env vars are scalar);
- * operators who need to pin a custom shape edit .lore.yaml.
+ * operators who need to pin a custom shape edit .kennen.yaml.
  *
  * Unknown commands fall through to `DEFAULT_BACKGROUND_ARGS` so the
  * historical Claude flag shape is preserved as the conservative
@@ -321,10 +321,10 @@ export function mergeHookDefaults(
  * other in-process consumers reading the same `HookConfig`.
  */
 function resolveBackgroundAgent(
-  override: NonNullable<LoreConfig["hooks"]>["backgroundAgent"] | undefined,
+  override: NonNullable<KennenConfig["hooks"]>["backgroundAgent"] | undefined,
   envSource: NodeJS.ProcessEnv
 ): BackgroundAgentConfig {
-  const envCommand = envSource["LORE_BACKGROUND_COMMAND"]
+  const envCommand = envSource["KENNEN_BACKGROUND_COMMAND"]
   const trimmedEnvCommand =
     envCommand && envCommand.trim().length > 0 ? envCommand.trim() : undefined
   // Derive default from agent context. Canonicalization matches what
@@ -333,7 +333,7 @@ function resolveBackgroundAgent(
   // tier-3 lookups because canonical Claude Code does NOT appear in
   // `AGENT_BACKGROUND_COMMAND` (it would resolve to the same `"claude"`
   // as tier 4, so the entry would be a no-op).
-  const agentNameRaw = envSource["LORE_AGENT_NAME"]
+  const agentNameRaw = envSource["KENNEN_AGENT_NAME"]
   const canonicalAgent =
     agentNameRaw && agentNameRaw.trim().length > 0
       ? canonicalizeAgentName(agentNameRaw)
@@ -345,11 +345,11 @@ function resolveBackgroundAgent(
     trimmedEnvCommand ?? override?.command ?? derivedDefault ?? DEFAULT_BACKGROUND_COMMAND
   // Args resolution: explicit override > basename-aware preset for the
   // resolved command > Claude-shaped fallthrough. There is no
-  // `LORE_BACKGROUND_ARGS` env path because args is structurally an
+  // `KENNEN_BACKGROUND_ARGS` env path because args is structurally an
   // array and env vars are scalar — a split-on-whitespace parser would
   // re-introduce the quoting bugs (`--flag "value with spaces"`) the
   // structured shape exists to avoid. Operators who need ad-hoc arg
-  // overrides edit .lore.yaml.
+  // overrides edit .kennen.yaml.
   const presetArgs = lookupCommandPreset(command) ?? DEFAULT_BACKGROUND_ARGS
   const args = override?.args ? [...override.args] : [...presetArgs]
   return { command, args }

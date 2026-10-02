@@ -19,7 +19,7 @@ import {
   tasksCommand,
   type ReconcileCliOptions,
 } from "./tasks.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import type { Memory, Task, TaskSummary } from "../../types.js"
 import { INVALID_LIMIT_STRINGS, trapProcessExit } from "../test-helpers.js"
 import { TaskClosePartialFailureError } from "../../core/task.js"
@@ -102,11 +102,11 @@ function makeMemory(overrides: Partial<Memory> = {}): Memory {
 }
 
 /**
- * Build a `LoreServices`-shaped stub narrow to what `runReconcile`
+ * Build a `KennenServices`-shaped stub narrow to what `runReconcile`
  * actually touches: `projects.findByName`, `tasks.list`, `memories.search`,
  * `memories.materializeContent`, `context.project`. Anything else is
  * cast through `unknown` — the helper neither reads nor writes those
- * fields and a real `LoreServices` would force a much larger fixture.
+ * fields and a real `KennenServices` would force a much larger fixture.
  */
 function makeServices(opts: {
   findByName?: ReturnType<typeof vi.fn>
@@ -120,7 +120,7 @@ function makeServices(opts: {
   tasksGetById?: ReturnType<typeof vi.fn>
   projectsList?: ReturnType<typeof vi.fn>
   topicsGetOrCreate?: ReturnType<typeof vi.fn>
-}): LoreServices {
+}): KennenServices {
   return {
     projects: {
       findByName: opts.findByName ?? vi.fn().mockResolvedValue(null),
@@ -167,7 +167,7 @@ function makeServices(opts: {
       materializeContent: vi.fn(async (m: Memory) => m),
     },
     context: { project: opts.contextProject ?? null },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("parseReconcileCliOptions", () => {
@@ -382,7 +382,7 @@ describe("runReconcile", () => {
     expect(output).toContain('### 1. Task t-abc — "Track PR-1234 review" [in-progress')
     expect(output).toContain("Best match: memory m-good")
     expect(output).toContain("Cue: ")
-    expect(output).toContain("Close: lore-task({ action: 'close', taskId: 't-abc' })")
+    expect(output).toContain("Close: kennen-task({ action: 'close', taskId: 't-abc' })")
   })
 
   it("renders the empty-set form on a vault with no active tasks", async () => {
@@ -397,7 +397,7 @@ describe("runReconcile", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Action-wrapper exit-path tests for the `lore tasks reconcile` command.
+// Action-wrapper exit-path tests for the `kennen tasks reconcile` command.
 //
 // `runReconcile` is exercised above as a pure function; this block covers
 // the two `process.exit(1)` call sites in the action wrapper itself
@@ -481,7 +481,7 @@ describe("tasksCommand reconcile action", () => {
   it("exits 1 via the catch-all when initServices throws", async () => {
     // Distinct from the parse-failure path: this is the bare
     // "Notion call inside the action body raised" branch — operators
-    // rely on a non-zero exit code so `if ! lore tasks reconcile; then`
+    // rely on a non-zero exit code so `if ! kennen tasks reconcile; then`
     // shell integrations fail fast rather than treat an outage as
     // "no candidate closures."
     vi.mocked(initServices).mockRejectedValue(new Error("notion 503: gateway"))
@@ -608,7 +608,7 @@ describe("parseCreateCliOptions", () => {
     "rejects --state=blocked with whitespace-only --blocked-by %j",
     (blockedBy) => {
       // Mirrors MCP's `isUnusableBlockerLabel` boundary guard: a blocked
-      // task whose blocker label is visually blank in `lore tasks list`
+      // task whose blocker label is visually blank in `kennen tasks list`
       // is unactionable for triage. The previous parse helper used a
       // truthiness check that accepted `"   "` because `Boolean("   ")
       // === true`, letting an unactionable row land. Pin every
@@ -678,7 +678,7 @@ describe("parseCreateCliOptions", () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.message).toContain("looks like a code pointer rather than a task")
-      expect(result.message).toContain("lore-fact action='create'")
+      expect(result.message).toContain("kennen-fact action='create'")
       expect(result.message).toContain("allowPointerSubject/--allow-pointer-subject")
     }
   })
@@ -902,12 +902,12 @@ describe("runTaskCreate", () => {
   })
 
   it("short-circuits to assertive reuse on an exact (subject, entity, projectIds) match", async () => {
-    // Idempotency parity with `lore-task action='create'` (issue #265).
+    // Idempotency parity with `kennen-task action='create'` (issue #265).
     // The duplicate probe via `findDuplicateActiveTasks` runs BEFORE
     // `services.tasks.create`; an exact match returns the existing
     // row with the `Reused existing task: ...` vocabulary and no
     // create call ever lands. Without this, an operator running
-    // `lore tasks create "Track PR"` twice would land two
+    // `kennen tasks create "Track PR"` twice would land two
     // structurally-identical rows in the vault — the precise gap two
     // reviewers flagged on the prior commit.
     const findByName = vi
@@ -940,7 +940,7 @@ describe("runTaskCreate", () => {
         close: vi.fn(),
         getById: vi.fn(),
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskCreate(services, {
       subject: "Track PR-1234",
@@ -964,10 +964,10 @@ describe("runTaskCreate", () => {
       "Subject and entity match an existing active task; nothing was created."
     )
     expect(result.text).toContain(
-      "Update the existing row if needed: lore tasks update t-existing ..."
+      "Update the existing row if needed: kennen tasks update t-existing ..."
     )
     expect(result.text).toContain(
-      "Close it when the work is done: lore tasks close t-existing"
+      "Close it when the work is done: kennen tasks close t-existing"
     )
     // The reuse audit names every caller-supplied non-key field that
     // was structurally dropped, so an operator who tried to bump state
@@ -988,12 +988,12 @@ describe("runTaskCreate", () => {
     // the reuse short-circuit in `runTaskCreate` returns BEFORE
     // `topics.getOrCreate`, so a caller-supplied `--topic` has no
     // observable effect on the existing row's topic relation.
-    // `lore tasks update` does not offer a `--topic` flag either, so
+    // `kennen tasks update` does not offer a `--topic` flag either, so
     // a silently-dropped topic with no audit signal would leave the
     // operator believing the topic landed when it didn't, with no
     // CLI path to apply it after the fact. The fix lists `--topic`
     // in `Ignored on reuse: ...` so the operator sees the gap and
-    // can address it via `lore-memory action='update'` (or by
+    // can address it via `kennen-memory action='update'` (or by
     // creating a fresh task explicitly under the new topic).
     const findByName = vi
       .fn()
@@ -1023,7 +1023,7 @@ describe("runTaskCreate", () => {
         getById: vi.fn(),
       },
       topics: { getOrCreate: topicsGetOrCreate },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskCreate(services, {
       subject: "Track PR-1234",
@@ -1080,7 +1080,7 @@ describe("runTaskCreate", () => {
         close: vi.fn(),
         getById: vi.fn(),
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskCreate(services, {
       subject: "subject",
@@ -1671,7 +1671,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null, tasksItems: [doneRow] }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -1694,7 +1694,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ findByName, contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await runTaskList(services, {
       projectName: "Widget",
@@ -1722,7 +1722,7 @@ describe("runTaskList", () => {
         contextProject: { id: "ctx-widget", name: "Widget", path: "apps/widget" },
       }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await runTaskList(services, {
       projectName: undefined,
@@ -1745,7 +1745,7 @@ describe("runTaskList", () => {
         contextProject: { id: "ctx-widget", name: "Widget", path: "apps/widget" },
       }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     await runTaskList(services, {
       projectName: undefined,
@@ -1887,7 +1887,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -1920,7 +1920,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -1946,7 +1946,7 @@ describe("runTaskList", () => {
     // is "raise --limit" — NOT "narrow filters". The prior shape
     // conflated this with the safety-cap path and rendered "listing
     // capped at 500 fetched rows; narrow with ..." against a 50-task
-    // vault on `lore tasks list -n 2`, which is misleading. Pin both
+    // vault on `kennen tasks list -n 2`, which is misleading. Pin both
     // the new wording and the JSON `saturationReason` flag so a
     // future refactor can't silently regress to the conflated path.
     const rows = [
@@ -1959,7 +1959,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -2011,7 +2011,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -2064,7 +2064,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -2101,7 +2101,7 @@ describe("runTaskList", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
 
     const result = await runTaskList(services, {
       projectName: undefined,
@@ -2167,7 +2167,7 @@ describe("tasksCommand create/update/close/list actions", () => {
     const errorText = errorSpy.mock.calls.flat().join("\n")
     expect(errorText).toContain("Task create failed:")
     expect(errorText).toContain("looks like a code pointer rather than a task")
-    expect(errorText).toContain("lore-fact action='create'")
+    expect(errorText).toContain("kennen-fact action='create'")
     expect(exitTrap.exitCodes).toEqual([1])
     expect(errorSpy).toHaveBeenCalledTimes(1)
     expect(vi.mocked(initServices)).not.toHaveBeenCalled()
@@ -2233,9 +2233,9 @@ describe("tasksCommand create/update/close/list actions", () => {
   })
 
   it("create validates --tags against the active profile vocabulary", async () => {
-    const cwd = mkdtempSync(join(tmpdir(), "lore-tasks-profile-"))
+    const cwd = mkdtempSync(join(tmpdir(), "kennen-tasks-profile-"))
     writeFileSync(
-      join(cwd, ".lore.yaml"),
+      join(cwd, ".kennen.yaml"),
       "vault:\n  pageId: test-page\nprofile: support@1.0.0\n"
     )
     vi.spyOn(process, "cwd").mockReturnValue(cwd)
@@ -2265,19 +2265,19 @@ describe("tasksCommand create/update/close/list actions", () => {
     )
   })
 
-  it("create validates --tags through LORE_CONFIG_ROOT when it is set", async () => {
-    const cwd = mkdtempSync(join(tmpdir(), "lore-tasks-cwd-profile-"))
-    const configRoot = mkdtempSync(join(tmpdir(), "lore-tasks-root-profile-"))
-    const priorRoot = process.env["LORE_CONFIG_ROOT"]
+  it("create validates --tags through KENNEN_CONFIG_ROOT when it is set", async () => {
+    const cwd = mkdtempSync(join(tmpdir(), "kennen-tasks-cwd-profile-"))
+    const configRoot = mkdtempSync(join(tmpdir(), "kennen-tasks-root-profile-"))
+    const priorRoot = process.env["KENNEN_CONFIG_ROOT"]
     writeFileSync(
-      join(cwd, ".lore.yaml"),
+      join(cwd, ".kennen.yaml"),
       "vault:\n  pageId: cwd-page\nprofile: default@1.0.0\n"
     )
     writeFileSync(
-      join(configRoot, ".lore.yaml"),
+      join(configRoot, ".kennen.yaml"),
       "vault:\n  pageId: root-page\nprofile: support@1.0.0\n"
     )
-    process.env["LORE_CONFIG_ROOT"] = configRoot
+    process.env["KENNEN_CONFIG_ROOT"] = configRoot
     vi.spyOn(process, "cwd").mockReturnValue(cwd)
     const tasksCreate = vi.fn().mockResolvedValue(
       makeTask({
@@ -2295,8 +2295,8 @@ describe("tasksCommand create/update/close/list actions", () => {
         { from: "user" }
       )
     } finally {
-      if (priorRoot === undefined) delete process.env["LORE_CONFIG_ROOT"]
-      else process.env["LORE_CONFIG_ROOT"] = priorRoot
+      if (priorRoot === undefined) delete process.env["KENNEN_CONFIG_ROOT"]
+      else process.env["KENNEN_CONFIG_ROOT"] = priorRoot
       rmSync(cwd, { recursive: true, force: true })
       rmSync(configRoot, { recursive: true, force: true })
     }
@@ -2309,11 +2309,18 @@ describe("tasksCommand create/update/close/list actions", () => {
   })
 
   it("create validates --tags against an installed external profile", async () => {
-    const cwd = mkdtempSync(join(tmpdir(), "lore-tasks-external-profile-"))
-    const profileDir = join(cwd, ".lore", "profiles", "installed", "phase-three", "1.0.0")
+    const cwd = mkdtempSync(join(tmpdir(), "kennen-tasks-external-profile-"))
+    const profileDir = join(
+      cwd,
+      ".kennen",
+      "profiles",
+      "installed",
+      "phase-three",
+      "1.0.0"
+    )
     mkdirSync(profileDir, { recursive: true })
     writeFileSync(
-      join(cwd, ".lore.yaml"),
+      join(cwd, ".kennen.yaml"),
       "vault:\n  pageId: test-page\nprofile: phase-three@1.0.0\n"
     )
     writeFileSync(
@@ -2481,9 +2488,9 @@ describe("tasksCommand create/update/close/list actions", () => {
   })
 
   it("create --json prints the structured create result instead of human text", async () => {
-    // `--json` path parity with `lore conflicts scan --json` and
-    // `lore eval run --json`. Programmatic shell consumers read the
-    // structured object (`ID=$(lore tasks create … --json | jq -r .id)`)
+    // `--json` path parity with `kennen conflicts scan --json` and
+    // `kennen eval run --json`. Programmatic shell consumers read the
+    // structured object (`ID=$(kennen tasks create … --json | jq -r .id)`)
     // and never have to parse the leading-line prefix.
     const tasksCreate = vi.fn().mockResolvedValue(
       makeTask({
@@ -2513,7 +2520,7 @@ describe("tasksCommand create/update/close/list actions", () => {
     const services = {
       ...makeServices({ contextProject: null }),
       tasks: { list: tasksList },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     vi.mocked(initServices).mockResolvedValue(services)
 
     await tasksCommand.parseAsync(["list", "--json"], { from: "user" })
@@ -2629,7 +2636,7 @@ describe("tasksCommand create/update/close/list actions", () => {
   })
 
   it("close-many prints JSON and exits 1 when any ID fails", async () => {
-    const cwd = mkdtempSync(join(tmpdir(), "lore-close-many-"))
+    const cwd = mkdtempSync(join(tmpdir(), "kennen-close-many-"))
     const idsPath = join(cwd, "ids.txt")
     writeFileSync(idsPath, "t1\n\nt2\nt1\n")
     const tasksCloseMany = vi.fn().mockResolvedValue({
@@ -2713,7 +2720,7 @@ describe("tasksCommand create/update/close/list actions", () => {
 
   it("create exits 1 once before initServices on --state=blocked --blocked-by '   '", async () => {
     // The action-level mirror of the parser-level whitespace-blocker
-    // tests: `lore tasks create "T" --state blocked --blocked-by "   "`
+    // tests: `kennen tasks create "T" --state blocked --blocked-by "   "`
     // must fail with the structured `Task create failed:` prefix and
     // must NOT reach `services.tasks.create`. Without this Commander
     // coverage, a future refactor that lifted the cross-field guard
@@ -2749,7 +2756,7 @@ describe("tasksCommand create/update/close/list actions", () => {
   })
 
   it("update --blocked-by '' clears the blocker via TaskService.update", async () => {
-    // MCP's `lore-task action='update'` accepts `blockedBy: ""` as the
+    // MCP's `kennen-task action='update'` accepts `blockedBy: ""` as the
     // explicit clear sentinel for the `Blocked By` rich_text column.
     // The CLI must preserve that — passing the empty string verbatim
     // through the parser to TaskService.update so the column actually

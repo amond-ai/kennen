@@ -208,7 +208,7 @@ export class FactService {
 
   /**
    * Set or replace the `SubjectEntity` / `ObjectEntity` relation on an
-   * existing fact. Used by `lore migrate --build-entities` to fill empty
+   * existing fact. Used by `kennen migrate --build-entities` to fill empty
    * historical relations and by entity merges to repoint duplicate entity
    * rows. Either side may be passed independently; `null` clears the column.
    */
@@ -505,8 +505,8 @@ export class FactService {
 
   /**
    * Return facts whose `Source` relation is empty (no supporting memory) and
-   * which are still valid. Used by `lore migrate --backfill-fact-sources`
-   * (full walk) and `lore debt scan` (bounded audit). Excludes internal
+   * which are still valid. Used by `kennen migrate --backfill-fact-sources`
+   * (full walk) and `kennen debt scan` (bounded audit). Excludes internal
    * decision-graph predicates that are auto-sourced elsewhere and should
    * never be orphans.
    *
@@ -530,7 +530,7 @@ export class FactService {
    * page is partial (Notion `is_full_page` guard fails), the page is
    * archived, or the row's raw `Predicate` is one of the historical
    * tracking strings filtered at the deserialization boundary. Used by
-   * `lore-fact action='invalidate'` to capture `sourceMemoryId` BEFORE the
+   * `kennen-fact action='invalidate'` to capture `sourceMemoryId` BEFORE the
    * invalidate write — invalidating first would leave the handler with no
    * fact shape to read the source from.
    *
@@ -560,7 +560,7 @@ export class FactService {
 
   /**
    * Set the `Source` relation on an existing fact to point at a supporting
-   * memory. Used by the `lore migrate --backfill-fact-sources` path to
+   * memory. Used by the `kennen migrate --backfill-fact-sources` path to
    * retroactively link orphan facts found in an internal vault audit.
    *
    * Overwrites any existing Source relation — facts in the current model have
@@ -582,8 +582,8 @@ export class FactService {
    * **Schema dependency**: writes target the `DedupKey` and `SubjectKey`
    * rich_text columns. Both must exist on the live data source, or
    * `pages.update` returns 400 from Notion. The expected call chain is
-   * `lore migrate` (which auto-runs `migrateVaultSchema` to add any
-   * missing columns) → `lore migrate --dedup-keys` (which calls this
+   * `kennen migrate` (which auto-runs `migrateVaultSchema` to add any
+   * missing columns) → `kennen migrate --dedup-keys` (which calls this
    * method). Direct callers outside that orchestration must invoke
    * `migrateVaultSchema` first.
    */
@@ -699,7 +699,7 @@ export class FactService {
   }
 
   /**
-   * Operator-facing counters for the `lore status` expiring/expired
+   * Operator-facing counters for the `kennen status` expiring/expired
    * scoped-facts surface. Matches
    * `MemoryService.expiringScopedStats` exactly — single paginated
    * walk over live (non-invalidated) facts, classifying each by
@@ -778,7 +778,7 @@ export class FactService {
    * `Invalidated By` is NOT written by this path — the relation
    * column requires an explicit source memory id, which historical
    * invalidations don't carry; operators wanting to backfill
-   * provenance retroactively use `lore-fact action='invalidate'` with
+   * provenance retroactively use `kennen-fact action='invalidate'` with
    * `sourceMemoryId` on a per-row basis.
    */
   async applyObservedAtBackfill(
@@ -799,7 +799,7 @@ export class FactService {
    *    `needs_action` / `waiting_on` / `blocked_by`. A typed-predicate
    *    signature would refuse to compile against those literals,
    *    breaking the preflight that exists precisely to detect them.
-   *    Raw strings let the `lore status` preflight keep recognizing
+   *    Raw strings let the `kennen status` preflight keep recognizing
    *    historical Notion `Predicate` values.
    *
    * 2. `Promise<number>` over `Promise<Fact[]>`. `pageToFact` returns

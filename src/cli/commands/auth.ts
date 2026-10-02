@@ -1,5 +1,5 @@
 /**
- * `lore auth` — authentication subcommands for the 0.10.0 ntn-first model.
+ * `kennen auth` — authentication subcommands for the 0.10.0 ntn-first model.
  *
  * Surfaces:
  *   --status   Show authentication status (default; runs vault preflight)
@@ -9,7 +9,7 @@
  *   --whoami   Resolve the active token and print the bot identity from
  *              `users.me` on a single line (script-friendly).
  *   --logout   Print source-specific logout instructions (informational
- *              only — Lore doesn't manage ntn's storage or shell env).
+ *              only — Kennen doesn't manage ntn's storage or shell env).
  */
 
 import { Command } from "commander"
@@ -120,12 +120,12 @@ export const authCommand = new Command("auth")
 // ---------------------------------------------------------------------------
 
 /**
- * Run the `--status` body. Routes on whether .lore.yaml is reachable
+ * Run the `--status` body. Routes on whether .kennen.yaml is reachable
  * upward from cwd:
  *
  * - **No vault context**: print general auth state. We still attempt
  *   `resolveAuth(undefined, cwd)` so an operator running the command
- *   outside any Lore project sees their canonical / ntn-resolved token
+ *   outside any Kennen project sees their canonical / ntn-resolved token
  *   (if any). Surfaces `listNtnWorkspaces()` so the operator knows
  *   which workspaces ntn carries before they navigate into a project.
  *
@@ -142,7 +142,7 @@ export async function runStatus(): Promise<void> {
   const found = await findConfigFile(cwd)
 
   if (!found) {
-    console.log("Lore auth status (no vault context)")
+    console.log("Kennen auth status (no vault context)")
     console.log("")
     let globalAuth: ResolvedAuth | undefined
     let globalErr: unknown
@@ -178,7 +178,7 @@ export async function runStatus(): Promise<void> {
       console.log(`ntn workspaces with tokens: ${workspaces.length}`)
       console.log(`  ${workspaces.join(", ")}`)
       console.log(
-        "(Run `lore auth --status` from inside a Lore project to see vault-specific details.)"
+        "(Run `kennen auth --status` from inside a Kennen project to see vault-specific details.)"
       )
     }
     return
@@ -186,7 +186,7 @@ export async function runStatus(): Promise<void> {
 
   const config = await loadConfig(found.path)
 
-  console.log(`Lore auth status for ${found.path}`)
+  console.log(`Kennen auth status for ${found.path}`)
   console.log("")
 
   let auth: ResolvedAuth | undefined
@@ -212,7 +212,7 @@ export async function runStatus(): Promise<void> {
       console.log("")
     }
     console.log("  No token resolves from any source. Recommended:")
-    console.log("    lore auth --login")
+    console.log("    kennen auth --login")
     console.log("  This auto-installs ntn (if missing), runs `ntn login`")
     console.log("  with NOTION_KEYRING=0 forced inside the spawn, and")
     console.log("  verifies vault access. No shell-rc edits required.")
@@ -312,14 +312,14 @@ function printStatusVaultRecovery(
       "       If you can't open the page in Notion's UI, the PAT can't read it either."
     )
     console.log(
-      "    3. Export the PAT as NOTION_API_TOKEN, then re-run `lore auth --status`."
+      "    3. Export the PAT as NOTION_API_TOKEN, then re-run `kennen auth --status`."
     )
     return
   }
 
   console.log("  Recommended for ntn auth:")
   if (kind === "unauthorized") {
-    console.log("    Run `lore auth --login` to issue a fresh ntn token.")
+    console.log("    Run `kennen auth --login` to issue a fresh ntn token.")
     console.log(
       "    If the issue persists, check that your Notion identity is a member of the workspace."
     )
@@ -327,7 +327,7 @@ function printStatusVaultRecovery(
   }
 
   console.log(
-    `    1. Run \`lore auth --login\` and pick the workspace containing ${vaultPageId}.`
+    `    1. Run \`kennen auth --login\` and pick the workspace containing ${vaultPageId}.`
   )
   console.log("    2. Confirm the vault page is shared with your Notion identity.")
   console.log(
@@ -386,8 +386,10 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
   const found = await findConfigFile(cwd)
 
   if (!found) {
-    console.error("No .lore.yaml found. `lore auth --login` requires a vault context.")
-    console.error("Run `lore init` first (or `cd` to a Lore-managed project).")
+    console.error(
+      "No .kennen.yaml found. `kennen auth --login` requires a vault context."
+    )
+    console.error("Run `kennen init` first (or `cd` to a Kennen-managed project).")
     process.exit(1)
     return
   }
@@ -402,7 +404,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
   if (!isNtnInstalled()) {
     if (!opts.yes && !process.stdin.isTTY) {
       console.error(
-        "ntn is not installed and `lore auth --login` is running in a non-interactive context."
+        "ntn is not installed and `kennen auth --login` is running in a non-interactive context."
       )
       console.error(
         "Pass --yes to consent to the verified ntn install non-interactively:"
@@ -414,13 +416,13 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
 
     console.log("ntn is not installed.")
     console.log("")
-    console.log("Lore can install it for you using a verified release archive:")
+    console.log("Kennen can install it for you using a verified release archive:")
     console.log(`  ${NTN_VERIFIED_INSTALL_DESCRIPTION}`)
     console.log("")
 
     const okToInstall = opts.yes || (await confirmPrompt("Install ntn now?"))
     if (!okToInstall) {
-      console.error("ntn is required for `lore auth --login`. Install manually:")
+      console.error("ntn is required for `kennen auth --login`. Install manually:")
       console.error(`  ${NTN_MANUAL_INSTALL_COMMAND}`)
       process.exit(1)
       return
@@ -429,7 +431,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
     const installResult = await installNtn()
     if (installResult.kind !== "success") {
       console.error("ntn install failed.")
-      console.error("Check your network and shell, then re-run `lore auth --login`.")
+      console.error("Check your network and shell, then re-run `kennen auth --login`.")
       process.exit(1)
       return
     }
@@ -441,8 +443,8 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
   if (checkNtnVersion() === "too-old") {
     const installed = getNtnVersion()
     console.log(
-      `Note: your ntn version (${installed ?? "unknown"}) is below Lore's tested minimum (${MIN_NTN_VERSION}). ` +
-        "Lore will proceed, but if you hit auth resolution issues, run `ntn update` and try again."
+      `Note: your ntn version (${installed ?? "unknown"}) is below Kennen's tested minimum (${MIN_NTN_VERSION}). ` +
+        "Kennen will proceed, but if you hit auth resolution issues, run `ntn update` and try again."
     )
     console.log("")
   }
@@ -451,10 +453,10 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
   //
   // Environment selection precedence:
   //   1. `NOTION_ENV` env var (operator-set, wins).
-  //   2. Inferred from .lore.yaml's `auth.baseUrl` (PnP-style dev
+  //   2. Inferred from .kennen.yaml's `auth.baseUrl` (PnP-style dev
   //      projects carry `auth.baseUrl: https://api-dev.notion.com`;
   //      threading that into `ntn login --env dev` keeps the
-  //      Lore-managed login pointed at the same environment the
+  //      Kennen-managed login pointed at the same environment the
   //      operator's vault config already declares).
   //   3. Fall through to ntn's own default (typically prod from its
   //      ~/.config/notion/config.json).
@@ -471,7 +473,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
   const ntnEnv: NtnEnv | undefined = shellNtnEnv ?? inferredNtnEnv
   if (!shellNtnEnv && inferredNtnEnv) {
     console.log(
-      `(Inferring \`NOTION_ENV=${inferredNtnEnv}\` from auth.baseUrl in .lore.yaml.)`
+      `(Inferring \`NOTION_ENV=${inferredNtnEnv}\` from auth.baseUrl in .kennen.yaml.)`
     )
   }
   console.log(
@@ -486,7 +488,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
     console.error("ntn login did not complete successfully.")
     if (loginResult.kind === "exit-non-zero") {
       console.error(`  ntn exited with code ${loginResult.code}`)
-      console.error("Re-run `lore auth --login` to retry.")
+      console.error("Re-run `kennen auth --login` to retry.")
     } else {
       // spawn-error: the most-common cause is that the ntn binary
       // disappeared between the install probe and the login spawn
@@ -512,7 +514,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
         if (opts.yes || process.stdin.isTTY) {
           const reinstall =
             opts.yes ||
-            (await confirmPrompt("Re-install ntn now using Lore's verified installer?"))
+            (await confirmPrompt("Re-install ntn now using Kennen's verified installer?"))
           if (reinstall) {
             console.error("")
             console.error(`Re-installing: ${NTN_VERIFIED_INSTALL_DESCRIPTION}`)
@@ -523,11 +525,11 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
               // in yet. Pairing a "✓" with an exit-1 misreads as
               // success; phrase the line as the next-step it is.
               console.error(
-                "ntn re-installed. Re-run `lore auth --login` to complete login."
+                "ntn re-installed. Re-run `kennen auth --login` to complete login."
               )
             } else {
               console.error(
-                "ntn re-install failed. Install manually and re-run `lore auth --login`:"
+                "ntn re-install failed. Install manually and re-run `kennen auth --login`:"
               )
               console.error(`  ${NTN_MANUAL_INSTALL_COMMAND}`)
             }
@@ -536,7 +538,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
           }
         }
         console.error(`  Manual re-install: ${NTN_MANUAL_INSTALL_COMMAND}`)
-        console.error("  Then re-run `lore auth --login`.")
+        console.error("  Then re-run `kennen auth --login`.")
         if (!opts.yes && !process.stdin.isTTY) {
           // Mirror the install-from-missing branch's hint so a script
           // consumer hitting this in CI sees the auto-recovery option.
@@ -545,7 +547,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
           )
         }
       } else {
-        console.error("Re-run `lore auth --login` to retry.")
+        console.error("Re-run `kennen auth --login` to retry.")
       }
     }
     process.exit(1)
@@ -559,11 +561,11 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
   try {
     auth = await resolveAuth(config, found.root)
   } catch (err) {
-    console.error("ntn login completed, but Lore could not resolve a token.")
+    console.error("ntn login completed, but Kennen could not resolve a token.")
     // Preserve resolveAuth's diagnostic — multi-workspace ambiguity
     // and selector-not-found cases carry the actionable next step
     // (which workspaces are present, which env var to set). Dropping
-    // it would strand the operator on `lore auth --status` for a
+    // it would strand the operator on `kennen auth --status` for a
     // hint they can already see right here.
     if (err instanceof Error && err.message.length > 0) {
       console.error("")
@@ -592,7 +594,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
         "  1. You authenticated against the wrong workspace during ntn login."
       )
       console.error(
-        `     Re-run \`lore auth --login\` and pick the workspace containing ${config.vault.pageId}.`
+        `     Re-run \`kennen auth --login\` and pick the workspace containing ${config.vault.pageId}.`
       )
       console.error("  2. The vault page isn't shared with you (your Notion identity)")
       console.error("     in this workspace. Your ntn-issued token inherits your")
@@ -609,7 +611,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
       // recognition of it; second-most plausible is an integration-side
       // restriction (`restricted_resource`) the engineer's identity
       // can't bypass.
-      console.error("Recommended: re-run `lore auth --login` to issue a fresh token.")
+      console.error("Recommended: re-run `kennen auth --login` to issue a fresh token.")
       console.error(
         "If the issue persists, check that your Notion identity is a member of the workspace."
       )
@@ -617,12 +619,12 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
       console.error(`  ${result.message}`)
       console.error("")
       console.error(
-        "Wait a few seconds and re-run `lore auth --login` to retry the preflight."
+        "Wait a few seconds and re-run `kennen auth --login` to retry the preflight."
       )
     } else {
       console.error(`  ${formatErrorDetail(result.error)}`)
       console.error("")
-      console.error("Re-run `lore auth --login` after investigating the error above.")
+      console.error("Re-run `kennen auth --login` after investigating the error above.")
     }
     process.exit(1)
     return
@@ -652,7 +654,7 @@ export async function runLogin(opts: { yes: boolean }): Promise<void> {
  *
  * Mirrors `--status` / `--logout`'s no-vault-context fallback —
  * `whoami` is a script-friendly identity probe and must work
- * outside a Lore project when a `NOTION_API_TOKEN` env or a
+ * outside a Kennen project when a `NOTION_API_TOKEN` env or a
  * single-workspace auth.json resolves. Inside a vault context
  * we still load the config so the resolver can honor
  * `auth.workspaceId`.
@@ -667,11 +669,11 @@ export async function runWhoami(): Promise<void> {
   try {
     auth = await resolveAuth(config, configRoot)
   } catch (err) {
-    console.error("Not authenticated. Run `lore auth --login`.")
+    console.error("Not authenticated. Run `kennen auth --login`.")
     if (err instanceof Error && err.message.length > 0) {
       // Surface resolveAuth's diagnostic (e.g. ntn multi-workspace
       // ambiguity, requested-workspace-not-found) so a script consumer
-      // hitting `lore auth --whoami` for the first time knows what to
+      // hitting `kennen auth --whoami` for the first time knows what to
       // fix beyond the generic redirect at --login.
       for (const line of err.message.split("\n")) {
         console.error(`  ${line}`)
@@ -745,7 +747,7 @@ export async function renderWhoamiIdentity(client: Client): Promise<string> {
   // operator can distinguish "valid token, opaque identity" from "the
   // CLI silently returned a sentinel."
   process.stderr.write(
-    "[lore] users.me returned no bot owner or workspace name; identity is opaque.\n"
+    "[kennen] users.me returned no bot owner or workspace name; identity is opaque.\n"
   )
   return "<unknown>"
 }
@@ -755,9 +757,9 @@ export async function renderWhoamiIdentity(client: Client): Promise<string> {
 // ---------------------------------------------------------------------------
 
 /**
- * Run the `--logout` body. Informational only — Lore doesn't manage
+ * Run the `--logout` body. Informational only — Kennen doesn't manage
  * ntn's storage, doesn't unset env vars on the operator's behalf, and
- * doesn't edit .lore.yaml. The right action depends on the source;
+ * doesn't edit .kennen.yaml. The right action depends on the source;
  * this command names it.
  */
 export async function runLogout(): Promise<void> {
@@ -781,22 +783,24 @@ export async function runLogout(): Promise<void> {
   }
 
   if (!auth) {
-    console.log("No active Lore auth. Nothing to log out of.")
+    console.log("No active Kennen auth. Nothing to log out of.")
     return
   }
 
   switch (auth.source) {
     case "env-notion-api-token":
-      console.log("Lore is using NOTION_API_TOKEN from your environment.")
+      console.log("Kennen is using NOTION_API_TOKEN from your environment.")
       console.log("To log out: unset NOTION_API_TOKEN")
       break
     case "ntn-auth-json":
-      console.log("Lore is using your ntn-issued token (auth.json).")
+      console.log("Kennen is using your ntn-issued token (auth.json).")
       console.log("")
       console.log("To log out, run:")
       console.log("  ntn logout")
       console.log("")
-      console.log("This is ntn's responsibility; Lore reads but doesn't write auth.json.")
+      console.log(
+        "This is ntn's responsibility; Kennen reads but doesn't write auth.json."
+      )
       break
   }
 }
@@ -824,7 +828,7 @@ export async function confirmPrompt(
 ): Promise<boolean> {
   if (!process.stdin.isTTY) {
     process.stderr.write(
-      "[lore] confirmPrompt called in a non-interactive context; refusing. Pass --yes to skip prompts.\n"
+      "[kennen] confirmPrompt called in a non-interactive context; refusing. Pass --yes to skip prompts.\n"
     )
     return false
   }

@@ -138,10 +138,10 @@ describe("buildMemoryProps — event expiry marker", () => {
   it("writes and clears Expires On", () => {
     const setProps = buildMemoryProps({
       title: "x",
-      expiresOn: "pr-closed:Iron-Ham/lore#899",
+      expiresOn: "pr-closed:Iron-Ham/kennen#899",
     }) as Record<string, unknown>
     expect(setProps[MEMORY_PROPS.EXPIRES_ON]).toEqual({
-      rich_text: [{ text: { content: "pr-closed:Iron-Ham/lore#899" } }],
+      rich_text: [{ text: { content: "pr-closed:Iron-Ham/kennen#899" } }],
     })
 
     const clearProps = buildMemoryProps({ title: "x", expiresOn: null }) as Record<

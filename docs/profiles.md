@@ -1,7 +1,7 @@
 # Profiles
 
-Profiles package Lore's vault-facing taxonomy, additive schema, and prompt
-registry. Lore ships built-in first-party profiles such as:
+Profiles package Kennen's vault-facing taxonomy, additive schema, and prompt
+registry. Kennen ships built-in first-party profiles such as:
 
 ```yaml
 profile: default@1.0.0
@@ -15,8 +15,8 @@ profile: support@1.0.0
 profile: conversational@1.0.0
 ```
 
-When `.lore.yaml` omits `profile`, Lore resolves the same selector in memory.
-Read-only startup paths do not rewrite `.lore.yaml`. New `lore init` configs
+When `.kennen.yaml` omits `profile`, Kennen resolves the same selector in memory.
+Read-only startup paths do not rewrite `.kennen.yaml`. New `kennen init` configs
 write the selector explicitly so fresh installs are pinned to the runtime
 default profile version.
 
@@ -67,11 +67,11 @@ of scope.
 Fresh vaults can select a built-in profile during bootstrap:
 
 ```bash
-lore init --profile support@1.0.0
+kennen init --profile support@1.0.0
 ```
 
 The selector is validated before Notion database creation begins. On success,
-the generated `.lore.yaml` records the exact selector. Existing configs are not
+the generated `.kennen.yaml` records the exact selector. Existing configs are not
 mutated by read-only startup paths, and switching an existing vault to another
 profile waits for the explicit profile-management workflow.
 
@@ -83,7 +83,7 @@ Docs, READMEs, and undeclared fixtures do not participate in resolution.
 
 ## Schema Contract
 
-The five Lore databases and all core property names remain code-owned via
+The five Kennen databases and all core property names remain code-owned via
 `PROJECT_PROPS`, `TOPIC_PROPS`, `MEMORY_PROPS`, `ENTITY_PROPS`, and
 `FACT_PROPS`. Profiles may add properties after the core set is built. They may
 not remove, rename, or override core properties, and they may not alter relation
@@ -129,8 +129,8 @@ Reserved/internal predicates cannot appear in profile-writable predicate lists:
 There is no active-profile singleton. `initServicesFromConfig()` resolves a
 `ResolvedProfile` and threads it through services, vault setup/migration, MCP
 write validators, CLI tag validation helpers, tag migration, and simulated
-autosave schema construction. Hook helpers that cannot carry `LoreServices`
-resolve the profile from `.lore.yaml` and pass the resolved prompt registry
+autosave schema construction. Hook helpers that cannot carry `KennenServices`
+resolve the profile from `.kennen.yaml` and pass the resolved prompt registry
 into prompt construction. Tests should pass explicit profile objects when they
 need a non-default taxonomy, schema, or prompt fixture.
 
@@ -140,7 +140,7 @@ need a non-default taxonomy, schema, or prompt fixture.
 
 | Field                    | Value                                                                                                                                                                                                                              |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pilot team               | Support Escalations, with the Lore maintainers owning the code rollout.                                                                                                                                                            |
+| Pilot team               | Support Escalations, with the Kennen maintainers owning the code rollout.                                                                                                                                                            |
 | Data policy              | Fixtures are synthetic/redacted only. Do not commit real customer content, PHI, regulated data, production workspace ids, or live ticket payloads. Live-vault evals are operator-dispatched only against sandbox vaults.           |
 | Profile name             | `support`                                                                                                                                                                                                                          |
 | Target use case          | Help support engineers preserve escalation symptoms, owners, mitigations, product areas, and root-cause findings for later triage.                                                                                                 |
@@ -151,7 +151,7 @@ need a non-default taxonomy, schema, or prompt fixture.
 | Prompt keys to override  | Autosave extraction filter, autosave tool guidance, and simulated-autosave eval extraction. Atomic learning, digest, and conflict judge use default prompt fallback.                                                               |
 | Retrieval/wake-up stance | Default core behavior. No support-specific ranking, section suppression, or cap changes.                                                                                                                                           |
 | Debt/procedure stance    | Default core policy. Procedure review gates, proposal/deprecation flow, conflict detection, temporal facts, auto-mentions, and cross-vault trust markers remain unchanged.                                                        |
-| Eval runner              | `lore eval run evals/profile-suites/support.yaml` for deterministic CI-safe scorer checks; `lore eval run --runner bench evals/bench-suites/support-simulated-autosave.yaml` for operator-dispatched model-backed extraction runs. |
+| Eval runner              | `kennen eval run evals/profile-suites/support.yaml` for deterministic CI-safe scorer checks; `kennen eval run --runner bench evals/bench-suites/support-simulated-autosave.yaml` for operator-dispatched model-backed extraction runs. |
 | Eval metric              | Entity-kind recall, predicate precision, hallucinated-fact rate, required-field completeness, and invalid-taxonomy rate.                                                                                                           |
 | Minimum threshold        | Entity-kind recall >= 0.80, predicate precision >= 0.85, hallucinated-fact rate <= 0.05, required-field completeness >= 0.90, invalid-taxonomy rate = 0.                                                                           |
 | Latest measured result   | The committed deterministic support suite passes 1/1 cases: entity-kind recall 1.00, predicate precision 1.00, hallucinated-fact rate 0.00, required-field completeness 1.00, invalid-taxonomy rate 0.00.                          |
@@ -197,7 +197,7 @@ before it enters default recall.
 
 ## Profile Distribution
 
-The `lore profile` CLI surface distributes, validates, selects, and migrates
+The `kennen profile` CLI surface distributes, validates, selects, and migrates
 profiles without expanding the contract matrix.
 The five-database semantic core stays code-owned; nothing here lets an
 external profile redefine memory kinds, claim reserved predicates, or
@@ -207,18 +207,18 @@ edit profile files via migration.
 
 A `<name>@<version>` selector resolves through three tiers in order:
 
-1. Project-authored local: `<configRoot>/.lore/profiles/local/<name>/<version>/`
-2. Built-in (bundled with this Lore release): `profiles/<name>/`
-3. Installed external: `<configRoot>/.lore/profiles/installed/<name>/<version>/`
+1. Project-authored local: `<configRoot>/.kennen/profiles/local/<name>/<version>/`
+2. Built-in (bundled with this Kennen release): `profiles/<name>/`
+3. Installed external: `<configRoot>/.kennen/profiles/installed/<name>/<version>/`
 
-`lore profile list` surfaces every profile this config root can resolve.
+`kennen profile list` surfaces every profile this config root can resolve.
 The active profile is marked with `*`; lower-priority resolutions of the
 same selector are marked with `↳` so an operator can see when a local
 override shadows a built-in or installed bundle.
 
 ### Install sources
 
-`lore profile install` accepts two source forms:
+`kennen profile install` accepts two source forms:
 
 - **Local filesystem path** pointing directly at a profile bundle root
   containing `profile.yaml`. No subdirectory discovery, no repo-root
@@ -231,12 +231,12 @@ override shadows a built-in or installed bundle.
   bundle root.
 
 External installs always write under
-`<configRoot>/.lore/profiles/installed/<name>/<version>/`. The installer
+`<configRoot>/.kennen/profiles/installed/<name>/<version>/`. The installer
 never writes to the project-authored local path.
 
 ### Collision behavior
 
-`lore profile install` is intentionally fail-closed. The matrix:
+`kennen profile install` is intentionally fail-closed. The matrix:
 
 | State                                                   | Behavior                                                                                                                                                               |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -249,7 +249,7 @@ never writes to the project-authored local path.
 
 ### Lock file
 
-Successful installs write `<configRoot>/.lore/profiles/installed/profiles.lock.json`:
+Successful installs write `<configRoot>/.kennen/profiles/installed/profiles.lock.json`:
 
 ```json
 {
@@ -259,7 +259,7 @@ Successful installs write `<configRoot>/.lore/profiles/installed/profiles.lock.j
       "version": "1.2.0",
       "source": {
         "kind": "git",
-        "url": "git@github.com:org/lore-sales-profile.git",
+        "url": "git@github.com:org/kennen-sales-profile.git",
         "commit": "<40-hex-sha>"
       },
       "manifestDigest": "sha256:<64-hex>",
@@ -275,15 +275,15 @@ First installs always require an explicit allow-list match (see below).
 
 ### Non-interactive allow-list
 
-`lore profile install --yes` must match an entry in
-`profiles.allowedInstallSources` in `.lore.yaml`. The discriminated
+`kennen profile install --yes` must match an entry in
+`profiles.allowedInstallSources` in `.kennen.yaml`. The discriminated
 union is enforced by the config schema:
 
 ```yaml
 profiles:
   allowedInstallSources:
     - kind: git
-      url: git@github.com:org/lore-sales-profile.git
+      url: git@github.com:org/kennen-sales-profile.git
       commit: 0123456789abcdef0123456789abcdef01234567
       manifestDigest: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
     - kind: path
@@ -308,7 +308,7 @@ Profile migrations live inside the source bundle:
 <profileRoot>/migrations/<from>__<to>.yaml
 ```
 
-`lore profile migrate <name@version>` discovers the file via the source
+`kennen profile migrate <name@version>` discovers the file via the source
 selector (the currently pinned profile, unless `--from` overrides it),
 parses every step, and prints a step table. The dry-run output names
 every step's id, kind, status, optional reason, and estimated Notion
@@ -316,13 +316,13 @@ writes. `--apply` re-checks live state per step before committing and
 writes an audit ledger to:
 
 ```text
-<configRoot>/.lore/profile-migrations/<safe-profile-name>/<from>__<to>.<vault-page-sha12>.json
+<configRoot>/.kennen/profile-migrations/<safe-profile-name>/<from>__<to>.<vault-page-sha12>.json
 ```
 
 The ledger is local-only operator state — it is not committed and is
 safe to delete; a rerun recomputes live state before deciding what to
 skip. The migration lock infrastructure (the same lock that gates
-`lore migrate`) prevents concurrent profile-migration apply runs against
+`kennen migrate`) prevents concurrent profile-migration apply runs against
 the same config root.
 
 The supported migration step kinds:
@@ -337,7 +337,7 @@ The supported migration step kinds:
   profile migrations allow appends only to profile-owned taxonomy surfaces:
   Memories `Tags`, Entities `Kind`, and Facts `Predicate`; reserved
   fact predicates stay rejected.
-- `write_config_profile_pin` — rewrite `.lore.yaml profile:` to the
+- `write_config_profile_pin` — rewrite `.kennen.yaml profile:` to the
   target selector. Runs last so a partial failure leaves the operator
   on the source pin.
 - `backfill_empty_property` — write a literal value to empty cells
@@ -357,12 +357,12 @@ profile files.
 
 ### Trust UX
 
-Interactive `lore profile install` confirmation prints:
+Interactive `kennen profile install` confirmation prints:
 
 - profile name / version
 - source path or git URL + commit SHA
 - manifest digest
-- install target path under `.lore/profiles/installed/`
+- install target path under `.kennen/profiles/installed/`
 - collision status (`none`, `same-digest`, `different-digest`)
 - shadowing status (`none`, `local-shadow`, `built-in-shadow`)
 - schema additions count per database

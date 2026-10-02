@@ -124,7 +124,7 @@ function services(overrides: Record<string, unknown> = {}) {
   }
 }
 
-describe("lore-task-create", () => {
+describe("kennen-task-create", () => {
   it("rejects pointer-only subjects before duplicate probing or writes", async () => {
     const svc = services()
     svc.tasks.list = vi.fn()
@@ -132,7 +132,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "services/router2/graph.json",
@@ -142,7 +142,7 @@ describe("lore-task-create", () => {
 
     expect((result as { isError?: boolean }).isError).toBe(true)
     expect(text).toContain("looks like a code pointer rather than a task")
-    expect(text).toContain("lore-fact action='create'")
+    expect(text).toContain("kennen-fact action='create'")
     expect(text).toContain("allowPointerSubject/--allow-pointer-subject")
     expect(svc.tasks.list).not.toHaveBeenCalled()
     expect(svc.topics.getOrCreate).not.toHaveBeenCalled()
@@ -163,7 +163,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "services/router2/graph.json",
@@ -190,7 +190,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Audit services/router2/graph.json for stale routes",
@@ -216,7 +216,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Rotate keys",
@@ -241,7 +241,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Rotate keys",
@@ -265,7 +265,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Follow source memory",
@@ -289,7 +289,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Follow source memory",
@@ -315,7 +315,7 @@ describe("lore-task-create", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "unscoped topic skip",
@@ -338,7 +338,7 @@ describe("lore-task-create", () => {
   })
 })
 
-describe("lore-task-create duplicate-task probe (#10)", () => {
+describe("kennen-task-create duplicate-task probe (#10)", () => {
   it("appends a duplicates footer when the probe surfaces other active tasks on the same entity", async () => {
     const created: Task = {
       ...makeTask("t-new", { entity: "PR-1234" }),
@@ -371,7 +371,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "New PR-1234 task",
@@ -382,7 +382,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     expect(text).toContain('Other active tasks tracking "PR-1234" (2)')
     expect(text).toContain('"Track PR-1234 review" [in-progress]')
     expect(text).toContain('"PR-1234 follow-up" [open]')
-    expect(text).toContain("lore-task({ action: 'close', taskId: 't-existing-1' })")
+    expect(text).toContain("kennen-task({ action: 'close', taskId: 't-existing-1' })")
     // Advisory footer carries exactly the two pre-existing rows; no
     // self-references to the just-created row leak into the close
     // incantations (the bullet lines start with `  - `).
@@ -405,7 +405,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Rotate keys",
@@ -422,7 +422,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     // `debugLogPartialFailures` fires with `root=duplicate-probe` and
     // the upstream error message, (c) the create still succeeds and
     // the agent-visible response carries no probe-failure text.
-    // LORE_DEBUG=1 unlocks the stderr write inside
+    // KENNEN_DEBUG=1 unlocks the stderr write inside
     // `debugLogPartialFailures`; without the env flag the helper
     // returns silently and the spy capture would be empty even when
     // the wire is correct.
@@ -438,9 +438,9 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     registerTaskTools(mockServer.server, svc as never)
 
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
     try {
-      const handler = mockServer.getHandler("lore-task")
+      const handler = mockServer.getHandler("kennen-task")
       const result = await handler({
         action: "create",
         subject: "Track PR-1234",
@@ -455,9 +455,9 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
       // (b) debugLogPartialFailures fired with the expected shape.
       const partialFailureLines = stderrSpy.mock.calls
         .map((c) => String(c[0]))
-        .filter((l) => l.includes("[lore] partial-failure:"))
+        .filter((l) => l.includes("[kennen] partial-failure:"))
       expect(partialFailureLines).toHaveLength(1)
-      expect(partialFailureLines[0]).toContain("tool=lore-task")
+      expect(partialFailureLines[0]).toContain("tool=kennen-task")
       expect(partialFailureLines[0]).toContain("root=duplicate-probe")
       expect(partialFailureLines[0]).toContain("error=notion 503")
 
@@ -497,7 +497,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "New PR-1234 task",
@@ -518,11 +518,11 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     expect(lines.slice(0, headerIdx).join("\n")).toContain("Topic:")
 
     // Structural pin #2 (the load-bearing handshake against #09):
-    // every `lore-task({ action: 'close', ... })` incantation in the
+    // every `kennen-task({ action: 'close', ... })` incantation in the
     // response must appear at or after the duplicates header. The
     // duplicate rows themselves are close incantations — those satisfy
     // the rule trivially. The pin's value is forward-looking: when #09
-    // lands a closure CTA (also a `lore-task({ action: 'close' })`
+    // lands a closure CTA (also a `kennen-task({ action: 'close' })`
     // incantation, but referencing the just-created task's id), the
     // late-merger has two options. (a) Insert the CTA at the bottom of
     // `lines` — the CTA's index is >= headerIdx, this assertion still
@@ -532,7 +532,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     // plus the inline comment in `tasks.ts:215` point straight at the
     // spec rule. Wrong ordering cannot ship green.
     const closeIncantationIdxs = lines
-      .map((l, i) => (l.includes("lore-task({ action: 'close',") ? i : -1))
+      .map((l, i) => (l.includes("kennen-task({ action: 'close',") ? i : -1))
       .filter((i) => i >= 0)
     expect(closeIncantationIdxs.length).toBeGreaterThan(0)
     for (const idx of closeIncantationIdxs) {
@@ -562,7 +562,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const handlerPromise = handler({
       action: "create",
       subject: "Track PR-1234",
@@ -596,7 +596,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "create", subject: "Rotate keys" } as never)
 
     // The row's `Entity` defaults to subject when entity is omitted
@@ -608,7 +608,7 @@ describe("lore-task-create duplicate-task probe (#10)", () => {
   })
 })
 
-describe("lore-task-create assertive reuse (issue #265)", () => {
+describe("kennen-task-create assertive reuse (issue #265)", () => {
   // Promotion of the duplicate-task probe from advisory-only to
   // assertive reuse on exact `(subject, entity, project-set)` match.
   // Pre-#265: the probe surfaced matches in a "close any obsolete"
@@ -633,7 +633,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -651,8 +651,8 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     // existing row, NOT a fresh id.
     expect(text).toContain("Subject and entity match an existing active task")
     expect(text).toContain("nothing was created")
-    expect(text).toContain("lore-task({ action: 'update', taskId: 't-existing'")
-    expect(text).toContain("lore-task({ action: 'close', taskId: 't-existing' })")
+    expect(text).toContain("kennen-task({ action: 'update', taskId: 't-existing'")
+    expect(text).toContain("kennen-task({ action: 'close', taskId: 't-existing' })")
   })
 
   it("does NOT reuse when entity is a substring (probe widens; predicate narrows)", async () => {
@@ -676,7 +676,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track review",
@@ -710,7 +710,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -725,7 +725,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     // a structural duplicate.
     expect(text).toContain('Other active tasks tracking "PR-1234" (1)')
     expect(text).toContain('"Different work tracking PR-1234" [open]')
-    expect(text).toContain("lore-task({ action: 'close', taskId: 't-existing' })")
+    expect(text).toContain("kennen-task({ action: 'close', taskId: 't-existing' })")
   })
 
   it("does NOT create a topic on reuse (orphan-topic prevention)", async () => {
@@ -756,7 +756,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -771,7 +771,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
 
   it("records the reused task in sessionMemories so fact auto-link still resolves", async () => {
     // The session pointer carries `{ memoryId, projectIds }` of the row
-    // a follow-up `lore-fact action='create'` can auto-link as Source.
+    // a follow-up `kennen-fact action='create'` can auto-link as Source.
     // Reuse must not break that wire — without this record, an agent
     // saving a fact in the same call sequence would see "no source
     // resolved" even though there's a perfectly valid task to point at.
@@ -790,7 +790,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -806,7 +806,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     )
   })
 
-  it("respects LORE_DISABLE_TASK_REUSE=1 — falls back to pre-#265 advisory behavior", async () => {
+  it("respects KENNEN_DISABLE_TASK_REUSE=1 — falls back to pre-#265 advisory behavior", async () => {
     // Operator escape hatch: an exact-match candidate exists, but the
     // env switch keeps the probe in advisory-only mode. Create still
     // lands; the existing row appears in the advisory footer.
@@ -827,9 +827,9 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    vi.stubEnv("LORE_DISABLE_TASK_REUSE", "1")
+    vi.stubEnv("KENNEN_DISABLE_TASK_REUSE", "1")
     try {
-      const handler = mockServer.getHandler("lore-task")
+      const handler = mockServer.getHandler("kennen-task")
       const result = await handler({
         action: "create",
         subject: "Track PR-1234 review",
@@ -861,7 +861,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -874,7 +874,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     expect(text).not.toContain("Error")
   })
 
-  it("respects the broader LORE_DISABLE_NEAR_DUPLICATE_PROBE=1 switch (transitive disable)", async () => {
+  it("respects the broader KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1 switch (transitive disable)", async () => {
     // The broader probe-disable switch zeros the probe entirely,
     // which transitively disables reuse via empty input — even an
     // exact-match candidate would never reach `findExactReuseTarget`.
@@ -898,9 +898,9 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "1")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "1")
     try {
-      const handler = mockServer.getHandler("lore-task")
+      const handler = mockServer.getHandler("kennen-task")
       const result = await handler({
         action: "create",
         subject: "Track PR-1234 review",
@@ -957,7 +957,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Rotate Auth Keys",
@@ -993,7 +993,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track  PR-1234   review",
@@ -1028,7 +1028,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Café &amp; Bar review",
@@ -1076,7 +1076,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Audit Café &amp; Bar payroll",
@@ -1120,7 +1120,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -1143,7 +1143,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     expect(text).toContain("tags")
     // The line embeds the existing task's id in the update CTA so
     // the agent can paste-and-go.
-    expect(text).toContain("lore-task({ action: 'update', taskId: 't-existing', ... })")
+    expect(text).toContain("kennen-task({ action: 'update', taskId: 't-existing', ... })")
   })
 
   it("omits the `Ignored on reuse:` line when the caller passed only the reuse-key fields", async () => {
@@ -1165,7 +1165,7 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "create",
       subject: "Track PR-1234 review",
@@ -1183,12 +1183,12 @@ describe("lore-task-create assertive reuse (issue #265)", () => {
   })
 })
 
-describe("lore-task-create blocked-state guard", () => {
+describe("kennen-task-create blocked-state guard", () => {
   it("rejects state: 'blocked' when blockedBy is omitted — unactionable rows can't land", async () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     const result = await handler({
       action: "create",
@@ -1211,7 +1211,7 @@ describe("lore-task-create blocked-state guard", () => {
     svc.tasks.create = vi.fn().mockResolvedValue(created)
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     await handler({
       action: "create",
@@ -1234,7 +1234,7 @@ describe("lore-task-create blocked-state guard", () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     const result = await handler({
       action: "create",
@@ -1250,12 +1250,12 @@ describe("lore-task-create blocked-state guard", () => {
   })
 })
 
-describe("lore-task-update blocked-state guard", () => {
+describe("kennen-task-update blocked-state guard", () => {
   it("rejects state: 'blocked' when blockedBy is omitted on the same call", async () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     const result = await handler({
       action: "update",
@@ -1273,7 +1273,7 @@ describe("lore-task-update blocked-state guard", () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     const result = await handler({
       action: "update",
@@ -1301,7 +1301,7 @@ describe("lore-task-update blocked-state guard", () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     const result = await handler({
       action: "update",
@@ -1324,7 +1324,7 @@ describe("lore-task-update blocked-state guard", () => {
     })
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     await handler({
       action: "update",
@@ -1339,13 +1339,13 @@ describe("lore-task-update blocked-state guard", () => {
   })
 })
 
-describe("lore-task-close", () => {
+describe("kennen-task-close", () => {
   it("rejects malformed taskId before TaskService.close", async () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "close",
       taskId: "not-a-page-id",
@@ -1363,7 +1363,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "close", taskId: TASK_ID } as never)
 
     expect(svc.tasks.close).toHaveBeenCalledWith(TASK_ID, "done")
@@ -1374,7 +1374,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "close", taskId: TASK_ID, state: "cancelled" } as never)
 
     expect(svc.tasks.close).toHaveBeenCalledWith(TASK_ID, "cancelled")
@@ -1393,7 +1393,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "close",
       taskId: TASK_ID,
@@ -1436,7 +1436,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = (await handler({
       action: "close",
       taskId: TASK_ID,
@@ -1480,7 +1480,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "close-many",
       ids: [TASK_ID, TASK_ID_2, TASK_ID_3],
@@ -1504,7 +1504,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "close-many",
       ids: [" ", "\t"],
@@ -1522,7 +1522,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "close-many",
       ids: [TASK_ID, "not-a-page-id"],
@@ -1540,7 +1540,7 @@ describe("lore-task-close", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "close-many",
       ids: [TASK_ID_UNDASHED],
@@ -1555,13 +1555,13 @@ describe("lore-task-close", () => {
   })
 })
 
-describe("lore-task-update", () => {
+describe("kennen-task-update", () => {
   it("rejects malformed taskId before TaskService.update", async () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "update",
       taskId: "not-a-page-id",
@@ -1584,7 +1584,7 @@ describe("lore-task-update", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "update",
       taskId: TASK_ID_UNDASHED,
@@ -1607,7 +1607,7 @@ describe("lore-task-update", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "update", taskId: TASK_ID, dueDate: "" } as never)
 
     expect(svc.tasks.update).toHaveBeenCalledWith(
@@ -1625,7 +1625,7 @@ describe("lore-task-update", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "update", taskId: TASK_ID, dueDate: null } as never)
 
     expect(svc.tasks.update).toHaveBeenCalledWith(
@@ -1651,7 +1651,7 @@ describe("lore-task-update", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = (await handler({
       action: "update",
       taskId: TASK_ID,
@@ -1691,7 +1691,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "create", subject: "Rotate keys" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1699,7 +1699,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     // The exact incantation lets the agent copy-paste back into a
     // tool call. Pin the literal so a refactor that drops `taskId`
     // or shifts to single-quotes-vs-double trips here.
-    expect(text).toContain(`lore-task({ action: 'close', taskId: 't-new' })`)
+    expect(text).toContain(`kennen-task({ action: 'close', taskId: 't-new' })`)
   })
 
   it("renders the closure CTA on an active-state update", async () => {
@@ -1711,7 +1711,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "update",
       taskId: TASK_ID,
@@ -1720,7 +1720,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toContain(CTA_PREFIX)
-    expect(text).toContain(`lore-task({ action: 'close', taskId: 't-active' })`)
+    expect(text).toContain(`kennen-task({ action: 'close', taskId: 't-active' })`)
   })
 
   it("suppresses the closure CTA on a done-state update", async () => {
@@ -1732,7 +1732,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "update",
       taskId: TASK_ID,
@@ -1754,7 +1754,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "update",
       taskId: TASK_ID,
@@ -1770,7 +1770,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "close", taskId: TASK_ID } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1785,7 +1785,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "close", taskId: TASK_ID } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1802,7 +1802,7 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "close", taskId: TASK_ID } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1818,21 +1818,21 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "close", taskId: TASK_ID } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     expect(text).toBe(`Closed task ${TASK_ID} (state: done)`)
   })
 
-  it("leads the lore-task description with the CRITICAL CLOSURE RULE", async () => {
+  it("leads the kennen-task description with the CRITICAL CLOSURE RULE", async () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
     const config = (
       mockServer.server.registerTool as ReturnType<typeof vi.fn>
-    ).mock.calls.find(([name]) => name === "lore-task")?.[1] as
+    ).mock.calls.find(([name]) => name === "kennen-task")?.[1] as
       | { description?: string }
       | undefined
 
@@ -1851,14 +1851,14 @@ describe("closure CTA (issue 0.7.0/09)", () => {
     expect(description).toContain("action='close'")
   })
 
-  it("leads the lore-task description with the CRITICAL SCOPE RULE before the bullets", async () => {
+  it("leads the kennen-task description with the CRITICAL SCOPE RULE before the bullets", async () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
     const config = (
       mockServer.server.registerTool as ReturnType<typeof vi.fn>
-    ).mock.calls.find(([name]) => name === "lore-task")?.[1] as
+    ).mock.calls.find(([name]) => name === "kennen-task")?.[1] as
       | { description?: string }
       | undefined
 
@@ -1918,7 +1918,7 @@ describe("optional-string Zod boundary", () => {
     })
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = (await handler(args as never)) as {
       isError?: boolean
       content: Array<{ text: string }>
@@ -2013,7 +2013,7 @@ describe("optional-string Zod boundary", () => {
   })
 })
 
-describe("lore-tasks", () => {
+describe("kennen-tasks", () => {
   it("returns an error when list projectName does not resolve", async () => {
     const svc = services({
       context: { project: { id: "proj-ambient", name: "Ambient", path: "." } },
@@ -2023,7 +2023,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", projectName: "Missing" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2047,7 +2047,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2070,7 +2070,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "list",
       startCursor: "resume-here",
@@ -2121,7 +2121,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", limit: 30 } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2181,7 +2181,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", limit: 30 } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2216,7 +2216,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", limit: 5 } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2255,7 +2255,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "list",
       state: "done",
@@ -2306,7 +2306,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "list",
       state: "done",
@@ -2340,7 +2340,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", limit: 2 } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2369,7 +2369,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", limit: 30 } as never)
     const wrapped = result as { content: Array<{ text: string }>; isError?: boolean }
     const text = wrapped.content[0].text
@@ -2396,7 +2396,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", state: "cancelled" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2415,7 +2415,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list", entity: "PR #99" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2435,7 +2435,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "list",
       entity: "PR",
@@ -2457,9 +2457,9 @@ describe("lore-tasks", () => {
 
   it("wraps the singular `entity` input into a one-element entities array — does not canonicalize", async () => {
     // The user-facing `entity` argument is intentionally singular: an
-    // agent calling `lore-task` action='list' typed exactly one
+    // agent calling `kennen-task` action='list' typed exactly one
     // string and expects tasks containing that string. Alias-aware
-    // recall belongs to `lore-ask`, which knows the canonical entity.
+    // recall belongs to `kennen-ask`, which knows the canonical entity.
     // This test pins that boundary so a future refactor doesn't
     // silently start re-resolving the user's input behind their back.
     const svc = services({
@@ -2468,7 +2468,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "list", entity: "AuthSvc" } as never)
 
     const callArgs = (svc.tasks.list as ReturnType<typeof vi.fn>).mock.calls[0][0]
@@ -2485,7 +2485,7 @@ describe("lore-tasks", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "list" } as never)
 
     const callArgs = (svc.tasks.list as ReturnType<typeof vi.fn>).mock.calls[0][0]
@@ -2494,7 +2494,7 @@ describe("lore-tasks", () => {
   })
 })
 
-describe("lore-task synopsis surface (issue 0.7.0/02)", () => {
+describe("kennen-task synopsis surface (issue 0.7.0/02)", () => {
   it("threads synopsis on action='create' through to TaskService.create", async () => {
     const created: Task = {
       ...makeTask("t-syn", { synopsis: "Rotate keys for new env." }),
@@ -2505,7 +2505,7 @@ describe("lore-task synopsis surface (issue 0.7.0/02)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({
       action: "create",
       subject: "Rotate keys",
@@ -2528,7 +2528,7 @@ describe("lore-task synopsis surface (issue 0.7.0/02)", () => {
     } as Task)
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
 
     // Update — explicit value lands.
     await handler({
@@ -2568,7 +2568,7 @@ describe("lore-task synopsis surface (issue 0.7.0/02)", () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const overCap = "x".repeat(501)
 
     const result = await handler({
@@ -2587,7 +2587,7 @@ describe("lore-task synopsis surface (issue 0.7.0/02)", () => {
     const svc = services()
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const overCap = "x".repeat(501)
 
     const result = await handler({
@@ -2603,7 +2603,7 @@ describe("lore-task synopsis surface (issue 0.7.0/02)", () => {
   })
 })
 
-describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
+describe("kennen-task action='list' synopsis rendering (DEFERRED-01)", () => {
   it("renders the synopsis as an indented line between the title row and the ID line by default", async () => {
     const svc = services({
       context: { project: { id: "proj-1", name: "Widget", path: "/widget" } },
@@ -2622,7 +2622,7 @@ describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2652,7 +2652,7 @@ describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2691,7 +2691,7 @@ describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2721,7 +2721,7 @@ describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "list",
       includeSynopsis: false,
@@ -2754,7 +2754,7 @@ describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2774,7 +2774,7 @@ describe("lore-task action='list' synopsis rendering (DEFERRED-01)", () => {
   })
 })
 
-describe("lore-task action='list' memory confidence removal", () => {
+describe("kennen-task action='list' memory confidence removal", () => {
   it("renders synopsis directly under the title row without a trust line", async () => {
     const svc = services({
       context: { project: { id: "proj-1", name: "Widget", path: "/widget" } },
@@ -2793,7 +2793,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2823,7 +2823,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2851,7 +2851,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2879,7 +2879,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2909,7 +2909,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2936,7 +2936,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "list",
       includeSynopsis: false,
@@ -2972,7 +2972,7 @@ describe("lore-task action='list' memory confidence removal", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "list" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -2988,20 +2988,20 @@ describe("lore-task action='list' memory confidence removal", () => {
 })
 
 /**
- * Issue 0.7.0/14 — `lore-task action='reconcile'` integration. The
+ * Issue 0.7.0/14 — `kennen-task action='reconcile'` integration. The
  * algorithm itself is exercised in `src/core/task-reconcile.test.ts`;
  * this block pins the wire-up (handler renders the algorithm's output,
  * resolves project context, rejects unresolved explicit project scope, and
  * the response shape matches the spec).
  */
-describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
+describe("kennen-task action='reconcile' (issue 0.7.0/14)", () => {
   it("renders the empty-set form when there are no active tasks", async () => {
     const svc = services()
     svc.tasks.list = vi.fn().mockResolvedValue({ items: [] })
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "reconcile" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -3024,7 +3024,7 @@ describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "reconcile" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -3081,7 +3081,7 @@ describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({ action: "reconcile" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -3089,7 +3089,7 @@ describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
     expect(text).toContain('### 1. Task t-abc — "Track PR-1234 review" [in-progress')
     expect(text).toContain("Best match: memory m-good")
     expect(text).toContain("Cue: ")
-    expect(text).toContain("Close: lore-task({ action: 'close', taskId: 't-abc' })")
+    expect(text).toContain("Close: kennen-task({ action: 'close', taskId: 't-abc' })")
     // Today should land in the line.
     void today
   })
@@ -3101,7 +3101,7 @@ describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     const result = await handler({
       action: "reconcile",
       projectName: "Nonexistent",
@@ -3123,7 +3123,7 @@ describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
 
-    const handler = mockServer.getHandler("lore-task")
+    const handler = mockServer.getHandler("kennen-task")
     await handler({ action: "reconcile" } as never)
 
     // The first call to tasks.list inside reconcileActiveTasks should
@@ -3135,14 +3135,14 @@ describe("lore-task action='reconcile' (issue 0.7.0/14)", () => {
 })
 
 // ---------------------------------------------------------------------------
-// DEFERRED-ATTRIBUTION (0.10.0): Author column attribution on lore-task.
+// DEFERRED-ATTRIBUTION (0.10.0): Author column attribution on kennen-task.
 //
 // Tasks write to the Memories DB (Kind = task) — same Author column as
 // memories and decisions. Pin the precedence: explicit args.author wins,
 // services.identity.resolveAuthor is the default, null collapses to undefined.
 // ---------------------------------------------------------------------------
 
-describe("lore-task action='create' — Author attribution (DEFERRED-ATTRIBUTION)", () => {
+describe("kennen-task action='create' — Author attribution (DEFERRED-ATTRIBUTION)", () => {
   function setUpHarness(identityAuthor: string | null) {
     const created = makeTask("t-attrib")
     const resolveAuthor = vi.fn(async () => identityAuthor)
@@ -3150,7 +3150,7 @@ describe("lore-task action='create' — Author attribution (DEFERRED-ATTRIBUTION
     svc.tasks.create = vi.fn().mockResolvedValue(created)
     const mockServer = createMockServer()
     registerTaskTools(mockServer.server, svc as never)
-    return { handler: mockServer.getHandler("lore-task"), svc, resolveAuthor }
+    return { handler: mockServer.getHandler("kennen-task"), svc, resolveAuthor }
   }
 
   it("stamps services.identity.resolveAuthor on tasks.create when args.author is omitted", async () => {

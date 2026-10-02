@@ -1,15 +1,15 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-capability-edge-v3
+name: kennen-longitudinal-github-cli-capability-edge-v3
 description: >-
   Capability-edge GitHub CLI longitudinal suite. Scenarios are clustered around
   durable prior-session plans and scored by hidden behavioral Go tests.
 seededCorpus: ../vault-seeds/github-cli-capability-edge-v3.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: gh-cli-auth-git-credential-requested-user-v3
     difficulty: hard

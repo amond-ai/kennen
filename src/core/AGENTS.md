@@ -4,7 +4,7 @@
 
 ## Purpose
 
-This directory contains Lore's business logic: CRUD operations for each entity
+This directory contains Kennen's business logic: CRUD operations for each entity
 type, context resolution, and vault management. These services sit between the
 interfaces (MCP, CLI, hooks) and the Notion SDK layer (`src/notion/`).
 
@@ -59,7 +59,7 @@ multiple services via dependency injection:
 
 - `resolveProject()` takes a `ProjectService` parameter.
 - `loadWakeUpData()` accepts a structural `WakeUpServices` (`{ memories, facts }`)
-  so both the real `LoreServices` and lightweight test stubs satisfy it.
+  so both the real `KennenServices` and lightweight test stubs satisfy it.
 
 Prefer this "free-function orchestrator over injected services" shape when the
 logic is coordination-only (no stored state, no Notion client ownership).
@@ -70,10 +70,10 @@ logic is coordination-only (no stored state, no Notion client ownership).
 from the working directory. The algorithm:
 
 1. Compute the relative path from the config root (directory containing
-   `.lore.yaml`) to the current working directory.
+   `.kennen.yaml`) to the current working directory.
 2. If cwd is outside the config root (relative path starts with `..`), return
    `{ project: null, isCatchAllFallback: false }`.
-3. Iterate over projects defined in `.lore.yaml`. For each, check if the
+3. Iterate over projects defined in `.kennen.yaml`. For each, check if the
    project's `path` is a prefix of the relative path. A project with path
    `"."` or `""` is a **catch-all** — it matches every cwd inside the config
    root with length 0, so any sub-project prefix wins over it.
@@ -151,14 +151,14 @@ in `Compared With`, the relation only points from A to B. The reverse
 
 **Calling code is responsible for symmetric writes** for any consumer
 that depends on the bidirectional invariant. The compare workstream
-(0.9.0/#05) is the canonical example: `lore conflicts scan`
+(0.9.0/#05) is the canonical example: `kennen conflicts scan`
 (0.9.0/#09) checks whether **either side** names the other in
 `Compared With` and skips the pair on a hit. So a half-written A → B
 relation (A names B, but B does not name A) is enough to suppress the
 next scan — re-judgment is not the failure mode. The actual harm is
 **asymmetric audit visibility**: an operator inspecting B's Notion
 page sees an empty `Compared With` and an empty `Compare Notes`,
-gives no indication that B was ever judged, and a future `lore-memory
+gives no indication that B was ever judged, and a future `kennen-memory
 action='compare'` against the same pair produces a stale or
 contradictory verdict that depends on which side the agent loaded
 first. The two-write contract preserves audit symmetry (both pages
@@ -171,7 +171,7 @@ governing concurrency. Failure of the second write leaves a visible,
 re-runnable inconsistency rather than a silent half-state.
 
 **Retry-safety is ledgered for actionable verdicts.** A
-`lore-memory action='compare'` call runs three concerns:
+`kennen-memory action='compare'` call runs three concerns:
 idempotency gate → dispatch (fact emission and affected-memory audit ledger for
 actionable verdicts) → audit-marker write. Final audit entries and
 dispatch ledger entries both live in `Compare Notes`, but they are
@@ -200,7 +200,7 @@ The retry matrix:
 
 - **Symmetric verdict (`scoped` / `related` / `compatible` /
   `not_conflict`) — audit-marker only, no dispatch.** Safely
-  retried by re-issuing `lore-memory action='compare'` with the
+  retried by re-issuing `kennen-memory action='compare'` with the
   same inputs. The handler-level gate checks BOTH sides for the
   matching `(target, verdict, affected=null)` entry; it
   short-circuits with `alreadyJudged: true` only when both sides
@@ -283,7 +283,7 @@ recovery behavior changes.
   pinned-count caching, `listPinnedBlocks`, `countPinnedBlocks`, and the
   pinned helper exports.
 - `MemoryService` remains the public facade and compatibility re-export point.
-- The `lore-pinned` boundary owns user-facing audit-line append and retry
+- The `kennen-pinned` boundary owns user-facing audit-line append and retry
   recovery around pin/unpin/update operations.
 
 ## Memory Search
@@ -353,7 +353,7 @@ signal). All methods exclude invalidated facts by default.
 | `queryByObject(object, opts)`   | Same shape as `queryBySubject` but matches the `Object` rich-text property. Same strict-empty `allowUnfiltered` gate                                                                                                                                                                                                                                                                                                                   |
 | `queryBySourceMemory(id, opts)` | Finds facts whose `Source` relation points at a given memory page                                                                                                                                                                                                                                                                                                                                                                      |
 | `queryByEntity(entity, opts)`   | Finds facts where the entity appears as either Subject or Object, deduplicates. `limit` is forwarded into both underlying branches as a `page_size` clamp + early-stop, then re-applied as a post-dedup slice so `limit: 25` never returns more than 25 rows. Empty / whitespace-only `entity` short-circuits to `[]` unconditionally (no `allowUnfiltered` opt-in — agents have no use case for whitespace-substring entity matching) |
-| `queryOrphans(opts)`            | Returns current facts whose `Source` relation is empty. Used by `lore migrate --backfill-fact-sources`                                                                                                                                                                                                                                                                                                                                 |
+| `queryOrphans(opts)`            | Returns current facts whose `Source` relation is empty. Used by `kennen migrate --backfill-fact-sources`                                                                                                                                                                                                                                                                                                                               |
 
 All paginating retrieval methods derive their per-request `page_size`
 via the shared `clampNotionPageSize(limit)` helper in `fact-queries.ts` —
@@ -383,7 +383,7 @@ populate the Active Facts section. The query is single-page and server-side
 filtered by project scope + `Valid Until is_empty`, so wake-up never paginates
 on session start.
 
-Tracked work — open / blocked / done lifecycle — is served by `lore-task
+Tracked work — open / blocked / done lifecycle — is served by `kennen-task
 action='list'` against the Memories DB rather than by a fact partition.
 Pre-#23 (0.6.0) wake-up additionally split tracking-predicate facts off
 into an Open Loops section; that surface is gone, the `FactPredicate` union
@@ -413,7 +413,7 @@ process one row per outer page (`queryOverdue`, `listAllForBackfill`)
 keep the per-page `pageToFact` path — there is no result set to batch.
 
 `FactService.countByPredicateRaw` deliberately bypasses this filter and
-walks `response.results.length` directly so the `lore status` preflight
+walks `response.results.length` directly so the `kennen status` preflight
 keeps counting the orphan rows after the typed-union contraction. See
 its docstring for the double-back-door rationale.
 
@@ -424,7 +424,7 @@ The Facts DB carries two parallel canonicalization columns by design:
 | Column                           | Type                | Role                                                                                                                                                                                                                                                           |
 | -------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SubjectKey`                     | rich_text           | Lowercased + NFC + whitespace-collapsed + trailing-punct-stripped form of `Subject`. Populated by `FactService.create` and the `--dedup-keys` migration. Backs the substring-fallback path in `queryBySubject` for vaults that haven't run `--build-entities`. |
-| `SubjectEntity` / `ObjectEntity` | relation → Entities | Canonical entity row IDs. Populated by `lore-fact action='create'` after `EntityService.resolveOrCreateEntity` and by the `--build-entities` migration. Backs exact `queryByEntityId` recall once a row has been re-pointed.                                   |
+| `SubjectEntity` / `ObjectEntity` | relation → Entities | Canonical entity row IDs. Populated by `kennen-fact action='create'` after `EntityService.resolveOrCreateEntity` and by the `--build-entities` migration. Backs exact `queryByEntityId` recall once a row has been re-pointed.                                 |
 
 Why both columns coexist for one release cycle:
 
@@ -433,7 +433,7 @@ Why both columns coexist for one release cycle:
    hit on rows whose entity relations are still empty (i.e. rows
    `--build-entities` hasn't re-pointed yet). Dropping `SubjectKey`
    immediately would silently lose every un-backfilled row from
-   `lore-query action='ask'` results.
+   `kennen-query action='ask'` results.
 2. **Spec carve-out.** The PF3-01 spec explicitly says "Keep the
    column for one release cycle as a safety net, then drop in a
    follow-on cleanup." A separate issue tracks `SubjectKey` removal.
@@ -447,7 +447,7 @@ and falls through to `null` otherwise.
 `EntityService`'s name/alias cache is a performance cache, not an
 authority. Cache hits re-read the cached page before returning it so a
 long-lived MCP or hook process does not keep handing out an Entity row
-that another process archived during `lore entities merge`. If the
+that another process archived during `kennen entities merge`. If the
 cached row is archived (or no longer carries the lookup key), the
 service evicts the stale keys and falls back to the normal Notion query
 path, which lets the loser's alias resolve to the merge winner.
@@ -493,7 +493,7 @@ metric without re-deriving the methodology.
    was 79.6% (560 facts → ~445 distinct subjects → ~89 had a peer).
 
 The metric is wired through
-`lore migrate --build-entities --report-orphan-rate` (issue #542).
+`kennen migrate --build-entities --report-orphan-rate` (issue #542).
 Two execution paths share one fold:
 
 - `src/core/entity-migration.ts:foldOrphanRateGroups` — the shared
@@ -503,7 +503,7 @@ Two execution paths share one fold:
   walks every fact via `FactService.queryBySubject`).
 - `computeOrphanRateFromAggregateRows` consumes the rows
   `src/notion/runtool/query.ts:querySubjectGroupCountsViaRunTool`
-  emits when `LORE_USE_RUNTOOL_AGGREGATE=1` is set. The flagged-on
+  emits when `KENNEN_USE_RUNTOOL_AGGREGATE=1` is set. The flagged-on
   path falls back per-call to the JS path on capability gate
   (403), saturated `has_more: true` aggregate windows, malformed
   responses, or transient transport-class failures. A 400 /
@@ -549,7 +549,7 @@ resolve to one row. Hashing keeps the stored key at 64 chars regardless
 of triple length, sidestepping Notion's 2000-char `rich_text` truncation.
 
 The MCP layer owns the public provenance contract for
-`lore-fact action='create'`: it validates usable source provenance before
+`kennen-fact action='create'`: it validates usable source provenance before
 calling `FactService.createWithDedup`. Internal callers that create facts must
 still thread the originating memory id deliberately; current decision auto-edge
 and memory auto-mention emitters pass `sourceMemoryId` explicitly.
@@ -565,7 +565,7 @@ and memory auto-mention emitters pass `sourceMemoryId` explicitly.
     relation is currently empty — same first-writer-wins posture as
     `Source`. Backfills legacy / partially migrated rows opportunistically
     on every dedup hit so the migration's coverage doesn't depend on a
-    one-shot `lore migrate --build-entities` run capturing every row.
+    one-shot `kennen migrate --build-entities` run capturing every row.
     All applicable mutations ship as a single atomic `pages.update` —
     Notion's API is per-request atomic, so either every mutated property
     lands or none does. A zero-mutation match (everything already present)
@@ -582,17 +582,17 @@ and memory auto-mention emitters pass `sourceMemoryId` explicitly.
 - **Probe failure** → fall through to blind create with a once-per-process
   stderr warning (pre-migration vaults or transient Notion errors don't
   spam stderr on every autosave). The next
-  `lore migrate --dedup-keys --merge` collapses the duplicate.
+  `kennen migrate --dedup-keys --merge` collapses the duplicate.
 
 **Concurrency**: Notion has no unique index or conditional-write primitive.
 Two callers racing on the same triple (cross-process, or intra-process
 back-to-back autosaves — Notion's query index is eventually consistent by
 a few hundred ms) can both see an empty probe. The
-`lore migrate --dedup-keys --merge` pass is the authoritative collapse for
+`kennen migrate --dedup-keys --merge` pass is the authoritative collapse for
 any duplicates that slip through. The pass prints the survivor/loser plan
 by default; `--yes` is required to execute.
 
-**Concurrency vs `lore migrate --build-entities`**: the migration's
+**Concurrency vs `kennen migrate --build-entities`**: the migration's
 `setEntityRelations` writes target the same `SubjectEntity` /
 `ObjectEntity` columns as the dedup-fill above, and both paths resolve
 canonical ids through `EntityService.resolveOrCreateEntity`. For a
@@ -606,7 +606,7 @@ false and no entity write happens here). Operators do not need to
 quiesce live writes before running `--build-entities`.
 
 **Rule**: Callers that need to tell the user "this was a dedup, not a new
-row" (for example, `lore-fact action='create'`) should use
+row" (for example, `kennen-fact action='create'`) should use
 `createWithDedup()` and inspect the `deduped` and `enriched` fields.
 `create()` is preserved for callers that don't care (decision-graph
 reachability sync, `decided_by` auto-links).
@@ -617,26 +617,26 @@ The autosave path occasionally delivers plain-text fields with HTML
 entities already escaped (`Foo &amp;amp; Bar`). Every write-boundary now
 decodes via `decodeTextEntities` (`src/notion/html-entities.ts`), but rows
 written before that guard shipped still carry encoded payloads. Three
-`lore migrate` flags decode pre-existing rows in place — all idempotent,
+`kennen migrate` flags decode pre-existing rows in place — all idempotent,
 all support `--dry-run`:
 
-| Flag                    | Target                              | Module                                 | Apply mode                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ----------------------- | ----------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--fix-topic-encoding`  | Topics.Name                         | `topic-merge.ts:fixTopicEncoding`      | Applies unless `--dry-run`. Pair with `--merge-duplicate-topics` when cross-encoding pairs would collide post-decode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `--fix-fact-encoding`   | Facts.Subject + .Object + .DedupKey | `fact-encoding.ts:fixFactEncoding`     | **Plan-only by default; `--yes` applies.** Collision-gated against post-decode dedup-key conflicts — see below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `--fix-memory-encoding` | Memories.Title + body markdown      | `memory-encoding.ts:fixMemoryEncoding` | **Plan-only by default; `--yes` applies.** Skips archived memories. Bodies above `BODY_SIZE_CAP_BYTES` (100 KB) skip the canonical `replace_content` path by default; under `LORE_USE_RUNTOOL_BLOCK_EDIT=1` they're rewritten via the anchored `update_content` path when `EncodedMemoryRow.anchoredPathPlanned` is true (single-pass body with non-empty entity substitutions — issue #534 AC #5). Multi-pass bodies (`&amp;amp;`) and bodies whose substitution list is empty fall back to skip. Plan-mode preview reflects which oversized rows will be fixed via the new bucket `oversizedAnchoredPlanned`. |
+| Flag                    | Target                              | Module                                 | Apply mode                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------- | ----------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fix-topic-encoding`  | Topics.Name                         | `topic-merge.ts:fixTopicEncoding`      | Applies unless `--dry-run`. Pair with `--merge-duplicate-topics` when cross-encoding pairs would collide post-decode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `--fix-fact-encoding`   | Facts.Subject + .Object + .DedupKey | `fact-encoding.ts:fixFactEncoding`     | **Plan-only by default; `--yes` applies.** Collision-gated against post-decode dedup-key conflicts — see below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `--fix-memory-encoding` | Memories.Title + body markdown      | `memory-encoding.ts:fixMemoryEncoding` | **Plan-only by default; `--yes` applies.** Skips archived memories. Bodies above `BODY_SIZE_CAP_BYTES` (100 KB) skip the canonical `replace_content` path by default; under `KENNEN_USE_RUNTOOL_BLOCK_EDIT=1` they're rewritten via the anchored `update_content` path when `EncodedMemoryRow.anchoredPathPlanned` is true (single-pass body with non-empty entity substitutions — issue #534 AC #5). Multi-pass bodies (`&amp;amp;`) and bodies whose substitution list is empty fall back to skip. Plan-mode preview reflects which oversized rows will be fixed via the new bucket `oversizedAnchoredPlanned`. |
 
 The plan-then-execute posture on the fact and memory flags matches
 `--dedup-keys --merge --yes`: both rewrite historical rows at larger blast
 radius than the topic-name rename, and the dedup-key recomputation in the
 fact path means a misapplied run can't be un-done by re-running. Bare
-`lore migrate --fix-fact-encoding` prints the plan and exits; the operator
+`kennen migrate --fix-fact-encoding` prints the plan and exits; the operator
 re-runs with `--yes` once they've reviewed the collision report.
 
 Fact encoding is the subtle one. Decoding `Subject`/`Object` changes the
 dedup key, so the rewrite path must recompute `DedupKey` in the same
 `pages.update` atom as the Subject/Object write. Otherwise a future
-`lore-fact action='create'` call with the already-decoded input misses the
+`kennen-fact action='create'` call with the already-decoded input misses the
 probe and creates a fresh duplicate.
 
 **Collision gate**. Before any Fact rewrite lands,
@@ -644,7 +644,7 @@ probe and creates a fresh duplicate.
 dedup key. If a group has ≥2 rows — the cross-encoding case, where a
 clean row and an encoded sibling would end up on the same key — `every`
 member of the group is gated: the migration refuses to rewrite them and
-directs the operator to resolve via `lore migrate --dedup-keys --merge
+directs the operator to resolve via `kennen migrate --dedup-keys --merge
 --yes` first. This mirrors the posture `VaultManager.migrate` established
 for `--fix-topic-encoding` / `--merge-duplicate-topics`.
 
@@ -674,7 +674,7 @@ spaces, lowercases for matching, and applies a structured Claude variant
 regex. Match → `"Claude Code"`. No match → input passed through verbatim.
 Idempotent.
 
-The closed-table approach is intentional. The `LORE_AGENT_NAME` env
+The closed-table approach is intentional. The `KENNEN_AGENT_NAME` env
 override (PF1-04) is the explicit-over-inferred path for third-party
 integrators (Codex, Cline, Cursor, Aider). Their names don't match the
 Claude regex and pass through unchanged, preserving attribution. Only add
@@ -686,7 +686,7 @@ Two ingest points:
 - **Write-time** in `deriveAgentName`: both the override path and the
   Claude-marker inference path route their result through
   `canonicalizeAgentName` so newly-saved memories never re-fragment.
-- **Backfill** via `lore migrate --normalize-agents`
+- **Backfill** via `kennen migrate --normalize-agents`
   (`agent-normalization.ts:normalizeAgents`): scans every non-archived
   memory, rewrites rows whose stored Agent differs from its canonical
   form via `pages.update` on the `Agent` rich_text column. Plan-only by
@@ -739,7 +739,7 @@ Key behaviors:
 facts. The `decided_by` and `supersedes_decision` graph edges are created at
 the MCP tool layer (`src/mcp/tools/decisions.ts`) where the tool handler
 orchestrates `decisions` + `facts` together — consistent with how
-`lore-memory action='save'` orchestrates `topics` + `memories`.
+`kennen-memory action='save'` orchestrates `topics` + `memories`.
 
 ## Resolver Caching
 
@@ -844,7 +844,7 @@ round-trip for the next `findByName`. Do not "normalize" the create
 paths to write-through — they don't have the refetched value in hand.
 
 **Do not cache `MemoryService.getById`.** Memory bodies can be updated via
-`lore-memory action='update'` from any tool; a stale body is a real
+`kennen-memory action='update'` from any tool; a stale body is a real
 correctness hazard, not just a latency one.
 
 Tests call `clearServiceCaches(services)` in `src/services.ts` to
@@ -863,14 +863,14 @@ surrounding save.
 
 Scoping rules:
 
-- **Memory path** (`lore-memory action='save'`): project + top-2 tags, trigram
+- **Memory path** (`kennen-memory action='save'`): project + top-2 tags, trigram
   threshold `0.7`, `excludeKinds: ["decision"]` so decisions surface
-  only through `lore-decision action='create'` and the response stays
-  focused on `lore-memory action='update'` as the corrective action.
+  only through `kennen-decision action='create'` and the response stays
+  focused on `kennen-memory action='update'` as the corrective action.
   Deliberately **does not** narrow by `kind` — the P2-03 spec's motivating
   duplicate chain spans `note` / `note` / `agent_diary`, which a server-side
   `kind` filter would mask.
-- **Decision path** (`lore-decision action='create'`): project + (topic if
+- **Decision path** (`kennen-decision action='create'`): project + (topic if
   resolved) + `Kind = decision`, client-side status filter to `accepted` /
   `proposed`, trigram threshold `0.6`. Superseded / deprecated / rejected
   decisions are deliberately excluded — they are not valid supersession
@@ -902,8 +902,8 @@ Scoping rules:
   cross-scope reuse without allowing an A-only row to suppress an A+B
   save. Vault scope queries only rows with an empty Project relation, so
   project-scoped rows cannot consume the candidate window. The shared
-  `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1` kill switch or
-  the narrower `LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1` switch disables
+  `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1` kill switch or
+  the narrower `KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1` switch disables
   reuse.
   It deliberately does NOT use title-only similarity because two
   durable learnings can share a short title while carrying different
@@ -917,7 +917,7 @@ Scoping rules:
   scope plus session for session scope (`autosave-learning-lock.ts`).
   After a fresh create it polls until the new row is visible to the same
   autosave-learning query (bounded by
-  `LORE_AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS`, default 500ms)
+  `KENNEN_AUTOSAVE_LEARNING_POST_CREATE_STABILIZE_MS`, default 500ms)
   before releasing, so the next local contender does not miss the row
   during Notion's query-index lag.
   The lock uses per-contender lease files. Stale contenders are ignored
@@ -977,16 +977,16 @@ reopens the silent-miss case where `"Café &amp;amp; Bar"` and
 
 Probe failures flow through an `onError` callback which both tool
 handlers route to the shared partial-failure logger — probe failures
-become visible under `LORE_DEBUG=1` without adding noise to the
+become visible under `KENNEN_DEBUG=1` without adding noise to the
 default stderr stream.
 
-**Kill-switch.** `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1` skips the
+**Kill-switch.** `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1` skips the
 general probe entirely. Use for bulk-import, fixture setup, or
 autosave flows where the per-save round-trip isn't justified. The
 bypass lives inside `findNearDuplicates`, not per-tool, so both write
 tools honor it without duplicate plumbing. The autosave-learning gate
 also honors this shared switch, and additionally honors
-`LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1` for a narrower rollback that
+`KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1` for a narrower rollback that
 keeps the advisory memory / decision probes enabled.
 
 ## Lexical conflict candidates (`conflict.ts`)
@@ -994,8 +994,8 @@ keeps the advisory memory / decision probes enabled.
 `findConflictCandidates()` in `conflict.ts` is the deterministic
 half of the 0.9.0 conflict-detection workflow (issue #03). Pure
 function over a `Memory[]` snapshot — no Notion access, no service
-state, no `client.` imports. Consumed by `lore-memory
-action='compare'` (#05) and `lore conflicts scan` (#09).
+state, no `client.` imports. Consumed by `kennen-memory
+action='compare'` (#05) and `kennen conflicts scan` (#09).
 
 The function returns pairs whose `title + " " + keywords` trigram
 similarity OR tag-overlap crosses threshold AND that share at least
@@ -1086,7 +1086,7 @@ and `prompts/conflict-judge.ts` defer to this paragraph rather
 than re-citing the path. The pin keeps the citation navigable
 even if engram's default branch later moves the file or rewrites
 the prompt — bumping the pin is an intentional act, not a passive
-consequence of upstream drift. Lore renders prompts but does NOT
+consequence of upstream drift. Kennen renders prompts but does NOT
 invoke them from the system itself — `findConflictCandidates`
 returns candidates, the calling agent reads the prompt and
 reasons in-context, then records the verdict via the relevant
@@ -1113,7 +1113,7 @@ interpretable.
 ## Task duplicate probe and assertive reuse (issue #265)
 
 `findDuplicateActiveTasks()` in `near-duplicate.ts` is the
-write-path probe for `lore-task action='create'`, and
+write-path probe for `kennen-task action='create'`, and
 `findExactReuseTarget()` is the assertive-reuse predicate over
 its result. Together they implement the duplicate-handling
 promotion called out in issue #265 — promoting one currently
@@ -1181,7 +1181,7 @@ deliberate divergences pinned in the helper docstring:
   caller passing `"Café & Bar"` against a stored title `"Café
 &amp; Bar"` (pre-PF1-06 vault) would normalize differently and
   miss reuse — exactly the silent-miss the
-  `lore migrate --fix-memory-encoding` migration was designed to
+  `kennen migrate --fix-memory-encoding` migration was designed to
   close. AGENTS.md "Near-Duplicate Probe" calls this out as
   load-bearing for the trigram pipeline; the same logic applies to
   the exact-equality predicate.
@@ -1189,7 +1189,7 @@ deliberate divergences pinned in the helper docstring:
   Vault state is shared across engineers; comparison is
   per-process. Turkish-locale `"INVOICE".toLocaleLowerCase()` is
   `"ınvoice"` (dotless-ı), en-US is `"invoice"` — two engineers
-  running Lore against the same vault would otherwise reach
+  running Kennen against the same vault would otherwise reach
   different reuse verdicts. The rest of the codebase
   (`similarity.ts:normalizeTitle`) already sticks to
   `.toLowerCase()` for the same reason.
@@ -1239,7 +1239,7 @@ proceeds — probe failures must never block the create path
 (advisory-then-create posture preserved for the failure mode).
 
 **Concurrent creates can both miss reuse.** Two parallel
-`lore-task action='create'` calls with identical
+`kennen-task action='create'` calls with identical
 `(subject, entity, projectIds)` can both probe before either
 create lands and both see no exact match — producing two
 structurally identical rows, the same hazard
@@ -1249,30 +1249,30 @@ hot autosave / reconcile paths and the helper does not adopt a
 filesystem lock today; if real-vault data shows the race matters,
 a follow-up can extend the autosave-learning lock posture
 (`autosave-learning-lock.ts`) to the task-reuse path. Operators
-collapse any duplicate pair via `lore-task action='close'` on the
+collapse any duplicate pair via `kennen-task action='close'` on the
 losing row.
 
 **Kill-switches** (single-axis, same posture as
-`LORE_DISABLE_TASK_CROSSREF`):
+`KENNEN_DISABLE_TASK_CROSSREF`):
 
-- `LORE_DISABLE_TASK_REUSE=1` — disables ONLY assertive reuse.
+- `KENNEN_DISABLE_TASK_REUSE=1` — disables ONLY assertive reuse.
   The advisory probe still runs and surfaces the close-CTA
   footer (pre-#265 behavior). Use when the operator wants the
   visibility but distrusts auto-reuse on a vault.
-- `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1` — broader switch shared
+- `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1` — broader switch shared
   with the memory and decision near-duplicate probes; disables
   both the probe and (transitively, via empty input) the reuse
   helper. Use for bulk-import flows.
 
 **Response vocabulary** distinguishes states agents can branch on:
 
-| Outcome                             | Leading line                             | Distinguishing footer                                                                      |
-| ----------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Fresh create, no peers              | `Created task: "<title>" (<id>)`         | No advisory footer                                                                         |
-| Fresh create, peers on same entity  | `Created task: "<title>" (<id>)`         | `Other active tasks tracking "<entity>" (N) — close any …`                                 |
-| Exact-match reuse (#265)            | `Reused existing task: "<title>" (<id>)` | `Subject and entity match an existing active task; nothing was created.`                   |
-| Exact-match reuse with ignored args | `Reused existing task: "<title>" (<id>)` | `Ignored on reuse: <comma-separated field names> — use lore-task({ action: 'update', … })` |
-| Reuse disabled, exact match exists  | `Created task: "<title>" (<id>)`         | Footer surfaces the duplicate as advisory only                                             |
+| Outcome                             | Leading line                             | Distinguishing footer                                                                        |
+| ----------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Fresh create, no peers              | `Created task: "<title>" (<id>)`         | No advisory footer                                                                           |
+| Fresh create, peers on same entity  | `Created task: "<title>" (<id>)`         | `Other active tasks tracking "<entity>" (N) — close any …`                                   |
+| Exact-match reuse (#265)            | `Reused existing task: "<title>" (<id>)` | `Subject and entity match an existing active task; nothing was created.`                     |
+| Exact-match reuse with ignored args | `Reused existing task: "<title>" (<id>)` | `Ignored on reuse: <comma-separated field names> — use kennen-task({ action: 'update', … })` |
+| Reuse disabled, exact match exists  | `Created task: "<title>" (<id>)`         | Footer surfaces the duplicate as advisory only                                               |
 
 The five outcomes are observable through the leading line and
 footer presence; downstream automation can branch on them without
@@ -1293,7 +1293,7 @@ fields had no observable effect on the existing row. The
 `Ignored on reuse:` audit line names every dropped field so an
 agent calling create to bump state, due-date, or description gets a
 loud signal that none of those changes landed and the
-`lore-task({ action: 'update', … })` CTA is the right next step.
+`kennen-task({ action: 'update', … })` CTA is the right next step.
 `agent` / `session` / `author` are session / provenance metadata,
 not task fields, and are excluded from the disclosure.
 `projectName` / `projectNames` participate in the reuse-key
@@ -1303,8 +1303,8 @@ not task fields, and are excluded from the disclosure.
 
 `findRelatedActiveTasks()` in `near-duplicate.ts` is the third leg of
 the closure-nudge tripod (issue 0.7.0/11), alongside the operating-
-contract rule (#08) and the `lore-task` create/update closure CTA
-(#09). Fired in parallel with `lore-memory action='save'` so the
+contract rule (#08) and the `kennen-task` create/update closure CTA
+(#09). Fired in parallel with `kennen-memory action='save'` so the
 response can surface active tasks tracking the same entity the saved
 memory describes — anchoring closure CTAs at the resolution moment.
 
@@ -1350,9 +1350,9 @@ succeeds; the cross-reference footer is silently absent on probe
 failure. A future regex change introducing catastrophic backtracking
 would NOT propagate to the user as a save error.
 
-**Kill-switch.** `LORE_DISABLE_TASK_CROSSREF=1` skips the probe
+**Kill-switch.** `KENNEN_DISABLE_TASK_CROSSREF=1` skips the probe
 entirely without making any Notion call. **Distinct from
-`LORE_DISABLE_NEAR_DUPLICATE_PROBE`** — single-axis kill switches let
+`KENNEN_DISABLE_NEAR_DUPLICATE_PROBE`** — single-axis kill switches let
 an operator trust the deterministic substring near-dup probe and
 distrust the regex-based entity extraction here (or vice versa). Use
 for bulk-import flows, fixture setup, or distrust of the
@@ -1361,7 +1361,7 @@ bypass lives inside `findRelatedActiveTasks`, not per-tool.
 
 ## Auto-`mentions` fact emission
 
-`lore-memory action='save'` (issue 0.8.0/#07) emits one `mentions`
+`kennen-memory action='save'` (issue 0.8.0/#07) emits one `mentions`
 fact per entity surfaced by `extractEntityCandidates(title, keywords,
 synopsis)` — the same fixture-pinned tokenizer the active-task
 cross-reference probe consumes. The branch fires after the create
@@ -1374,12 +1374,12 @@ on `FactPredicate` for type coverage and on the `Predicate` select
 column for storage, but the active profile's writable fact predicates
 exclude it — `decided_by` / `supersedes_decision` / `informs` get the
 same treatment. Auto-emitted facts ship at `confidence: speculative`
-so `lore-query action='ask'`
+so `kennen-query action='ask'`
 preferentially surfaces agent-curated edges when both exist on the same
 entity.
 
 **Subject is the saved memory's title.** Matches the existing
-`decided_by` shape on `lore-decision action='create'` (subject is the
+`decided_by` shape on `kennen-decision action='create'` (subject is the
 affected entity name, not a synthetic "memory entity"). The `Source`
 relation provides the structural backlink to the originating page.
 
@@ -1394,13 +1394,13 @@ ordering.
 route through `debugLogAutoFactFailure` (in `src/mcp/helpers.ts`) and
 degrade to a no-op for that entity. Surviving fact creates land; the
 save itself always succeeds. Same posture as the parallel near-dup /
-cross-ref probes. Under `LORE_DEBUG=1`, one stderr line per failure
+cross-ref probes. Under `KENNEN_DEBUG=1`, one stderr line per failure
 surfaces enough detail to distinguish a transient blip from a
 pathological loop.
 
-**Kill-switch.** `LORE_DISABLE_AUTO_MENTIONS=1` skips both extraction
+**Kill-switch.** `KENNEN_DISABLE_AUTO_MENTIONS=1` skips both extraction
 and per-entity fact creation entirely. **Distinct from
-`LORE_DISABLE_NEAR_DUPLICATE_PROBE` and `LORE_DISABLE_TASK_CROSSREF`**
+`KENNEN_DISABLE_NEAR_DUPLICATE_PROBE` and `KENNEN_DISABLE_TASK_CROSSREF`**
 — single-axis kill switches let an operator distrust the
 regex-derived auto-mentions tokenizer independently of the
 deterministic substring near-dup probe and the active-task
@@ -1408,7 +1408,7 @@ cross-reference. Set for bulk-import flows, fixture setup, or vaults
 where the tokenizer's noise floor is unacceptable.
 
 **Update-time re-emission (diff-and-invalidate, DEFERRED-03 +
-issue #491).** `lore-memory action='update'` runs the same
+issue #491).** `kennen-memory action='update'` runs the same
 extraction over the post-update title / keywords / synopsis,
 pre-queries existing `mentions` facts sourced from this memory via
 `FactService.queryBySourceMemory({ predicates: ["mentions"] })`, and
@@ -1426,7 +1426,7 @@ today`, never `pages.update({ archived: true })`) per the
 even on the auto-mentions surface — the row is dropped from
 default-active queries via the `is_empty` filter, but
 `includeInvalidated: true` reads still surface it. Mirrors the
-explicit `lore-fact action='invalidate'` surface; auto-mentions and
+explicit `kennen-fact action='invalidate'` surface; auto-mentions and
 manual invalidation produce structurally identical row state.
 
 The pre-query runs unconditionally inside the
@@ -1439,7 +1439,7 @@ exists to close.
 
 The `predicates: ["mentions"]` filter on the pre-query is
 load-bearing for the "auto-emit only invalidates auto-emitted
-facts" contract — manual `lore-fact action='create'` calls cannot
+facts" contract — manual `kennen-fact action='create'` calls cannot
 land a `mentions` row (the predicate is excluded from
 the active profile's writable fact predicates), AND the pre-query
 filters by predicate at the service boundary so the diff branch
@@ -1459,7 +1459,7 @@ is the one being updated; pinned at the call boundary by
 > a fresh fact AND left the old fact live, so a long-lived memory
 > accumulated orphans without bound across revisions. The
 > symmetric contract restores parity with the explicit
-> `lore-fact action='invalidate'` and `lore-correct` surfaces.
+> `kennen-fact action='invalidate'` and `kennen-correct` surfaces.
 
 The advisory footer surfaces both halves: `Auto-mentions: N new`
 when only creates fired, `Auto-mentions: N stale invalidated` when
@@ -1470,7 +1470,7 @@ attempted`). The `new` / `stale invalidated` suffixes distinguish
 update-time emission from save-time emission so an operator
 triaging response output can tell which surface produced the count
 and which half of the diff drove the work. Same
-`LORE_DISABLE_AUTO_MENTIONS=1` kill switch — the env var disables
+`KENNEN_DISABLE_AUTO_MENTIONS=1` kill switch — the env var disables
 both extraction AND the pre-query, so an operator distrusting the
 tokenizer disables every per-entity write the branch would
 otherwise emit. Per-entity invalidate failures route through
@@ -1486,24 +1486,24 @@ per invalidate call. Acquiring the lock before `pages.retrieve` and
 holding it through the update/retry path makes parallel invalidators
 queue: the second caller reads the first caller's written score and
 lands the next decrement instead of overwriting with the same value.
-This covers explicit `lore-fact action='invalidate'` and
-auto-mentions diff invalidation from `lore-memory action='update'`.
+This covers explicit `kennen-fact action='invalidate'` and
+auto-mentions diff invalidation from `kennen-memory action='update'`.
 Compare-dispatch contradiction handling is governed by its own ledger
 and compare-notes audit path, not by this fact-id lock. The cost is
 one filesystem lock per invalidate call.
 
-**Out of scope: decision-side emission.** `lore-decision
+**Out of scope: decision-side emission.** `kennen-decision
 action='create'` already emits `decided_by` facts via its `affects`
 path. Adding a parallel `mentions` emission to the decision handler
 is plausible follow-up work but expands the surface and the test
-coverage in lockstep. 0.8.0 scopes auto-mentions to `lore-memory`
+coverage in lockstep. 0.8.0 scopes auto-mentions to `kennen-memory`
 (save and update via DEFERRED-03) exclusively.
 
 ## Schema Drift Detection
 
 `VaultManager.load()` can fire a non-blocking `detectDrift()` check that runs
-the same diff logic as `lore migrate` but read-only — when drift is found, a
-stderr warning nudges the user to run `lore migrate`. Failures in the check
+the same diff logic as `kennen migrate` but read-only — when drift is found, a
+stderr warning nudges the user to run `kennen migrate`. Failures in the check
 are caught and logged (not silently swallowed) so we don't lose the nudge
 when the check itself is broken; the vault still loads. Reads on drifted
 vaults keep working via extractor fallbacks; writes that need missing
@@ -1526,8 +1526,8 @@ Per-surface policy:
 | MCP server (`src/mcp/server.ts`)                           | `"debounced"`     | Hot startup path; every reconnecting client would otherwise re-run the scan. |
 | Hooks wake-up (`src/hooks/helpers.ts`)                     | `"debounced"`     | Fires on every session start / first user prompt.                            |
 | Digest scheduler (`src/hooks/digest-scheduler.ts`)         | `"debounced"`     | Same hot path as wake-up.                                                    |
-| `lore status` (`src/cli/commands/status.ts`)               | `true`            | Canonical operator-facing drift surface.                                     |
-| `lore migrate` (`src/cli/commands/migrate.ts`)             | `true`            | Operator-facing drift surface.                                               |
+| `kennen status` (`src/cli/commands/status.ts`)             | `true`            | Canonical operator-facing drift surface.                                     |
+| `kennen migrate` (`src/cli/commands/migrate.ts`)           | `true`            | Operator-facing drift surface.                                               |
 | Other CLI (`search`, `mine`, `digest`, status subcommands) | (default) `false` | Don't surface drift; don't pay for it.                                       |
 
 Why this layering rather than option 3 (a separate low-priority client):

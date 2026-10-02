@@ -139,7 +139,7 @@ export async function runInstall(
             ? "OMP Integration"
             : "AI Assistant Integration"
   console.log()
-  console.log(`Lore — ${title}`)
+  console.log(`Kennen — ${title}`)
   console.log("─".repeat(40))
   console.log(`Project: ${context.projectDir}`)
   console.log()
@@ -200,10 +200,10 @@ export async function runInstall(
   if (errors.length > 0) {
     // Default summary stays on the `client: message` line — the CLI's
     // clean-output convention. Stack traces gate behind
-    // LORE_INSTALL_DEBUG=1 so an expected failure (malformed JSON / TOML,
+    // KENNEN_INSTALL_DEBUG=1 so an expected failure (malformed JSON / TOML,
     // missing build artifact) doesn't drown the operator in V8 frames; an
     // unexpected failure can be re-run with the env var to surface them.
-    const showStacks = process.env["LORE_INSTALL_DEBUG"] === "1"
+    const showStacks = process.env["KENNEN_INSTALL_DEBUG"] === "1"
     console.error()
     console.error(`Install completed with ${errors.length} failure(s):`)
     for (const { client, error } of errors) {
@@ -220,7 +220,7 @@ export async function runInstall(
     }
     if (!showStacks) {
       console.error()
-      console.error("  Re-run with LORE_INSTALL_DEBUG=1 to include stack traces.")
+      console.error("  Re-run with KENNEN_INSTALL_DEBUG=1 to include stack traces.")
     }
     process.exit(1)
   }
@@ -246,7 +246,7 @@ export function parseInstallClient(value: string | undefined): InstallClient | n
 }
 
 export const installCommand = new Command("install")
-  .description("Install Lore assistant integrations for the current project")
+  .description("Install Kennen assistant integrations for the current project")
   .option(
     "--client <assistant>",
     "Assistant to configure: claude, codex, cursor, omp, or all"
@@ -258,7 +258,7 @@ export const installCommand = new Command("install")
     "Print JSON/TOML MCP config instead of writing files"
   )
   .option("--yarn-pnp", "Force Yarn PnP launch commands")
-  .option("--no-yarn-pnp", "Force bare lore launch commands")
+  .option("--no-yarn-pnp", "Force bare kennen launch commands")
   .option("--ntn", "Use internal ntn login flow")
   .option("--dev", "Target the Notion dev environment")
   .option("-y, --yes", "Skip confirmation prompts")
@@ -299,8 +299,8 @@ export const installCommand = new Command("install")
           // is skipped on this path because no project dir is resolved.
           const printBinShape: BinDispatchShape = opts.yarnPnp === true ? "yarn" : "bare"
           // --project resolves the configRoot embedded in the
-          // printed snippet's LORE_CONFIG_ROOT so the MCP server
-          // spawned from a paste finds the right .lore.yaml. This
+          // printed snippet's KENNEN_CONFIG_ROOT so the MCP server
+          // spawned from a paste finds the right .kennen.yaml. This
           // is a behavior tweak from the prior "accepted but
           // ignored" comment on --project: the file-write path was
           // never meaningful, but the configRoot WAS — so honor it

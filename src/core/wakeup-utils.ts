@@ -35,7 +35,7 @@ export function sanitizeUserQuery(raw: string | undefined): string | undefined {
  * task `entity` field carries the normalized subject (PR number, file,
  * service); `title` is the human-friendly version. Prefer `entity`
  * when populated — it's the structurally-indexed handle that
- * `lore-task action='list'` filters against — and fall back to `title`
+ * `kennen-task action='list'` filters against — and fall back to `title`
  * for tasks created before the `entity` column was filled.
  * Case-insensitive dedupe; short fragments dropped as too noisy.
  */

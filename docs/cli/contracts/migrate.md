@@ -2,7 +2,7 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore migrate` handles additive schema repair and one-shot data migrations. It
+`kennen migrate` handles additive schema repair and one-shot data migrations. It
 must stay idempotent: a second run on an up-to-date vault should report no
 writes for the selected operation.
 
@@ -27,7 +27,7 @@ Legacy tag upgrade:
 Agent identity normalization:
 
 - `--normalize-agents` scans non-archived memories and collapses known
-  Lore-produced Claude variants onto the canonical `"Claude Code"` string.
+  Kennen-produced Claude variants onto the canonical `"Claude Code"` string.
 - Explicit third-party names such as `Codex`, `Cline`, and `Cursor` pass
   through unchanged so explicit attribution stays authoritative.
 - Bare invocation prints the plan grouped by canonical destination; `--yes`
@@ -100,7 +100,7 @@ Fact confidence-score backfill:
   service-boundary I/O lives on fact-service helpers.
 - The categorical `certain` default can overstate old facts that were never
   explicitly graded. Operators who care should re-grade targeted facts via
-  `lore-fact action='create'` / `invalidate` workflows before or after the
+  `kennen-fact action='create'` / `invalidate` workflows before or after the
   migration.
 
 Fact confidence audit:
@@ -119,15 +119,15 @@ Fact confidence audit:
   default-low producers such as auto-emitted relationship predicates.
 - Unexpected categorical confidence labels are reported as `unknown` rather
   than folded into the seeded `certain` / `likely` / `speculative` buckets.
-- The audit output calls out the conflict workflow boundary: `lore conflicts scan`
-  proposes memory pairs, and `lore-memory action='compare'` uses
+- The audit output calls out the conflict workflow boundary: `kennen conflicts scan`
+  proposes memory pairs, and `kennen-memory action='compare'` uses
   `affectedMemoryId` to identify the loser for asymmetric verdicts. Fact
   confidence labels emitted conflict facts and can affect trust display; it
   does not automatically choose a winner.
 
 Entity and fact repair flags:
 
-- `--build-entities` and `lore vault ensure-entities` support legacy
+- `--build-entities` and `kennen vault ensure-entities` support legacy
   four-database vault migration. Preserve the creation order
   `Projects -> Topics -> Memories -> Entities -> Facts`.
 - Fact readers must tolerate rows with populated entity relations and rows that

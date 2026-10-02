@@ -3,7 +3,7 @@ import { redactDebugError } from "../debug-redact.js"
 import type { UpstreamVaultBundle } from "./topology-readers.js"
 
 export interface InheritedMemorySection {
-  /** Configured upstream label (display name from .lore.yaml). */
+  /** Configured upstream label (display name from .kennen.yaml). */
   label: string
   /** Configured upstream page id. */
   pageId: string

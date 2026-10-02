@@ -10,7 +10,7 @@
  *    exposes no cursor, so the wrapper clamps locally and returns a
  *    `saturated` flag the caller surfaces as cap metadata.
  *
- * 2. **Data-source scoping.** Lore's only `search` consumer scopes to
+ * 2. **Data-source scoping.** Kennen's only `search` consumer scopes to
  *    the Memories data source; the wrapper requires `dataSourceId`
  *    and builds the canonical `collection://<id>` URL exactly the
  *    way `query_data_sources` does. The semantic post-filter
@@ -70,7 +70,7 @@ export class RunToolSearchRestrictedError extends Error {
  * One Notion-internal page hit from a RunTool `search` response.
  * External connector hits (Slack / Linear / Drive — `url` is a
  * non-Notion URL rather than a Notion page locator) are filtered out
- * by the wrapper; Lore's consumers only care about Notion pages.
+ * by the wrapper; Kennen's consumers only care about Notion pages.
  */
 export interface RunToolSearchHit {
   id: string
@@ -93,12 +93,12 @@ export interface RunToolSearchOutcome {
    *  truncated and should be surfaced as cap metadata.
    *
    *  This flag is independent of the post-filter survivor count —
-   *  the wrapper does not run Lore's post-filter pipeline; the
+   *  the wrapper does not run Kennen's post-filter pipeline; the
    *  consumer does. The flag is computed against the **raw**
    *  response (before the wrapper's external-connector-hit drop),
    *  so a 25-row response of which 24 are external connector hits
    *  still reports `saturated: true`. That is intentional — it
-   *  preserves the "the cap may have truncated relevant Lore pages"
+   *  preserves the "the cap may have truncated relevant Kennen pages"
    *  semantics regardless of how the server's relevance ranking
    *  intermixed external and Notion hits. */
   saturated: boolean
@@ -127,14 +127,14 @@ export interface RunToolSearchOutcome {
  * negative values fall through the `Number.isFinite` guard to the
  * default.
  *
- * The wrapper sets `max_highlight_length: 0` because Lore never
+ * The wrapper sets `max_highlight_length: 0` because Kennen never
  * surfaces RunTool's highlight string — saving the response-size
  * budget keeps the round-trip lean. **This is by design, not by
  * oversight**: REST `client.search` returns no highlights either,
  * so the RunTool path with `max_highlight_length: 0` produces an
  * isomorphic response shape to what REST already gives consumers.
  * If a future caller wants highlights they can override the field
- * — but Lore's `MemoryService` post-filter and materialization
+ * — but Kennen's `MemoryService` post-filter and materialization
  * pipeline never reads `highlight`.
  *
  * It does NOT set `query_type` or `content_search_mode`: supported
@@ -208,7 +208,7 @@ export async function searchViaRunTool(
     )
   }
 
-  // The wrapper narrows to Notion-hosted hits because Lore's
+  // The wrapper narrows to Notion-hosted hits because Kennen's
   // consumers only care about Notion pages. External connector
   // results carry non-Notion URLs in the `url` field (e.g.
   // `https://slack.com/...`). The wrapper drops the external arm and

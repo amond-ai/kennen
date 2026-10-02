@@ -46,7 +46,7 @@ const results = []
 for (const scenario of scenarios) {
   for (const [index, verifier] of (scenario.verifiers ?? []).entries()) {
     if (verifier.type !== "patched-command") continue
-    const scratch = await mkdtemp(resolve(tmpdir(), "lore-hidden-verifier-"))
+    const scratch = await mkdtemp(resolve(tmpdir(), "kennen-hidden-verifier-"))
     try {
       await cp(resolve(workspace), scratch, { recursive: true, preserveTimestamps: true })
       const apply = await runCommand("git", ["apply", "--recount", "--whitespace=nowarn", "-"], {

@@ -100,14 +100,14 @@ describe("parseEvalRunCliOptions", () => {
       runner: "task",
       difficulty: "hard",
       scenarioId: ["one", "two"],
-      condition: ["no-memory", "seeded-lore"],
+      condition: ["no-memory", "seeded-kennen"],
       parallel: "4",
     })
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value.difficulty).toBe("hard")
       expect(result.value.scenarioIds).toEqual(["one", "two"])
-      expect(result.value.conditions).toEqual(["no-memory", "seeded-lore"])
+      expect(result.value.conditions).toEqual(["no-memory", "seeded-kennen"])
       expect(result.value.parallelism).toBe(4)
     }
   })
@@ -115,7 +115,7 @@ describe("parseEvalRunCliOptions", () => {
   it("rejects invalid longitudinal condition values", () => {
     const result = parseEvalRunCliOptions({
       runner: "task",
-      condition: ["full-lore"],
+      condition: ["full-kennen"],
     })
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.message).toContain("--condition")
@@ -174,11 +174,11 @@ describe("parseEvalRunCliOptions", () => {
 
   it("threads --baseline through into baselinePath", () => {
     const result = parseEvalRunCliOptions({
-      baseline: "evals/baselines/lore-core.json",
+      baseline: "evals/baselines/kennen-core.json",
     })
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.value.baselinePath).toBe("evals/baselines/lore-core.json")
+      expect(result.value.baselinePath).toBe("evals/baselines/kennen-core.json")
     }
   })
 
@@ -345,12 +345,12 @@ describe("parseEvalRunCliOptions", () => {
 })
 
 describe("assertSandboxProjectName", () => {
-  const original = process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"]
+  const original = process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"]
   afterEach(() => {
     if (original === undefined) {
-      delete process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"]
+      delete process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"]
     } else {
-      process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"] = original
+      process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"] = original
     }
   })
 
@@ -363,7 +363,7 @@ describe("assertSandboxProjectName", () => {
     "dev-vault",
     "Playground",
   ])("accepts sandbox-shaped project names like %s", (name) => {
-    delete process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"]
+    delete process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"]
     expect(() => assertSandboxProjectName(name)).not.toThrow()
   })
 
@@ -374,14 +374,14 @@ describe("assertSandboxProjectName", () => {
     "Evaluation Q1",
     "EvalProject", // no word boundary between Eval/Project — embedded substring
   ])("rejects production-shaped project names like %s", (name) => {
-    delete process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"]
+    delete process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"]
     expect(() => assertSandboxProjectName(name)).toThrow(
-      /LORE_EVAL_NOTION_ALLOW_PRODUCTION=1/
+      /KENNEN_EVAL_NOTION_ALLOW_PRODUCTION=1/
     )
   })
 
-  it("allows production-shaped names when LORE_EVAL_NOTION_ALLOW_PRODUCTION=1", () => {
-    process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"] = "1"
+  it("allows production-shaped names when KENNEN_EVAL_NOTION_ALLOW_PRODUCTION=1", () => {
+    process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"] = "1"
     expect(() => assertSandboxProjectName("Widget")).not.toThrow()
   })
 })
@@ -426,7 +426,7 @@ describe("hasLongitudinalTaskGateFailures", () => {
     ).toBe(false)
   })
 
-  it("fails the gate when lore-full-loop fails", () => {
+  it("fails the gate when kennen-full-loop fails", () => {
     expect(
       hasLongitudinalTaskGateFailures(
         longitudinalArtifact({
@@ -439,12 +439,12 @@ describe("hasLongitudinalTaskGateFailures", () => {
     ).toBe(true)
   })
 
-  it("uses lore-full-loop as the primary gate when both memory conditions ran", () => {
+  it("uses kennen-full-loop as the primary gate when both memory conditions ran", () => {
     expect(
       hasLongitudinalTaskGateFailures(
         longitudinalArtifact({
           noMemory: { trials: 1, passed: 1, failed: 0 },
-          seededLore: { trials: 1, passed: 0, failed: 1 },
+          seededKennen: { trials: 1, passed: 0, failed: 1 },
           fullLoop: { trials: 1, passed: 1, failed: 0 },
           passedTrials: 2,
           failedTrials: 1,
@@ -466,7 +466,7 @@ describe("hasLongitudinalTaskGateFailures", () => {
       limitUsd: 1500,
       observedUsd: 1501,
       primaryAgentUsd: 1501,
-      loreUsd: null,
+      kennenUsd: null,
       completedTrials: 1,
       totalPlannedTrials: 2,
     }
@@ -512,7 +512,7 @@ describe("formatTaskProgressEvent", () => {
         limitUsd: 1500,
         observedUsd: 1501.25,
         primaryAgentUsd: 1500,
-        loreUsd: 1.25,
+        kennenUsd: 1.25,
         completedTrials: 49,
         totalPlannedTrials: 201,
       })
@@ -528,7 +528,7 @@ describe("formatTaskProgressEvent", () => {
         limitUsd: 1500,
         observedUsd: 0,
         primaryAgentUsd: 0,
-        loreUsd: null,
+        kennenUsd: null,
         completedTrials: 1,
         totalPlannedTrials: 201,
       })
@@ -545,7 +545,7 @@ describe("eval vaults command", () => {
   })
 
   it("loads the committed registry from a non-root cwd", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-vaults-cli-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-vaults-cli-"))
     process.chdir(dir)
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => undefined)
 
@@ -553,7 +553,7 @@ describe("eval vaults command", () => {
 
     const output = logSpy.mock.calls.flat().join("\n")
     expect(output).toContain("Eval vaults (evals/vaults.yaml):")
-    expect(output).toContain("lore-dev-sandbox")
+    expect(output).toContain("kennen-dev-sandbox")
   })
 })
 
@@ -563,7 +563,7 @@ describe("eval longitudinal plan command", () => {
   })
 
   it("prints a powered benchmark estimate from a longitudinal artifact", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-longitudinal-plan-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-longitudinal-plan-"))
     const artifactPath = join(dir, "artifact.json")
     await writeFile(
       artifactPath,
@@ -586,7 +586,7 @@ describe("eval longitudinal plan command", () => {
     )
 
     const output = logSpy.mock.calls.flat().join("\n")
-    expect(output).toContain("Longitudinal plan: no-memory -> lore-full-loop")
+    expect(output).toContain("Longitudinal plan: no-memory -> kennen-full-loop")
     expect(output).toContain("pilot pairs: 2")
     expect(output).toContain("condition runs")
     expect(output).toContain("efficiency: primary tokens")
@@ -623,7 +623,7 @@ describe("eval bench cleanup-orphans command", () => {
 
       expect(runBenchCleanupOrphans).not.toHaveBeenCalled()
       expect(errorSpy.mock.calls.flat().join("\n")).toContain(
-        "lore eval bench cleanup-orphans failed:"
+        "kennen eval bench cleanup-orphans failed:"
       )
       expect(errorSpy.mock.calls.flat().join("\n")).toContain("--older-than")
       expect(exitTrap.exitCodes).toEqual([1])
@@ -640,7 +640,7 @@ describe("eval bench cleanup-orphans command", () => {
 
     expect(runBenchCleanupOrphans).not.toHaveBeenCalled()
     expect(errorSpy.mock.calls.flat().join("\n")).toContain(
-      "lore eval bench cleanup-orphans failed:"
+      "kennen eval bench cleanup-orphans failed:"
     )
     expect(errorSpy.mock.calls.flat().join("\n")).toContain("--older-than")
     expect(exitTrap.exitCodes).toEqual([1])
@@ -755,11 +755,11 @@ describe("hasSkillRetrievalGateFailures", () => {
 })
 
 describe("hasSkillAgentGateFailures", () => {
-  it("returns true when required read-only Lore trials fail", () => {
+  it("returns true when required read-only Kennen trials fail", () => {
     expect(hasSkillAgentGateFailures(skillAgentArtifact(1))).toBe(true)
   })
 
-  it("returns false when required read-only Lore trials pass", () => {
+  it("returns false when required read-only Kennen trials pass", () => {
     expect(hasSkillAgentGateFailures(skillAgentArtifact(0))).toBe(false)
   })
 })
@@ -890,12 +890,12 @@ function skillAgentArtifact(failedRequiredResults: number): SkillAgentArtifact {
     runner: {
       mode: "skill-agent",
       readOnly: true,
-      conditions: ["tool-driven-lore"],
-      requiredConditions: ["tool-driven-lore"],
+      conditions: ["tool-driven-kennen"],
+      requiredConditions: ["tool-driven-kennen"],
       agent: { kind: "codex", timeoutMs: 300_000 },
       scoring: {
         k: [1, 5, 10],
-        requireLoreUse: true,
+        requireKennenUse: true,
         requireExpandedEvidence: true,
       },
       skillRetrievalSuite: "evals/skill-retrieval/skillret-notion-ai.yaml",
@@ -917,8 +917,8 @@ function skillAgentArtifact(failedRequiredResults: number): SkillAgentArtifact {
       failedRequiredResults,
       writeAttemptsBlocked: 0,
       conditions: {
-        "no-lore": null,
-        "tool-driven-lore": {
+        "no-kennen": null,
+        "tool-driven-kennen": {
           results: 1,
           passed: failedRequiredResults === 0 ? 1 : 0,
           failed: failedRequiredResults,
@@ -935,7 +935,7 @@ function skillAgentArtifact(failedRequiredResults: number): SkillAgentArtifact {
           mapAt: { "1": 1, "5": 1, "10": 1 },
         },
         "oracle-context": null,
-        "noisy-lore": null,
+        "noisy-kennen": null,
       },
     },
   }
@@ -943,7 +943,7 @@ function skillAgentArtifact(failedRequiredResults: number): SkillAgentArtifact {
 
 function longitudinalArtifact(input: {
   noMemory: { trials: number; passed: number; failed: number }
-  seededLore?: { trials: number; passed: number; failed: number }
+  seededKennen?: { trials: number; passed: number; failed: number }
   fullLoop: { trials: number; passed: number; failed: number }
   passedTrials: number
   failedTrials: number
@@ -970,14 +970,14 @@ function longitudinalArtifact(input: {
               ? 0
               : input.noMemory.passed / input.noMemory.trials,
         },
-        "seeded-lore": {
-          ...(input.seededLore ?? { trials: 0, passed: 0, failed: 0 }),
+        "seeded-kennen": {
+          ...(input.seededKennen ?? { trials: 0, passed: 0, failed: 0 }),
           successRate:
-            input.seededLore === undefined || input.seededLore.trials === 0
+            input.seededKennen === undefined || input.seededKennen.trials === 0
               ? 0
-              : input.seededLore.passed / input.seededLore.trials,
+              : input.seededKennen.passed / input.seededKennen.trials,
         },
-        "lore-full-loop": {
+        "kennen-full-loop": {
           ...input.fullLoop,
           successRate:
             input.fullLoop.trials === 0
@@ -987,7 +987,7 @@ function longitudinalArtifact(input: {
       },
       lift: {
         fromCondition: "no-memory",
-        toCondition: "lore-full-loop",
+        toCondition: "kennen-full-loop",
         pairedTrials: 0,
         pairedScenarioIds: [],
         pairedNoMemoryPassed: 0,
@@ -1009,18 +1009,18 @@ function longitudinalPlanArtifact(): LongitudinalTaskArtifact {
   return {
     ...longitudinalArtifact({
       noMemory: { trials: 2, passed: 1, failed: 1 },
-      seededLore: { trials: 2, passed: 2, failed: 0 },
+      seededKennen: { trials: 2, passed: 2, failed: 0 },
       fullLoop: { trials: 2, passed: 1, failed: 1 },
       passedTrials: 4,
       failedTrials: 2,
     }),
     results: [
       longitudinalPlanResult("one", "no-memory", false),
-      longitudinalPlanResult("one", "seeded-lore", true),
-      longitudinalPlanResult("one", "lore-full-loop", false),
+      longitudinalPlanResult("one", "seeded-kennen", true),
+      longitudinalPlanResult("one", "kennen-full-loop", false),
       longitudinalPlanResult("two", "no-memory", true),
-      longitudinalPlanResult("two", "seeded-lore", true),
-      longitudinalPlanResult("two", "lore-full-loop", true),
+      longitudinalPlanResult("two", "seeded-kennen", true),
+      longitudinalPlanResult("two", "kennen-full-loop", true),
     ],
   }
 }

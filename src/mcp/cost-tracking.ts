@@ -7,7 +7,7 @@ import {
   payloadSummary,
   type CostOutputCounts,
 } from "../core/cost-ledger.js"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 
 export interface CostTrackedToolResult {
   content: Array<{ type: "text"; text: string }>
@@ -27,7 +27,7 @@ const EMPTY_TOOL_ACTIONS: ToolActionSets = new Map()
 
 export function installCostTrackingToolWrapper(
   server: McpServer,
-  services: LoreServices
+  services: KennenServices
 ): void {
   const originalRegisterTool = server.registerTool.bind(server)
   const toolActions = new Map<string, ReadonlySet<string>>()
@@ -60,7 +60,7 @@ export function installCostTrackingToolWrapper(
 }
 
 export async function runMcpInvocationWithCostTracking(
-  services: LoreServices,
+  services: KennenServices,
   tool: string,
   args: Record<string, unknown>,
   run: () => Promise<CostTrackedToolResult>,
@@ -72,8 +72,8 @@ export async function runMcpInvocationWithCostTracking(
   const input = safeJsonStringify(args)
   const action = safeActionValue(tool, args["action"], toolActions)
   const projectName = services.context.project?.name
-  const agentName = envStringValue("LORE_AGENT_NAME")
-  const sessionId = envStringValue("LORE_SESSION_ID")
+  const agentName = envStringValue("KENNEN_AGENT_NAME")
+  const sessionId = envStringValue("KENNEN_SESSION_ID")
   const tracked = await captureCostAccounting(async () => {
     const result = await run()
     addCostOutputs(result.costOutputs)
@@ -81,7 +81,7 @@ export async function runMcpInvocationWithCostTracking(
   })
   const durationMs = Math.max(0, Date.now() - started)
   const source =
-    process.env["LORE_BACKGROUND_AGENT"] === "true" ? "background_agent" : "host_agent"
+    process.env["KENNEN_BACKGROUND_AGENT"] === "true" ? "background_agent" : "host_agent"
 
   if (tracked.ok) {
     const output = tracked.result.content

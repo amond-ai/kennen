@@ -1,5 +1,5 @@
 /**
- * Tests for the `lore-pinned` polymorphic dispatcher (issue #282).
+ * Tests for the `kennen-pinned` polymorphic dispatcher (issue #282).
  *
  * Covers:
  * - registration shape (mirrors the seven sibling polymorphic tools)
@@ -158,12 +158,12 @@ function extractText(result: unknown): string {
   return content[0]!.text
 }
 
-describe("lore-pinned tool registration", () => {
+describe("kennen-pinned tool registration", () => {
   it("registers the polymorphic tool", () => {
     const mock = createMockServer()
     const { services } = makeServices()
     registerPinnedTools(mock.server, services)
-    const config = mock.config("lore-pinned")
+    const config = mock.config("kennen-pinned")
     expect(config).toBeDefined()
     expect(config.description).toContain("pinned context blocks")
     const inputSchema = config.inputSchema as Record<string, unknown>
@@ -174,23 +174,23 @@ describe("lore-pinned tool registration", () => {
     const mock = createMockServer()
     const { services } = makeServices()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
     const result = (await handler({
       action: "nope",
       memoryId: "mem-1",
     } as never)) as { isError?: boolean; content: Array<{ text: string }> }
     expect(result.isError).toBe(true)
-    expect(result.content[0]!.text).toMatch(/lore-pinned/)
+    expect(result.content[0]!.text).toMatch(/kennen-pinned/)
   })
 })
 
-describe("lore-pinned action='pin'", () => {
+describe("kennen-pinned action='pin'", () => {
   it("flips a memory into a pinned block and appends an audit line", async () => {
     const memory = makeMemory({ pinned: null })
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "pin",
@@ -234,7 +234,7 @@ describe("lore-pinned action='pin'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "pin",
@@ -263,7 +263,7 @@ describe("lore-pinned action='pin'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "pin",
@@ -279,7 +279,7 @@ describe("lore-pinned action='pin'", () => {
   })
 })
 
-describe("lore-pinned action='unpin'", () => {
+describe("kennen-pinned action='unpin'", () => {
   it("flips a pinned block back to a regular memory", async () => {
     const memory = makeMemory({
       pinned: { priority: 10, mutability: "mutable" },
@@ -287,7 +287,7 @@ describe("lore-pinned action='unpin'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "unpin",
@@ -309,7 +309,7 @@ describe("lore-pinned action='unpin'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = (await handler({
       action: "unpin",
@@ -338,7 +338,7 @@ describe("lore-pinned action='unpin'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({ action: "unpin", memoryId: "mem-1" } as never)
 
@@ -357,7 +357,7 @@ describe("lore-pinned action='unpin'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "unpin",
@@ -372,7 +372,7 @@ describe("lore-pinned action='unpin'", () => {
   })
 })
 
-describe("lore-pinned action='update'", () => {
+describe("kennen-pinned action='update'", () => {
   it("updates priority and audience on a mutable pinned block", async () => {
     const memory = makeMemory({
       pinned: { priority: 10, mutability: "mutable" },
@@ -380,7 +380,7 @@ describe("lore-pinned action='update'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "update",
@@ -411,7 +411,7 @@ describe("lore-pinned action='update'", () => {
     })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = (await handler({
       action: "update",
@@ -430,7 +430,7 @@ describe("lore-pinned action='update'", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "update",
@@ -450,7 +450,7 @@ describe("lore-pinned action='update'", () => {
     const { services } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = (await handler({
       action: "update",
@@ -463,7 +463,7 @@ describe("lore-pinned action='update'", () => {
   })
 })
 
-describe("lore-pinned action='list'", () => {
+describe("kennen-pinned action='list'", () => {
   it("renders a markdown listing of pinned blocks with priority/mutability/audience meta", async () => {
     const blocks = [
       makeMemory({
@@ -489,7 +489,7 @@ describe("lore-pinned action='list'", () => {
     const { services } = makeServices({ pinnedBlocks: blocks })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({ action: "list" } as never)
     const text = extractText(result)
@@ -510,7 +510,7 @@ describe("lore-pinned action='list'", () => {
     const { services } = makeServices({ pinnedBlocks: [] })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({ action: "list" } as never)
     expect(extractText(result)).toContain("No pinned context blocks")
@@ -523,7 +523,7 @@ describe("lore-pinned action='list'", () => {
     const { services, calls } = makeServices({ pinnedBlocks: [] })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({ action: "list", includeAllAudiences: true } as never)
 
@@ -615,7 +615,7 @@ describe("bodyContainsPinAuditLine (issue #282)", () => {
   })
 })
 
-describe("lore-pinned same-day repeat mutations (issue #282)", () => {
+describe("kennen-pinned same-day repeat mutations (issue #282)", () => {
   it("appends a fresh audit line on a same-day repeat update — no dedupe on the normal path", async () => {
     // the implementation made
     // every `appendPinAuditLine` call deduped on `(action,
@@ -632,7 +632,7 @@ describe("lore-pinned same-day repeat mutations (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "update",
@@ -671,7 +671,7 @@ describe("lore-pinned same-day repeat mutations (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({ action: "pin", memoryId: "mem-1" } as never)
 
@@ -691,7 +691,7 @@ describe("lore-pinned same-day repeat mutations (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     // First pin: primary update + audit append = 2 calls.
     await handler({ action: "pin", memoryId: "mem-1" } as never)
@@ -702,7 +702,7 @@ describe("lore-pinned same-day repeat mutations (issue #282)", () => {
   })
 })
 
-describe("lore-pinned same-day partial-failure retry (issue #282)", () => {
+describe("kennen-pinned same-day partial-failure retry (issue #282)", () => {
   // same-day pin → unpin → pin
   // sequence where the second pin's audit append fails, the
   // retry was misfiring as a no-op because the earlier dedupe
@@ -729,7 +729,7 @@ describe("lore-pinned same-day partial-failure retry (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "pin",
@@ -766,7 +766,7 @@ describe("lore-pinned same-day partial-failure retry (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = await handler({
       action: "unpin",
@@ -797,7 +797,7 @@ describe("lore-pinned same-day partial-failure retry (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({ action: "pin", memoryId: "mem-1" } as never)
 
@@ -852,7 +852,7 @@ describe("latestPinnedTransition (issue #282)", () => {
   })
 })
 
-describe("lore-pinned audit-line scrubbing (issue #282)", () => {
+describe("kennen-pinned audit-line scrubbing (issue #282)", () => {
   it("scrubs newlines from reason so a malicious payload cannot forge an audit line", async () => {
     const memory = makeMemory({
       pinned: null,
@@ -861,7 +861,7 @@ describe("lore-pinned audit-line scrubbing (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "pin",
@@ -902,7 +902,7 @@ describe("lore-pinned audit-line scrubbing (issue #282)", () => {
     calls.resolveAuthorSpy.mockResolvedValueOnce("BadName")
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "pin",
@@ -944,7 +944,7 @@ describe("PinnedAuditError surface (issue #282)", () => {
   })
 })
 
-describe("lore-pinned hard active-pin cap (issue #282)", () => {
+describe("kennen-pinned hard active-pin cap (issue #282)", () => {
   it("rejects new pin attempts when the active count is at the hard cap", async () => {
     // cross-audience pin spam can saturate
     // `collectLivePages`'s refill ceiling and starve matching
@@ -957,7 +957,7 @@ describe("lore-pinned hard active-pin cap (issue #282)", () => {
     })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = (await handler({
       action: "pin",
@@ -967,8 +967,8 @@ describe("lore-pinned hard active-pin cap (issue #282)", () => {
     expect(result.isError).toBe(true)
     expect(result.content[0]!.text).toContain("PinnedCapExceededError")
     expect(result.content[0]!.text).toContain(`${PINNED_BLOCKS_HARD_CAP}-block`)
-    expect(result.content[0]!.text).toContain("lore pinned list --all-audiences")
-    expect(result.content[0]!.text).toContain("lore-pinned action='unpin'")
+    expect(result.content[0]!.text).toContain("kennen pinned list --all-audiences")
+    expect(result.content[0]!.text).toContain("kennen-pinned action='unpin'")
     // No property write landed.
     expect(calls.updateSpy).not.toHaveBeenCalled()
   })
@@ -981,7 +981,7 @@ describe("lore-pinned hard active-pin cap (issue #282)", () => {
     })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = (await handler({
       action: "pin",
@@ -1003,7 +1003,7 @@ describe("lore-pinned hard active-pin cap (issue #282)", () => {
     })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({ action: "pin", memoryId: "mem-1" } as never)
 
@@ -1027,7 +1027,7 @@ describe("lore-pinned hard active-pin cap (issue #282)", () => {
     })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({ action: "pin", memoryId: "mem-1" } as never)
 
@@ -1050,7 +1050,7 @@ describe("lore-pinned hard active-pin cap (issue #282)", () => {
   })
 })
 
-describe("lore-pinned action='update' force-flag policing (issue #282)", () => {
+describe("kennen-pinned action='update' force-flag policing (issue #282)", () => {
   it("rejects force=true on a mutable row with a typed error", async () => {
     const memory = makeMemory({
       pinned: { priority: 10, mutability: "mutable" },
@@ -1058,7 +1058,7 @@ describe("lore-pinned action='update' force-flag policing (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     const result = (await handler({
       action: "update",
@@ -1081,7 +1081,7 @@ describe("lore-pinned action='update' force-flag policing (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "update",
@@ -1102,7 +1102,7 @@ describe("lore-pinned action='update' force-flag policing (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     await handler({
       action: "update",
@@ -1123,7 +1123,7 @@ describe("scrubAuditField bidi / zero-width handling (issue #282)", () => {
     const { services, calls } = makeServices({ memory })
     const mock = createMockServer()
     registerPinnedTools(mock.server, services)
-    const handler = mock.handler("lore-pinned")
+    const handler = mock.handler("kennen-pinned")
 
     // Reason carries U+202E (RIGHT-TO-LEFT OVERRIDE) and
     // U+200B (ZERO WIDTH SPACE) — both used in classic
@@ -1170,12 +1170,12 @@ describe("MemoryReadOnlyError title scrub (issue #282)", () => {
 describe("MemoryReadOnlyError recovery guidance", () => {
   it("builds optional recovery guidance during construction", () => {
     const err = new MemoryReadOnlyError("mem-1", "Team policies", {
-      recovery: "Try `lore-pinned action='update' force=true` first.",
+      recovery: "Try `kennen-pinned action='update' force=true` first.",
     })
     expect(err).toBeInstanceOf(MemoryReadOnlyError)
     expect(err.memoryId).toBe("mem-1")
     expect(err.memoryTitle).toBe("Team policies")
     expect(err.message).toContain("Mutability is read-only")
-    expect(err.message).toContain("Try `lore-pinned action='update' force=true` first.")
+    expect(err.message).toContain("Try `kennen-pinned action='update' force=true` first.")
   })
 })

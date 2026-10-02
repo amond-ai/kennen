@@ -1,4 +1,4 @@
-// ABOUTME: Owns the Commander root and complete top-level `lore` command registration.
+// ABOUTME: Owns the Commander root and complete top-level `kennen` command registration.
 // ABOUTME: Edit when a command becomes part of or leaves the public CLI surface.
 
 import { Command } from "commander"
@@ -31,7 +31,7 @@ import { costsCommand } from "./commands/costs.js"
 
 const program = new Command()
 
-program.name("lore").description("AI memory system backed by Notion").version("1.0.0")
+program.name("kennen").description("AI memory system backed by Notion").version("1.0.0")
 
 program.addCommand(initCommand)
 program.addCommand(authCommand)

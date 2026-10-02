@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 
 /**
  * Upgrade legacy memories tagged `decision` to `Kind: decision`, stripping
@@ -9,7 +9,9 @@ import type { LoreServices } from "../../../services.js"
  * iteration upgrades the matched pages (removing the tag), subsequent
  * iterations only see remaining un-upgraded memories.
  */
-export async function upgradeLegacyDecisionTags(services: LoreServices): Promise<number> {
+export async function upgradeLegacyDecisionTags(
+  services: KennenServices
+): Promise<number> {
   const BATCH_SIZE = 100
   let upgraded = 0
 

@@ -1,5 +1,5 @@
 {
-  "name": "lore-longitudinal-follow-up-task",
+  "name": "kennen-longitudinal-follow-up-task",
   "type": "module",
   "scripts": {
     "test": "node status.check.mjs"

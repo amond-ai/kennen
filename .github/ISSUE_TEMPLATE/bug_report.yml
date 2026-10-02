@@ -55,8 +55,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Lore version or commit
-      description: Paste `lore --version`, package version, or commit SHA if available.
+      label: Kennen version or commit
+      description: Paste `kennen --version`, package version, or commit SHA if available.
   - type: textarea
     id: environment
     attributes:

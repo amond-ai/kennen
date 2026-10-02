@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { isAbsolute, join, relative } from "node:path"
 import { afterEach } from "vitest"
 import { describe, expect, it } from "vitest"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import {
   runSkillAgentSuite,
   skillAgentSuiteSchema,
@@ -17,20 +17,20 @@ import {
 } from "./task-runner.js"
 
 afterEach(() => {
-  delete process.env["LORE_EVAL_BENCH_AGENT_MODEL"]
+  delete process.env["KENNEN_EVAL_BENCH_AGENT_MODEL"]
 })
 
 describe("skill-agent runner", () => {
-  it("scores read-only Lore tool use, selection, and application", async () => {
+  it("scores read-only Kennen tool use, selection, and application", async () => {
     const dir = await writeSkillAgentFixture()
     const adapter = mockSkillAgentAdapter({
       answer: "Use alpha routing for tenant metadata decisions.",
       usedMemoryIds: ["memory-alpha"],
       usedSkillIds: ["skill-alpha"],
-      reason: "Expanded the matching Lore procedure.",
+      reason: "Expanded the matching Kennen procedure.",
       toolTrace: [
         {
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -38,7 +38,7 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "expand",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -57,7 +57,7 @@ describe("skill-agent runner", () => {
     expect(artifact.runner.readOnly).toBe(true)
     expect(artifact.runner.agent.model).toBe("gpt-4o-mini-2024-07-18")
     expect(artifact.summary.failedRequiredResults).toBe(0)
-    expect(artifact.summary.conditions["tool-driven-lore"]).toMatchObject({
+    expect(artifact.summary.conditions["tool-driven-kennen"]).toMatchObject({
       results: 1,
       passed: 1,
       toolUseRate: 1,
@@ -68,7 +68,7 @@ describe("skill-agent runner", () => {
       writeAttemptsBlocked: 0,
     })
     expect(artifact.results[0]).toMatchObject({
-      condition: "tool-driven-lore",
+      condition: "tool-driven-kennen",
       success: true,
       expectedSkillIds: ["skill-alpha"],
       expectedMemoryIds: ["memory-alpha"],
@@ -88,7 +88,7 @@ describe("skill-agent runner", () => {
       reason: "Returned the SkillRet ID in the memory field.",
       toolTrace: [
         {
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -96,7 +96,7 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "expand",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -127,17 +127,17 @@ describe("skill-agent runner", () => {
     })
   })
 
-  it("does not score model-supplied tool trace as Lore tool evidence", async () => {
+  it("does not score model-supplied tool trace as Kennen tool evidence", async () => {
     const dir = await writeSkillAgentFixture()
     const adapter = mockSkillAgentAdapter(
       {
         answer: "Use alpha routing for tenant metadata decisions.",
         usedMemoryIds: ["memory-alpha"],
         usedSkillIds: ["skill-alpha"],
-        reason: "Claimed to have expanded the matching Lore procedure.",
+        reason: "Claimed to have expanded the matching Kennen procedure.",
         toolTrace: [
           {
-            tool: "lore-query",
+            tool: "kennen-query",
             action: "search",
             status: "success",
             surfacedMemoryIds: ["memory-alpha"],
@@ -145,7 +145,7 @@ describe("skill-agent runner", () => {
             error: null,
           },
           {
-            tool: "lore-memory",
+            tool: "kennen-memory",
             action: "expand",
             status: "success",
             surfacedMemoryIds: ["memory-alpha"],
@@ -174,14 +174,14 @@ describe("skill-agent runner", () => {
     })
     expect(artifact.results[0]?.failureReasons).toEqual(
       expect.arrayContaining([
-        "lore-tool-not-used",
+        "kennen-tool-not-used",
         "target-not-surfaced",
         "target-not-expanded",
       ])
     )
   })
 
-  it("fails a read-only trial when the agent attempts to write through Lore", async () => {
+  it("fails a read-only trial when the agent attempts to write through Kennen", async () => {
     const dir = await writeSkillAgentFixture()
     const adapter = mockSkillAgentAdapter({
       answer: "Use alpha routing for tenant metadata decisions.",
@@ -190,7 +190,7 @@ describe("skill-agent runner", () => {
       reason: "Tried to save a note after reading the procedure.",
       toolTrace: [
         {
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -198,7 +198,7 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "expand",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -206,12 +206,12 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "save",
           status: "error",
           surfacedMemoryIds: [],
           expandedMemoryIds: [],
-          error: "unsupported lore-memory action",
+          error: "unsupported kennen-memory action",
         },
       ],
     })
@@ -232,10 +232,10 @@ describe("skill-agent runner", () => {
       answer: "Use alpha routing for tenant metadata decisions.",
       usedMemoryIds: ["memory-alpha"],
       usedSkillIds: ["skill-alpha"],
-      reason: "Expanded the matching Lore procedure.",
+      reason: "Expanded the matching Kennen procedure.",
       toolTrace: [
         {
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -243,7 +243,7 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "expand",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -288,10 +288,10 @@ describe("skill-agent runner", () => {
       answer: "Use alpha routing for tenant metadata decisions.",
       usedMemoryIds: ["memory-alpha"],
       usedSkillIds: ["skill-alpha"],
-      reason: "Expanded the matching Lore procedure.",
+      reason: "Expanded the matching Kennen procedure.",
       toolTrace: [
         {
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -299,7 +299,7 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "expand",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -346,7 +346,7 @@ describe("skill-agent runner", () => {
     const dir = await writeSkillAgentFixture()
     const toolTrace = [
       {
-        tool: "lore-query",
+        tool: "kennen-query",
         action: "search",
         status: "success",
         surfacedMemoryIds: ["memory-alpha"],
@@ -354,7 +354,7 @@ describe("skill-agent runner", () => {
         error: null,
       },
       {
-        tool: "lore-memory",
+        tool: "kennen-memory",
         action: "expand",
         status: "success",
         surfacedMemoryIds: ["memory-alpha"],
@@ -385,7 +385,7 @@ describe("skill-agent runner", () => {
     const dir = await writeSkillAgentFixture()
     const toolTrace = [
       {
-        tool: "lore-query",
+        tool: "kennen-query",
         action: "search",
         status: "success",
         surfacedMemoryIds: ["memory-alpha"],
@@ -393,7 +393,7 @@ describe("skill-agent runner", () => {
         error: null,
       },
       {
-        tool: "lore-memory",
+        tool: "kennen-memory",
         action: "expand",
         status: "success",
         surfacedMemoryIds: ["memory-alpha"],
@@ -428,16 +428,16 @@ describe("skill-agent runner", () => {
   })
 
   it("records the effective bench agent model override", async () => {
-    process.env["LORE_EVAL_BENCH_AGENT_MODEL"] = "gpt-5.5"
+    process.env["KENNEN_EVAL_BENCH_AGENT_MODEL"] = "gpt-5.5"
     const dir = await writeSkillAgentFixture()
     const adapter = mockSkillAgentAdapter({
       answer: "Use alpha routing for tenant metadata decisions.",
       usedMemoryIds: ["memory-alpha"],
       usedSkillIds: ["skill-alpha"],
-      reason: "Expanded the matching Lore procedure.",
+      reason: "Expanded the matching Kennen procedure.",
       toolTrace: [
         {
-          tool: "lore-query",
+          tool: "kennen-query",
           action: "search",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -445,7 +445,7 @@ describe("skill-agent runner", () => {
           error: null,
         },
         {
-          tool: "lore-memory",
+          tool: "kennen-memory",
           action: "expand",
           status: "success",
           surfacedMemoryIds: ["memory-alpha"],
@@ -471,10 +471,10 @@ describe("skill-agent runner", () => {
           answer: "Use alpha routing for tenant metadata decisions.",
           usedMemoryIds: ["memory-alpha"],
           usedSkillIds: ["skill-alpha"],
-          reason: "Expanded the matching Lore procedure.",
+          reason: "Expanded the matching Kennen procedure.",
           toolTrace: [
             {
-              tool: "lore-query",
+              tool: "kennen-query",
               action: "search",
               status: "success",
               surfacedMemoryIds: ["memory-alpha"],
@@ -482,7 +482,7 @@ describe("skill-agent runner", () => {
               error: null,
             },
             {
-              tool: "lore-memory",
+              tool: "kennen-memory",
               action: "expand",
               status: "success",
               surfacedMemoryIds: ["memory-alpha"],
@@ -514,21 +514,21 @@ describe("skill-agent runner", () => {
       runner: "skill-agent",
       name: "bad-skill-agent",
       skillRetrievalSuite: "skillret.yaml",
-      conditions: ["no-lore"],
-      requiredConditions: ["tool-driven-lore"],
+      conditions: ["no-kennen"],
+      requiredConditions: ["tool-driven-kennen"],
     })
 
     expect(parsed.success).toBe(false)
     if (!parsed.success) {
       expect(parsed.error.issues.map((issue) => issue.message)).toContain(
-        'required condition "tool-driven-lore" is not present in conditions'
+        'required condition "tool-driven-kennen" is not present in conditions'
       )
     }
   })
 })
 
 async function writeSkillAgentFixture(
-  prefix = join(tmpdir(), "lore-skill-agent-")
+  prefix = join(tmpdir(), "kennen-skill-agent-")
 ): Promise<string> {
   const dir = await mkdtemp(prefix)
   await writeFile(
@@ -620,15 +620,15 @@ queries:
   ids:
     - q-alpha
 conditions:
-  - tool-driven-lore
+  - tool-driven-kennen
 requiredConditions:
-  - tool-driven-lore
+  - tool-driven-kennen
 agent:
   kind: codex
   timeoutMs: 300000
 scoring:
   k: [1, 5, 10]
-  requireLoreUse: true
+  requireKennenUse: true
   requireExpandedEvidence: true
 `,
     "utf-8"
@@ -690,12 +690,12 @@ async function writeBrokerToolTrace(
   )
 }
 
-function testServices(): LoreServices {
+function testServices(): KennenServices {
   return {
     config: {
       vault: {
         pageId: "374b35e6-e67f-8108-beb4-dec11f2f5d28",
       },
     },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }

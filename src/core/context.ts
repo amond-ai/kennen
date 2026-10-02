@@ -1,13 +1,13 @@
 /**
  * Context resolution — figure out which project we're in based on cwd.
  *
- * When a developer runs Lore from within a monorepo, we match their
- * current working directory against the project paths in .lore.yaml
+ * When a developer runs Kennen from within a monorepo, we match their
+ * current working directory against the project paths in .kennen.yaml
  * to auto-select the right project scope.
  */
 
 import { resolve, relative } from "node:path"
-import type { LoreConfig, Project, ProjectConfig } from "../types.js"
+import type { KennenConfig, Project, ProjectConfig } from "../types.js"
 import type { ProjectService } from "./project.js"
 
 /**
@@ -25,7 +25,7 @@ export function isCatchAllProject(project: ProjectConfig): boolean {
  * Used by callers that want to disambiguate when resolution fell back to a
  * catch-all so they can surface candidate sub-projects to the user or agent.
  */
-export function subProjectNames(config: LoreConfig): string[] {
+export function subProjectNames(config: KennenConfig): string[] {
   return (config.projects ?? []).filter((p) => !isCatchAllProject(p)).map((p) => p.name)
 }
 
@@ -34,7 +34,7 @@ export function subProjectNames(config: LoreConfig): string[] {
  * `"."` or `""` match every cwd inside the config root, which makes them a
  * silent default unless callers know to warn.
  */
-export function catchAllProjectName(config: LoreConfig): string | null {
+export function catchAllProjectName(config: KennenConfig): string | null {
   const catchAll = (config.projects ?? []).find(isCatchAllProject)
   return catchAll?.name ?? null
 }
@@ -75,7 +75,7 @@ export function formatCatchAllScopeSummary(name: string, candidates: string[]): 
 export function resolveProjectPathFromCwd(
   cwd: string,
   configRoot: string,
-  config: LoreConfig
+  config: KennenConfig
 ): { name: string; path: string } | null {
   if (!config.projects?.length) return null
 
@@ -129,7 +129,7 @@ export interface ProjectResolution {
 export async function resolveProject(
   cwd: string,
   configRoot: string,
-  config: LoreConfig,
+  config: KennenConfig,
   projectService: ProjectService
 ): Promise<ProjectResolution> {
   const candidates = subProjectNames(config)

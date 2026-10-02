@@ -157,7 +157,7 @@ let testHomeDir: string
 
 beforeEach(() => {
   testHomeDir = mkdtempSync(
-    join(process.env["TMPDIR"] ?? "/tmp", "lore-fact-create-test-")
+    join(process.env["TMPDIR"] ?? "/tmp", "kennen-fact-create-test-")
   )
   vi.stubEnv("HOME", testHomeDir)
 })

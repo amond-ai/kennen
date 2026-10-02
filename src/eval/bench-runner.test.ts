@@ -106,13 +106,13 @@ describe("makeSubProjectName", () => {
 
 describe("assertBenchEnvReady authoritative overwrite + restore", () => {
   const KEYS = [
-    "LORE_EVAL_BENCH_REAL",
-    "LORE_BENCH_NOTION_TOKEN",
-    "LORE_BENCH_OPENAI_API_KEY",
-    "LORE_BENCH_CONFIG_ROOT",
-    "LORE_BENCH_SANDBOX_PROJECT_NAME",
+    "KENNEN_EVAL_BENCH_REAL",
+    "KENNEN_BENCH_NOTION_TOKEN",
+    "KENNEN_BENCH_OPENAI_API_KEY",
+    "KENNEN_BENCH_CONFIG_ROOT",
+    "KENNEN_BENCH_SANDBOX_PROJECT_NAME",
     "NOTION_API_TOKEN",
-    "LORE_CONFIG_ROOT",
+    "KENNEN_CONFIG_ROOT",
   ]
   let saved: Record<string, string | undefined> = {}
 
@@ -131,46 +131,46 @@ describe("assertBenchEnvReady authoritative overwrite + restore", () => {
     }
   })
 
-  it("overwrites NOTION_API_TOKEN / LORE_CONFIG_ROOT with bench values even when operator pre-set them", () => {
-    process.env["LORE_EVAL_BENCH_REAL"] = "1"
-    process.env["LORE_BENCH_NOTION_TOKEN"] = "bench-token"
-    process.env["LORE_BENCH_OPENAI_API_KEY"] = "openai-key"
-    process.env["LORE_BENCH_CONFIG_ROOT"] = "/bench/config/root"
-    process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
+  it("overwrites NOTION_API_TOKEN / KENNEN_CONFIG_ROOT with bench values even when operator pre-set them", () => {
+    process.env["KENNEN_EVAL_BENCH_REAL"] = "1"
+    process.env["KENNEN_BENCH_NOTION_TOKEN"] = "bench-token"
+    process.env["KENNEN_BENCH_OPENAI_API_KEY"] = "openai-key"
+    process.env["KENNEN_BENCH_CONFIG_ROOT"] = "/bench/config/root"
+    process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
     // Operator's day-to-day env pre-set to different values.
     process.env["NOTION_API_TOKEN"] = "operator-day-token"
-    process.env["LORE_CONFIG_ROOT"] = "/operator/config/root"
+    process.env["KENNEN_CONFIG_ROOT"] = "/operator/config/root"
 
     const snapshot = assertBenchEnvReady()
 
     // Bench is authoritative — overwrite landed unconditionally.
     expect(process.env["NOTION_API_TOKEN"]).toBe("bench-token")
-    expect(process.env["LORE_CONFIG_ROOT"]).toBe("/bench/config/root")
+    expect(process.env["KENNEN_CONFIG_ROOT"]).toBe("/bench/config/root")
     // Snapshot captures the pre-bench values for restore.
     expect(snapshot.notionApiToken).toBe("operator-day-token")
-    expect(snapshot.loreConfigRoot).toBe("/operator/config/root")
+    expect(snapshot.kennenConfigRoot).toBe("/operator/config/root")
 
     restoreBenchEnv(snapshot)
 
     expect(process.env["NOTION_API_TOKEN"]).toBe("operator-day-token")
-    expect(process.env["LORE_CONFIG_ROOT"]).toBe("/operator/config/root")
+    expect(process.env["KENNEN_CONFIG_ROOT"]).toBe("/operator/config/root")
   })
 
   it("restore deletes the keys when they were unset pre-bench", () => {
-    process.env["LORE_EVAL_BENCH_REAL"] = "1"
-    process.env["LORE_BENCH_NOTION_TOKEN"] = "bench-token"
-    process.env["LORE_BENCH_OPENAI_API_KEY"] = "openai-key"
-    process.env["LORE_BENCH_CONFIG_ROOT"] = "/bench/config/root"
-    process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
-    // NOTION_API_TOKEN / LORE_CONFIG_ROOT intentionally unset.
+    process.env["KENNEN_EVAL_BENCH_REAL"] = "1"
+    process.env["KENNEN_BENCH_NOTION_TOKEN"] = "bench-token"
+    process.env["KENNEN_BENCH_OPENAI_API_KEY"] = "openai-key"
+    process.env["KENNEN_BENCH_CONFIG_ROOT"] = "/bench/config/root"
+    process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
+    // NOTION_API_TOKEN / KENNEN_CONFIG_ROOT intentionally unset.
 
     const snapshot = assertBenchEnvReady()
     expect(snapshot.notionApiToken).toBeUndefined()
-    expect(snapshot.loreConfigRoot).toBeUndefined()
+    expect(snapshot.kennenConfigRoot).toBeUndefined()
 
     restoreBenchEnv(snapshot)
     expect(process.env["NOTION_API_TOKEN"]).toBeUndefined()
-    expect(process.env["LORE_CONFIG_ROOT"]).toBeUndefined()
+    expect(process.env["KENNEN_CONFIG_ROOT"]).toBeUndefined()
   })
 })
 
@@ -223,13 +223,13 @@ describe("assertBenchSandboxProfileMatchesSuite", () => {
 
 describe("runBenchSuite profile guard", () => {
   const keys = [
-    "LORE_EVAL_BENCH_REAL",
-    "LORE_BENCH_NOTION_TOKEN",
-    "LORE_BENCH_OPENAI_API_KEY",
-    "LORE_BENCH_CONFIG_ROOT",
-    "LORE_BENCH_SANDBOX_PROJECT_NAME",
+    "KENNEN_EVAL_BENCH_REAL",
+    "KENNEN_BENCH_NOTION_TOKEN",
+    "KENNEN_BENCH_OPENAI_API_KEY",
+    "KENNEN_BENCH_CONFIG_ROOT",
+    "KENNEN_BENCH_SANDBOX_PROJECT_NAME",
     "NOTION_API_TOKEN",
-    "LORE_CONFIG_ROOT",
+    "KENNEN_CONFIG_ROOT",
   ]
   let saved: Record<string, string | undefined> = {}
 
@@ -249,11 +249,11 @@ describe("runBenchSuite profile guard", () => {
   })
 
   it("fails before creating sub-projects when the suite and sandbox profiles differ", async () => {
-    process.env["LORE_EVAL_BENCH_REAL"] = "1"
-    process.env["LORE_BENCH_NOTION_TOKEN"] = "ntn_bench"
-    process.env["LORE_BENCH_OPENAI_API_KEY"] = "sk-bench"
-    process.env["LORE_BENCH_CONFIG_ROOT"] = "/tmp/lore-bench-config"
-    process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
+    process.env["KENNEN_EVAL_BENCH_REAL"] = "1"
+    process.env["KENNEN_BENCH_NOTION_TOKEN"] = "ntn_bench"
+    process.env["KENNEN_BENCH_OPENAI_API_KEY"] = "sk-bench"
+    process.env["KENNEN_BENCH_CONFIG_ROOT"] = "/tmp/kennen-bench-config"
+    process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
     let createSubProjectCalled = false
     const sandbox: BenchSandbox = {
       authSource: "env-notion-api-token",
@@ -290,11 +290,11 @@ describe("runBenchSuite profile guard", () => {
   })
 
   it("skips tool-driven suites before seeding when the selected adapter lacks live tools", async () => {
-    process.env["LORE_EVAL_BENCH_REAL"] = "1"
-    process.env["LORE_BENCH_NOTION_TOKEN"] = "ntn_bench"
-    process.env["LORE_BENCH_OPENAI_API_KEY"] = "sk-bench"
-    process.env["LORE_BENCH_CONFIG_ROOT"] = "/tmp/lore-bench-config"
-    process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
+    process.env["KENNEN_EVAL_BENCH_REAL"] = "1"
+    process.env["KENNEN_BENCH_NOTION_TOKEN"] = "ntn_bench"
+    process.env["KENNEN_BENCH_OPENAI_API_KEY"] = "sk-bench"
+    process.env["KENNEN_BENCH_CONFIG_ROOT"] = "/tmp/kennen-bench-config"
+    process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] = "Bench Sandbox"
     let createSubProjectCalled = false
     const sandbox: BenchSandbox = {
       authSource: "env-notion-api-token",
@@ -329,7 +329,7 @@ describe("runBenchSuite profile guard", () => {
         throw new Error("not expected")
       },
     }
-    const outDir = mkdtempSync(join(tmpdir(), "lore-bench-skip-test-"))
+    const outDir = mkdtempSync(join(tmpdir(), "kennen-bench-skip-test-"))
     try {
       const { artifact, outPath } = await runBenchSuite({
         suitePath: "evals/bench-suites/longmemeval-raw-transcript.yaml",
@@ -446,14 +446,14 @@ describe("buildBenchWorkspace on-disk config", () => {
   let saved: Record<string, string | undefined>
 
   beforeEach(() => {
-    workspace = mkdtempSync(join(tmpdir(), "lore-bench-workspace-test-"))
+    workspace = mkdtempSync(join(tmpdir(), "kennen-bench-workspace-test-"))
     saved = {
       NOTION_API_TOKEN: process.env["NOTION_API_TOKEN"],
-      LORE_CONFIG_ROOT: process.env["LORE_CONFIG_ROOT"],
+      KENNEN_CONFIG_ROOT: process.env["KENNEN_CONFIG_ROOT"],
       NOTION_ENV: process.env["NOTION_ENV"],
     }
     process.env["NOTION_API_TOKEN"] = "ntn_TEST_FIXTURE_TOKEN_FOR_BUILD_BENCH_WORKSPACE"
-    process.env["LORE_CONFIG_ROOT"] = "/tmp/lore-bench-config-fixture"
+    process.env["KENNEN_CONFIG_ROOT"] = "/tmp/kennen-bench-config-fixture"
     process.env["NOTION_ENV"] = "dev"
   })
 
@@ -475,11 +475,11 @@ describe("buildBenchWorkspace on-disk config", () => {
     const body = readFileSync(configPath, "utf-8")
 
     expect(body).toContain('model = "gpt-4o-mini-2024-07-18"')
-    expect(body).not.toContain("[mcp_servers.lore]")
+    expect(body).not.toContain("[mcp_servers.kennen]")
     expect(body).not.toContain("NOTION_API_TOKEN")
-    expect(body).not.toContain("LORE_CONFIG_ROOT")
+    expect(body).not.toContain("KENNEN_CONFIG_ROOT")
     expect(body).not.toContain("ntn_TEST_FIXTURE_TOKEN_FOR_BUILD_BENCH_WORKSPACE")
-    expect(existsSync(join(workspace, ".lore-tools"))).toBe(false)
+    expect(existsSync(join(workspace, ".kennen-tools"))).toBe(false)
     const mode = statSync(configPath).mode & 0o777
     expect(mode).toBe(0o600)
   })
@@ -493,21 +493,21 @@ describe("buildBenchWorkspace on-disk config", () => {
     })
     const configPath = join(workspace, ".codex", "config.toml")
     const body = readFileSync(configPath, "utf-8")
-    // Model + mcp_servers.lore block + env table all present.
+    // Model + mcp_servers.kennen block + env table all present.
     expect(body).toContain('model = "gpt-4o-mini-2024-07-18"')
-    expect(body).toContain("[mcp_servers.lore]")
+    expect(body).toContain("[mcp_servers.kennen]")
     expect(body).toContain('transport = "stdio"')
-    expect(body).toContain('command = "lore"')
+    expect(body).toContain('command = "kennen"')
     expect(body).toContain(
       'args = ["mcp", "--write-budget", "500", "--budget-state-file", "/tmp/state-file.json"]'
     )
-    expect(body).toContain("[mcp_servers.lore.env]")
+    expect(body).toContain("[mcp_servers.kennen.env]")
     expect(body).toContain(
       'NOTION_API_TOKEN = "ntn_TEST_FIXTURE_TOKEN_FOR_BUILD_BENCH_WORKSPACE"'
     )
-    expect(body).toContain('LORE_CONFIG_ROOT = "/tmp/lore-bench-config-fixture"')
+    expect(body).toContain('KENNEN_CONFIG_ROOT = "/tmp/kennen-bench-config-fixture"')
     expect(body).toContain('NOTION_ENV = "dev"')
-    expect(existsSync(join(workspace, ".lore-tools"))).toBe(false)
+    expect(existsSync(join(workspace, ".kennen-tools"))).toBe(false)
     // File mode is 0600 — owner read/write only. Mode bits below
     // 0o777 mask off the file-type bits, so we compare the perms
     // explicitly.
@@ -524,14 +524,14 @@ describe("buildBenchWorkspace on-disk config", () => {
     })
     const body = readFileSync(join(workspace, ".codex", "config.toml"), "utf-8")
     expect(body).toContain('model = "gpt-4o-mini-2024-07-18"')
-    expect(body).not.toContain("[mcp_servers.lore]")
+    expect(body).not.toContain("[mcp_servers.kennen]")
     expect(body).not.toContain("NOTION_API_TOKEN")
-    expect(body).not.toContain("LORE_CONFIG_ROOT")
+    expect(body).not.toContain("KENNEN_CONFIG_ROOT")
     expect(body).not.toContain("ntn_TEST_FIXTURE_TOKEN_FOR_BUILD_BENCH_WORKSPACE")
-    const queryShim = join(workspace, ".lore-tools", "lore-query")
-    const memoryShim = join(workspace, ".lore-tools", "lore-memory")
-    expect(readFileSync(queryShim, "utf-8")).toContain("eval bench tool lore-query")
-    expect(readFileSync(memoryShim, "utf-8")).toContain("eval bench tool lore-memory")
+    const queryShim = join(workspace, ".kennen-tools", "kennen-query")
+    const memoryShim = join(workspace, ".kennen-tools", "kennen-memory")
+    expect(readFileSync(queryShim, "utf-8")).toContain("eval bench tool kennen-query")
+    expect(readFileSync(memoryShim, "utf-8")).toContain("eval bench tool kennen-memory")
     expect(statSync(queryShim).mode & 0o777).toBe(0o700)
     expect(statSync(memoryShim).mode & 0o777).toBe(0o700)
   })
@@ -547,15 +547,15 @@ describe("buildBenchWorkspace on-disk config", () => {
     ).rejects.toThrow(/NOTION_API_TOKEN/)
   })
 
-  it("throws when LORE_CONFIG_ROOT is missing", async () => {
-    delete process.env["LORE_CONFIG_ROOT"]
+  it("throws when KENNEN_CONFIG_ROOT is missing", async () => {
+    delete process.env["KENNEN_CONFIG_ROOT"]
     await expect(
       buildBenchWorkspace({
         workspace,
         budgetStateFile: "/tmp/state.json",
         perExampleWrites: 500,
       })
-    ).rejects.toThrow(/LORE_CONFIG_ROOT/)
+    ).rejects.toThrow(/KENNEN_CONFIG_ROOT/)
   })
 
   it("rejects non-positive perExampleWrites", async () => {
@@ -577,7 +577,7 @@ describe("buildBenchWorkspace on-disk config", () => {
 
   it("TOML-escapes backslashes and double-quotes in token / config-root / state-file", async () => {
     process.env["NOTION_API_TOKEN"] = 'ntn_has"quote\\and-backslash'
-    process.env["LORE_CONFIG_ROOT"] = '/path/with"quote'
+    process.env["KENNEN_CONFIG_ROOT"] = '/path/with"quote'
     await buildBenchWorkspace({
       workspace,
       budgetStateFile: '/path/with"state',
@@ -590,7 +590,7 @@ describe("buildBenchWorkspace on-disk config", () => {
     // escaping the TOML parser would either reject the file (best case)
     // or mis-parse the token (worst case → silent auth failure).
     expect(body).toContain('NOTION_API_TOKEN = "ntn_has\\"quote\\\\and-backslash"')
-    expect(body).toContain('LORE_CONFIG_ROOT = "/path/with\\"quote"')
+    expect(body).toContain('KENNEN_CONFIG_ROOT = "/path/with\\"quote"')
     expect(body).toContain('"/path/with\\"state"')
   })
 })
@@ -598,9 +598,9 @@ describe("buildBenchWorkspace on-disk config", () => {
 describe("runBenchExample retrieval tracing", () => {
   it("ignores agent-forged workspace trace entries", async () => {
     const savedToken = process.env["NOTION_API_TOKEN"]
-    const savedConfigRoot = process.env["LORE_CONFIG_ROOT"]
+    const savedConfigRoot = process.env["KENNEN_CONFIG_ROOT"]
     process.env["NOTION_API_TOKEN"] = "ntn_bench"
-    process.env["LORE_CONFIG_ROOT"] = "/tmp/lore-bench-config"
+    process.env["KENNEN_CONFIG_ROOT"] = "/tmp/kennen-bench-config"
     const sandbox: BenchSandbox = {
       authSource: "env-notion-api-token",
       activeProfileSelector: "default@1.0.0",
@@ -629,14 +629,14 @@ describe("runBenchExample retrieval tracing", () => {
       async run(input) {
         writeFileSync(join(input.workspace, "answer.txt"), "blue")
         const brokerSocket = input.extraEnv?.[BENCH_TOOL_SOCKET_ENV]
-        expect(brokerSocket).toBe(join(input.workspace, "lore-tool-broker.sock"))
+        expect(brokerSocket).toBe(join(input.workspace, "kennen-tool-broker.sock"))
         expect(JSON.stringify(input.extraEnv)).not.toContain("project-1")
         expect(JSON.stringify(input.extraEnv)).not.toContain("ntn_bench")
         writeFileSync(
-          join(input.workspace, "lore-tool-trace.jsonl"),
+          join(input.workspace, "kennen-tool-trace.jsonl"),
           [
             {
-              tool: "lore-query",
+              tool: "kennen-query",
               action: "search",
               surface: "codex-shell-shim",
               timing: "during-agent-run",
@@ -648,7 +648,7 @@ describe("runBenchExample retrieval tracing", () => {
               error: null,
             },
             {
-              tool: "lore-query ntn_TRACE_TOKEN_SHOULD_NOT_LEAK_1234567890",
+              tool: "kennen-query ntn_TRACE_TOKEN_SHOULD_NOT_LEAK_1234567890",
               action: "search ntn_TRACE_TOKEN_SHOULD_NOT_LEAK_1234567890",
               surface: "codex-shell-shim",
               timing: "during-agent-run",
@@ -709,7 +709,7 @@ describe("runBenchExample retrieval tracing", () => {
         },
         agentAdapter,
         sandbox,
-        systemPrompt: "Use Lore.",
+        systemPrompt: "Use Kennen.",
         perExampleWrites: 500,
         ingestionStrategy: "raw-transcript",
         agentRetrieval: "tool-driven",
@@ -729,16 +729,16 @@ describe("runBenchExample retrieval tracing", () => {
     } finally {
       if (savedToken === undefined) delete process.env["NOTION_API_TOKEN"]
       else process.env["NOTION_API_TOKEN"] = savedToken
-      if (savedConfigRoot === undefined) delete process.env["LORE_CONFIG_ROOT"]
-      else process.env["LORE_CONFIG_ROOT"] = savedConfigRoot
+      if (savedConfigRoot === undefined) delete process.env["KENNEN_CONFIG_ROOT"]
+      else process.env["KENNEN_CONFIG_ROOT"] = savedConfigRoot
     }
   })
 
   it("redacts bearer-shaped wake-up prefetch errors in retrieval traces", async () => {
     const savedToken = process.env["NOTION_API_TOKEN"]
-    const savedConfigRoot = process.env["LORE_CONFIG_ROOT"]
+    const savedConfigRoot = process.env["KENNEN_CONFIG_ROOT"]
     process.env["NOTION_API_TOKEN"] = "ntn_bench"
-    process.env["LORE_CONFIG_ROOT"] = "/tmp/lore-bench-config"
+    process.env["KENNEN_CONFIG_ROOT"] = "/tmp/kennen-bench-config"
     const token = "ntn_WAKEUP_TRACE_TOKEN_SHOULD_NOT_LEAK_1234567890"
     const sandbox: BenchSandbox = {
       authSource: "env-notion-api-token",
@@ -810,7 +810,7 @@ describe("runBenchExample retrieval tracing", () => {
         },
         agentAdapter,
         sandbox,
-        systemPrompt: "Use Lore.",
+        systemPrompt: "Use Kennen.",
         perExampleWrites: 500,
         ingestionStrategy: "raw-transcript",
         agentRetrieval: "wake-up-prefetch",
@@ -825,8 +825,8 @@ describe("runBenchExample retrieval tracing", () => {
     } finally {
       if (savedToken === undefined) delete process.env["NOTION_API_TOKEN"]
       else process.env["NOTION_API_TOKEN"] = savedToken
-      if (savedConfigRoot === undefined) delete process.env["LORE_CONFIG_ROOT"]
-      else process.env["LORE_CONFIG_ROOT"] = savedConfigRoot
+      if (savedConfigRoot === undefined) delete process.env["KENNEN_CONFIG_ROOT"]
+      else process.env["KENNEN_CONFIG_ROOT"] = savedConfigRoot
     }
   })
 })

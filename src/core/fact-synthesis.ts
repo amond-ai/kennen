@@ -55,7 +55,7 @@ export function synthesizeFactFromCreateInput(
     validUntil: null,
     // `observedAt` is bitemporally distinct from `validFrom`:
     // `validFrom` is domain truth (when the fact started being true in
-    // the world), `observedAt` is transaction time (when Lore learned
+    // the world), `observedAt` is transaction time (when Kennen learned
     // about it). The caller passes both defaults explicitly so a future
     // backfill caller decoupling them (e.g., `validFrom: "2024-01-01",
     // observedAt: today`) can't silently land an `observedAt` derived

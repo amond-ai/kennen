@@ -1,6 +1,6 @@
 # Vault Topology
 
-`lore status` renders a **Vault topology** section when `.lore.yaml`
+`kennen status` renders a **Vault topology** section when `.kennen.yaml`
 configures `upstreamVaults` or `promotionTargets`. The section reports the
 configured relationship between the primary vault, read-only upstreams, and
 deliberate promotion targets, and probes each remote vault's health on the
@@ -20,17 +20,17 @@ material lives in [`docs/topology-promotion.md`](topology-promotion.md).
 ## When the section renders
 
 The section is suppressed entirely when neither key is configured, so a
-single-vault `.lore.yaml` produces byte-identical output to pre-topology
+single-vault `.kennen.yaml` produces byte-identical output to pre-topology
 releases. Either key alone fires the section:
 
 ```yaml
-# .lore.yaml — single-vault config: section suppressed
+# .kennen.yaml — single-vault config: section suppressed
 vault:
   pageId: "abc123…"
 ```
 
 ```yaml
-# .lore.yaml — topology-aware config: section renders
+# .kennen.yaml — topology-aware config: section renders
 vault:
   pageId: "abc123…"
 upstreamVaults:
@@ -54,10 +54,10 @@ fanout.
 ## Output shape
 
 A configured topology section renders below `Current project:` and above
-`Database counts:` in `lore status`. All examples below use placeholder
+`Database counts:` in `kennen status`. All examples below use placeholder
 labels and page ids (`primary-page`, `engineering-page`, etc.) and
 illustrative ages — real output uses the configured `name` / `pageId`
-from `.lore.yaml` and the actual probe age. Annotated example:
+from `.kennen.yaml` and the actual probe age. Annotated example:
 
 ```
 Vault topology:
@@ -107,30 +107,30 @@ path), never as a degraded primary row.
 
 ### Freshness markers
 
-Every probed health line in `lore status` output carries a `checked` /
+Every probed health line in `kennen status` output carries a `checked` /
 `cached` / `debounced` marker plus a humanized age. (Direct callers of
 `loadVaultTopologyStatus` that opt out of the on-disk cache may render
 markerless lines; the operator-facing CLI path always opts in.)
 
 | Marker      | Meaning                                                                                                                                                           |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checked`   | This `lore status` invocation issued the probe and wrote the cache entry. Authoritative reading.                                                                  |
+| `checked`   | This `kennen status` invocation issued the probe and wrote the cache entry. Authoritative reading.                                                                  |
 | `cached`    | Probe was satisfied by an on-disk cache entry from a prior invocation (TTL = 60s, `TOPOLOGY_STATUS_CACHE_TTL_MS`). Applies to all probe outcomes — `ok`, `missing databases`, and `unavailable` are all cached for the full TTL. Re-run after the TTL to refresh. |
 | `debounced` | A concurrent invocation was already probing the same vault; this run reused that in-flight result. Treat as equivalent to `checked`.                              |
 
 Cache entries live under the hook state directory keyed by
 `(configRoot, pageId)`, where `configRoot` is the absolute path to the
-directory containing the resolving `.lore.yaml`. The cache key is
+directory containing the resolving `.kennen.yaml`. The cache key is
 `sha256(configRoot + "\0" + pageId)` truncated to 16 hex chars, so the
 sharing condition is **path equality on `configRoot`**, not file-content
 equivalence:
 
-- A second `lore status` from the same checkout within 60s reuses the
+- A second `kennen status` from the same checkout within 60s reuses the
   prior probe.
 - Two checkouts pointing at the same vault — including two git
   worktrees of the same repo — each maintain their own 60s suppression
   window, because each has its own absolute `configRoot` path.
-- `LORE_CONFIG_ROOT` is the explicit override that lets two invocations
+- `KENNEN_CONFIG_ROOT` is the explicit override that lets two invocations
   collapse onto a shared key.
 
 Probe concurrency is bounded to 2 (`TOPOLOGY_STATUS_PROBE_CONCURRENCY`)
@@ -150,7 +150,7 @@ Three states are emitted by the health classifier in
 
 ### `ok`
 
-Vault loaded cleanly. Lore read its child databases and recognized the
+Vault loaded cleanly. Kennen read its child databases and recognized the
 five-database core schema (Projects, Topics, Memories, Entities, Facts).
 
 ```
@@ -161,19 +161,19 @@ No action required.
 
 ### `missing databases (...)`
 
-Lore found the page but the schema is incomplete. The parenthetical names
+Kennen found the page but the schema is incomplete. The parenthetical names
 the missing databases. Triggered by `MissingVaultDatabasesError` in
 `src/notion/setup.ts`. Common cases:
 
 - **A pre-Entities legacy vault** (`Entities` and / or related Facts
-  columns missing). Run [`lore vault ensure-entities`](cli.md) against
+  columns missing). Run [`kennen vault ensure-entities`](cli.md) against
   that vault to add the Entities database and the additive Facts
   columns. Plan-only by default; pass `--dry-run` for a preview.
 - **A vault initialized for a different purpose** (a Notion page that
-  is not actually a Lore vault). Remove the entry from `upstreamVaults`
+  is not actually a Kennen vault). Remove the entry from `upstreamVaults`
   / `promotionTargets`, or point it at the correct page id.
 - **Drift on a live vault** — properties were renamed or removed in
-  Notion. Run [`lore migrate`](cli.md) against the vault to add
+  Notion. Run [`kennen migrate`](cli.md) against the vault to add
   missing properties; do NOT manually rename columns in Notion (see
   the schema-stability rule in [`AGENTS.md`](../AGENTS.md)).
 
@@ -182,30 +182,30 @@ health missing databases (Entities; checked just now)
 health missing databases (Projects, Topics, Memories, Entities, Facts; cached 30s ago)
 ```
 
-The all-five form indicates the page does not contain any Lore
+The all-five form indicates the page does not contain any Kennen
 databases — almost always a misconfigured `pageId`.
 
 ### `unavailable (...)`
 
 The probe threw any error other than `MissingVaultDatabasesError`. The
 parenthetical carries the underlying error message verbatim — it is
-whatever the Notion SDK put on `err.message`, not a fixed lore string.
+whatever the Notion SDK put on `err.message`, not a fixed kennen string.
 
 Most `unavailable` failures fall in two buckets: **config shape** (the
-`pageId` in `.lore.yaml` is wrong) and **auth/share state** (the token
-can't reach the page). Triage in that order: run `lore auth --status`
+`pageId` in `.kennen.yaml` is wrong) and **auth/share state** (the token
+can't reach the page). Triage in that order: run `kennen auth --status`
 first to rule out the auth bucket, then verify the `pageId` against
 Notion.
 
 The `Symptom` column below shows substrings paraphrased from real
 Notion errors; match by substring (`object_not_found`, `unauthorized`,
 `restricted_resource`) rather than expecting the exact strings to
-appear in `lore status` output. Notion's actual messages are typically
+appear in `kennen status` output. Notion's actual messages are typically
 longer (e.g., `object_not_found: Could not find page with ID …`).
 
 | Symptom substring                                            | Likely cause                                                                                          | Recovery                                                                                                                                |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `object_not_found` / `404`                                   | `pageId` is wrong, the page was deleted, or the page was moved to a workspace the token can't reach.  | Verify the page id in Notion. Update or remove the entry in `.lore.yaml`.                                                               |
+| `object_not_found` / `404`                                   | `pageId` is wrong, the page was deleted, or the page was moved to a workspace the token can't reach.  | Verify the page id in Notion. Update or remove the entry in `.kennen.yaml`.                                                               |
 | `unauthorized` / `restricted_resource`                       | The current auth token does not have access to that page.                                             | For ntn-issued tokens and PATs in `NOTION_API_TOKEN`, share the page with the operator's Notion user. Do not recover by distributing one shared integration token. |
 | Notion 5xx / network errors                                  | Transient Notion outage or local network blip.                                                        | The failure is cached for the 60s TTL like any other probe outcome. Wait out the cache window before re-checking.                       |
 | `restricted_resource` from an ntn-issued token specifically  | An ntn-issued token cannot read a page the engineer has not been added to.                            | Share the upstream / promotion target page with the engineer in Notion.                                                                 |
@@ -215,7 +215,7 @@ health unavailable (404 not found; checked just now)
 health unavailable (HTTP 401 unauthorized; cached 12s ago)
 ```
 
-A failing probe never blocks `lore status`; the rest of the status output
+A failing probe never blocks `kennen status`; the rest of the status output
 renders normally. An `unavailable` upstream also does NOT prevent normal
 writes (which target the primary vault) — read-orchestration paths that
 depend on the upstream may degrade or skip until the issue is resolved.
@@ -225,18 +225,18 @@ depend on the upstream may degrade or skip until the issue is resolved.
 The same pattern applies to all degraded states:
 
 1. **Identify which row is degraded.** The label and page id name the
-   `.lore.yaml` entry.
+   `.kennen.yaml` entry.
 2. **Read the parenthetical.** It is the underlying error message, not a
    summary — use it to triage.
 3. **Apply the recovery from the matching row in [Health states](#health-states).**
-4. **Re-run `lore status` after the cache window.** All probe outcomes —
+4. **Re-run `kennen status` after the cache window.** All probe outcomes —
    including `unavailable` and `missing databases` — are cached for the
    60s TTL, so a re-run inside that window returns the same `cached`
    result without re-probing. Wait out the TTL, then a fresh probe will
    surface the post-fix state as `checked`.
 
 If the same vault is degraded for multiple operators, the issue is almost
-certainly in `.lore.yaml` or in the Notion-side share state of the page.
+certainly in `.kennen.yaml` or in the Notion-side share state of the page.
 If only one operator sees the degradation, look at their auth source first
 (see [`docs/authentication.md`](authentication.md)).
 
@@ -256,7 +256,7 @@ as a compatibility pointer for older references to `docs/topology.md#promotion`.
 
 ## Cross-references
 
-- [`docs/cli.md`](cli.md) — `lore status` and `lore promote` command
+- [`docs/cli.md`](cli.md) — `kennen status` and `kennen promote` command
   reference.
 - [`docs/topology-inheritance.md`](topology-inheritance.md) —
   read-upstream wake-up rendering, trust containment, design rules,

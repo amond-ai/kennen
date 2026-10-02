@@ -1,6 +1,6 @@
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import {
   formatDispatchError,
   paginationFooter,
@@ -30,7 +30,7 @@ import {
 } from "../../core/rich-text-schema.js"
 import { findNearDuplicates, type NearDuplicateMatch } from "../../core/near-duplicate.js"
 import { resolveAuthorForWrite } from "../../auth/identity.js"
-import { LoreError, errorCauseMessage } from "../../errors.js"
+import { KennenError, errorCauseMessage } from "../../errors.js"
 import { resolveFeatureFlags } from "../../feature-flags.js"
 import type { CostOutputCounts } from "../../core/cost-ledger.js"
 
@@ -46,7 +46,7 @@ interface SupersedeRef {
 }
 
 /**
- * Trigram threshold for the `lore-decision action='create'` near-duplicate probe. Lower
+ * Trigram threshold for the `kennen-decision action='create'` near-duplicate probe. Lower
  * than the memory threshold because decisions carry more ceremony and
  * redundant decisions are more costly than redundant notes.
  */
@@ -60,7 +60,7 @@ const DECISION_SURFACE_LIMIT = 3
 
 const DECISION_FACT_CONFIDENCE = "likely" as const
 
-class DecisionCreateFactPartialFailureError extends LoreError<"decision-create-fact-partial"> {
+class DecisionCreateFactPartialFailureError extends KennenError<"decision-create-fact-partial"> {
   readonly decisionId: string
   readonly failedAffect: string
   readonly createdAffects: string[]
@@ -121,7 +121,7 @@ class DecisionCreateFactPartialFailureError extends LoreError<"decision-create-f
   }
 }
 
-class DecisionCreateSupersedePartialFailureError extends LoreError<"decision-create-supersede-partial"> {
+class DecisionCreateSupersedePartialFailureError extends KennenError<"decision-create-supersede-partial"> {
   readonly decisionId: string
   readonly failedSupersede: string
   readonly completedSupersedes: string[]
@@ -235,14 +235,14 @@ function formatNearDuplicateDecisions(
   const lines: string[] = []
   const shown = matches.slice(0, DECISION_SURFACE_LIMIT)
   lines.push(
-    `Warning: ${matches.length} existing ${matches.length === 1 ? "decision looks" : "decisions look"} similar. If this supersedes any of them, use \`lore-decision\` with \`action: 'supersede'\`:`
+    `Warning: ${matches.length} existing ${matches.length === 1 ? "decision looks" : "decisions look"} similar. If this supersedes any of them, use \`kennen-decision\` with \`action: 'supersede'\`:`
   )
   for (const m of shown) {
     const sim = m.titleSimilarity.toFixed(2)
     const when = m.decidedAt ? ` from ${m.decidedAt}` : ""
     lines.push(`  - "${m.title}" (${m.id})${when} — trigram ${sim}, status ${m.status}`)
     lines.push(
-      `    lore-decision({ action: "supersede", newDecisionId: "${newDecisionId}", oldDecisionId: "${m.id}" })`
+      `    kennen-decision({ action: "supersede", newDecisionId: "${newDecisionId}", oldDecisionId: "${m.id}" })`
     )
   }
   if (matches.length > shown.length) {
@@ -287,7 +287,7 @@ function formatSummary(d: DecisionSummary): string {
 }
 
 // -------------------------------------------------------------------------
-// Handlers — extracted so the polymorphic `lore-decision` tool and the
+// Handlers — extracted so the polymorphic `kennen-decision` tool and the
 // deprecated single-purpose aliases share single implementations.
 // -------------------------------------------------------------------------
 
@@ -315,7 +315,7 @@ interface CreateArgs {
 }
 
 async function handleCreate(
-  services: LoreServices,
+  services: KennenServices,
   args: CreateArgs
 ): Promise<ToolResult> {
   try {
@@ -356,7 +356,7 @@ async function handleCreate(
           limit: DECISION_POOL_LIMIT,
           features,
           onError: (err) =>
-            debugLogPartialFailures("lore-decision", [
+            debugLogPartialFailures("kennen-decision", [
               { rootId: "near-duplicate-probe", error: err },
             ]),
         })
@@ -409,7 +409,7 @@ async function handleCreate(
       // PF3-01 — resolve each `affects` entry through EntityService so
       // the auto-created `decided_by` fact carries a canonical
       // `SubjectEntity` relation. Strict per-entry try/catch matches
-      // the lore-fact resilience posture: a transient resolver blip
+      // the kennen-fact resilience posture: a transient resolver blip
       // must NOT sink the whole decision-create. On rejection we
       // create the fact without the relation and surface a warning.
       let subjectEntityId: string | undefined
@@ -447,7 +447,7 @@ async function handleCreate(
           // System-managed `decided_by` facts must inherit the
           // decision's scope so a session-scoped
           // decision does not leak the affected entity through
-          // `lore-decision action='context'` or `lore-query
+          // `kennen-decision action='context'` or `kennen-query
           // action='ask'` for readers outside that session. The
           // converted scope passes through `createWithDedup`'s
           // scope-aware merge contract, so a same-(entity, decision)
@@ -623,7 +623,7 @@ interface ListArgs {
   includeSynopsis?: boolean
 }
 
-async function handleList(services: LoreServices, args: ListArgs): Promise<ToolResult> {
+async function handleList(services: KennenServices, args: ListArgs): Promise<ToolResult> {
   try {
     const { projectId } = await resolveReadProjectScope(services, args.projectName)
 
@@ -683,7 +683,7 @@ async function handleList(services: LoreServices, args: ListArgs): Promise<ToolR
 }
 
 async function handleGet(
-  services: LoreServices,
+  services: KennenServices,
   args: { decisionId: string }
 ): Promise<ToolResult> {
   try {
@@ -739,7 +739,7 @@ interface ContextArgs {
 }
 
 async function handleContext(
-  services: LoreServices,
+  services: KennenServices,
   args: ContextArgs,
   toolName: string
 ): Promise<ToolResult> {
@@ -752,7 +752,7 @@ async function handleContext(
 
     // PF3-01 — resolve the entity name to a canonical row first so the
     // fact lookup can ride the relation join. This brings
-    // `lore-decision action='context'` to parity with `lore-query action='ask'`
+    // `kennen-decision action='context'` to parity with `kennen-query action='ask'`
     // both surfaces should agree on which decisions govern a given
     // canonical entity, regardless of whether the caller typed the name
     // or an alias. Strict mode (no auto-create): the read path must not
@@ -873,14 +873,14 @@ async function handleContext(
 }
 
 async function handleSupersede(
-  services: LoreServices,
+  services: KennenServices,
   args: { newDecisionId: string; oldDecisionId: string }
 ): Promise<ToolResult> {
   try {
     // Both decision reads are non-advisory by design; the response text
     // and the `supersedes_decision` fact write both need resolved
     // titles and project ids. A read failure here is a real error and propagates to
-    // `toolError`. `lore-fact action='invalidate'` wraps its source-memory
+    // `toolError`. `kennen-fact action='invalidate'` wraps its source-memory
     // read in the contradiction-failure path because the response there
     // is `Invalidated fact <id>` — independent of the source — so the
     // asymmetry is deliberate.
@@ -927,7 +927,7 @@ async function handleSupersede(
 }
 
 async function handleReview(
-  services: LoreServices,
+  services: KennenServices,
   args: { decisionId: string; reviewBy?: string | null }
 ): Promise<ToolResult> {
   try {
@@ -1024,20 +1024,20 @@ function createDecisionDispatchSchema(tagsSchema: ReturnType<typeof createTagsSc
   ])
 }
 
-export function registerDecisionTools(server: McpServer, services: LoreServices): void {
+export function registerDecisionTools(server: McpServer, services: KennenServices): void {
   const tagsSchema = createTagsSchema(services.profile?.taxonomy.tags)
   const decisionDispatchSchema = createDecisionDispatchSchema(tagsSchema)
 
   // -------------------------------------------------------------------------
-  // lore-decision — polymorphic dispatcher
+  // kennen-decision — polymorphic dispatcher
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-decision",
+    "kennen-decision",
     {
       title: "Decision lifecycle operations",
       description:
         "Record, query, or supersede architectural decisions. Action-dispatched:\n\n" +
-        "- `action: 'create'` — record a decision (rationale, alternatives, consequences, review date). Auto-creates `decided_by` facts for each entry in `affects` and `supersedes_decision` facts when `supersedesIds` is set. Use this instead of `lore-memory action='save'` for decisions.\n" +
+        "- `action: 'create'` — record a decision (rationale, alternatives, consequences, review date). Auto-creates `decided_by` facts for each entry in `affects` and `supersedes_decision` facts when `supersedesIds` is set. Use this instead of `kennen-memory action='save'` for decisions.\n" +
         "- `action: 'list'` — index-tier listing (no body fetch). Cursor-paginated.\n" +
         "- `action: 'get'` — load full rationale + metadata + relations for one decision.\n" +
         "- `action: 'context'` — graph walk: every active decision governing an entity, resolved through any supersession chain.\n" +
@@ -1154,7 +1154,7 @@ export function registerDecisionTools(server: McpServer, services: LoreServices)
           .string()
           .optional()
           .describe(
-            "(action='create') Engineer display name. Defaults to LORE_USER_NAME env or `users.me`."
+            "(action='create') Engineer display name. Defaults to KENNEN_USER_NAME env or `users.me`."
           ),
         agent: z
           .string()
@@ -1215,7 +1215,7 @@ export function registerDecisionTools(server: McpServer, services: LoreServices)
     async (args) => {
       const parsed = decisionDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-decision", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-decision", parsed.error)))
       }
       const data = parsed.data
       switch (data.action) {
@@ -1228,7 +1228,7 @@ export function registerDecisionTools(server: McpServer, services: LoreServices)
         case "get":
           return handleGet(services, data)
         case "context":
-          return handleContext(services, data, "lore-decision")
+          return handleContext(services, data, "kennen-decision")
         case "supersede":
           return withWakeUpCacheBump(services.wakeupCache, () =>
             handleSupersede(services, data)

@@ -1,5 +1,5 @@
 /**
- * Vault management — the root container for all Lore data.
+ * Vault management — the root container for all Kennen data.
  *
  * A vault is backed by a single Notion page containing five linked databases.
  */
@@ -83,8 +83,8 @@ export class VaultManager {
         throw e
       }
       if (e instanceof MissingVaultDatabasesError) {
-        // A page with zero known Lore DBs is a fresh init target. A page with
-        // some-but-not-all Lore DBs is a partial schema and must not receive
+        // A page with zero known Kennen DBs is a fresh init target. A page with
+        // some-but-not-all Kennen DBs is a partial schema and must not receive
         // a second full set of child databases.
         if (e.present.length > 0) throw e
       } else {
@@ -104,15 +104,15 @@ export class VaultManager {
     // for the same rate-limited client. Callers that want occasional drift
     // warnings without contention pass `driftCheck: "debounced"` at the
     // `initServices` seam, which resolves to a boolean here. Explicit
-    // operator-facing surfaces (`lore status`, `lore migrate`) pass `true`.
+    // operator-facing surfaces (`kennen status`, `kennen migrate`) pass `true`.
     if (options.driftCheck) {
       // Best-effort: never blocks. Transient API errors during the check
       // should not prevent the vault from loading. Unlike a bare
       // `.catch(() => {})`, failures are logged so we don't silently lose
-      // the "run `lore migrate`" nudge when the drift check itself is broken.
+      // the "run `kennen migrate`" nudge when the drift check itself is broken.
       this.detectDrift().catch((err) => {
         console.error(
-          "[lore] Schema drift check failed:",
+          "[kennen] Schema drift check failed:",
           err instanceof Error ? err.message : err
         )
       })
@@ -122,7 +122,7 @@ export class VaultManager {
 
   /**
    * Compare live schema to expected schema read-only. When drift is found,
-   * emit a stderr warning nudging the user to run `lore migrate`. Does not
+   * emit a stderr warning nudging the user to run `kennen migrate`. Does not
    * throw and does not write anything.
    */
   private async detectDrift(): Promise<void> {
@@ -183,14 +183,14 @@ export class VaultManager {
     const hints: string[] = []
     if (encoded.length > 0) hints.push("--fix-topic-encoding")
     if (duplicates.length > 0) hints.push("--merge-duplicate-topics")
-    // The drift hint is a single `lore migrate` invocation; multiple flags
+    // The drift hint is a single `kennen migrate` invocation; multiple flags
     // chain with a space (shell-literal), not " and ".
     const hint =
       hints.length > 0
-        ? `Run \`lore migrate ${hints.join(" ")}\` to update your vault.`
-        : "Run `lore migrate` to update your vault."
+        ? `Run \`kennen migrate ${hints.join(" ")}\` to update your vault.`
+        : "Run `kennen migrate` to update your vault."
     console.error(
-      `[lore] Schema drift detected: ${parts.join(" and ")} out of date. ${hint}`
+      `[kennen] Schema drift detected: ${parts.join(" and ")} out of date. ${hint}`
     )
   }
 
@@ -207,7 +207,7 @@ export class VaultManager {
 
   /**
    * Expose the rate-limited Notion client for low-level migration helpers.
-   * Most callers should consume services from `LoreServices` rather than
+   * Most callers should consume services from `KennenServices` rather than
    * reaching for the raw client.
    */
   getClient(): Client {

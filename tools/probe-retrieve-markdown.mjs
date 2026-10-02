@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Operator-rerunnable probe for `pages.retrieveMarkdown` throughput.
- * Bypasses Lore's outbound rate-limit wrapper so the SERVER-side
+ * Bypasses Kennen's outbound rate-limit wrapper so the SERVER-side
  * ceiling is observable; the wrapper-side pacing is governed by the
  * `DEFAULT_NOTION_*` config knobs the shared client exports.
  *
@@ -12,10 +12,10 @@
  * — `main()` would otherwise issue up to ~1,500 live read calls
  * against the configured vault on first invocation.
  *
- * Auth selection (matches the canonical Lore auth-resolution order):
+ * Auth selection (matches the canonical Kennen auth-resolution order):
  *   1. `NOTION_API_TOKEN` env (canonical, ntn-shaped tokens / PATs)
  *   2. `~/.config/notion/auth.json` (the ntn-managed bearer store)
- *      keyed by `LORE_NOTION_WORKSPACE_ID` / `NOTION_WORKSPACE_ID`
+ *      keyed by `KENNEN_NOTION_WORKSPACE_ID` / `NOTION_WORKSPACE_ID`
  *      or single-entry auto-pick; multi-workspace without selector
  *      fails loudly rather than silently picking `Object.keys()[0]`.
  *
@@ -43,7 +43,7 @@
  * skips that helper's XDG_CONFIG_HOME resolution and shape guards.
  * The conservative env-priority chain below covers the failure
  * modes that mattered for the original measurement; routing through
- * the ntn loader would require importing Lore's TypeScript source
+ * the ntn loader would require importing Kennen's TypeScript source
  * into this `.mjs` tool.
  *
  * Read-only: only issues `dataSources.query`, `databases.retrieve`,
@@ -79,29 +79,29 @@ const PROBE_CONCURRENCIES = [1, 3, 5, 10, 20]
 
 /**
  * Resolve a bearer token by honoring the same env-first priority chain
- * Lore's own auth-resolution path uses, but stop short of importing
- * Lore's TypeScript source into this `.mjs` tool — the imports would
+ * Kennen's own auth-resolution path uses, but stop short of importing
+ * Kennen's TypeScript source into this `.mjs` tool — the imports would
  * force either a `npm run build` precondition or a runtime switch to
  * `tsx`, both of which add friction for a one-shot operator probe.
  *
- * Priority (matches the canonical Lore auth-resolution order):
+ * Priority (matches the canonical Kennen auth-resolution order):
  *   1. `NOTION_API_TOKEN` env (canonical, ntn-shaped tokens / PATs)
  *   2. `~/.config/notion/auth.json` (the ntn-managed bearer store)
  *
  * Workspace selection from `auth.json`:
- *   1. `LORE_NOTION_WORKSPACE_ID` env (explicit selector)
+ *   1. `KENNEN_NOTION_WORKSPACE_ID` env (explicit selector)
  *   2. `NOTION_WORKSPACE_ID` env (ntn's native name)
  *   3. Single-entry auth.json — picks the only workspace
  *   Else → fail loudly. A silent `Object.keys(auth)[0]` would pick
  *   whichever workspace happened to sort first, which is unsafe on
  *   multi-workspace operator setups.
  *
- * Base URL: `LORE_NOTION_BASE_URL` → `NOTION_BASE_URL` → SDK default,
+ * Base URL: `KENNEN_NOTION_BASE_URL` → `NOTION_BASE_URL` → SDK default,
  * matching the canonical auth-resolution precedence.
  */
 function loadToken() {
   const baseUrl =
-    process.env["LORE_NOTION_BASE_URL"] ?? process.env["NOTION_BASE_URL"] ?? undefined
+    process.env["KENNEN_NOTION_BASE_URL"] ?? process.env["NOTION_BASE_URL"] ?? undefined
 
   const apiTokenEnv = process.env["NOTION_API_TOKEN"]
   if (apiTokenEnv) {
@@ -111,7 +111,7 @@ function loadToken() {
   const auth = JSON.parse(readFileSync(homedir() + "/.config/notion/auth.json", "utf8"))
   const keys = Object.keys(auth)
   const explicit =
-    process.env["LORE_NOTION_WORKSPACE_ID"] ?? process.env["NOTION_WORKSPACE_ID"]
+    process.env["KENNEN_NOTION_WORKSPACE_ID"] ?? process.env["NOTION_WORKSPACE_ID"]
   if (explicit) {
     if (!(explicit in auth)) {
       throw new Error(
@@ -124,16 +124,16 @@ function loadToken() {
   if (keys.length !== 1) {
     throw new Error(
       `~/.config/notion/auth.json has ${keys.length} workspaces; set ` +
-        `LORE_NOTION_WORKSPACE_ID (or NOTION_WORKSPACE_ID) to one of: ${keys.join(", ")}`,
+        `KENNEN_NOTION_WORKSPACE_ID (or NOTION_WORKSPACE_ID) to one of: ${keys.join(", ")}`,
     )
   }
   return { token: auth[keys[0]], workspaceId: keys[0], baseUrl }
 }
 
 function loadVaultConfig() {
-  const explicit = process.env["LORE_PROBE_VAULT_PAGE_ID"]
+  const explicit = process.env["KENNEN_PROBE_VAULT_PAGE_ID"]
   if (explicit) return { pageId: explicit }
-  const yaml = readFileSync("./.lore.yaml", "utf8")
+  const yaml = readFileSync("./.kennen.yaml", "utf8")
   const parsed = parseYaml(yaml)
   return { pageId: parsed.vault.pageId }
 }
@@ -297,7 +297,7 @@ async function main() {
   console.log("")
 
   // No rate-limit wrapper — direct SDK client. The whole point of the
-  // probe is to observe the server-side ceiling without Lore's local
+  // probe is to observe the server-side ceiling without Kennen's local
   // `createLimitedClient` pacing on top.
   const client = new Client({ auth: token, ...(baseUrl ? { baseUrl } : {}) })
 

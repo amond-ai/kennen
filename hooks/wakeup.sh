@@ -1,17 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-# Lore wake-up hook for Claude Code and Codex
+# Kennen wake-up hook for Claude Code and Codex
 #
 # Fires on:
 #   - Claude Code: UserPromptSubmit (runOnce: true) — delivers the user's
 #     prompt as JSON on stdin, including a `prompt` field. P3-05 forwards
-#     this to the helper via LORE_WAKEUP_EVENT so wake-up can seed a
+#     this to the helper via KENNEN_WAKEUP_EVENT so wake-up can seed a
 #     relevance search from the user's actual question.
 #   - Codex: SessionStart (startup|resume) — typically passes empty
 #     stdin since no user message exists yet. The helper falls back to
 #     unranked output in that case.
-# Registration lives in the assistant-specific config written by `lore install`.
+# Registration lives in the assistant-specific config written by `kennen install`.
 # Output is captured and injected into the assistant context.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -28,7 +28,7 @@ if [ ! -t 0 ]; then
 fi
 
 if [ -n "$WAKEUP_EVENT" ]; then
-  export LORE_WAKEUP_EVENT="$WAKEUP_EVENT"
+  export KENNEN_WAKEUP_EVENT="$WAKEUP_EVENT"
 fi
 
 # Output context to stdout for the host assistant to capture

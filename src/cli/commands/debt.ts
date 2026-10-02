@@ -1,13 +1,13 @@
 /**
- * `lore debt` — memory debt audit and maintenance workflow.
+ * `kennen debt` — memory debt audit and maintenance workflow.
  *
  * Two subcommands today:
  *
  * - `scan`         — Read-only. Walks the same service methods
- *                    the conflict scan and `lore status` already use,
+ *                    the conflict scan and `kennen status` already use,
  *                    classifies findings into debt categories, and
  *                    emits a prioritized markdown / JSON report.
- * - `create-tasks` — Idempotent `lore-task` creation for the
+ * - `create-tasks` — Idempotent `kennen-task` creation for the
  *                    surfaced P1/P2 debt items so memory hygiene folds
  *                    into normal task triage.
  *
@@ -16,7 +16,7 @@
  */
 
 import { Command } from "commander"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { redactDebugError } from "../../debug-redact.js"
 import {
   debtTaskMarker,
@@ -167,20 +167,20 @@ function parseDebtCreateTasksCliOptions(raw: {
  * uniform across the two commands.
  */
 async function resolveTargetProject(
-  services: LoreServices,
+  services: KennenServices,
   projectName: string | undefined,
   allProjects: boolean
 ): Promise<{ id: string; name: string } | undefined> {
   if (allProjects || projectName === undefined) return undefined
   const explicit = validateExplicitProjectScopeName(projectName, "--project", {
-    listHint: "run `lore status projects` to list configured projects",
+    listHint: "run `kennen status projects` to list configured projects",
   })
   if (explicit === undefined) return undefined
   const project = await resolveProjectScopeName(
     services.projects,
     explicit,
     "--project",
-    { listHint: "run `lore status projects` to list configured projects" }
+    { listHint: "run `kennen status projects` to list configured projects" }
   )
   return { id: project.id, name: project.name }
 }
@@ -212,7 +212,7 @@ export function renderDebtMarkdown(report: DebtReport): string {
   // the probe was actually attempted. A category-filtered scan that
   // excluded `scope_anomaly` (`--category orphan_fact`) sets
   // `scopeAnomalyProbeSkipped: true` and reports `0` instead, so the
-  // false-clean message and the `lore migrate` prompt don't fire on
+  // false-clean message and the `kennen migrate` prompt don't fire on
   // scans that deliberately skipped the category.
   const scopeProbeDegraded =
     !report.stats.scopeAnomalyProbeSkipped && report.stats.scopeAnomalies === null
@@ -230,7 +230,7 @@ export function renderDebtMarkdown(report: DebtReport): string {
       )
     } else if (scopeProbeDegraded) {
       lines.push(
-        "No debt detected in the inspected window, BUT the scope-anomaly probe degraded (pre-#283 vault). Run `lore migrate` to enable the full audit."
+        "No debt detected in the inspected window, BUT the scope-anomaly probe degraded (pre-#283 vault). Run `kennen migrate` to enable the full audit."
       )
     } else {
       lines.push("No debt detected. The vault is clean.")
@@ -241,7 +241,7 @@ export function renderDebtMarkdown(report: DebtReport): string {
       // alternate branch above already inlined the degraded message.
       lines.push("")
       lines.push(
-        "_Note: scope-anomaly probe degraded (pre-#283 vault — Scope Kind / Expires At columns missing). Run `lore migrate` to enable._"
+        "_Note: scope-anomaly probe degraded (pre-#283 vault — Scope Kind / Expires At columns missing). Run `kennen migrate` to enable._"
       )
     }
     lines.push("")
@@ -281,7 +281,7 @@ export function renderDebtMarkdown(report: DebtReport): string {
     lines.push("---")
     lines.push("")
     lines.push(
-      "_Scope-anomaly probe degraded (pre-#283 vault). Run `lore migrate` to enable the Scope Kind / Expires At columns._"
+      "_Scope-anomaly probe degraded (pre-#283 vault). Run `kennen migrate` to enable the Scope Kind / Expires At columns._"
     )
     lines.push("")
   }
@@ -414,7 +414,7 @@ const scanSubcommand = new Command("scan")
  * Re-running create-tasks should not re-mint a closed audit row.
  */
 export async function findExistingDebtTask(
-  services: LoreServices,
+  services: KennenServices,
   item: DebtItem,
   projectId: string | undefined
 ): Promise<string | null> {
@@ -452,7 +452,7 @@ export async function findExistingDebtTask(
 
 const createTasksSubcommand = new Command("create-tasks")
   .description(
-    "Create one lore-task per surfaced debt item. Idempotent by debt id: " +
+    "Create one kennen-task per surfaced debt item. Idempotent by debt id: " +
       "re-running skips items whose audit task already exists in the vault " +
       "(any state). Defaults to P1/P2 only and 25 items per run; raise " +
       "--limit deliberately. Exits non-zero on per-item failure."

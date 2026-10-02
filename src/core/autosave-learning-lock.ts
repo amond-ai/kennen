@@ -10,7 +10,7 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 
 const LOCK_STALE_MS = 10 * 60 * 1000
 const LOCK_HEARTBEAT_MS = 30_000
@@ -36,9 +36,9 @@ interface ActiveContender {
 }
 
 function lockDir(): string {
-  const root = process.env["LORE_HOOK_STATE_DIR"]
-    ? join(process.env["LORE_HOOK_STATE_DIR"])
-    : join(tmpdir(), "lore-hook-state")
+  const root = process.env["KENNEN_HOOK_STATE_DIR"]
+    ? join(process.env["KENNEN_HOOK_STATE_DIR"])
+    : join(tmpdir(), "kennen-hook-state")
   return join(root, "autosave-learning-locks")
 }
 
@@ -46,7 +46,7 @@ function lockDigest(lockKey: string): string {
   return createHash("sha256").update(lockKey).digest("hex")
 }
 
-export class AutosaveLearningLockTimeoutError extends LoreError<"autosave-learning-lock-timeout"> {
+export class AutosaveLearningLockTimeoutError extends KennenError<"autosave-learning-lock-timeout"> {
   constructor(lockKey: string, attempts: number, timeoutMs = LOCK_ACQUIRE_TIMEOUT_MS) {
     super(
       "autosave-learning-lock-timeout",

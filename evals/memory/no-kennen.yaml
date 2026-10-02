@@ -1,4 +1,4 @@
 # Synthetic fixture. Do not copy production vault content into eval fixtures.
-name: no-lore
-description: Agent receives no Lore tools or context.
+name: no-kennen
+description: Agent receives no Kennen tools or context.
 memories: []

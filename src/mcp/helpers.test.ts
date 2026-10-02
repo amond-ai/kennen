@@ -9,7 +9,7 @@ import {
   toolError,
 } from "./helpers.js"
 import { WriteBudgetExceededError } from "../notion/rate-limit.js"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 
 // Wrapper around `vi.spyOn(process.stderr, "write")` that returns the
 // spy at the loose `MockInstance` shape vitest infers. The
@@ -85,7 +85,7 @@ describe("toolError", () => {
 
   it("preserves write-budget errors verbatim", () => {
     const err = new WriteBudgetExceededError(
-      "lore-memory.abcdef0123456789abcdef0123456789",
+      "kennen-memory.abcdef0123456789abcdef0123456789",
       10,
       11
     )
@@ -96,10 +96,10 @@ describe("toolError", () => {
     })
   })
 
-  it("renders LoreError kind and redacted details as structured metadata", () => {
+  it("renders KennenError kind and redacted details as structured metadata", () => {
     const pageId = "abcdef0123456789abcdef0123456789"
     const token = "secret_aaaaaaaaaaaaaaaaaaaaaaaa"
-    const err = new LoreError("memory-create-partial", `Partial failure on ${pageId}`, {
+    const err = new KennenError("memory-create-partial", `Partial failure on ${pageId}`, {
       pageId,
       cleanedUp: false,
       bodyWriteCauseMessage: `body=${JSON.stringify({ token, pageId })}`,
@@ -120,13 +120,13 @@ describe("toolError", () => {
 })
 
 describe("debugLogAutoFactFailure (0.8.0/07)", () => {
-  it("is a no-op when LORE_DEBUG is unset (zero stderr writes)", () => {
+  it("is a no-op when KENNEN_DEBUG is unset (zero stderr writes)", () => {
     // The helper exists for opt-in operator observability — running
-    // without `LORE_DEBUG=1` must not flood stderr on every save
+    // without `KENNEN_DEBUG=1` must not flood stderr on every save
     // because the auto-emit branch fans out per-entity. Same posture
     // as the shared partial-failure logger.
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true)
-    vi.stubEnv("LORE_DEBUG", "")
+    vi.stubEnv("KENNEN_DEBUG", "")
     try {
       debugLogAutoFactFailure("save", "mem-1", "PR #1234", new Error("notion 429"))
       expect(write).not.toHaveBeenCalled()
@@ -136,9 +136,9 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
     }
   })
 
-  it("writes one stderr line under LORE_DEBUG=1 with source/kind/memoryId/entity/error fields", () => {
+  it("writes one stderr line under KENNEN_DEBUG=1 with source/kind/memoryId/entity/error fields", () => {
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
     try {
       debugLogAutoFactFailure("save", "mem-1", "PR #1234", new Error("notion 429"))
       expect(write).toHaveBeenCalledTimes(1)
@@ -148,7 +148,7 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
       // key set across both save creates and update creates /
       // invalidates (issue #491).
       expect(line).toBe(
-        "[lore] auto-fact-failure: source=save kind=create memoryId=mem-1 entity=PR #1234 error=notion 429\n"
+        "[kennen] auto-fact-failure: source=save kind=create memoryId=mem-1 entity=PR #1234 error=notion 429\n"
       )
     } finally {
       vi.unstubAllEnvs()
@@ -163,7 +163,7 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
     // sustained issues with the invalidate write from transient
     // dedup races on create.
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
     try {
       debugLogAutoFactFailure(
         "update",
@@ -191,7 +191,7 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
     // here so the helper's union doesn't drift if a future
     // contributor renames the call site.
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
     try {
       debugLogAutoFactFailure("update", "mem-2", "AuthService", new Error("dedup race"))
       const line = write.mock.calls[0][0] as string
@@ -207,7 +207,7 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
 
   it("stringifies non-Error rejections so a thrown string still surfaces", () => {
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
     try {
       debugLogAutoFactFailure("save", "mem-3", "Foo", "bare-string-throw")
       const line = write.mock.calls[0][0] as string
@@ -223,7 +223,7 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
     // tokenizer or memory-id source surfaces a `\n` or `\t` we must
     // not split one logical failure into multiple parsed records.
     const write = vi.spyOn(process.stderr, "write").mockReturnValue(true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
     try {
       debugLogAutoFactFailure(
         "save",
@@ -245,8 +245,8 @@ describe("debugLogAutoFactFailure (0.8.0/07)", () => {
     }
   })
 })
-describe("LORE_DEBUG redaction routing (issue #488)", () => {
-  // Pins the contract that LORE_DEBUG-gated stderr emitters in
+describe("KENNEN_DEBUG redaction routing (issue #488)", () => {
+  // Pins the contract that KENNEN_DEBUG-gated stderr emitters in
   // this module routes its error message through `redactDebugError`
   // before writing. Page-id-shaped substrings and forward-compatible
   // SDK leak shapes (`body=`, `headers=`) are scrubbed; the
@@ -257,7 +257,7 @@ describe("LORE_DEBUG redaction routing (issue #488)", () => {
 
   it("debugLogAutoFactFailure routes through the redactor too (single-pass coverage)", () => {
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    process.env.LORE_DEBUG = "1"
+    process.env.KENNEN_DEBUG = "1"
     try {
       const id = "abcdef0123456789abcdef0123456789"
       debugLogAutoFactFailure(
@@ -271,42 +271,42 @@ describe("LORE_DEBUG redaction routing (issue #488)", () => {
       // Explicit field is still readable.
       expect(line).toContain("memoryId=mem-1")
     } finally {
-      delete process.env.LORE_DEBUG
+      delete process.env.KENNEN_DEBUG
       stderr.mockRestore()
     }
   })
 
   it("debugLogTouchFailure routes through the redactor too", () => {
-    // Coverage parity with the other LORE_DEBUG emitters in this
+    // Coverage parity with the other KENNEN_DEBUG emitters in this
     // module — the touch path fires on every read citation, so an
     // SDK error carrying a page id under load would otherwise rain
     // recon-grade detail into stderr.
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    process.env.LORE_DEBUG = "1"
+    process.env.KENNEN_DEBUG = "1"
     try {
       const id = "abcdef0123456789abcdef0123456789"
-      debugLogTouchFailure("lore-query", "mem-7", new Error(`page ${id} 429`))
+      debugLogTouchFailure("kennen-query", "mem-7", new Error(`page ${id} 429`))
       const line = String(stderr.mock.calls[0]![0])
       expect(line).toContain("error=page <page-id> 429")
       expect(line).toContain("memory=mem-7")
-      expect(line).toContain("tool=lore-query")
+      expect(line).toContain("tool=kennen-query")
     } finally {
-      delete process.env.LORE_DEBUG
+      delete process.env.KENNEN_DEBUG
       stderr.mockRestore()
     }
   })
 
   it("debugLogFactTouchFailure routes through the redactor too", () => {
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    process.env.LORE_DEBUG = "1"
+    process.env.KENNEN_DEBUG = "1"
     try {
       const id = "abcdef0123456789abcdef0123456789"
-      debugLogFactTouchFailure("lore-query", "fact-3", new Error(`fact ${id}`))
+      debugLogFactTouchFailure("kennen-query", "fact-3", new Error(`fact ${id}`))
       const line = String(stderr.mock.calls[0]![0])
       expect(line).toContain("error=fact <page-id>")
       expect(line).toContain("fact=fact-3")
     } finally {
-      delete process.env.LORE_DEBUG
+      delete process.env.KENNEN_DEBUG
       stderr.mockRestore()
     }
   })
@@ -317,7 +317,7 @@ describe("LORE_DEBUG redaction routing (issue #488)", () => {
     // `fact=` interpolations would silently break operator
     // triage. Pin the safe-passthrough contract per emitter.
     //
-    // Each test saves the prior `LORE_DEBUG` value and restores it in
+    // Each test saves the prior `KENNEN_DEBUG` value and restores it in
     // `finally` so a vitest run that already had the env var set
     // (e.g. an outer harness, a watch-mode rerun, or a sibling test
     // that leaked the gate state) doesn't see its value silently
@@ -332,17 +332,17 @@ describe("LORE_DEBUG redaction routing (issue #488)", () => {
     let stderr: ReturnType<typeof spyStderr>
 
     beforeEach(() => {
-      priorDebug = process.env["LORE_DEBUG"]
-      process.env["LORE_DEBUG"] = "1"
+      priorDebug = process.env["KENNEN_DEBUG"]
+      process.env["KENNEN_DEBUG"] = "1"
       stderr = spyStderr()
     })
 
     afterEach(() => {
       stderr.mockRestore()
       if (priorDebug === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = priorDebug
+        process.env["KENNEN_DEBUG"] = priorDebug
       }
     })
 
@@ -350,23 +350,23 @@ describe("LORE_DEBUG redaction routing (issue #488)", () => {
       debugLogAutoFactFailure("save", "mem-1", "PR #1234", new Error("notion 429"))
       const line = String(stderr.mock.calls[0]![0])
       expect(line).toBe(
-        "[lore] auto-fact-failure: source=save kind=create memoryId=mem-1 entity=PR #1234 error=notion 429\n"
+        "[kennen] auto-fact-failure: source=save kind=create memoryId=mem-1 entity=PR #1234 error=notion 429\n"
       )
     })
 
     it("debugLogTouchFailure with a clean message preserves memory id and tool", () => {
-      debugLogTouchFailure("lore-query", "mem-1", new Error("notion 429"))
+      debugLogTouchFailure("kennen-query", "mem-1", new Error("notion 429"))
       const line = String(stderr.mock.calls[0]![0])
       expect(line).toBe(
-        "[lore] touch-failure: memory=mem-1 error=notion 429 tool=lore-query\n"
+        "[kennen] touch-failure: memory=mem-1 error=notion 429 tool=kennen-query\n"
       )
     })
 
     it("debugLogFactTouchFailure with a clean message preserves fact id and tool", () => {
-      debugLogFactTouchFailure("lore-query", "fact-1", new Error("notion 429"))
+      debugLogFactTouchFailure("kennen-query", "fact-1", new Error("notion 429"))
       const line = String(stderr.mock.calls[0]![0])
       expect(line).toBe(
-        "[lore] fact-touch-failure: fact=fact-1 error=notion 429 tool=lore-query\n"
+        "[kennen] fact-touch-failure: fact=fact-1 error=notion 429 tool=kennen-query\n"
       )
     })
   })
@@ -379,8 +379,8 @@ describe("formatDispatchError", () => {
     const parsed = schema.safeParse({ kind: "task" }, { reportInput: true })
     expect(parsed.success).toBe(false)
     if (parsed.success) return
-    expect(formatDispatchError("lore-memory", parsed.error)).toBe(
-      `lore-memory: kind: Invalid option: expected one of "note"|"decision", received 'task'`
+    expect(formatDispatchError("kennen-memory", parsed.error)).toBe(
+      `kennen-memory: kind: Invalid option: expected one of "note"|"decision", received 'task'`
     )
   })
 
@@ -389,7 +389,7 @@ describe("formatDispatchError", () => {
       const parsed = schema.safeParse({ kind }, { reportInput: true })
       expect(parsed.success).toBe(false)
       if (parsed.success) return
-      const message = formatDispatchError("lore-memory", parsed.error)
+      const message = formatDispatchError("kennen-memory", parsed.error)
       expect(message).not.toContain("received")
       expect(message).not.toContain("secret")
     }
@@ -403,8 +403,8 @@ describe("formatDispatchError", () => {
     const parsed = union.safeParse({ action: "sav\ne" }, { reportInput: true })
     expect(parsed.success).toBe(false)
     if (parsed.success) return
-    expect(formatDispatchError("lore-memory", parsed.error)).toBe(
-      `lore-memory: action: Invalid discriminator value. Expected 'save' | 'search', received 'sav e'`
+    expect(formatDispatchError("kennen-memory", parsed.error)).toBe(
+      `kennen-memory: action: Invalid discriminator value. Expected 'save' | 'search', received 'sav e'`
     )
   })
 })

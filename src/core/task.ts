@@ -13,13 +13,13 @@
  * `(Subject, Predicate, Object)` triples — `AuthService uses JWT`.
  * Tracked-work rows formerly landed in Facts with 187-char-average
  * ticket descriptions in the Object slot, which made structural
- * queries useless on that data and flooded `lore-query action='ask'`
+ * queries useless on that data and flooded `kennen-query action='ask'`
  * with prose. Tasks pull this prose out of Facts and into the right shape.
  *
  * Service parallels `DecisionService`: shares the Memories DB with
  * `MemoryService`, sets the `Kind` discriminator on every create, and
  * exposes index-tier listings that skip the `retrieveMarkdown` body
- * fetch. Cross-service orchestration (e.g. `lore-query action='ask'`
+ * fetch. Cross-service orchestration (e.g. `kennen-query action='ask'`
  * running fact + task queries together) lives at the MCP tool layer.
  */
 
@@ -54,7 +54,7 @@ import {
 } from "../notion/live-pages.js"
 import { hydrateMemoryRelationProperties, pageToMemory } from "./memory.js"
 import { validateRichTextMetadataFields } from "./rich-text-schema.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
 
 export const TASK_CLOSE_MANY_MAX_IDS = 100
 export const TASK_CLOSE_MANY_CONCURRENCY = 4
@@ -166,10 +166,10 @@ export function isCleared(value: string | null | undefined): boolean {
 /**
  * Thrown when task properties land in Notion but the description body
  * write fails. `pageId` names the row created by `pages.create`;
- * `cleanedUp` tells callers whether Lore archived that row before
+ * `cleanedUp` tells callers whether Kennen archived that row before
  * surfacing the failure.
  */
-export class TaskCreatePartialFailureError extends LoreError<"task-create-partial"> {
+export class TaskCreatePartialFailureError extends KennenError<"task-create-partial"> {
   readonly pageId: string
   readonly cleanedUp: boolean
   readonly bodyWriteError: unknown
@@ -217,7 +217,7 @@ export class TaskCreatePartialFailureError extends LoreError<"task-create-partia
  * the message. The message is prefixed with the class name because MCP
  * transports flatten errors to text.
  */
-export class TaskUpdatePartialFailureError extends LoreError<"task-update-partial"> {
+export class TaskUpdatePartialFailureError extends KennenError<"task-update-partial"> {
   readonly taskId: string
   readonly failedPhase: "body"
   readonly persisted: { readonly properties: true; readonly body: false }
@@ -246,7 +246,7 @@ export class TaskUpdatePartialFailureError extends LoreError<"task-update-partia
   }
 }
 
-export class TaskClosePartialFailureError extends LoreError<"task-close-partial"> {
+export class TaskClosePartialFailureError extends KennenError<"task-close-partial"> {
   readonly taskId: string
   readonly state: CloseTaskState
   readonly doneAt: string
@@ -353,7 +353,7 @@ export class TaskService {
   /**
    * Create a `Kind = task` memory. `subject` becomes the page title,
    * `description` the page body. The `Entity` column defaults to the
-   * subject so `lore-query action='ask'` lookups always have a column
+   * subject so `kennen-query action='ask'` lookups always have a column
    * to match against — the migration relies on this when porting fact
    * subjects.
    *
@@ -388,7 +388,7 @@ export class TaskService {
         source: "manual",
         kind: "task",
         // `Review By` doubles as the task's due date — same column,
-        // same overdue semantics so `lore-query action='audit'` and
+        // same overdue semantics so `kennen-query action='audit'` and
         // the wake-up overdue branches keep working without new logic.
         reviewBy: input.dueDate,
         affectsIds: input.affectsIds,
@@ -537,7 +537,7 @@ export class TaskService {
     }
     if (opts?.entities && opts.entities.length > 0) {
       // Server-side OR over `Entity rich_text contains` so alias-aware
-      // recall in `lore-query action='ask'` produces the same task set
+      // recall in `kennen-query action='ask'` produces the same task set
       // whether the user typed the canonical name or any registered
       // alias. A
       // single variant collapses to a flat clause so legacy
@@ -580,7 +580,7 @@ export class TaskService {
 
     const baseFilter = filters.length > 1 ? { and: filters } : filters[0]
     // Default scope filter. A session-scoped task created by another
-    // reader's session must not surface in this reader's `lore-task
+    // reader's session must not surface in this reader's `kennen-task
     // action='list'`; the filter applies the same scope-inclusion rule
     // as `MemoryService.list`. `includeOutOfScope: true` opts out for
     // audit/operator paths; the filter no-ops when no scope context
@@ -635,7 +635,7 @@ export class TaskService {
           filter: filter as QueryDataSourceParameters["filter"],
           // Default sort is due-date triage order: most-overdue /
           // soonest-due rows float to the top, matching the
-          // `lore-query action='audit'` default. Wake-up passes
+          // `kennen-query action='audit'` default. Wake-up passes
           // last-edited variants to load Stale / Active bucket windows
           // without due-date ordering hiding null-due rows.
           sorts,
@@ -663,7 +663,7 @@ export class TaskService {
    * Decodes plain-text fields at the write boundary so doubly-encoded
    * autosave input (`&amp;amp;`) resolves to plain text — same posture
    * `MemoryService.update` takes (PF1-06). `Blocked By` and `Entity`
-   * are agent-boundary fields that downstream `lore-query action='ask'`
+   * are agent-boundary fields that downstream `kennen-query action='ask'`
    * and future similarity surfaces will read; idempotent on clean values.
    */
   async update(id: string, input: UpdateTaskInput): Promise<Task> {
@@ -828,7 +828,7 @@ export class TaskService {
    * warning. Acceptable because closing work is the terminal step in the
    * lifecycle — overwriting an `in-progress` mid-flight only happens when
    * agents disagree about whether work is done, and in that case
-   * downstream `lore-task action='list'` queries with `state: "done"`
+   * downstream `kennen-task action='list'` queries with `state: "done"`
    * surface the closed row
    * for re-triage. If we ever need stricter semantics, the model would
    * be `expectedCurrentState` à la decision supersession's read-then-write
@@ -1002,7 +1002,7 @@ export class TaskService {
   }
 
   /**
-   * Count active tasks broken into the buckets `lore status` surfaces.
+   * Count active tasks broken into the buckets `kennen status` surfaces.
    * One paginated walk against `list({ states: ACTIVE_TASK_STATES })`
    * per call — bounded by total active count, not vault size.
    *
@@ -1136,7 +1136,7 @@ export class TaskService {
     /**
      * Opt out of the default-scope filter so audit /
      * migration callers can see narrow-scope and expired rows. The
-     * MCP `lore-query action='audit'` surface consumes this method,
+     * MCP `kennen-query action='audit'` surface consumes this method,
      * so the gate keeps the default `false`: a session-scoped
      * overdue task must not leak to a different reader through
      * audit any more than it does through `list()`.
@@ -1164,7 +1164,7 @@ export class TaskService {
     // (Notion's 2-deep cap), client-side `matchesDefaultScope`
     // threaded as `collectLivePages.extraFilter` enforces the
     // kind+key binding so a session-scoped overdue task drops out
-    // of `lore-query action='audit'` for readers whose session id
+    // of `kennen-query action='audit'` for readers whose session id
     // differs.
     const filter =
       opts?.includeOutOfScope === true || !this.scopeFilterEnabled
@@ -1280,8 +1280,8 @@ export function taskDaysStale(
 }
 
 /**
- * Aggregated task counts surfaced by `lore status` /
- * `lore-context action='status'`. `closedLast30Days` is `null` on
+ * Aggregated task counts surfaced by `kennen status` /
+ * `kennen-context action='status'`. `closedLast30Days` is `null` on
  * vaults that lack the `Done At` column; the renderer
  * suppresses the closure-rate line entirely in that case.
  */
@@ -1376,8 +1376,8 @@ export async function taskStats(
 const TASKS_PREFIX = "Tasks: "
 
 /**
- * Render the Tasks line from a `TaskStats` report. Both `lore status`
- * (CLI) and `lore-context action='status'` (MCP) call this so the
+ * Render the Tasks line from a `TaskStats` report. Both `kennen status`
+ * (CLI) and `kennen-context action='status'` (MCP) call this so the
  * rendered output is byte-identical across surfaces.
  *
  * Returns one or two lines:

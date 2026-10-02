@@ -2,7 +2,7 @@ import { Command } from "commander"
 import { access, readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { findConfigFile, loadConfig } from "../../config.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import {
   reconcileActiveTasks,
   formatReconcileOutput,
@@ -36,7 +36,7 @@ import {
 import { parsePositiveDecimalInteger, parseUnitIntervalDecimal } from "../parse.js"
 import { resolveProfileFromConfigAtRoot } from "../../profile/index.js"
 
-const PROJECT_LIST_HINT = "run `lore status projects` to list configured projects"
+const PROJECT_LIST_HINT = "run `kennen status projects` to list configured projects"
 const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/
 const YMD_HINT = "must be YYYY-MM-DD"
 
@@ -50,8 +50,8 @@ const TASK_STATES: readonly TaskState[] = [
 const CLOSE_STATES: readonly TaskState[] = ["done", "cancelled"]
 
 /**
- * Default per-section render cap for `lore tasks list`. Matches the MCP
- * `lore-task action='list'` `DEFAULT_TASKS_LIMIT` so an operator and
+ * Default per-section render cap for `kennen tasks list`. Matches the MCP
+ * `kennen-task action='list'` `DEFAULT_TASKS_LIMIT` so an operator and
  * an agent see the same triage window on the same vault.
  */
 const DEFAULT_LIST_LIMIT = 10
@@ -86,13 +86,13 @@ type CliParseResult<T> = CliParseOk<T> | CliParseErr
  * blocker label that is missing, null, or whitespace-only is
  * unactionable: it tells triage "this task is blocked" without naming
  * the blocker, which is the failure mode the cross-field guard exists
- * to prevent. Without this trim, `lore tasks create "T" --state blocked
+ * to prevent. Without this trim, `kennen tasks create "T" --state blocked
  * --blocked-by "   "` would land a row whose `Blocked By` column reads
  * as visually blank — exactly the situation an operator triaging
- * `lore tasks list` cannot act on.
+ * `kennen tasks list` cannot act on.
  *
  * Defined as a CLI-local helper rather than imported from the MCP
- * `lore-task` handler to avoid a CLI → MCP-tools dependency edge;
+ * `kennen-task` handler to avoid a CLI → MCP-tools dependency edge;
  * the predicate is small and the parity contract is documented here.
  */
 function isUnusableBlockerLabel(value: string | undefined | null): boolean {
@@ -156,7 +156,7 @@ export function parseReconcileCliOptions(raw: {
  * assert project resolution without standing up a CLI process.
  */
 export async function runReconcile(
-  services: LoreServices,
+  services: KennenServices,
   opts: ReconcileCliOptions
 ): Promise<string> {
   const projectId = await resolveProjectIdForRead(services, opts.projectName)
@@ -227,7 +227,7 @@ const reconcileCommand = new Command("reconcile")
  * outside any configured project flows through as vault-wide.
  */
 async function resolveProjectIdForRead(
-  services: LoreServices,
+  services: KennenServices,
   projectName: string | undefined,
   opts: { useContextProject?: boolean } = {}
 ): Promise<string | undefined> {
@@ -285,21 +285,21 @@ function parseTagsList(
 }
 
 async function loadActiveTagVocabularyForCli(): Promise<readonly string[]> {
-  const rawRoot = process.env["LORE_CONFIG_ROOT"]
+  const rawRoot = process.env["KENNEN_CONFIG_ROOT"]
   const explicitRoot = rawRoot?.trim() ? rawRoot.trim() : undefined
   let configPath: string
   let configRoot: string
   if (explicitRoot) {
     const root = resolve(explicitRoot)
     configRoot = root
-    configPath = resolve(root, ".lore.yaml")
+    configPath = resolve(root, ".kennen.yaml")
     try {
       await access(configPath)
     } catch {
       throw new Error(
-        `LORE_CONFIG_ROOT=${root} but no .lore.yaml exists there. ` +
-          "Re-run `lore install` from the project directory or unset " +
-          "LORE_CONFIG_ROOT to fall back to the upward search."
+        `KENNEN_CONFIG_ROOT=${root} but no .kennen.yaml exists there. ` +
+          "Re-run `kennen install` from the project directory or unset " +
+          "KENNEN_CONFIG_ROOT to fall back to the upward search."
       )
     }
   } else {
@@ -352,7 +352,7 @@ function validateYmd(
 
 /**
  * Validate a clearable YYYY-MM-DD value. An empty string clears the
- * column on update — same convention `lore-task action='update'` uses
+ * column on update — same convention `kennen-task action='update'` uses
  * via `clearableYmdDateSchema`. `undefined` means "leave untouched."
  */
 function validateClearableYmd(
@@ -404,11 +404,11 @@ function formatTaskListRow(task: TaskSummary, today: string): string {
 }
 
 /**
- * The fields that reuse on `lore tasks create` structurally drops
+ * The fields that reuse on `kennen tasks create` structurally drops
  * because `findExactReuseTarget` consumes only `(subject, entity,
  * projectIds)`. Surfaced in the response so an operator who tried to
  * land a state transition or due-date bump alongside the create knows
- * none of those fields took effect, and is pointed at `lore tasks
+ * none of those fields took effect, and is pointed at `kennen tasks
  * update <id>` for the correction.
  *
  * Parallels the MCP-side `collectIgnoredReuseFields` so
@@ -419,11 +419,11 @@ function formatTaskListRow(task: TaskSummary, today: string): string {
  * `topics.getOrCreate` is deferred until after the reuse gate (per
  * the reuse short-circuit at `runTaskCreate`); on a reuse hit, a
  * caller-passed `--topic` had no observable effect on the existing
- * row's topic relation. Without this, `lore tasks create "T"
+ * row's topic relation. Without this, `kennen tasks create "T"
  * --project Widget --topic Reviews` could reuse an existing task,
  * silently skip the topic create, and produce no audit signal — the
  * operator would believe the topic landed when it didn't, with no
- * `lore tasks update --topic` flag to apply it after the fact.
+ * `kennen tasks update --topic` flag to apply it after the fact.
  */
 function collectIgnoredCreateReuseFields(opts: CreateCliOptions): string[] {
   const ignored: string[] = []
@@ -506,7 +506,7 @@ export function parseCreateCliOptions(
   // Cross-field rule matches the MCP handler's `isUnusableBlockerLabel`
   // guard: a `blocked` task without a meaningful blocker label is
   // unactionable. Whitespace-only blockers (`"   "`) trip the same gate
-  // — the column would render as visually blank in `lore tasks list`,
+  // — the column would render as visually blank in `kennen tasks list`,
   // which is the same triage hazard as a missing label.
   if (state.value === "blocked" && isUnusableBlockerLabel(raw.blockedBy)) {
     return {
@@ -551,9 +551,9 @@ export function parseCreateCliOptions(
  * `services.tasks.create` directly — same TaskService the MCP handler
  * uses — and runs the same assertive-reuse probe via
  * `findDuplicateActiveTasks` + `findExactReuseTarget` so a duplicate
- * `lore tasks create` short-circuits to `Reused existing task: ...`
+ * `kennen tasks create` short-circuits to `Reused existing task: ...`
  * instead of landing a second structurally-identical row in the
- * vault. Idempotency parity with `lore-task action='create'` is the
+ * vault. Idempotency parity with `kennen-task action='create'` is the
  * load-bearing rule — the task-reuse predicate's docstring documents
  * the vocabulary the response surfaces.
  *
@@ -563,7 +563,7 @@ export function parseCreateCliOptions(
  * stable contract programmatic shell consumers parse.
  */
 export async function runTaskCreate(
-  services: LoreServices,
+  services: KennenServices,
   opts: CreateCliOptions
 ): Promise<CreateCliResult> {
   const subjectValidation = validateTaskSubjectForCreate(opts)
@@ -595,7 +595,7 @@ export async function runTaskCreate(
     projectLabel = "none (repo-wide)"
   }
 
-  // Assertive-reuse probe. Mirrors the `lore-task` MCP handler's
+  // Assertive-reuse probe. Mirrors the `kennen-task` MCP handler's
   // `handleCreate`: probe for active tasks with the same entity,
   // then short-circuit when an exact `(subject, entity,
   // projectIds)` match exists. The probe runs BEFORE create so a
@@ -623,7 +623,7 @@ export async function runTaskCreate(
     projectId,
     features,
     onError: (err) =>
-      debugLogPartialFailures("lore tasks create", [
+      debugLogPartialFailures("kennen tasks create", [
         { rootId: "duplicate-probe", error: err },
       ]),
   })
@@ -637,7 +637,7 @@ export async function runTaskCreate(
   if (reuseTarget !== null) {
     // Reuse path: structurally-identical task already exists. Render
     // the same response shape the MCP handler does, but with CLI-form
-    // CTAs (`lore tasks update <id>` / `lore tasks close <id>`) so an
+    // CTAs (`kennen tasks update <id>` / `kennen tasks close <id>`) so an
     // operator's next step lives in their shell, not a tool host.
     const ignored = collectIgnoredCreateReuseFields(opts)
     const warnings: string[] = []
@@ -658,14 +658,14 @@ export async function runTaskCreate(
     if (ignored.length > 0) {
       lines.push(
         `Ignored on reuse: ${ignored.join(", ")} — use ` +
-          `\`lore tasks update ${reuseTarget.id} ...\` to change them.`
+          `\`kennen tasks update ${reuseTarget.id} ...\` to change them.`
       )
     }
     lines.push(
       "",
       "Subject and entity match an existing active task; nothing was created.",
-      `Update the existing row if needed: lore tasks update ${reuseTarget.id} ...`,
-      `Close it when the work is done: lore tasks close ${reuseTarget.id}`
+      `Update the existing row if needed: kennen tasks update ${reuseTarget.id} ...`,
+      `Close it when the work is done: kennen tasks close ${reuseTarget.id}`
     )
 
     return {
@@ -914,7 +914,7 @@ export function parseUpdateCliOptions(
 }
 
 export async function runTaskUpdate(
-  services: LoreServices,
+  services: KennenServices,
   opts: UpdateCliOptions
 ): Promise<UpdateCliResult> {
   const updated = await services.tasks.update(opts.taskId, {
@@ -1064,7 +1064,7 @@ export function parseCloseCliOptions(
 }
 
 export async function runTaskClose(
-  services: LoreServices,
+  services: KennenServices,
   opts: CloseCliOptions
 ): Promise<CloseCliResult> {
   let closeResult: Awaited<ReturnType<typeof services.tasks.close>> | undefined =
@@ -1245,7 +1245,7 @@ async function readIdsFromSource(idsFrom: string): Promise<string> {
 }
 
 export async function runTaskCloseMany(
-  services: LoreServices,
+  services: KennenServices,
   opts: CloseManyCliRunOptions
 ): Promise<CloseManyCliResult> {
   const result = await services.tasks.closeMany({
@@ -1441,7 +1441,7 @@ export function parseListCliOptions(raw: {
 }
 
 async function projectNameMapForRows(
-  services: LoreServices,
+  services: KennenServices,
   tasks: readonly TaskSummary[]
 ): Promise<Map<string, string>> {
   const ids = new Set(tasks.flatMap((task) => task.projectIds))
@@ -1450,7 +1450,7 @@ async function projectNameMapForRows(
   try {
     projects = await services.projects.list("any")
   } catch (err) {
-    debugLogPartialFailures("lore tasks list", [
+    debugLogPartialFailures("kennen tasks list", [
       { rootId: "project-name-enrichment", error: err },
     ])
     return new Map()
@@ -1484,13 +1484,13 @@ function rowFromTask(
 }
 
 export async function runTaskList(
-  services: LoreServices,
+  services: KennenServices,
   opts: ListCliOptions
 ): Promise<ListCliResult> {
   const projectId = await resolveProjectIdForRead(services, opts.projectName, {
     useContextProject: !opts.allProjects,
   })
-  // Default state set matches the MCP `lore-task action='list'` default —
+  // Default state set matches the MCP `kennen-task action='list'` default —
   // active states only. An explicit `--state done` (or `cancelled`) widens
   // to closed work, same posture as the MCP filter.
   const states: TaskState[] = opts.state ? [opts.state] : [...ACTIVE_TASK_STATES]

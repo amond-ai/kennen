@@ -24,10 +24,10 @@ import {
 } from "../../hooks/transcript.js"
 import { defaultAdapters } from "./codex-adapter.js"
 import {
-  defaultLongitudinalLoreAdapter,
+  defaultLongitudinalKennenAdapter,
   LongitudinalAdapterRefusedError,
   removeLongitudinalAgentConfig,
-} from "./lore-adapter.js"
+} from "./kennen-adapter.js"
 import {
   computePatchStats,
   roundMs,
@@ -47,9 +47,9 @@ import type {
   LongitudinalCostMetrics,
   LongitudinalFailureReason,
   LongitudinalLiftSummary,
-  LongitudinalLoreAdapter,
-  LongitudinalLoreMetrics,
-  LongitudinalLoreRun,
+  LongitudinalKennenAdapter,
+  LongitudinalKennenMetrics,
+  LongitudinalKennenRun,
   LongitudinalPhaseResult,
   LongitudinalRunTermination,
   LongitudinalScenarioSampleSelection,
@@ -107,7 +107,8 @@ export async function runLongitudinalTaskEvalSuite(
   }
 
   const adapters = options.adapters ?? defaultAdapters()
-  const loreAdapter = options.longitudinalLoreAdapter ?? defaultLongitudinalLoreAdapter()
+  const kennenAdapter =
+    options.longitudinalKennenAdapter ?? defaultLongitudinalKennenAdapter()
   const transcriptsDir = resolveTranscriptDir(undefined, outPath)
   const pricingTable = await loadLongitudinalAgentPricingTable()
   const costKillSwitch = await resolveLongitudinalCostKillSwitch({
@@ -175,7 +176,7 @@ export async function runLongitudinalTaskEvalSuite(
         suiteRoot: loaded.root,
         adapters,
         keepWorkspaces: options.keepWorkspaces ?? false,
-        loreAdapter,
+        kennenAdapter,
         transcriptIndex: index,
         transcriptsDir,
         pricingTable,
@@ -261,7 +262,7 @@ async function runLongitudinalTaskEvalSuiteInChildProcesses(input: {
   parallelism: number
   sample: LongitudinalScenarioSampleSelection | undefined
 }): Promise<{ artifact: LongitudinalTaskArtifact; outPath: string }> {
-  if (input.options.adapters || input.options.longitudinalLoreAdapter) {
+  if (input.options.adapters || input.options.longitudinalKennenAdapter) {
     throw new Error(
       "Longitudinal --parallel uses child processes and does not support injected adapters."
     )
@@ -653,7 +654,7 @@ function emitLongitudinalStop(
     limitUsd: termination.limitUsd,
     observedUsd: termination.observedUsd,
     primaryAgentUsd: termination.primaryAgentUsd,
-    loreUsd: termination.loreUsd,
+    kennenUsd: termination.kennenUsd,
     completedTrials: termination.completedTrials,
     totalPlannedTrials: termination.totalPlannedTrials,
   })
@@ -683,8 +684,8 @@ async function runLongitudinalScenarioShard(input: {
   const child = spawn(process.execPath, args, {
     env: {
       ...process.env,
-      LORE_EVAL_LONGITUDINAL_WORKER: "1",
-      LORE_EVAL_LONGITUDINAL_IGNORE_SUITE_COST_KILL_SWITCH: "1",
+      KENNEN_EVAL_LONGITUDINAL_WORKER: "1",
+      KENNEN_EVAL_LONGITUDINAL_IGNORE_SUITE_COST_KILL_SWITCH: "1",
     },
     detached: true,
     stdio: ["ignore", "pipe", "pipe"],
@@ -912,8 +913,8 @@ function harnessErrorResult(input: {
     verifierResults: [],
     patchStats: { filesChanged: 0, linesAdded: 0, linesRemoved: 0 },
     patch: null,
-    lore: emptyLongitudinalLoreMetrics({
-      hooksEnabled: input.condition === "lore-full-loop",
+    kennen: emptyLongitudinalKennenMetrics({
+      hooksEnabled: input.condition === "kennen-full-loop",
       wakeUpEnabled: false,
     }),
     cost: null,
@@ -1010,9 +1011,9 @@ function capCapturedOutput(value: string): string {
 interface LongitudinalCostKillSwitch {
   limitUsd: number
   startedAt: Date
-  loreProjectNamePrefix: string | null
-  loreCostTracking: ResolvedCostTracking | null
-  loreCostTrackingError: string | null
+  kennenProjectNamePrefix: string | null
+  kennenCostTracking: ResolvedCostTracking | null
+  kennenCostTrackingError: string | null
 }
 
 async function resolveLongitudinalCostKillSwitch(input: {
@@ -1022,69 +1023,69 @@ async function resolveLongitudinalCostKillSwitch(input: {
   selectedConditions: readonly LongitudinalTaskCondition[]
 }): Promise<LongitudinalCostKillSwitch | null> {
   const suiteLimitUsd =
-    process.env["LORE_EVAL_LONGITUDINAL_IGNORE_SUITE_COST_KILL_SWITCH"] === "1"
+    process.env["KENNEN_EVAL_LONGITUDINAL_IGNORE_SUITE_COST_KILL_SWITCH"] === "1"
       ? undefined
       : input.suite.costKillSwitchUsd
   const limitUsd = input.options.costKillSwitchUsd ?? suiteLimitUsd
   if (limitUsd === undefined) return null
 
-  const needsLoreCostTracking = input.selectedConditions.includes("lore-full-loop")
-  if (!needsLoreCostTracking) {
+  const needsKennenCostTracking = input.selectedConditions.includes("kennen-full-loop")
+  if (!needsKennenCostTracking) {
     return {
       limitUsd,
       startedAt: new Date(input.startedAt),
-      loreProjectNamePrefix: null,
-      loreCostTracking: null,
-      loreCostTrackingError: null,
+      kennenProjectNamePrefix: null,
+      kennenCostTracking: null,
+      kennenCostTrackingError: null,
     }
   }
-  const tracking = await loadLongitudinalLoreCostTracking({ required: true })
-  const sandboxProjectName = process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+  const tracking = await loadLongitudinalKennenCostTracking({ required: true })
+  const sandboxProjectName = process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
   const sandboxProjectError = sandboxProjectName
     ? null
-    : "LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT is required when a longitudinal cost kill-switch includes lore-full-loop."
+    : "KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT is required when a longitudinal cost kill-switch includes kennen-full-loop."
   return {
     limitUsd,
     startedAt: new Date(input.startedAt),
-    loreProjectNamePrefix: sandboxProjectName
+    kennenProjectNamePrefix: sandboxProjectName
       ? `${sandboxProjectName}/longitudinal-`
       : null,
-    loreCostTracking: tracking.loreCostTracking,
-    loreCostTrackingError: tracking.loreCostTrackingError ?? sandboxProjectError,
+    kennenCostTracking: tracking.kennenCostTracking,
+    kennenCostTrackingError: tracking.kennenCostTrackingError ?? sandboxProjectError,
   }
 }
 
-async function loadLongitudinalLoreCostTracking(input: { required: boolean }): Promise<{
-  loreCostTracking: ResolvedCostTracking | null
-  loreCostTrackingError: string | null
+async function loadLongitudinalKennenCostTracking(input: { required: boolean }): Promise<{
+  kennenCostTracking: ResolvedCostTracking | null
+  kennenCostTrackingError: string | null
 }> {
-  const configRoot = process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+  const configRoot = process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
   if (!configRoot) {
     return {
-      loreCostTracking: null,
-      loreCostTrackingError: input.required
-        ? "LORE_EVAL_LONGITUDINAL_CONFIG_ROOT is required when a longitudinal cost kill-switch includes lore-full-loop."
+      kennenCostTracking: null,
+      kennenCostTrackingError: input.required
+        ? "KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT is required when a longitudinal cost kill-switch includes kennen-full-loop."
         : null,
     }
   }
   try {
-    const config = await loadConfig(join(configRoot, ".lore.yaml"))
-    const loreCostTracking = resolveCostTracking(config, configRoot)
-    if (input.required && !loreCostTracking.enabled) {
+    const config = await loadConfig(join(configRoot, ".kennen.yaml"))
+    const kennenCostTracking = resolveCostTracking(config, configRoot)
+    if (input.required && !kennenCostTracking.enabled) {
       return {
-        loreCostTracking,
-        loreCostTrackingError:
-          "Lore cost tracking must be enabled when a longitudinal cost kill-switch includes lore-full-loop.",
+        kennenCostTracking,
+        kennenCostTrackingError:
+          "Kennen cost tracking must be enabled when a longitudinal cost kill-switch includes kennen-full-loop.",
       }
     }
     return {
-      loreCostTracking,
-      loreCostTrackingError: null,
+      kennenCostTracking,
+      kennenCostTrackingError: null,
     }
   } catch (err) {
     return {
-      loreCostTracking: null,
-      loreCostTrackingError: input.required
+      kennenCostTracking: null,
+      kennenCostTrackingError: input.required
         ? err instanceof Error
           ? err.message
           : String(err)
@@ -1102,15 +1103,15 @@ async function maybeStopForCostKillSwitch(input: {
   if (!input.costKillSwitch) return null
 
   const primaryAgentCost = summarizePrimaryAgentCost(input.results)
-  const loreCost = await summarizeLoreCostUsd(input.costKillSwitch)
-  const observedUsd = primaryAgentCost.usd + (loreCost.usd ?? 0)
+  const kennenCost = await summarizeKennenCostUsd(input.costKillSwitch)
+  const observedUsd = primaryAgentCost.usd + (kennenCost.usd ?? 0)
   if (primaryAgentCost.unknown) {
     return {
       reason: "cost-unknown",
       limitUsd: input.costKillSwitch.limitUsd,
       observedUsd: roundUsd(observedUsd),
       primaryAgentUsd: roundUsd(primaryAgentCost.usd),
-      loreUsd: loreCost.usd === null ? null : roundUsd(loreCost.usd),
+      kennenUsd: kennenCost.usd === null ? null : roundUsd(kennenCost.usd),
       completedTrials: input.completedTrials,
       totalPlannedTrials: input.totalPlannedTrials,
       message:
@@ -1120,19 +1121,19 @@ async function maybeStopForCostKillSwitch(input: {
         `${primaryAgentCost.unknown.reason}.`,
     }
   }
-  if (loreCost.unknown) {
+  if (kennenCost.unknown) {
     return {
       reason: "cost-unknown",
       limitUsd: input.costKillSwitch.limitUsd,
       observedUsd: roundUsd(observedUsd),
       primaryAgentUsd: roundUsd(primaryAgentCost.usd),
-      loreUsd: loreCost.usd === null ? null : roundUsd(loreCost.usd),
+      kennenUsd: kennenCost.usd === null ? null : roundUsd(kennenCost.usd),
       completedTrials: input.completedTrials,
       totalPlannedTrials: input.totalPlannedTrials,
       message:
         `Cost kill-switch stopped after ${input.completedTrials}/${input.totalPlannedTrials} condition runs ` +
-        `because Lore-owned model cost is unknown for ${loreCost.unknown.eventType} ` +
-        `(${loreCost.unknown.status}): ${loreCost.unknown.reason}.`,
+        `because Kennen-owned model cost is unknown for ${kennenCost.unknown.eventType} ` +
+        `(${kennenCost.unknown.status}): ${kennenCost.unknown.reason}.`,
     }
   }
   if (observedUsd < input.costKillSwitch.limitUsd) return null
@@ -1142,7 +1143,7 @@ async function maybeStopForCostKillSwitch(input: {
     limitUsd: input.costKillSwitch.limitUsd,
     observedUsd: roundUsd(observedUsd),
     primaryAgentUsd: roundUsd(primaryAgentCost.usd),
-    loreUsd: loreCost.usd === null ? null : roundUsd(loreCost.usd),
+    kennenUsd: kennenCost.usd === null ? null : roundUsd(kennenCost.usd),
     completedTrials: input.completedTrials,
     totalPlannedTrials: input.totalPlannedTrials,
     message:
@@ -1181,21 +1182,23 @@ function summarizePrimaryAgentCost(results: LongitudinalTaskResult[]): {
   return { usd, unknown: null }
 }
 
-async function summarizeLoreCostUsd(costKillSwitch: LongitudinalCostKillSwitch): Promise<{
+async function summarizeKennenCostUsd(
+  costKillSwitch: LongitudinalCostKillSwitch
+): Promise<{
   usd: number | null
   unknown: { eventType: string; status: string; reason: string } | null
 }> {
-  if (costKillSwitch.loreCostTrackingError) {
+  if (costKillSwitch.kennenCostTrackingError) {
     return {
       usd: null,
       unknown: {
         eventType: "eval.cost_tracking",
         status: "error",
-        reason: costKillSwitch.loreCostTrackingError,
+        reason: costKillSwitch.kennenCostTrackingError,
       },
     }
   }
-  const costTracking = costKillSwitch.loreCostTracking
+  const costTracking = costKillSwitch.kennenCostTracking
   if (!costTracking?.enabled) return { usd: 0, unknown: null }
   const range: CostRange = {
     label: "current longitudinal eval run",
@@ -1203,9 +1206,9 @@ async function summarizeLoreCostUsd(costKillSwitch: LongitudinalCostKillSwitch):
   }
   try {
     const { rows } = await readLedgerEventsWithDiagnostics(costTracking, range)
-    return summarizeLoreModelEvents(
+    return summarizeKennenModelEvents(
       rows.map((row) => row.event),
-      costKillSwitch.loreProjectNamePrefix
+      costKillSwitch.kennenProjectNamePrefix
     )
   } catch (err) {
     return {
@@ -1219,7 +1222,7 @@ async function summarizeLoreCostUsd(costKillSwitch: LongitudinalCostKillSwitch):
   }
 }
 
-function summarizeLoreModelEvents(
+function summarizeKennenModelEvents(
   events: CostLedgerEvent[],
   projectNamePrefix: string | null
 ): {
@@ -1270,7 +1273,7 @@ async function runLongitudinalTrial(input: {
   suiteRoot: string
   adapters: Map<string, AgentAdapter>
   keepWorkspaces: boolean
-  loreAdapter: LongitudinalLoreAdapter
+  kennenAdapter: LongitudinalKennenAdapter
   transcriptIndex: number
   transcriptsDir: string | null
   pricingTable: PricingTable | null
@@ -1292,12 +1295,12 @@ async function runLongitudinalTrial(input: {
   const workspaces = [workspace]
   await removeLongitudinalAgentConfig(workspace)
   const runId = `longitudinal-${input.scenario.id}-${randomUUID().slice(0, 8)}`
-  let loreRun: LongitudinalLoreRun | null = null
+  let kennenRun: LongitudinalKennenRun | null = null
   const phases: LongitudinalPhaseResult[] = []
 
   try {
-    if (input.condition === "lore-full-loop") {
-      loreRun = await input.loreAdapter.createRun({
+    if (input.condition === "kennen-full-loop") {
+      kennenRun = await input.kennenAdapter.createRun({
         suite: input.suite,
         scenario: input.scenario,
         runId,
@@ -1307,7 +1310,7 @@ async function runLongitudinalTrial(input: {
     }
 
     let formationPhase: LongitudinalPhaseResult | null = null
-    if (input.condition === "lore-full-loop") {
+    if (input.condition === "kennen-full-loop") {
       const formationSessionId = `${runId}-formation`
       formationPhase = await runLongitudinalFormationPhase({
         scenario: input.scenario,
@@ -1315,7 +1318,7 @@ async function runLongitudinalTrial(input: {
         adapter,
         workspace,
         workspaceSource,
-        loreRun,
+        kennenRun,
         sessionId: formationSessionId,
         transcriptPath: taskTranscriptPath({
           transcriptsDir: input.transcriptsDir,
@@ -1341,9 +1344,9 @@ async function runLongitudinalTrial(input: {
     }
 
     const expectedContextIds =
-      input.condition === "seeded-lore"
+      input.condition === "seeded-kennen"
         ? (input.scenario.seededContext?.contextIds ?? [])
-        : (formationPhase?.lore.expectedContextIds ?? [])
+        : (formationPhase?.kennen.expectedContextIds ?? [])
     const shouldRunUsePhase = formationPhase?.success ?? true
     const usePhase = shouldRunUsePhase
       ? await runLongitudinalUsePhase({
@@ -1354,7 +1357,7 @@ async function runLongitudinalTrial(input: {
           workspaceSource,
           wakeUp: await resolveLongitudinalWakeUp({
             condition: input.condition,
-            loreRun,
+            kennenRun,
             scenario: input.scenario,
             phaseBPrompt: input.scenario.phaseB.prompt,
             expectedContextIds,
@@ -1396,14 +1399,14 @@ async function runLongitudinalTrial(input: {
     phases.push(usePhase)
 
     const phaseSuccess =
-      input.condition === "lore-full-loop"
+      input.condition === "kennen-full-loop"
         ? phases.every((phase) => phase.success)
         : usePhase.success
     const success = phaseSuccess
     const failureReason = success
       ? null
       : firstLongitudinalFailure(
-          input.condition === "lore-full-loop" ? phases : [usePhase]
+          input.condition === "kennen-full-loop" ? phases : [usePhase]
         )
     return {
       taskId: input.scenario.id,
@@ -1423,8 +1426,8 @@ async function runLongitudinalTrial(input: {
       expectedContextDescription: input.scenario.expectedContext.description,
     }
   } finally {
-    if (loreRun) {
-      await loreRun.cleanup()
+    if (kennenRun) {
+      await kennenRun.cleanup()
     }
     if (!input.keepWorkspaces) {
       await Promise.all(
@@ -1442,7 +1445,7 @@ async function runLongitudinalFormationPhase(input: {
   adapter: AgentAdapter
   workspace: string
   workspaceSource: string
-  loreRun: LongitudinalLoreRun | null
+  kennenRun: LongitudinalKennenRun | null
   sessionId: string
   transcriptPath?: string
   patchPath?: string
@@ -1463,8 +1466,8 @@ async function runLongitudinalFormationPhase(input: {
     outPath: input.patchPath,
   }).catch(() => null)
   const agentSucceeded = agentRun.exitCode === 0 && !agentRun.timedOut
-  let lore = emptyLongitudinalLoreMetrics({
-    hooksEnabled: input.condition === "lore-full-loop",
+  let kennen = emptyLongitudinalKennenMetrics({
+    hooksEnabled: input.condition === "kennen-full-loop",
     wakeUpEnabled: false,
   })
   let failureReason: LongitudinalFailureReason | null = agentSucceeded
@@ -1483,8 +1486,8 @@ async function runLongitudinalFormationPhase(input: {
   }
 
   if (
-    input.condition === "lore-full-loop" &&
-    input.loreRun &&
+    input.condition === "kennen-full-loop" &&
+    input.kennenRun &&
     agentSucceeded &&
     failureReason === null
   ) {
@@ -1494,13 +1497,13 @@ async function runLongitudinalFormationPhase(input: {
         prompt: input.scenario.phaseA.prompt,
         agentRun,
       })
-      const formed = await input.loreRun.formContext({
+      const formed = await input.kennenRun.formContext({
         scenario: input.scenario,
         transcript,
         workspace: input.workspace,
         sessionId: input.sessionId,
       })
-      lore = {
+      kennen = {
         hooksEnabled: true,
         wakeUpEnabled: false,
         memoriesCreated: formed.memoriesCreated,
@@ -1539,7 +1542,7 @@ async function runLongitudinalFormationPhase(input: {
     verifierResults: [],
     patchStats,
     patch,
-    lore,
+    kennen,
     cost: costFromAgentRun(agentRun, input.pricingTable),
     elapsedMs: roundMs(performance.now() - before),
     failureReason,
@@ -1581,8 +1584,8 @@ async function runLongitudinalUsePhase(input: {
       verifierResults: [],
       patchStats,
       patch,
-      lore: {
-        hooksEnabled: input.condition === "lore-full-loop",
+      kennen: {
+        hooksEnabled: input.condition === "kennen-full-loop",
         wakeUpEnabled: input.condition !== "no-memory",
         memoriesCreated: 0,
         factsCreated: 0,
@@ -1659,8 +1662,8 @@ async function runLongitudinalUsePhase(input: {
     verifierResults,
     patchStats,
     patch,
-    lore: {
-      hooksEnabled: input.condition === "lore-full-loop",
+    kennen: {
+      hooksEnabled: input.condition === "kennen-full-loop",
       wakeUpEnabled: input.condition !== "no-memory",
       memoriesCreated: 0,
       factsCreated: 0,
@@ -1710,8 +1713,8 @@ async function skippedLongitudinalUsePhase(input: {
     verifierResults: [],
     patchStats,
     patch,
-    lore: {
-      hooksEnabled: input.condition === "lore-full-loop",
+    kennen: {
+      hooksEnabled: input.condition === "kennen-full-loop",
       wakeUpEnabled: false,
       memoriesCreated: 0,
       factsCreated: 0,
@@ -1729,13 +1732,13 @@ async function skippedLongitudinalUsePhase(input: {
 }
 
 async function loadLongitudinalWakeUp(input: {
-  loreRun: LongitudinalLoreRun
+  kennenRun: LongitudinalKennenRun
   scenario: LongitudinalTaskScenario
   phaseBPrompt: string
   expectedContextIds: string[]
 }): Promise<LongitudinalWakeUpResult> {
   try {
-    return await input.loreRun.loadContext({
+    return await input.kennenRun.loadContext({
       scenario: input.scenario,
       phaseBPrompt: input.phaseBPrompt,
       expectedContextIds: input.expectedContextIds,
@@ -1746,30 +1749,30 @@ async function loadLongitudinalWakeUp(input: {
       renderedContext: "",
       surfacedContextIds: [],
       harmfulContextIds: [],
-      failureMessage: `Lore wake-up failed: ${message}`,
+      failureMessage: `Kennen wake-up failed: ${message}`,
     }
   }
 }
 
 async function resolveLongitudinalWakeUp(input: {
   condition: LongitudinalTaskCondition
-  loreRun: LongitudinalLoreRun | null
+  kennenRun: LongitudinalKennenRun | null
   scenario: LongitudinalTaskScenario
   phaseBPrompt: string
   expectedContextIds: string[]
 }): Promise<LongitudinalWakeUpResult> {
   if (input.condition === "no-memory") return emptyWakeUpResult()
-  if (input.condition === "seeded-lore") return seededLongitudinalWakeUp(input.scenario)
-  if (!input.loreRun) {
+  if (input.condition === "seeded-kennen") return seededLongitudinalWakeUp(input.scenario)
+  if (!input.kennenRun) {
     return {
       renderedContext: "",
       surfacedContextIds: [],
       harmfulContextIds: [],
-      failureMessage: "Lore wake-up failed: lore-full-loop run was not initialized.",
+      failureMessage: "Kennen wake-up failed: kennen-full-loop run was not initialized.",
     }
   }
   return loadLongitudinalWakeUp({
-    loreRun: input.loreRun,
+    kennenRun: input.kennenRun,
     scenario: input.scenario,
     phaseBPrompt: input.phaseBPrompt,
     expectedContextIds: input.expectedContextIds,
@@ -1784,7 +1787,7 @@ function seededLongitudinalWakeUp(
       renderedContext: "",
       surfacedContextIds: [],
       harmfulContextIds: [],
-      failureMessage: "Seeded Lore context is missing for seeded-lore condition.",
+      failureMessage: "Seeded Kennen context is missing for seeded-kennen condition.",
     }
   }
   return {
@@ -1802,8 +1805,8 @@ function summarizeLongitudinalResults(
 ): LongitudinalTaskArtifact["summary"] {
   const conditions: Record<LongitudinalTaskCondition, LongitudinalConditionSummary> = {
     "no-memory": emptyConditionSummary(),
-    "seeded-lore": emptyConditionSummary(),
-    "lore-full-loop": emptyConditionSummary(),
+    "seeded-kennen": emptyConditionSummary(),
+    "kennen-full-loop": emptyConditionSummary(),
   }
   for (const result of results) {
     const summary = conditions[result.condition]
@@ -1817,15 +1820,15 @@ function summarizeLongitudinalResults(
   }
 
   const lifts: LongitudinalTaskArtifact["summary"]["lifts"] = {}
-  for (const condition of ["seeded-lore", "lore-full-loop"] as const) {
+  for (const condition of ["seeded-kennen", "kennen-full-loop"] as const) {
     if (conditions[condition].trials > 0) {
       lifts[condition] = buildLiftSummary(scenarioIds, results, condition)
     }
   }
   const primaryLift =
-    lifts["lore-full-loop"] ??
-    lifts["seeded-lore"] ??
-    buildLiftSummary(scenarioIds, results, "lore-full-loop")
+    lifts["kennen-full-loop"] ??
+    lifts["seeded-kennen"] ??
+    buildLiftSummary(scenarioIds, results, "kennen-full-loop")
   const passedTrials = results.filter((r) => r.success).length
   const passedTasks = countLongitudinalTasksAllConditionsPassed({
     scenarioIds,
@@ -1954,10 +1957,10 @@ function memoryConditionContextSatisfied(result: LongitudinalTaskResult): boolea
 function longitudinalUsePhaseContextSatisfied(
   usePhase: LongitudinalPhaseResult
 ): boolean {
-  if (usePhase.lore.harmfulContextIds.length > 0) return false
-  const expected = usePhase.lore.expectedContextIds
-  if (expected.length === 0) return usePhase.lore.surfacedContextIds.length > 0
-  const surfaced = new Set(usePhase.lore.surfacedContextIds)
+  if (usePhase.kennen.harmfulContextIds.length > 0) return false
+  const expected = usePhase.kennen.expectedContextIds
+  if (expected.length === 0) return usePhase.kennen.surfacedContextIds.length > 0
+  const surfaced = new Set(usePhase.kennen.surfacedContextIds)
   return expected.every((id) => surfaced.has(id))
 }
 
@@ -1978,10 +1981,10 @@ function formatWorkspaceSource(source: LongitudinalTaskScenario["workspace"]): s
     : `${source.kind}:${source.repo}@${source.sha}`
 }
 
-function emptyLongitudinalLoreMetrics(input: {
+function emptyLongitudinalKennenMetrics(input: {
   hooksEnabled: boolean
   wakeUpEnabled: boolean
-}): LongitudinalLoreMetrics {
+}): LongitudinalKennenMetrics {
   return {
     hooksEnabled: input.hooksEnabled,
     wakeUpEnabled: input.wakeUpEnabled,
@@ -2007,7 +2010,7 @@ function emptyWakeUpResult(): LongitudinalWakeUpResult {
 function withWakeUpContext(prompt: string, renderedContext: string): string {
   if (renderedContext.trim().length === 0) return prompt
   return [
-    "Retrieved Lore context from the previous session:",
+    "Retrieved Kennen context from the previous session:",
     "",
     renderedContext.trim(),
     "",

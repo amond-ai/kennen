@@ -13,7 +13,7 @@ import { fileURLToPath, pathToFileURL } from "node:url"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 const guardPath = fileURLToPath(
-  new URL("../tools/check-lore-config.mjs", import.meta.url)
+  new URL("../tools/check-kennen-config.mjs", import.meta.url)
 )
 const installerPath = fileURLToPath(
   new URL("../tools/install-git-hooks.mjs", import.meta.url)
@@ -22,8 +22,8 @@ const installerPath = fileURLToPath(
 let scratchDirs: string[] = []
 
 interface GuardModule {
-  validateLoreConfig(raw: string, label?: string): string[]
-  validateStagedLoreConfig(cwd?: string): string[]
+  validateKennenConfig(raw: string, label?: string): string[]
+  validateStagedKennenConfig(cwd?: string): string[]
 }
 
 interface InstallerModule {
@@ -45,7 +45,7 @@ function scratchDir(name: string) {
 }
 
 function writeConfig(dir: string, raw: string) {
-  const file = join(dir, ".lore.yaml")
+  const file = join(dir, ".kennen.yaml")
   writeFileSync(file, raw)
   return file
 }
@@ -71,11 +71,11 @@ function gitConfig(repo: string, key: string) {
 }
 
 describe("repo invariants", () => {
-  it("does not track a `.lore.yaml` at the repo root", () => {
+  it("does not track a `.kennen.yaml` at the repo root", () => {
     // Codifies the gitignored steady state introduced with #557. The
     // pre-commit guard enforces this on new commits, but a tracked
     // file already in HEAD wouldn't trip the guard — this test pins
-    // the HEAD-side invariant so a future `git add -f .lore.yaml`
+    // the HEAD-side invariant so a future `git add -f .kennen.yaml`
     // landing through a different path (rebase, cherry-pick, manual
     // sequencer) fails CI.
     //
@@ -85,7 +85,7 @@ describe("repo invariants", () => {
     const repoRoot = fileURLToPath(new URL("..", import.meta.url))
     let tracked: string
     try {
-      tracked = execFileSync("git", ["ls-files", "--", ".lore.yaml"], {
+      tracked = execFileSync("git", ["ls-files", "--", ".kennen.yaml"], {
         cwd: repoRoot,
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
@@ -101,10 +101,10 @@ describe("repo invariants", () => {
   })
 })
 
-describe("committed Lore config guard", () => {
-  it("rejects any non-empty committed .lore.yaml content", async () => {
-    const { validateLoreConfig } = await loadGuardModule()
-    const errors = validateLoreConfig(`
+describe("committed Kennen config guard", () => {
+  it("rejects any non-empty committed .kennen.yaml content", async () => {
+    const { validateKennenConfig } = await loadGuardModule()
+    const errors = validateKennenConfig(`
 vault:
   pageId: "<your-vault-page-id>"
 projects: []
@@ -114,8 +114,8 @@ projects: []
   })
 
   it("rejects committed auth.token values", async () => {
-    const { validateLoreConfig } = await loadGuardModule()
-    const errors = validateLoreConfig(`
+    const { validateKennenConfig } = await loadGuardModule()
+    const errors = validateKennenConfig(`
 vault:
   pageId: "<your-vault-page-id>"
 auth:
@@ -125,34 +125,34 @@ auth:
     expect(errors.join("\n")).toContain("must not be committed")
   })
 
-  it("rejects an empty staged .lore.yaml", async () => {
+  it("rejects an empty staged .kennen.yaml", async () => {
     // Reviewer-flagged regression: pre-tightening, the guard returned
     // success on whitespace-only staged content, so `git add -f
-    // .lore.yaml` with an empty file would slip past the pre-commit
+    // .kennen.yaml` with an empty file would slip past the pre-commit
     // hook. The new policy keys off the git index entry, not the
-    // content, so any staged .lore.yaml is rejected.
-    const { validateStagedLoreConfig } = await loadGuardModule()
-    const repo = scratchDir("lore-config-guard-empty-")
+    // content, so any staged .kennen.yaml is rejected.
+    const { validateStagedKennenConfig } = await loadGuardModule()
+    const repo = scratchDir("kennen-config-guard-empty-")
     execFileSync("git", ["init"], { cwd: repo, stdio: "ignore" })
 
     writeConfig(repo, "")
-    execFileSync("git", ["add", "-f", ".lore.yaml"], { cwd: repo })
+    execFileSync("git", ["add", "-f", ".kennen.yaml"], { cwd: repo })
 
-    const errors = validateStagedLoreConfig(repo)
+    const errors = validateStagedKennenConfig(repo)
     expect(errors.join("\n")).toContain("must not be committed")
   })
 
-  it("passes silently when .lore.yaml is not tracked", async () => {
-    const { validateStagedLoreConfig } = await loadGuardModule()
-    const repo = scratchDir("lore-config-guard-untracked-")
+  it("passes silently when .kennen.yaml is not tracked", async () => {
+    const { validateStagedKennenConfig } = await loadGuardModule()
+    const repo = scratchDir("kennen-config-guard-untracked-")
     execFileSync("git", ["init"], { cwd: repo, stdio: "ignore" })
 
-    expect(validateStagedLoreConfig(repo)).toEqual([])
+    expect(validateStagedKennenConfig(repo)).toEqual([])
   })
 
-  it("rejects staged .lore.yaml content even when unstaged edits would also fail", async () => {
-    const { validateStagedLoreConfig } = await loadGuardModule()
-    const repo = scratchDir("lore-config-guard-staged-")
+  it("rejects staged .kennen.yaml content even when unstaged edits would also fail", async () => {
+    const { validateStagedKennenConfig } = await loadGuardModule()
+    const repo = scratchDir("kennen-config-guard-staged-")
     execFileSync("git", ["init"], { cwd: repo, stdio: "ignore" })
 
     writeConfig(
@@ -162,7 +162,7 @@ vault:
   pageId: "<your-vault-page-id>"
 `
     )
-    execFileSync("git", ["add", "-f", ".lore.yaml"], { cwd: repo })
+    execFileSync("git", ["add", "-f", ".kennen.yaml"], { cwd: repo })
 
     writeConfig(
       repo,
@@ -174,18 +174,18 @@ auth:
 `
     )
 
-    const stagedFirst = validateStagedLoreConfig(repo)
+    const stagedFirst = validateStagedKennenConfig(repo)
     expect(stagedFirst.join("\n")).toContain("must not be committed")
 
-    execFileSync("git", ["add", "-f", ".lore.yaml"], { cwd: repo })
-    const stagedSecond = validateStagedLoreConfig(repo)
+    execFileSync("git", ["add", "-f", ".kennen.yaml"], { cwd: repo })
+    const stagedSecond = validateStagedKennenConfig(repo)
     expect(stagedSecond.join("\n")).toContain("must not be committed")
   }, 30_000)
 })
 
-describe("Lore git hook installer", () => {
+describe("Kennen git hook installer", () => {
   function initRepo() {
-    const repo = scratchDir("lore-git-hooks-install-")
+    const repo = scratchDir("kennen-git-hooks-install-")
     execFileSync("git", ["init"], { cwd: repo, stdio: "ignore" })
     mkdirSync(join(repo, ".githooks"))
     return repo
@@ -204,7 +204,7 @@ describe("Lore git hook installer", () => {
         env: {
           ...process.env,
           CI: "",
-          LORE_SKIP_GIT_HOOK_INSTALL: "",
+          KENNEN_SKIP_GIT_HOOK_INSTALL: "",
         },
       })
       return writes.join("")

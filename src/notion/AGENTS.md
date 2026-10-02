@@ -38,7 +38,7 @@ hydration, and RunTool adapters. Domain logic belongs in `src/core/`.
 
 ## RunTool quarantine
 
-`runtool/` is the home for Lore's quarantined integration with Notion's
+`runtool/` is the home for Kennen's quarantined integration with Notion's
 internal `POST /v1/tools/run` API. Keep this guide to routing pointers:
 
 - `runtool/README.md` owns the current default, operator rollback path, and
@@ -144,16 +144,16 @@ export function memoriesProperties(
 
 `verifyVaultDatabases()` reads the vault page's child blocks and matches
 database titles to the expected names. If a title is missing, it retrieves
-unmatched child databases and identifies Lore databases by schema fingerprint
-so a renamed database still counts as present and `lore init` cannot duplicate
+unmatched child databases and identifies Kennen databases by schema fingerprint
+so a renamed database still counts as present and `kennen init` cannot duplicate
 a partial vault. This is used by `VaultManager.load()`.
 
 Projects, Topics, Memories, Entities, and Facts are mandatory. Row-level
 migration fallback is separate: existing Facts may still have empty entity
-relations until `lore migrate --build-entities` repoints them.
+relations until `kennen migrate --build-entities` repoints them.
 
 `verifyVaultDatabasesForEntityRepair()` is the narrow exception for the
-`lore vault ensure-entities` bootstrap command: it requires Projects, Topics,
+`kennen vault ensure-entities` bootstrap command: it requires Projects, Topics,
 Memories, and Facts but allows Entities to be absent so the repair command can
 run outside strict service initialization.
 

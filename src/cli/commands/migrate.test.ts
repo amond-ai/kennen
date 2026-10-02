@@ -103,7 +103,7 @@ describe("migrateCommand help", () => {
   it("documents --report-orphan-rate alongside --build-entities", () => {
     const help = migrateCommand.helpInformation()
     expect(help).toContain("--report-orphan-rate")
-    expect(help).toContain("LORE_USE_RUNTOOL_AGGREGATE")
+    expect(help).toContain("KENNEN_USE_RUNTOOL_AGGREGATE")
   })
 
   it("documents the fact confidence audit flag", () => {
@@ -944,10 +944,10 @@ describe("runMemoryEncodingFix", () => {
     ).toBe(true)
   })
 
-  it("plan mode labels oversized rows as 'will fix via anchored RunTool patterns' when LORE_USE_RUNTOOL_BLOCK_EDIT predicts the path applies (issue #534 AC #5 review)", async () => {
+  it("plan mode labels oversized rows as 'will fix via anchored RunTool patterns' when KENNEN_USE_RUNTOOL_BLOCK_EDIT predicts the path applies (issue #534 AC #5 review)", async () => {
     // Pre-review the plan output labeled every oversized row as
     // 'skipped', then `--yes` rewrote the body anyway under
-    // `LORE_USE_RUNTOOL_BLOCK_EDIT=1`. That broke the
+    // `KENNEN_USE_RUNTOOL_BLOCK_EDIT=1`. That broke the
     // plan-then-execute contract on bodies > 100KB. Now the
     // service routes apply-path-eligible oversized rows into a
     // separate `oversizedAnchoredPlanned` bucket; the CLI surfaces
@@ -1156,7 +1156,7 @@ describe("runMemoryEncodingFix", () => {
     const all = stderrChunks.join("")
     expect(all).toMatch(/Discovering/)
     expect(all).toMatch(/HTML-encoded/)
-    expect(all).toMatch(/LORE_DEBUG=1/)
+    expect(all).toMatch(/KENNEN_DEBUG=1/)
   })
 })
 
@@ -1248,14 +1248,14 @@ describe("runAgentNormalization", () => {
     const all = stderrChunks.join("")
     expect(all).toMatch(/Discovering/)
     expect(all).toMatch(/Agent/)
-    expect(all).toMatch(/LORE_DEBUG=1/)
+    expect(all).toMatch(/KENNEN_DEBUG=1/)
   })
 })
 
 describe("printDiscoveryBreadcrumb", () => {
-  it("renders Discovering <label> with the LORE_DEBUG=1 pointer on stderr", () => {
+  it("renders Discovering <label> with the KENNEN_DEBUG=1 pointer on stderr", () => {
     // One canonical line shape across every paginating discovery
-    // surface — operators only have to learn `LORE_DEBUG=1` once,
+    // surface — operators only have to learn `KENNEN_DEBUG=1` once,
     // and a single grep (`Discovering`) catches every migration's
     // up-front breadcrumb.
     const stderrChunks: string[] = []
@@ -1276,7 +1276,7 @@ describe("printDiscoveryBreadcrumb", () => {
     expect(stderrChunks).toHaveLength(1)
     const line = stderrChunks[0]!
     expect(line).toBe(
-      "Discovering memories with empty Synopsis (paginating Notion; set LORE_DEBUG=1 to trace retries)...\n"
+      "Discovering memories with empty Synopsis (paginating Notion; set KENNEN_DEBUG=1 to trace retries)...\n"
     )
   })
 })
@@ -1285,7 +1285,7 @@ describe("loadTopicAliasMerges", () => {
   let workDir: string
 
   beforeEach(async () => {
-    workDir = await mkdtemp(join(tmpdir(), "lore-merge-test-"))
+    workDir = await mkdtemp(join(tmpdir(), "kennen-merge-test-"))
   })
 
   afterEach(async () => {
@@ -1574,14 +1574,14 @@ describe("runSimilarTopicsMigration", () => {
 describe("runBuildEntitiesMigration", () => {
   let logs: string[]
   let logSpy: ReturnType<typeof vi.spyOn>
-  const configRoot = "/tmp/lore-migrate-test"
+  const configRoot = "/tmp/kennen-migrate-test"
   const vaultPageId = "vault-page-entity-test"
-  const lockStateDir = join(tmpdir(), `lore-migrate-command-lock-test-${process.pid}`)
+  const lockStateDir = join(tmpdir(), `kennen-migrate-command-lock-test-${process.pid}`)
   let originalStateDir: string | undefined
 
   beforeEach(() => {
-    originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
-    process.env["LORE_HOOK_STATE_DIR"] = lockStateDir
+    originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+    process.env["KENNEN_HOOK_STATE_DIR"] = lockStateDir
     rmSync(lockStateDir, { recursive: true, force: true })
     logs = []
     logSpy = vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
@@ -1592,9 +1592,9 @@ describe("runBuildEntitiesMigration", () => {
     logSpy.mockRestore()
     rmSync(lockStateDir, { recursive: true, force: true })
     if (originalStateDir === undefined) {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     } else {
-      process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
     }
   })
 
@@ -1784,16 +1784,16 @@ describe("runOrphanRateReport — issue #542 pre/post-pass label contract", () =
     // Force the JS enumeration path for these tests — exercising the
     // label contract should not depend on the RunTool aggregate flag
     // an operator may have set in their shell.
-    savedFlag = process.env["LORE_USE_RUNTOOL_AGGREGATE"]
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "0"
+    savedFlag = process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "0"
   })
 
   afterEach(() => {
     logSpy.mockRestore()
     if (savedFlag === undefined) {
-      delete process.env["LORE_USE_RUNTOOL_AGGREGATE"]
+      delete process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
     } else {
-      process.env["LORE_USE_RUNTOOL_AGGREGATE"] = savedFlag
+      process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = savedFlag
     }
   })
 
@@ -2240,12 +2240,12 @@ describe("runSynopsisBackfill", () => {
     // Pin the load-bearing fragments only — the surrounding sentence
     // wording is allowed to drift, but `Discovering` (so an operator
     // greps for it), `Synopsis` (so it's distinguishable from other
-    // migrations), and `LORE_DEBUG=1` (so the retry-trace escape hatch
+    // migrations), and `KENNEN_DEBUG=1` (so the retry-trace escape hatch
     // surfaces in the same line) are pinned.
     const all = stderrChunks.join("")
     expect(all).toMatch(/Discovering/)
     expect(all).toMatch(/Synopsis/)
-    expect(all).toMatch(/LORE_DEBUG=1/)
+    expect(all).toMatch(/KENNEN_DEBUG=1/)
   })
 })
 

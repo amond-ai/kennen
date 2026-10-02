@@ -101,7 +101,7 @@ const RATE_GATE_DISABLED = { requestsPerSecond: 1000, burstSize: 1000 } as const
  */
 const NO_ENDPOINT_OVERRIDES = { endpointOverrides: {} } as const
 
-/** Suppress the default `[lore] notion-sdk warn:` stderr line on tests
+/** Suppress the default `[kennen] notion-sdk warn:` stderr line on tests
  * that intentionally trigger 429 backoff. Tests that want to *assert*
  * the emission build their own recording callback. */
 const SILENT_BACKOFF = { onBackoff: () => {} } as const
@@ -370,7 +370,7 @@ describe("createLimitedClient — token bucket pacing", () => {
     // `request` path. RunTool's per-tool, per-actor server-side bucket
     // is independent of REST's bucket but BOTH route through the same
     // `Authorization` header on the wire — composing through this
-    // gate keeps Lore's outbound rate under the lower of the two
+    // gate keeps Kennen's outbound rate under the lower of the two
     // ceilings without standing up a parallel pacer. Pinning the gate
     // explicitly on `request` proves RunTool uses the shared
     // client-side pacing path.
@@ -1327,7 +1327,7 @@ describe("createLimitedClient — endpoint overrides", () => {
 
   it("caps inherited built-in overrides with caller-supplied global throttles", async () => {
     // Existing operators may already have process-wide throttles in
-    // `.lore.yaml`. Omitting `endpointOverrides` should not silently
+    // `.kennen.yaml`. Omitting `endpointOverrides` should not silently
     // loosen the hot endpoints above those global values; the built-in
     // table is inherited, but capped by the effective global knobs.
     const { client, callsAt } = makePathAwareClient(0)

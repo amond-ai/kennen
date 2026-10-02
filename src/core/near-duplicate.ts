@@ -1,6 +1,6 @@
 /**
- * Near-duplicate probe used by `lore-memory action='save'` and
- * `lore-decision action='create'`.
+ * Near-duplicate probe used by `kennen-memory action='save'` and
+ * `kennen-decision action='create'`.
  *
  * The probe is advisory, not blocking: the write always proceeds, but the
  * tool response surfaces any existing row whose title looks similar enough
@@ -27,8 +27,8 @@ import type {
 import { ACTIVE_TASK_STATES } from "../types.js"
 import { decodeTextEntities } from "../notion/html-entities.js"
 import { trigramJaccard, tagOverlap } from "./similarity.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
-import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
+import { resolveFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 
 /**
  * Sentinel keyword written into a memory's `Keywords` column at the same
@@ -70,7 +70,7 @@ import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
  * Notion's trash still sees their original keyword content alongside
  * the sentinel. The substring filter is unaffected by the prefix.
  */
-export const MEMORY_CLEANUP_ORPHAN_SENTINEL = "__lore-cleanup-orphan"
+export const MEMORY_CLEANUP_ORPHAN_SENTINEL = "__kennen-cleanup-orphan"
 
 export interface NearDuplicateMatch {
   id: string
@@ -128,7 +128,7 @@ export interface MemoryLister {
   /**
    * Candidate-pool fetcher. When the `MemoryLister` is a
    * real `MemoryService`, this routes through the SQL filter path
-   * if `LORE_USE_RUNTOOL_FILTER_SQL=1` and a RunTool client is
+   * if `KENNEN_USE_RUNTOOL_FILTER_SQL=1` and a RunTool client is
    * wired; otherwise it forwards to `list({ excludeKinds, ... })`
    * so the REST path's existing `Kind != X` server-side filter is
    * still applied (a one-line REST improvement that lands
@@ -176,17 +176,17 @@ export interface FindNearDuplicatesOpts {
    */
   topicId?: string
   /**
-   * `decision` for the `lore-decision action='create'` path, undefined
-   * for the `lore-memory action='save'` path.
+   * `decision` for the `kennen-decision action='create'` path, undefined
+   * for the `kennen-memory action='save'` path.
    */
   kind?: MemoryKind
   /**
    * Kinds to post-filter out of the candidate pool. Notion's
    * `dataSources.query` has no "kind ≠ X" primitive, so the filter
-   * runs client-side. The `lore-memory action='save'` path uses
+   * runs client-side. The `kennen-memory action='save'` path uses
    * `["decision"]` so a freshly-saved note doesn't light up every
    * governing decision record — decisions are the
-   * `lore-decision action='create'` probe's domain.
+   * `kennen-decision action='create'` probe's domain.
    *
    * Accepts `readonly` arrays so call sites can pass `as const`
    * tuples without an explicit cast — the helper never mutates.
@@ -207,14 +207,14 @@ export interface FindNearDuplicatesOpts {
   limit?: number
   /**
    * Optional observer for list-query failures. Invoked with the raw
-   * error before the probe returns `[]`. `lore-memory action='save'`
-   * and `lore-decision action='create'` route this through
+   * error before the probe returns `[]`. `kennen-memory action='save'`
+   * and `kennen-decision action='create'` route this through
    * `debugLogPartialFailures` so probe failures show up under
-   * `LORE_DEBUG=1` like every other read-path partial failure,
+   * `KENNEN_DEBUG=1` like every other read-path partial failure,
    * instead of degrading silently.
    */
   onError?: (err: unknown) => void
-  features?: Pick<LoreFeatureFlags, "nearDuplicateProbe">
+  features?: Pick<KennenFeatureFlags, "nearDuplicateProbe">
 }
 
 /**
@@ -256,7 +256,7 @@ export async function findNearDuplicates(
   // SQL path: when `memories.listForNearDuplicates` is available (real
   // `MemoryService`, not a test fixture implementing only `list`), it
   // routes through the SQL filter helper if
-  // `LORE_USE_RUNTOOL_FILTER_SQL=1` and falls back to
+  // `KENNEN_USE_RUNTOOL_FILTER_SQL=1` and falls back to
   // `list({ excludeKinds })` otherwise. Either way, the server-side
   // `Kind NOT IN (...)` filter applies BEFORE the limit truncation —
   // closing the JS-post-filter recall hole the REST-fallback code
@@ -383,10 +383,10 @@ export interface FindAutosaveLearningDuplicateOpts {
   limit?: number
   /** Optional observer for list-query failures. */
   onError?: (err: unknown) => void
-  features?: Pick<LoreFeatureFlags, "autosaveLearningDedup" | "nearDuplicateProbe">
+  features?: Pick<KennenFeatureFlags, "autosaveLearningDedup" | "nearDuplicateProbe">
 }
 
-export class AutosaveLearningDuplicateProbeError extends LoreError<"autosave-learning-duplicate-probe"> {
+export class AutosaveLearningDuplicateProbeError extends KennenError<"autosave-learning-duplicate-probe"> {
   constructor(
     message: string,
     public readonly cause: unknown
@@ -810,20 +810,20 @@ export interface FindDuplicateActiveTasksOpts {
   /**
    * Optional observer for list-query failures. Routed through
    * `debugLogPartialFailures` at the tool layer so probe failures
-   * surface under `LORE_DEBUG=1` without adding noise to the default
+   * surface under `KENNEN_DEBUG=1` without adding noise to the default
    * stderr stream — same convention the memory / decision probes use.
    */
   onError?: (err: unknown) => void
-  features?: Pick<LoreFeatureFlags, "nearDuplicateProbe">
+  features?: Pick<KennenFeatureFlags, "nearDuplicateProbe">
 }
 
 /**
  * Probe for active tasks in the same project whose `Entity` column
  * contains the given string. Sibling of `findNearDuplicates` for the
- * `lore-task action='create'` path. Returns `[]` on failure, never
+ * `kennen-task action='create'` path. Returns `[]` on failure, never
  * throws — probe failures must not block the create.
  *
- * **Sequenced before create.** The `lore-task
+ * **Sequenced before create.** The `kennen-task
  * action='create'` wire-in awaits this probe BEFORE dispatching
  * `services.tasks.create`, so the entity-matched candidate pool is
  * available to `findExactReuseTarget` for the assertive-reuse short-
@@ -851,9 +851,9 @@ export interface FindDuplicateActiveTasksOpts {
  * before create dispatches). The helper performs no exclusion of
  * its own.
  *
- * Honors `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1` for parity with the
+ * Honors `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1` for parity with the
  * memory / decision probes — one operator switch, every duplicate
- * probe respects it. The narrower `LORE_DISABLE_TASK_REUSE=1` switch
+ * probe respects it. The narrower `KENNEN_DISABLE_TASK_REUSE=1` switch
  * (read inside `findExactReuseTarget`) keeps the probe alive but
  * disables only the assertive-reuse promotion.
  */
@@ -916,7 +916,7 @@ export interface FindExactReuseTargetInput {
    * create.
    */
   projectIds: string[]
-  features?: Pick<LoreFeatureFlags, "taskReuse">
+  features?: Pick<KennenFeatureFlags, "taskReuse">
 }
 
 /**
@@ -929,18 +929,18 @@ export interface FindExactReuseTargetInput {
  * Sibling of (and assertive promotion over) `findDuplicateActiveTasks`'s
  * advisory-only behavior: that helper says "here are tasks tracking the
  * same entity, you decide"; this helper says "here is the SAME task,
- * reuse it." The caller (`lore-task action='create'`) wires the two
+ * reuse it." The caller (`kennen-task action='create'`) wires the two
  * together — exact match short-circuits to reuse, the residual probe
  * results render as the existing advisory close-CTA footer.
  *
  * Pure function over the probe result — no I/O. The reuse switch lives
  * here so all callers (current MCP wire-in plus any future CLI / hook
  * surfaces) honor it without duplicate plumbing. `findDuplicateActiveTasks`
- * already honors `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1` (returns `[]`,
+ * already honors `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1` (returns `[]`,
  * making this helper a no-op via empty input); the narrower
- * `LORE_DISABLE_TASK_REUSE=1` switch keeps the advisory probe enabled
+ * `KENNEN_DISABLE_TASK_REUSE=1` switch keeps the advisory probe enabled
  * and disables only the assertive promotion. Same single-axis posture
- * as `LORE_DISABLE_TASK_CROSSREF` vs the broader probe switch.
+ * as `KENNEN_DISABLE_TASK_CROSSREF` vs the broader probe switch.
  *
  * Returns `null` when no candidate matches or when reuse is disabled.
  * The probe result's order is fixed by `findDuplicateActiveTasks` to
@@ -985,7 +985,7 @@ export function findExactReuseTarget(
  *   caller passing the already-decoded subject `"Café & Bar"` against
  *   a stored title `"Café &amp; Bar"` (un-migrated vault) would
  *   normalize differently and miss reuse — exactly the silent-miss
- *   `lore migrate --fix-memory-encoding` was designed to close. The
+ *   `kennen migrate --fix-memory-encoding` was designed to close. The
  *   same decode discipline is load-bearing for the trigram pipeline;
  *   the same logic applies to the exact-equality predicate.
  *
@@ -1375,16 +1375,16 @@ export interface FindRelatedActiveTasksOpts {
   /**
    * Optional observer for list-query failures. Routed through
    * `debugLogPartialFailures` at the tool layer so probe failures
-   * surface under `LORE_DEBUG=1` — same convention the memory /
+   * surface under `KENNEN_DEBUG=1` — same convention the memory /
    * decision probes use.
    */
   onError?: (err: unknown) => void
-  features?: Pick<LoreFeatureFlags, "taskCrossref">
+  features?: Pick<KennenFeatureFlags, "taskCrossref">
 }
 
 /**
  * Probe for active tasks tracking the same entity as a just-saved
- * memory. Fired in parallel with `lore-memory action='save'` so the
+ * memory. Fired in parallel with `kennen-memory action='save'` so the
  * response can surface closure CTAs at the resolution moment — a memory
  * titled `Merged PR-1234` cross-references any active task whose
  * `Entity` column contains `PR-1234`.
@@ -1404,7 +1404,7 @@ export interface FindRelatedActiveTasksOpts {
  *   OR-`contains` over the candidate set extracted from the saved
  *   memory.
  *
- * Honors `LORE_DISABLE_TASK_CROSSREF=1` (distinct from the near-dup
+ * Honors `KENNEN_DISABLE_TASK_CROSSREF=1` (distinct from the near-dup
  * kill switch). An operator may trust the deterministic substring
  * near-dup probes and distrust the regex-based entity-extraction here
  * (or vice versa); single-axis kill switches are the right shape.

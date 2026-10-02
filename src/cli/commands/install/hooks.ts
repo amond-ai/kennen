@@ -1,12 +1,12 @@
 import type { BinDispatchShape, HookStatus } from "./types.js"
 import { toPortablePath } from "./utils.js"
 
-const CODEX_AGENT_ENV_PREFIX = "LORE_AGENT_NAME=Codex "
+const CODEX_AGENT_ENV_PREFIX = "KENNEN_AGENT_NAME=Codex "
 export const CODEX_HOOKS_FEATURE_KEY = "hooks"
 
 /**
  * Build the shell-string form of a Codex hook invocation with the
- * `LORE_AGENT_NAME` override baked in.
+ * `KENNEN_AGENT_NAME` override baked in.
  *
  * Load-bearing assumption: Codex executes hooks.json `type: "command"`
  * entries through a POSIX shell (`/bin/sh` or equivalent), so a leading
@@ -27,10 +27,10 @@ export const CODEX_HOOKS_FEATURE_KEY = "hooks"
 /**
  * Build the bin-dispatch shell-string command for a Codex hook event.
  * Codex executes hooks.json `type: "command"` entries through `/bin/sh`
- * (the env-prefix shape `LORE_AGENT_NAME=Codex ...` depends on it), so
+ * (the env-prefix shape `KENNEN_AGENT_NAME=Codex ...` depends on it), so
  * the bin-dispatch form keeps the prefix and trades the quoted absolute
- * `.sh` path for a `lore hooks <event>` invocation. PATH must include
- * the consumer repo's `node_modules/.bin` for `lore` to resolve at
+ * `.sh` path for a `kennen hooks <event>` invocation. PATH must include
+ * the consumer repo's `node_modules/.bin` for `kennen` to resolve at
  * hook-fire time — Claude Code and many shells set this up
  * automatically; if Codex's hook context doesn't, operators may need to
  * fall back to legacy absolute-path mode until Codex's hook runner exposes a
@@ -43,18 +43,18 @@ export const CODEX_HOOKS_FEATURE_KEY = "hooks"
  * - **`cd "$CLAUDE_PROJECT_DIR"` prefix.** Claude Code's hook runner
  *   fires hook commands with cwd set to whatever Claude Code's
  *   process happens to have at fire time — frequently the binary's
- *   install directory or the user's `~`, NOT the project root. Lore's
+ *   install directory or the user's `~`, NOT the project root. Kennen's
  *   hook helpers walk upward from `process.cwd()` to find
- *   .lore.yaml; without anchoring, a hook fired from the wrong cwd
+ *   .kennen.yaml; without anchoring, a hook fired from the wrong cwd
  *   resolves the wrong vault (or fails entirely on a fresh laptop).
  *   Claude Code exposes the project-root path via `$CLAUDE_PROJECT_DIR`
  *   for exactly this case. The literal `$` in the emitted command
- *   stays unexpanded by Lore's writer (it's a JSON string-valued
+ *   stays unexpanded by Kennen's writer (it's a JSON string-valued
  *   field in settings.json); Claude's hook shell substitutes it at
  *   fire time.
- * - **Yarn-PnP shape.** `yarn run -T lore` (top-level) resolves the
+ * - **Yarn-PnP shape.** `yarn run -T kennen` (top-level) resolves the
  *   workspace-root binary even when the hook fires from a nested
- *   workspace package's cwd. Bare `yarn lore` resolves only against
+ *   workspace package's cwd. Bare `yarn kennen` resolves only against
  *   the cwd's package manifest and fails on subdirectory cwds —
  *   exactly the case the `cd "$CLAUDE_PROJECT_DIR"` wrapper exposes.
  */
@@ -63,7 +63,9 @@ export function buildClaudeHookCommand(
   shape: BinDispatchShape = "bare"
 ): string {
   const tail =
-    shape === "yarn" ? `yarn run -T lore hooks ${eventName}` : `lore hooks ${eventName}`
+    shape === "yarn"
+      ? `yarn run -T kennen hooks ${eventName}`
+      : `kennen hooks ${eventName}`
   return `cd "$CLAUDE_PROJECT_DIR" && ${tail}`
 }
 
@@ -81,7 +83,9 @@ export function buildCodexHookCommand(
   shape: BinDispatchShape = "bare"
 ): string {
   const tail =
-    shape === "yarn" ? `yarn run -T lore hooks ${eventName}` : `lore hooks ${eventName}`
+    shape === "yarn"
+      ? `yarn run -T kennen hooks ${eventName}`
+      : `kennen hooks ${eventName}`
   return `${CODEX_AGENT_ENV_PREFIX}${tail}`
 }
 
@@ -94,7 +98,7 @@ export function buildLegacyCodexHookCommand(scriptPath: string): string {
  * exists so `buildClaudeHookCommand` / `buildCodexHookCommand` can't be
  * called with an arbitrary string — a typo'd event name would silently
  * produce a hook command that the helper rejects at runtime, and the
- * detector wouldn't recognize it as Lore-owned. The four values cover
+ * detector wouldn't recognize it as Kennen-owned. The four values cover
  * the entire deploy surface today: `wakeup` (UserPromptSubmit), `autosave`
  * (Stop), and `session-end` (compatibility shim).
  */
@@ -111,16 +115,16 @@ export interface ClaudeHookEntry {
 }
 
 /**
- * Classify a Lore-owned Claude Code hook entry against the new
+ * Classify a Kennen-owned Claude Code hook entry against the new
  * bin-dispatch shape and the legacy absolute-path shape.
  *
  * `binDispatchCommand` is what `buildClaudeHookCommand(event)`
- * produces (`lore hooks <event>`). `legacyExpectedPath` is the
+ * produces (`kennen hooks <event>`). `legacyExpectedPath` is the
  * canonical legacy path for the resolved `pkgRoot`
  * (`buildLegacyClaudeMcpEntry`-shaped). `scriptName` is the legacy
  * script-file name (`autosave.sh` / `wakeup.sh` / `session-end.sh`)
- * identifies Lore-owned legacy entries even when the recorded
- * absolute path does not match the current install (a Lore checkout
+ * identifies Kennen-owned legacy entries even when the recorded
+ * absolute path does not match the current install (a Kennen checkout
  * that moved still classifies as `legacy-current` if the path resolves
  * the same way today, or `stale` otherwise).
  */
@@ -132,23 +136,23 @@ export function detectClaudeHook(
 ): HookStatus {
   if (!entries) return "missing"
 
-  // Pattern matching all known Lore-owned bin-dispatch shapes. Same
+  // Pattern matching all known Kennen-owned bin-dispatch shapes. Same
   // pattern `upsertClaudeHookCommand` uses for filter — so any entry
   // the upsert would strip on reinstall surfaces here as something
   // OTHER than `missing`, giving operators an accurate "update
   // available" status before the rewrite. Without this match, an
-  // older `lore hooks <event>` (no cd anchor) would classify as
+  // older `kennen hooks <event>` (no cd anchor) would classify as
   // `missing`, status would say "not installed", but the upsert
   // would still strip it — confusing.
   const allBinDispatchShapes =
-    /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?lore hooks (?:wakeup|autosave|session-end)$/
+    /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
 
   for (const entry of entries) {
     for (const hook of entry.hooks ?? []) {
       const cmd = hook.command
       if (typeof cmd !== "string") continue
       // Bin-dispatch form: exact match against the desired-write
-      // shape is `current`; match against any other Lore-owned
+      // shape is `current`; match against any other Kennen-owned
       // bin-dispatch variant is `stale` (eligible for upgrade).
       if (binDispatchCommand && cmd === binDispatchCommand) return "current"
       if (allBinDispatchShapes.test(cmd)) return "stale"
@@ -164,20 +168,20 @@ export function detectClaudeHook(
 }
 
 /**
- * Upsert a Lore-owned Claude hook entry, accepting either the
- * bin-dispatch shape (`lore hooks <event>`) or a legacy absolute-path
+ * Upsert a Kennen-owned Claude hook entry, accepting either the
+ * bin-dispatch shape (`kennen hooks <event>`) or a legacy absolute-path
  * shape on either side of the operation:
  *
  * - Filters existing entries by both shapes simultaneously: any entry
  *   whose command ends with `/<scriptName>` (legacy) OR exactly matches
- *   `lore hooks <event>` (bin-dispatch) is treated as Lore-owned and
+ *   `kennen hooks <event>` (bin-dispatch) is treated as Kennen-owned and
  *   removed before the new entry is appended.
  * - Writes the new entry verbatim from `newCommand`, which the caller
  *   selects based on `context.legacyPaths`.
  *
- * The two-shape filter is what lets `lore install` rewrite
+ * The two-shape filter is what lets `kennen install` rewrite
  * a bin-dispatch entry back to legacy without leaving the bin-dispatch
- * entry behind, and lets default `lore install` rewrite a legacy entry
+ * entry behind, and lets default `kennen install` rewrite a legacy entry
  * without leaving the legacy entry behind. Without the dual filter, an
  * upgrade or downgrade would land BOTH shapes in `Stop[]` and Claude
  * Code would fire both hooks back-to-back.
@@ -188,24 +192,24 @@ export function upsertClaudeHookCommand(
   newCommand: string,
   config: { matcher: string; timeout?: number; runOnce?: boolean }
 ): ClaudeHookEntry[] {
-  // Recognize ALL Lore-owned bin-dispatch hook shapes so an upgrade
+  // Recognize ALL Kennen-owned bin-dispatch hook shapes so an upgrade
   // path strips the old entry before writing the new one — preventing
-  // duplicate Lore hooks from accumulating in `Stop[]` /
+  // duplicate Kennen hooks from accumulating in `Stop[]` /
   // `UserPromptSubmit[]` across reinstalls. The shapes the pattern
   // covers:
-  //   1. Pre-`cd` bare bin: `lore hooks <event>`
-  //   2. Pre-`cd` yarn-PnP bin: `yarn lore hooks <event>`
-  //   3. Current bare with cd-anchor: `cd "$CLAUDE_PROJECT_DIR" && lore hooks <event>`
+  //   1. Pre-`cd` bare bin: `kennen hooks <event>`
+  //   2. Pre-`cd` yarn-PnP bin: `yarn kennen hooks <event>`
+  //   3. Current bare with cd-anchor: `cd "$CLAUDE_PROJECT_DIR" && kennen hooks <event>`
   //   4. Current yarn-PnP with cd-anchor + `run -T`:
-  //      `cd "$CLAUDE_PROJECT_DIR" && yarn run -T lore hooks <event>`
-  //   5. Transition: `cd "..." && yarn lore hooks <event>`
+  //      `cd "$CLAUDE_PROJECT_DIR" && yarn run -T kennen hooks <event>`
+  //   5. Transition: `cd "..." && yarn kennen hooks <event>`
   //      (cd added, yarn shape not yet upgraded)
   // The two halves are independent: the cd-prefix is optional, the
   // yarn variant has two acceptable command shapes (legacy `yarn
-  // lore` and current `yarn run -T lore`). Matching all combinations
+  // kennen` and current `yarn run -T kennen`). Matching all combinations
   // means any prior install can be cleanly upgraded.
   const binDispatchPattern =
-    /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?lore hooks (?:wakeup|autosave|session-end)$/
+    /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
   const filtered = (existing ?? []).filter(
     (entry) =>
       !entry.hooks?.some((hook) => {
@@ -245,26 +249,28 @@ export function removeClaudeScriptEntries(
 }
 
 /**
- * Plan the SessionEnd cleanup that `lore install --client claude` applies on
+ * Plan the SessionEnd cleanup that `kennen install --client claude` applies on
  * reinstall. Pure function: takes the existing `hooks.SessionEnd` array,
  * returns the post-cleanup array (or `undefined` when every entry was
- * Lore-owned and the caller should `delete settings.hooks.SessionEnd`)
+ * Kennen-owned and the caller should `delete settings.hooks.SessionEnd`)
  * along with flags describing what was removed for status / "will remove"
  * messaging.
  *
- * Two historical Lore-owned SessionEnd shapes need to be stripped:
+ * Two historical Kennen-owned SessionEnd shapes need to be stripped:
  * the `session-end.sh` registration
  * and the older `autosave.sh`-on-SessionEnd legacy form. Unrelated user
  * hooks on `SessionEnd` are preserved entry-by-entry.
  *
  * Note: cleanup runs at the `ClaudeHookEntry` granularity. A hand-edited
- * settings.json that mixes a Lore-owned and a user-owned hook command in
+ * settings.json that mixes a Kennen-owned and a user-owned hook command in
  * a single `entry.hooks[]` array would lose the sibling on cleanup —
- * Lore's writer never produces that shape, but it's a sharp edge worth
+ * Kennen's writer never produces that shape, but it's a sharp edge worth
  * being aware of.
  */
-export function stripLoreOwnedSessionEndEntries(entries: ClaudeHookEntry[] | undefined): {
-  /** Post-cleanup entries, or `undefined` when every entry was Lore-owned. */
+export function stripKennenOwnedSessionEndEntries(
+  entries: ClaudeHookEntry[] | undefined
+): {
+  /** Post-cleanup entries, or `undefined` when every entry was Kennen-owned. */
   result: ClaudeHookEntry[] | undefined
   /** True when a `session-end.sh` registration was removed. */
   removedShim: boolean
@@ -310,14 +316,14 @@ function stripShellQuotes(value: string): string {
 
 /**
  * Strip leading shell-style `KEY=VALUE` env assignments. Lets the Codex
- * hook detector look through the `LORE_AGENT_NAME=Codex ` prefix (and any
+ * hook detector look through the `KENNEN_AGENT_NAME=Codex ` prefix (and any
  * future additions) to find the script path at the tail of the command.
  *
  * Recognition pattern (load-bearing for third-party integrators):
  * - Keys must match `[A-Z_][A-Z0-9_]*` — conventional POSIX env-var spelling.
  *   Lower-case (`agent=codex`) will NOT be stripped; keep the convention.
  * - Values are bare tokens — no whitespace, no quotes (`[^\s"']+`). A
- *   quoted value like `LORE_AGENT_NAME="My Agent"` is rejected wholesale
+ *   quoted value like `KENNEN_AGENT_NAME="My Agent"` is rejected wholesale
  *   so the detector classifies the hook as unrecognized and reinstall
  *   replaces it, rather than partially stripping up to the first space
  *   and leaving a malformed command. Integrators who need a multi-word
@@ -336,14 +342,14 @@ function commandTargetsScript(command: string, scriptName: string): boolean {
 }
 
 /**
- * Classify a Lore-owned Codex hook entry. Mirrors `detectClaudeHook`'s
+ * Classify a Kennen-owned Codex hook entry. Mirrors `detectClaudeHook`'s
  * dual-shape recognition:
  *
- * - `binDispatchCommand` matches `LORE_AGENT_NAME=Codex lore hooks <event>`
+ * - `binDispatchCommand` matches `KENNEN_AGENT_NAME=Codex kennen hooks <event>`
  *   (the 0.11.0+ form `buildCodexHookCommand` produces).
  * - `legacyExpectedCommand` matches the canonical legacy form
- *   `LORE_AGENT_NAME=Codex "<absolute-path>/<script>.sh"` for the
- *   resolved `pkgRoot`. `scriptName` identifies Lore-owned legacy
+ *   `KENNEN_AGENT_NAME=Codex "<absolute-path>/<script>.sh"` for the
+ *   resolved `pkgRoot`. `scriptName` identifies Kennen-owned legacy
  *   entries by tail.
  */
 export function detectCodexHook(
@@ -358,19 +364,19 @@ export function detectCodexHook(
   // pre-`yarn run -T` bin-dispatch entries as `stale` so the install
   // summary surfaces "update available" before the upsert strips
   // and rewrites them. Codex entries always carry the
-  // `LORE_AGENT_NAME=Codex ` env prefix; the strip helper handles
+  // `KENNEN_AGENT_NAME=Codex ` env prefix; the strip helper handles
   // any number of leading env assignments.
   const allBinDispatchTails =
-    /^(?:yarn (?:run -T )?)?lore hooks (?:wakeup|autosave|session-end)$/
+    /^(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
 
   for (const entry of entries) {
     for (const hook of entry.hooks ?? []) {
       const cmd = hook.command
       if (typeof cmd !== "string") continue
       if (binDispatchCommand && cmd === binDispatchCommand) return "current"
-      // Recognize Lore-owned bin-dispatch entries that don't match
-      // the desired-write shape — older `yarn lore` form, or any
-      // other valid pre-`run -T` shape. Strip the LORE_AGENT_NAME
+      // Recognize Kennen-owned bin-dispatch entries that don't match
+      // the desired-write shape — older `yarn kennen` form, or any
+      // other valid pre-`run -T` shape. Strip the KENNEN_AGENT_NAME
       // prefix first so the regex sees just the command tail.
       const tail = stripShellEnvPrefix(cmd)
       if (allBinDispatchTails.test(tail)) return "stale"
@@ -384,7 +390,7 @@ export function detectCodexHook(
 
 /**
  * Append a Codex hook entry. Caller is expected to have already
- * stripped any prior Lore-owned entries (legacy and bin-dispatch) from
+ * stripped any prior Kennen-owned entries (legacy and bin-dispatch) from
  * the target event via `stripCodexScriptFromAllEvents` and
  * `stripCodexBinDispatchHook` so this helper can stay a pure append.
  *
@@ -414,7 +420,7 @@ export function mergeCodexHookEntries(
 }
 
 /**
- * Remove every Codex hook entry whose command is a Lore-owned
+ * Remove every Codex hook entry whose command is a Kennen-owned
  * bin-dispatch shape — current AND prior — for the given event. The
  * runner needs all variants stripped so flipping between shapes
  * (legacy `.sh` ↔ pre-`run -T` bare ↔ pre-`run -T` yarn ↔ current
@@ -422,13 +428,13 @@ export function mergeCodexHookEntries(
  *
  * Detection uses the same regex-after-env-prefix-strip approach as
  * `detectCodexHook` so the strip and the detect agree on what
- * counts as Lore-owned.
+ * counts as Kennen-owned.
  */
 export function stripCodexBinDispatchHook(
   hooks: Record<string, CodexHookEntry[]>,
   eventName: HookEventName
 ): Record<string, CodexHookEntry[]> {
-  const tailPattern = new RegExp(`^(?:yarn (?:run -T )?)?lore hooks ${eventName}$`)
+  const tailPattern = new RegExp(`^(?:yarn (?:run -T )?)?kennen hooks ${eventName}$`)
   const next: Record<string, CodexHookEntry[]> = {}
   for (const [event, entries] of Object.entries(hooks)) {
     const filtered = entries.filter(

@@ -2,10 +2,10 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore conflicts scan` walks the vault, runs lexical candidate generation per
+`kennen conflicts scan` walks the vault, runs lexical candidate generation per
 project, filters out pairs already judged via `Compared With`, and emits
 prompt-ready material for the current agent to judge with
-`lore-memory action='compare'`.
+`kennen-memory action='compare'`.
 
 The CLI does not call an LLM and does not call the compare tool. It is a
 structured scan surface, not a judging subprocess.

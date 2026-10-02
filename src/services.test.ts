@@ -11,8 +11,8 @@ import type { Client, PageObjectResponse } from "@notionhq/client"
 // `resolveDriftCheck` reaches into the filesystem via `driftMarkerAgeDays`
 // / `touchDriftMarker`.
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-services-test-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-services-test-${process.pid}-${Date.now()}`
 })
 
 const serviceClientUsersMe = vi.hoisted(() => vi.fn())
@@ -74,7 +74,7 @@ import {
   driftMarkerAgeDays,
   touchDriftMarker,
 } from "./hooks/drift-marker.js"
-import type { LoreConfig, Vault } from "./types.js"
+import type { KennenConfig, Vault } from "./types.js"
 
 const TEST_ROOTS: string[] = []
 function uniqueRoot(label: string): string {
@@ -191,8 +191,8 @@ describe("deriveRelationUrlBase (PR #538 live-verification host-coupling)", () =
 describe("resolveRunToolBatchCreatesFlag", () => {
   // Issue #533, hardened by PR #538 review (security S2 + principal
   // strong rec #2): the write-path sub-flag does NOT inherit from
-  // the parent `LORE_USE_RUNTOOL` quarantine knob. Operators must
-  // opt in explicitly with `LORE_USE_RUNTOOL_BATCH_CREATES=1`.
+  // the parent `KENNEN_USE_RUNTOOL` quarantine knob. Operators must
+  // opt in explicitly with `KENNEN_USE_RUNTOOL_BATCH_CREATES=1`.
   // Read-path sub-flags (search / aggregate, parked under #532)
   // can keep inheriting; write-path ones must be loud because of
   // the partial-commit failure mode.
@@ -200,24 +200,24 @@ describe("resolveRunToolBatchCreatesFlag", () => {
     expect(resolveRunToolBatchCreatesFlag({})).toBe(false)
   })
 
-  it("returns true ONLY when LORE_USE_RUNTOOL_BATCH_CREATES=1", () => {
-    expect(resolveRunToolBatchCreatesFlag({ LORE_USE_RUNTOOL_BATCH_CREATES: "1" })).toBe(
-      true
-    )
+  it("returns true ONLY when KENNEN_USE_RUNTOOL_BATCH_CREATES=1", () => {
+    expect(
+      resolveRunToolBatchCreatesFlag({ KENNEN_USE_RUNTOOL_BATCH_CREATES: "1" })
+    ).toBe(true)
   })
 
-  it("does NOT inherit from LORE_USE_RUNTOOL even when the parent flag is on (S2)", () => {
+  it("does NOT inherit from KENNEN_USE_RUNTOOL even when the parent flag is on (S2)", () => {
     // The parent flag is a read-path quarantine knob; an operator
     // dogfooding Phase-2 search must not silently enable write-path
     // batch creates as a side-effect.
-    expect(resolveRunToolBatchCreatesFlag({ LORE_USE_RUNTOOL: "1" })).toBe(false)
+    expect(resolveRunToolBatchCreatesFlag({ KENNEN_USE_RUNTOOL: "1" })).toBe(false)
   })
 
-  it("returns false when LORE_USE_RUNTOOL_BATCH_CREATES=0 (explicit disable)", () => {
+  it("returns false when KENNEN_USE_RUNTOOL_BATCH_CREATES=0 (explicit disable)", () => {
     expect(
       resolveRunToolBatchCreatesFlag({
-        LORE_USE_RUNTOOL_BATCH_CREATES: "0",
-        LORE_USE_RUNTOOL: "1",
+        KENNEN_USE_RUNTOOL_BATCH_CREATES: "0",
+        KENNEN_USE_RUNTOOL: "1",
       })
     ).toBe(false)
   })
@@ -229,7 +229,7 @@ describe("resolveRunToolBatchCreatesFlag", () => {
     for (const malformed of ["true", "yes", "on", " 1", "1 ", "TRUE"]) {
       expect(
         resolveRunToolBatchCreatesFlag({
-          LORE_USE_RUNTOOL_BATCH_CREATES: malformed,
+          KENNEN_USE_RUNTOOL_BATCH_CREATES: malformed,
         })
       ).toBe(false)
     }
@@ -282,10 +282,10 @@ describe("resolveDriftCheck", () => {
   })
 })
 
-describe("initServices — LORE_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
+describe("initServices — KENNEN_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
   // The MCP-entry env-forwarding rewrite (#08) writes
-  // `LORE_CONFIG_ROOT=<path>` into the spawned MCP child's env so the
-  // child resolves the right `.lore.yaml` even when its launch cwd
+  // `KENNEN_CONFIG_ROOT=<path>` into the spawned MCP child's env so the
+  // child resolves the right `.kennen.yaml` even when its launch cwd
   // differs from the operator's vault directory. `initServices` honors
   // the env var by short-circuiting the upward findConfigFile walk.
   //
@@ -293,10 +293,10 @@ describe("initServices — LORE_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
   // Notion; tests stop short of that by making `loadConfig` throw a
   // sentinel error that proves which branch fired.
 
-  const SCRATCH = mkdtempSync(join(tmpdir(), "lore-services-config-root-"))
+  const SCRATCH = mkdtempSync(join(tmpdir(), "kennen-services-config-root-"))
 
   afterEach(() => {
-    delete process.env["LORE_CONFIG_ROOT"]
+    delete process.env["KENNEN_CONFIG_ROOT"]
     vi.mocked(findConfigFile).mockReset()
     vi.mocked(loadConfig).mockReset()
   })
@@ -305,13 +305,13 @@ describe("initServices — LORE_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
     await rm(SCRATCH, { recursive: true, force: true })
   })
 
-  it("loads `.lore.yaml` from LORE_CONFIG_ROOT when set, bypassing the upward walk", async () => {
+  it("loads `.kennen.yaml` from KENNEN_CONFIG_ROOT when set, bypassing the upward walk", async () => {
     const root = mkdtempSync(join(SCRATCH, "configroot-set-"))
-    // Land a real `.lore.yaml` so the access() guard passes and the
+    // Land a real `.kennen.yaml` so the access() guard passes and the
     // call reaches the mocked loadConfig. Content is irrelevant —
     // the sentinel error throws before parse.
-    await writeFile(join(root, ".lore.yaml"), "vault:\n  pageId: x\n", "utf-8")
-    process.env["LORE_CONFIG_ROOT"] = root
+    await writeFile(join(root, ".kennen.yaml"), "vault:\n  pageId: x\n", "utf-8")
+    process.env["KENNEN_CONFIG_ROOT"] = root
 
     // Sentinel error from loadConfig proves the env-var branch fired
     // and routed through the configRoot path. findConfigFile must
@@ -322,16 +322,16 @@ describe("initServices — LORE_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
     await expect(services.initServices("/tmp/some/unrelated/cwd")).rejects.toThrow(
       /sentinel-loadConfig-called/
     )
-    expect(loadConfig).toHaveBeenCalledWith(join(root, ".lore.yaml"))
+    expect(loadConfig).toHaveBeenCalledWith(join(root, ".kennen.yaml"))
     expect(findConfigFile).not.toHaveBeenCalled()
   })
 
-  it("falls back to the upward findConfigFile walk when LORE_CONFIG_ROOT is unset", async () => {
+  it("falls back to the upward findConfigFile walk when KENNEN_CONFIG_ROOT is unset", async () => {
     const workDir = mkdtempSync(join(SCRATCH, "no-config-"))
     // Simulate the walk landing on a config file (any path); the
     // sentinel from loadConfig proves the walk-then-load path fired.
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: join(workDir, ".lore.yaml"),
+      path: join(workDir, ".kennen.yaml"),
       root: workDir,
     })
     vi.mocked(loadConfig).mockRejectedValue(new Error("sentinel-fallback-fired"))
@@ -341,25 +341,25 @@ describe("initServices — LORE_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
       /sentinel-fallback-fired/
     )
     expect(findConfigFile).toHaveBeenCalledWith(workDir)
-    expect(loadConfig).toHaveBeenCalledWith(join(workDir, ".lore.yaml"))
+    expect(loadConfig).toHaveBeenCalledWith(join(workDir, ".kennen.yaml"))
   })
 
-  it("throws the No-.lore.yaml-found error when neither path resolves", async () => {
+  it("throws the No-.kennen.yaml-found error when neither path resolves", async () => {
     vi.mocked(findConfigFile).mockResolvedValue(null)
     const services = await import("./services.js")
     await expect(services.initServices("/tmp/no-config")).rejects.toThrow(
-      /No \.lore\.yaml found/
+      /No \.kennen\.yaml found/
     )
   })
 
-  it("treats whitespace-only LORE_CONFIG_ROOT as unset and falls back to upward search", async () => {
-    // A shell-rc misconfiguration like `export LORE_CONFIG_ROOT="   "`
+  it("treats whitespace-only KENNEN_CONFIG_ROOT as unset and falls back to upward search", async () => {
+    // A shell-rc misconfiguration like `export KENNEN_CONFIG_ROOT="   "`
     // is truthy in Node and would slip past a bare `if (envVar)` gate,
     // landing `resolve("   ")` which produces cwd-prefix garbage. The
     // trim guard normalizes that to "fall back to findConfigFile".
-    process.env["LORE_CONFIG_ROOT"] = "   "
+    process.env["KENNEN_CONFIG_ROOT"] = "   "
     vi.mocked(findConfigFile).mockResolvedValue({
-      path: "/tmp/fallback-after-trim/.lore.yaml",
+      path: "/tmp/fallback-after-trim/.kennen.yaml",
       root: "/tmp/fallback-after-trim",
     })
     vi.mocked(loadConfig).mockRejectedValue(new Error("sentinel-fallback-took"))
@@ -371,27 +371,27 @@ describe("initServices — LORE_CONFIG_ROOT honor (issue 0.10.0/08)", () => {
     expect(findConfigFile).toHaveBeenCalledWith("/tmp/fallback-after-trim")
   })
 
-  it("surfaces a friendly error when LORE_CONFIG_ROOT points at a directory that lacks .lore.yaml", async () => {
+  it("surfaces a friendly error when KENNEN_CONFIG_ROOT points at a directory that lacks .kennen.yaml", async () => {
     // The MCP entry's static forwarding can drift from the
     // operator's vault directory when they move or rename the
     // project. Without this check, `loadConfig` would throw a raw
     // `ENOENT` that the host renders as a confusing error. The
     // friendly variant tells the operator the recovery is
-    // `lore install` from the project directory (or unset the
+    // `kennen install` from the project directory (or unset the
     // env var).
     const root = mkdtempSync(join(SCRATCH, "no-config-here-"))
-    process.env["LORE_CONFIG_ROOT"] = root
+    process.env["KENNEN_CONFIG_ROOT"] = root
 
     const services = await import("./services.js")
     await expect(services.initServices("/tmp/some/other/cwd")).rejects.toThrow(
-      /LORE_CONFIG_ROOT=.* but no \.lore\.yaml exists there/
+      /KENNEN_CONFIG_ROOT=.* but no \.kennen\.yaml exists there/
     )
     expect(loadConfig).not.toHaveBeenCalled()
   })
 })
 
 describe("initServicesFromConfig — lazy author identity", () => {
-  const config = { vault: { pageId: "vault" }, projects: [] } as LoreConfig
+  const config = { vault: { pageId: "vault" }, projects: [] } as KennenConfig
   const databaseRef = (name: string) => ({
     databaseId: `db-${name}`,
     dataSourceId: `ds-${name}`,
@@ -408,12 +408,12 @@ describe("initServicesFromConfig — lazy author identity", () => {
   }
 
   afterEach(() => {
-    delete process.env["LORE_USE_RUNTOOL"]
-    delete process.env["LORE_USE_RUNTOOL_BLOCK_EDIT"]
-    delete process.env["LORE_USE_RUNTOOL_FILTER_SQL"]
-    delete process.env["LORE_USE_RUNTOOL_SEARCH"]
-    delete process.env["LORE_USE_RUNTOOL_AGGREGATE"]
-    delete process.env["LORE_USE_RUNTOOL_BATCH_CREATES"]
+    delete process.env["KENNEN_USE_RUNTOOL"]
+    delete process.env["KENNEN_USE_RUNTOOL_BLOCK_EDIT"]
+    delete process.env["KENNEN_USE_RUNTOOL_FILTER_SQL"]
+    delete process.env["KENNEN_USE_RUNTOOL_SEARCH"]
+    delete process.env["KENNEN_USE_RUNTOOL_AGGREGATE"]
+    delete process.env["KENNEN_USE_RUNTOOL_BATCH_CREATES"]
     vi.mocked(resolveAuth).mockReset()
     vi.mocked(resolveProject).mockReset()
     vi.mocked(createClient).mockImplementation(
@@ -424,8 +424,8 @@ describe("initServicesFromConfig — lazy author identity", () => {
   })
 
   it("rejects integration-secret tokens when any RunTool surface is enabled", async () => {
-    process.env["LORE_USE_RUNTOOL"] = "1"
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "1"
+    process.env["KENNEN_USE_RUNTOOL"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "1"
     vi.mocked(resolveAuth).mockResolvedValue({
       token: "secret_abcdefghijklmnopqrstuvwxyz",
       source: "env-notion-api-token",
@@ -443,12 +443,12 @@ describe("initServicesFromConfig — lazy author identity", () => {
   })
 
   it("allows integration-secret tokens when every RunTool surface is disabled", async () => {
-    process.env["LORE_USE_RUNTOOL"] = "0"
-    process.env["LORE_USE_RUNTOOL_BLOCK_EDIT"] = "0"
-    process.env["LORE_USE_RUNTOOL_FILTER_SQL"] = "0"
-    process.env["LORE_USE_RUNTOOL_SEARCH"] = "0"
-    process.env["LORE_USE_RUNTOOL_AGGREGATE"] = "0"
-    process.env["LORE_USE_RUNTOOL_BATCH_CREATES"] = "0"
+    process.env["KENNEN_USE_RUNTOOL"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_BLOCK_EDIT"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_FILTER_SQL"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_SEARCH"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_AGGREGATE"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_BATCH_CREATES"] = "0"
     vi.mocked(resolveAuth).mockResolvedValue({
       token: "secret_abcdefghijklmnopqrstuvwxyz",
       source: "env-notion-api-token",
@@ -595,7 +595,7 @@ describe("initServicesFromConfig — lazy author identity", () => {
   })
 
   it("allows staging auth when RunTool batch creates are disabled", async () => {
-    process.env["LORE_USE_RUNTOOL_BATCH_CREATES"] = "0"
+    process.env["KENNEN_USE_RUNTOOL_BATCH_CREATES"] = "0"
     vi.mocked(resolveAuth).mockResolvedValue({
       token: "init-token",
       baseUrl: "https://api-stg.notion.com",
@@ -623,7 +623,7 @@ describe("initServicesFromConfig — lazy author identity", () => {
   })
 
   it("fails closed for staging auth when RunTool batch creates are enabled", async () => {
-    process.env["LORE_USE_RUNTOOL_BATCH_CREATES"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_BATCH_CREATES"] = "1"
     vi.mocked(resolveAuth).mockResolvedValue({
       token: "init-token",
       baseUrl: "https://api-stg.notion.com",
@@ -642,7 +642,7 @@ describe("initServicesFromConfig — lazy author identity", () => {
   })
 
   it("fails closed when an auth-refresh retry moves RunTool batch creates to an unsupported host", async () => {
-    process.env["LORE_USE_RUNTOOL_BATCH_CREATES"] = "1"
+    process.env["KENNEN_USE_RUNTOOL_BATCH_CREATES"] = "1"
     vi.mocked(resolveAuth)
       .mockResolvedValueOnce({
         token: "old-token",
@@ -784,8 +784,8 @@ describe("initServicesFromConfig — lazy author identity", () => {
 })
 
 describe("createNtnAuthRefresh", () => {
-  const config = { vault: { pageId: "vault" } } as LoreConfig
-  const configRoot = "/tmp/lore-config-root"
+  const config = { vault: { pageId: "vault" } } as KennenConfig
+  const configRoot = "/tmp/kennen-config-root"
 
   afterEach(() => {
     vi.mocked(resolveAuth).mockReset()

@@ -30,11 +30,11 @@ const FACT_RELATION_PROPERTIES = [
  * tracking strings (`needs_action` / `waiting_on` / `blocked_by`).
  *
  * Tracking predicates were removed from `FactPredicate` in 0.6.0
- * (`lore-task` is the canonical surface for tracked work). Historical
+ * (`kennen-task` is the canonical surface for tracked work). Historical
  * Notion rows still carry those select values — the schema is
  * additive-only — so the deserialization boundary filters them so
  * no live read path surfaces them as a `Fact`. `countByPredicateRaw`
- * deliberately bypasses this filter so the `lore status` preflight
+ * deliberately bypasses this filter so the `kennen status` preflight
  * keeps counting the rows.
  *
  * `SubjectKey` and `DedupKey` are deliberately *not* projected onto

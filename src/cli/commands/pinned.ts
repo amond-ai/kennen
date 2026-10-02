@@ -1,12 +1,12 @@
 /**
- * `lore pinned` — operator-facing CLI for pinned context blocks.
+ * `kennen pinned` — operator-facing CLI for pinned context blocks.
  * One subcommand today:
  *
- * - `lore pinned list [--project <name>] [--audience <token>]
+ * - `kennen pinned list [--project <name>] [--audience <token>]
  *                     [--all-audiences] [-n <limit>]`
  *
  * Mutating operations (pin / unpin / update) intentionally land
- * only on the MCP `lore-pinned` tool surface. Operators rolling
+ * only on the MCP `kennen-pinned` tool surface. Operators rolling
  * out a fresh pinned block from a terminal can drop the
  * `Mutability: read-only` row directly into Notion's UI and pin
  * it via the agent surface — that's where the audit-line
@@ -22,7 +22,7 @@
  */
 
 import { Command } from "commander"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { resolveProjectByName } from "../../core/project-scope.js"
 import type { Memory } from "../../types.js"
 import { DEFAULT_PINNED_BLOCK_LIMIT } from "../../types.js"
@@ -128,7 +128,7 @@ function parseLimit(raw: string | undefined): number {
 }
 
 async function resolveProjectScope(
-  services: LoreServices,
+  services: KennenServices,
   name: string | undefined
 ): Promise<string | undefined> {
   if (name === undefined) {

@@ -76,11 +76,11 @@ export const NARROW_SCOPE_KINDS: MemoryScopeKind[] = [
  * longer current. Same retrieval behavior as `expires` for the
  * common case (we drop the row when its scopeKey doesn't match the
  * reader's session), but the explicit label gives operators a
- * triage signal in `lore status` for "session-only memories that
+ * triage signal in `kennen status` for "session-only memories that
  * outlived their session and need cleanup."
  * - `until-task-closed` — for `kind = task` memories; the row's
  * active reach ends when its `taskState` reaches `done` or
- * `cancelled`. Tasks already drop out of `lore-task action='list'`
+ * `cancelled`. Tasks already drop out of `kennen-task action='list'`
  * default state filters when closed, so this label is a
  * declaration of intent rather than a new retrieval rule.
  * - `until-decision-superseded` — for `kind = decision` memories;
@@ -113,7 +113,7 @@ export const MEMORY_LIFETIMES: MemoryLifetime[] = [
  *
  * Every field is optional. A missing identity slot means "no row whose
  * `scopeKind` equals this slot can be surfaced by default" — so a
- * vault running without `LORE_AGENT_NAME` set never has agent-scoped
+ * vault running without `KENNEN_AGENT_NAME` set never has agent-scoped
  * recall, only ever broadcast scopes plus the slots that are
  * populated.
  *
@@ -177,13 +177,13 @@ export interface MemoryScopeInput {
 
 /**
  * Translate a read-side `MemoryScope` (or `null`) into the write-side
- * `MemoryScopeInput` shape that `lore-fact action='create'` and
+ * `MemoryScopeInput` shape that `kennen-fact action='create'` and
  * `services.facts.createWithDedup` consume.
  *
  * Used by every system-managed fact emitter — auto-`mentions` on
- * `lore-memory action='save'` / `'update'`, `decided_by` on
- * `lore-decision action='create'`, `supersedes_decision` on
- * `lore-decision action='supersede'`, and `decided_by` retargets
+ * `kennen-memory action='save'` / `'update'`, `decided_by` on
+ * `kennen-decision action='create'`, `supersedes_decision` on
+ * `kennen-decision action='supersede'`, and `decided_by` retargets
  * during decision-graph reachability sync — to propagate the source
  * row's scope onto every emitted fact.
  *
@@ -191,7 +191,7 @@ export interface MemoryScopeInput {
  * session-scoped memory or decision lands with `Scope Kind = null`
  * (broadcast). The default scope filter intentionally treats null
  * as legacy/broadcast and surfaces the row to every reader, which
- * would let `lore-query action='ask'` and `lore-decision
+ * would let `kennen-query action='ask'` and `kennen-decision
  * action='context'` leak the scoped row's title and entity edges
  * across sessions even when the memory/decision itself is hidden
  * from recall.
@@ -232,7 +232,7 @@ export function memoryScopeToInput(
  * global / null): emitting with the narrower scope hides the
  * relationship from the broader-scope reader who can see the
  * broader row. Emitting with the broader scope leaks the
- * narrower row's title and the relationship through `lore-query
+ * narrower row's title and the relationship through `kennen-query
  * action='ask'` to readers who cannot see the narrower row.
  * Both directions are wrong; the safe answer is to skip the
  * derived-fact emission. The compare verdict still lands in the
@@ -318,7 +318,7 @@ function describeScope(scope: MemoryScope | null | undefined): string {
 }
 
 /**
- * Days-from-today threshold for the `lore status` "expiring scoped
+ * Days-from-today threshold for the `kennen status` "expiring scoped
  * rows" surface. A row with `Expires At` between today and today + N
  * days surfaces as "expiring soon"; rows with `Expires At < today`
  * surface as "expired."

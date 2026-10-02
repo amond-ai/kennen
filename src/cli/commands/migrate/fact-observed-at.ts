@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import {
   runBackfillFactObservedAtMigration,
   type BackfillFactObservedAtResult,
@@ -15,7 +15,7 @@ import { printDiscoveryBreadcrumb, resolveMigrationProjectScope } from "./shared
  * the plan, optionally apply with progress lines.
  */
 export async function runBackfillFactObservedAt(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     apply: boolean
     dryRun: boolean
@@ -49,7 +49,7 @@ export async function runBackfillFactObservedAt(
   const { plan, written, failures } = result
 
   console.log(
-    `\n[lore] backfill-fact-observed-at: scanned ${plan.totalFactsScanned} ` +
+    `\n[kennen] backfill-fact-observed-at: scanned ${plan.totalFactsScanned} ` +
       `fact${plan.totalFactsScanned === 1 ? "" : "s"}`
   )
   console.log(
@@ -73,10 +73,10 @@ export async function runBackfillFactObservedAt(
   }
 
   if (planOnly) {
-    console.log("\n[lore] dry-run: no writes performed. Re-run with --yes to apply.")
+    console.log("\n[kennen] dry-run: no writes performed. Re-run with --yes to apply.")
   } else {
     console.log(
-      `\n[lore] backfill-fact-observed-at: wrote ${written} row${written === 1 ? "" : "s"}.`
+      `\n[kennen] backfill-fact-observed-at: wrote ${written} row${written === 1 ? "" : "s"}.`
     )
     // Per-row failure surface. Lets the
     // operator distinguish transient errors (likely re-runnable) from
@@ -84,7 +84,7 @@ export async function runBackfillFactObservedAt(
     // stderr progress lines.
     if (failures.length > 0) {
       console.log(
-        `[lore] backfill-fact-observed-at: ${failures.length} row${failures.length === 1 ? "" : "s"} failed; re-run to retry`
+        `[kennen] backfill-fact-observed-at: ${failures.length} row${failures.length === 1 ? "" : "s"} failed; re-run to retry`
       )
       const PREVIEW = 5
       for (const failure of failures.slice(0, PREVIEW)) {

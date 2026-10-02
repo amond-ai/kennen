@@ -7,11 +7,12 @@ import {
   validateExplicitProjectScopeName,
 } from "../../core/project-scope.js"
 import { resolveProfileFromConfigAtRoot } from "../../profile/index.js"
-import type { LoreServices } from "../../services.js"
+import type { KennenServices } from "../../services.js"
 import { TAG_VOCABULARY } from "../../types.js"
 import type { CliParseResult } from "../parse.js"
 
-export const PROJECT_LIST_HINT = "run `lore status projects` to list configured projects"
+export const PROJECT_LIST_HINT =
+  "run `kennen status projects` to list configured projects"
 export const YMD_REGEX = /^\d{4}-\d{2}-\d{2}$/
 export const YMD_HINT = "must be YYYY-MM-DD"
 
@@ -129,21 +130,21 @@ export function parseTagsList(
 }
 
 export async function loadActiveTagVocabularyForCli(): Promise<readonly string[]> {
-  const rawRoot = process.env["LORE_CONFIG_ROOT"]
+  const rawRoot = process.env["KENNEN_CONFIG_ROOT"]
   const explicitRoot = rawRoot?.trim() ? rawRoot.trim() : undefined
   let configPath: string
   let configRoot: string
   if (explicitRoot) {
     const root = resolve(explicitRoot)
     configRoot = root
-    configPath = resolve(root, ".lore.yaml")
+    configPath = resolve(root, ".kennen.yaml")
     try {
       await access(configPath)
     } catch {
       throw new Error(
-        `LORE_CONFIG_ROOT=${root} but no .lore.yaml exists there. ` +
-          "Re-run `lore install` from the project directory or unset " +
-          "LORE_CONFIG_ROOT to fall back to the upward search."
+        `KENNEN_CONFIG_ROOT=${root} but no .kennen.yaml exists there. ` +
+          "Re-run `kennen install` from the project directory or unset " +
+          "KENNEN_CONFIG_ROOT to fall back to the upward search."
       )
     }
   } else {
@@ -157,7 +158,7 @@ export async function loadActiveTagVocabularyForCli(): Promise<readonly string[]
 }
 
 export async function resolveProjectIdForCli(
-  services: LoreServices,
+  services: KennenServices,
   projectName: string | undefined,
   flag = "--project"
 ): Promise<{ projectId: string | undefined; projectLabel: string }> {

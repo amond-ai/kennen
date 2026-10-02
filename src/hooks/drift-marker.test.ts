@@ -6,8 +6,8 @@ import { rm, stat, utimes } from "node:fs/promises"
 // re-reads the env var on every call so the override flows through to
 // downstream callers.
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-drift-marker-test-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-drift-marker-test-${process.pid}-${Date.now()}`
 })
 
 import {

@@ -1,5 +1,5 @@
 /**
- * Yes/no confirmation prompt for `lore init`. Lives in its own module
+ * Yes/no confirmation prompt for `kennen init`. Lives in its own module
  * so test code can `vi.mock("./init-prompt.js", …)` to intercept
  * `runNoArgInit`'s internal calls without mocking the entire init.ts
  * surface — the declined-prompt branches need coverage but a real-stdin

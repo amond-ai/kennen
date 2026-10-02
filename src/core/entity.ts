@@ -3,7 +3,7 @@
  *
  * The Entities DB (PF3-01) is the canonical-handle registry that
  * `FactService` joins against via `SubjectEntity` / `ObjectEntity`
- * relations. `lore-fact action='create'`, `lore-query action='ask'`,
+ * relations. `kennen-fact action='create'`, `kennen-query action='ask'`,
  * and the `--build-entities` migration all funnel through `resolveOrCreateEntity`
  * so a single string input maps to one Entity row regardless of case
  * variants or richer-vs-bare handle suffixes.
@@ -55,7 +55,7 @@ import {
   isSqlValidationError,
   logRunToolFallback,
 } from "../notion/runtool/error-helpers.js"
-import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { resolveFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 import { withEntityRelationLocks } from "./entity-relation-lock.js"
 
 /**
@@ -192,9 +192,9 @@ export interface EntityQueryVariants {
  * Variant ownership lives on `EntityService` rather than the call
  * site so a future extension (e.g. include normalized synonyms, drop
  * the raw input on a guaranteed-canonical caller) is one helper edit
- * — not a sweep across every caller of `lore-task action='list'`
+ * — not a sweep across every caller of `kennen-task action='list'`
  * that does its own ad-hoc string composition. The
- * `lore-query action='ask'` task recall path is the canonical caller;
+ * `kennen-query action='ask'` task recall path is the canonical caller;
  * future surfaces should reuse
  * this helper or accept that they will re-derive the same logic
  * incorrectly.
@@ -287,7 +287,7 @@ function isActiveEntityPage(
 }
 
 export class EntityService {
-  private readonly features: LoreFeatureFlags
+  private readonly features: KennenFeatureFlags
 
   /**
    * Name + alias → Entity. Keyed on `normalizeEntityKey(name)` so case
@@ -303,7 +303,7 @@ export class EntityService {
   constructor(
     private client: Client,
     private db: DatabaseRef,
-    options?: { features?: LoreFeatureFlags }
+    options?: { features?: KennenFeatureFlags }
   ) {
     this.features = options?.features ?? resolveFeatureFlags()
   }
@@ -380,7 +380,7 @@ export class EntityService {
     if (cached) return cached
 
     return this.nameCache.getOrLoad(key, async () => {
-      // When `LORE_USE_RUNTOOL_FILTER_SQL` is on and a RunTool wrapper
+      // When `KENNEN_USE_RUNTOOL_FILTER_SQL` is on and a RunTool wrapper
       // is wired, ask SQL to widen the candidate pool to every row
       // whose lowercased name contains the normalized key as a
       // substring (one round-trip, no pagination). The JS post-filter
@@ -389,7 +389,7 @@ export class EntityService {
       // post-filter pipeline. `LOWER()` is ASCII-only so the SQL alone
       // cannot authoritatively decide a negative match; the
       // post-filter side normalizes the stored name with the same
-      // helper Lore uses everywhere (NFC + whitespace collapse +
+      // helper Kennen uses everywhere (NFC + whitespace collapse +
       // trailing-punct strip + lowercase). Without the post-filter, a
       // stored `"Memory Service. "` would silently miss
       // `findByName("memoryservice")`.
@@ -527,7 +527,7 @@ export class EntityService {
     const key = normalizeEntityKey(alias)
     if (!key) return []
 
-    // When `LORE_USE_RUNTOOL_FILTER_SQL` is on and a RunTool wrapper
+    // When `KENNEN_USE_RUNTOOL_FILTER_SQL` is on and a RunTool wrapper
     // is wired, ask SQL to widen the candidate pool to every row
     // whose lowercased Aliases column contains the normalized key as
     // a substring (one round-trip, no pagination). The JS post-filter
@@ -661,14 +661,14 @@ export class EntityService {
    * fact scoped to project B accumulates `[A, B]` rather than staying
    * frozen at `[A]`.
    *
-   * **Concurrent-create race is benign.** Two parallel `lore-fact
+   * **Concurrent-create race is benign.** Two parallel `kennen-fact
    * action='create'` calls on the same fresh subject can both pass
    * `findByName` / `findByAlias`'s probe miss, both auto-create, and
    * produce two Entity rows under different ids — Notion has no
    * unique-index primitive and the resolver does not lock. Same
    * posture as the documented concurrent-upsert risk on
    * `MemoryService.upsertByTopicKey`. The failure mode is duplicate
-   * rows (not data loss); the authoritative collapse is `lore migrate
+   * rows (not data loss); the authoritative collapse is `kennen migrate
    * --build-entities`, which groups every fact's subject/object
    * strings by normalized key and re-points each fact's
    * `SubjectEntity` / `ObjectEntity` relation to the canonical row.

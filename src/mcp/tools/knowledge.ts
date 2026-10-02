@@ -1,6 +1,6 @@
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import {
   formatDispatchError,
   paginationFooter,
@@ -37,18 +37,18 @@ type ToolResult = {
 }
 
 /**
- * Predicates accepted on `lore-fact action='create'`. Tracked work lives
- * on `lore-task action='create'`; the tracking predicates that the Tasks
+ * Predicates accepted on `kennen-fact action='create'`. Tracked work lives
+ * on `kennen-task action='create'`; the tracking predicates that the Tasks
  * surface superseded (`needs_action` / `waiting_on` / `blocked_by`) are
  * not part of the `FactPredicate` union and are not accepted here.
  *
  * Decision-graph predicates (`decided_by`, `supersedes_decision`,
  * `informs`) stay internal-only — created by `DecisionService` and
- * never via `lore-fact`.
+ * never via `kennen-fact`.
  *
  * `mentions` is also internal-only — auto-emitted by
- * `lore-memory action='save'`. Agents that want to assert a richer
- * relationship (`uses`, `depends_on`, etc.) call `lore-fact
+ * `kennen-memory action='save'`. Agents that want to assert a richer
+ * relationship (`uses`, `depends_on`, etc.) call `kennen-fact
  * action='create'` directly; the auto-emitted `mentions` shape is the
  * lowest-quality fallback and is intentionally not addressable as an
  * agent-curated value.
@@ -77,8 +77,8 @@ function projectsCompatible(
 }
 
 /**
- * LORE_DEBUG parser contract: one rejected provenance precheck emits one
- * newline-delimited `[lore] fact-precheck-rejected:` event.
+ * KENNEN_DEBUG parser contract: one rejected provenance precheck emits one
+ * newline-delimited `[kennen] fact-precheck-rejected:` event.
  */
 function debugLogFactPrecheckRejected(
   reason:
@@ -89,7 +89,7 @@ function debugLogFactPrecheckRejected(
   args: Pick<LearnArgs, "agent" | "session" | "sourceMemoryId">,
   factProjectIds: string[]
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   const clean = (value: string | undefined): string =>
     Array.from(value ?? "<unset>", (char) => {
       const code = char.charCodeAt(0)
@@ -98,7 +98,7 @@ function debugLogFactPrecheckRejected(
   const projectScope =
     factProjectIds.length > 0 ? factProjectIds.join(",") : "<vault-wide>"
   process.stderr.write(
-    `[lore] fact-precheck-rejected: reason=${reason} ` +
+    `[kennen] fact-precheck-rejected: reason=${reason} ` +
       `agent=${clean(args.agent)} session=${clean(args.session)} ` +
       `sourceMemoryId=${clean(args.sourceMemoryId)} project=${projectScope}\n`
   )
@@ -106,8 +106,8 @@ function debugLogFactPrecheckRejected(
 
 // -------------------------------------------------------------------------
 // Handlers — one per fact action. Write-side actions (`create`,
-// `invalidate`, `extend`) route via `lore-fact`'s discriminated union;
-// read-side actions (`ask`, `audit`) are exported for reuse by `lore-query`.
+// `invalidate`, `extend`) route via `kennen-fact`'s discriminated union;
+// read-side actions (`ask`, `audit`) are exported for reuse by `kennen-query`.
 // -------------------------------------------------------------------------
 
 interface LearnArgs {
@@ -125,7 +125,7 @@ interface LearnArgs {
 }
 
 export async function handleLearn(
-  services: LoreServices,
+  services: KennenServices,
   args: LearnArgs
 ): Promise<ToolResult> {
   try {
@@ -181,7 +181,7 @@ export async function handleLearn(
           debugLogFactPrecheckRejected("provenance-cross-project", args, factProjectIds)
           return toolError(
             new Error(
-              `provenance-cross-project: lore-fact create requires a compatible source memory. ` +
+              `provenance-cross-project: kennen-fact create requires a compatible source memory. ` +
                 `Session memory ${candidate.memoryId} is scoped to a different project than this fact. ` +
                 `Pass sourceMemoryId explicitly to override the session candidate.`
             )
@@ -213,13 +213,13 @@ export async function handleLearn(
     }> = []
     // Per-side `.catch(() => null)` instead of `Promise.all`: a
     // transient Notion 5xx on either resolver must NOT sink the
-    // whole `lore-fact action='create'` call. Autosave callers have
+    // whole `kennen-fact action='create'` call. Autosave callers have
     // no human in the loop; the fact is more valuable than the
     // relation. Treat a rejected resolution as "couldn't resolve,
     // omit the relation, surface a warning" — the substring-fallback
     // path in `queryByEntity` still finds the row later.
     //
-    // Mirrors the resilience posture `lore-query action='ask'`'s tasks
+    // Mirrors the resilience posture `kennen-query action='ask'`'s tasks
     // lookup (further down in this file) already uses for the same
     // reason.
     const [subjectResolution, objectResolution] = await Promise.all([
@@ -271,7 +271,7 @@ export async function handleLearn(
     // with the entity relation OMITTED on the ambiguous side. This
     // protects two contracts that would otherwise conflict:
     //
-    // 1. Autosave-driven `lore-fact action='create'` calls have no human
+    // 1. Autosave-driven `kennen-fact action='create'` calls have no human
     //    in the loop to disambiguate. Refusing to write would silently
     //    drop the fact from the autosave stream — worse than a
     //    half-canonical fact, which the substring-fallback
@@ -279,7 +279,7 @@ export async function handleLearn(
     //
     // 2. We must not guess and bind the fact to the wrong canonical
     //    row. Omitting the relation lets the operator (or a future
-    //    `lore migrate --build-entities` re-run) attach the right
+    //    `kennen migrate --build-entities` re-run) attach the right
     //    entity later via `setEntityRelations`.
     //
     // The candidate list goes into `toolWarnings` so the agent sees it
@@ -348,7 +348,7 @@ export async function handleLearn(
 }
 
 export async function handleInvalidate(
-  services: LoreServices,
+  services: KennenServices,
   args: { factId: string; sourceMemoryId?: string }
 ): Promise<ToolResult> {
   try {
@@ -469,7 +469,7 @@ export async function handleInvalidate(
 }
 
 export async function handleExtendFact(
-  services: LoreServices,
+  services: KennenServices,
   args: { factId: string; reviewBy: string | null }
 ): Promise<ToolResult> {
   try {
@@ -501,7 +501,7 @@ interface AskArgs {
   includeContext?: boolean
   /**
    * Transaction-time recall cutoff. YYYY-MM-DD form. Returns
-   * the slice of facts Lore knew about by this date and had not yet
+   * the slice of facts Kennen knew about by this date and had not yet
    * invalidated by this date.
    */
   asOf?: string
@@ -514,7 +514,7 @@ interface AskArgs {
 }
 
 export async function handleAsk(
-  services: LoreServices,
+  services: KennenServices,
   args: AskArgs,
   toolName: string
 ): Promise<ToolResult> {
@@ -531,7 +531,7 @@ export async function handleAsk(
 }
 
 export async function handleAudit(
-  services: LoreServices,
+  services: KennenServices,
   args: { projectName?: string }
 ): Promise<ToolResult> {
   try {
@@ -689,14 +689,14 @@ export async function handleAudit(
     const actions = [
       "",
       "Actions:",
-      "- **Fact — invalidate**: `lore-fact` with `action: 'invalidate'` if no longer true",
-      "- **Fact — extend**: `lore-fact` with `action: 'extend'` and a new review date",
-      "- **Decision — mark reviewed**: `lore-decision` with `action: 'review'`",
-      "- **Decision — supersede**: `lore-decision` with `action: 'supersede'` and a replacement",
-      "- **Task — close**: `lore-task` with `action: 'close'` and `state: 'done'` if completed",
-      "- **Task — update due date**: `lore-task` with `action: 'update'` and `dueDate`",
-      "- **Task — unblock**: `lore-task` with `action: 'update'`, a non-blocked `state`, and `blockedBy: ''`",
-      "- **Task — cancel**: `lore-task` with `action: 'close'` and `state: 'cancelled'` if abandoned",
+      "- **Fact — invalidate**: `kennen-fact` with `action: 'invalidate'` if no longer true",
+      "- **Fact — extend**: `kennen-fact` with `action: 'extend'` and a new review date",
+      "- **Decision — mark reviewed**: `kennen-decision` with `action: 'review'`",
+      "- **Decision — supersede**: `kennen-decision` with `action: 'supersede'` and a replacement",
+      "- **Task — close**: `kennen-task` with `action: 'close'` and `state: 'done'` if completed",
+      "- **Task — update due date**: `kennen-task` with `action: 'update'` and `dueDate`",
+      "- **Task — unblock**: `kennen-task` with `action: 'update'`, a non-blocked `state`, and `blockedBy: ''`",
+      "- **Task — cancel**: `kennen-task` with `action: 'close'` and `state: 'cancelled'` if abandoned",
       "- **No change**: leave as-is if still under review",
     ]
 
@@ -745,7 +745,7 @@ function createFactDispatchSchema(
         // consumers: `queryBySubject` won't surface it, `repointEntity`
         // sees an empty key, and the dedup probe collides every empty-
         // subject fact onto one slot. Shared `nonBlankString` matches
-        // the `.trim().min(1)` posture used by `lore-query action='ask'`'s
+        // the `.trim().min(1)` posture used by `kennen-query action='ask'`'s
         // `entity` schema.
         subject: nonBlankString,
         predicate: predicateSchema,
@@ -787,12 +787,15 @@ function createFactDispatchSchema(
         path: ["sourceMemoryId"],
         message:
           "provenance-missing: pass a non-empty sourceMemoryId, or pass both non-empty " +
-          "agent and session so Lore can auto-link a compatible session memory.",
+          "agent and session so Kennen can auto-link a compatible session memory.",
       })
     })
 }
 
-export function registerKnowledgeTools(server: McpServer, services: LoreServices): void {
+export function registerKnowledgeTools(
+  server: McpServer,
+  services: KennenServices
+): void {
   const predicateSchema = createPredicateSchema(
     services.profile
       ? writableFactPredicates(services.profile)
@@ -801,10 +804,10 @@ export function registerKnowledgeTools(server: McpServer, services: LoreServices
   const factDispatchSchema = createFactDispatchSchema(predicateSchema)
 
   // -------------------------------------------------------------------------
-  // lore-fact — polymorphic dispatcher
+  // kennen-fact — polymorphic dispatcher
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-fact",
+    "kennen-fact",
     {
       title: "Knowledge graph fact mutations",
       description:
@@ -812,8 +815,8 @@ export function registerKnowledgeTools(server: McpServer, services: LoreServices
         "- `action: 'create'` — add a Subject —predicate→ Object triple. Auto-dedupes against existing equivalent triples and merges metadata onto the survivor.\n" +
         "- `action: 'invalidate'` — mark a fact as no longer true (sets `Valid Until` and `Invalidated At` to today). Preserved for history. Pass `sourceMemoryId` to record which memory prompted the invalidation in the `Invalidated By` relation.\n" +
         "- `action: 'extend'` — set or clear a fact's review-by date.\n\n" +
-        "Every created fact MUST link back to a supporting memory via `sourceMemoryId` so `lore-query action='ask'` can retrace the reasoning. Pass a live Memories row ID directly, or pass `agent`+`session` matching an earlier `lore-memory action='save'` / `lore-decision action='create'` call in the same process and `sourceMemoryId` auto-links. If neither path produces a compatible Source memory, the create call is rejected before writing.\n\n" +
-        "Decision predicates (`decided_by`, `supersedes_decision`, `informs`) and the auto-emitted `mentions` predicate are internal-only and not accepted here — `decided_by` / `supersedes_decision` / `informs` are auto-created by the decision tool family; `mentions` is auto-emitted by `lore-memory action='save'`. Use richer relationship predicates (`uses`, `depends_on`, etc.) for agent-curated edges.",
+        "Every created fact MUST link back to a supporting memory via `sourceMemoryId` so `kennen-query action='ask'` can retrace the reasoning. Pass a live Memories row ID directly, or pass `agent`+`session` matching an earlier `kennen-memory action='save'` / `kennen-decision action='create'` call in the same process and `sourceMemoryId` auto-links. If neither path produces a compatible Source memory, the create call is rejected before writing.\n\n" +
+        "Decision predicates (`decided_by`, `supersedes_decision`, `informs`) and the auto-emitted `mentions` predicate are internal-only and not accepted here — `decided_by` / `supersedes_decision` / `informs` are auto-created by the decision tool family; `mentions` is auto-emitted by `kennen-memory action='save'`. Use richer relationship predicates (`uses`, `depends_on`, etc.) for agent-curated edges.",
       inputSchema: z.object({
         action: z
           .enum(["create", "invalidate", "extend"])
@@ -880,7 +883,7 @@ export function registerKnowledgeTools(server: McpServer, services: LoreServices
     async (args) => {
       const parsed = factDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-fact", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-fact", parsed.error)))
       }
       const data = parsed.data
       switch (data.action) {

@@ -32,7 +32,7 @@ import { synthesizeFactFromCreateInput } from "./fact-synthesis.js"
  * `enriched` lists the metadata fields that were merged onto the existing row
  * on dedup hit — projects union'd, source memory linked, review extended.
  * Empty when the probe missed (fresh row) or hit with nothing new to merge.
- * Exposed so `lore-fact action='create'` can tell the agent "this
+ * Exposed so `kennen-fact action='create'` can tell the agent "this
  * wasn't a no-op, we attached your session to the pre-existing fact."
  */
 export interface CreateFactResult {
@@ -57,10 +57,10 @@ function warnFactCreateMissingColumnOnce(propertyName: string): void {
     propertyName === "Observed At" ||
     propertyName === "Invalidated At" ||
     propertyName === "Invalidated By"
-      ? "Run `lore migrate` to add issue #284 transaction-time columns, then `lore migrate --backfill-fact-observed-at` to seed pre-#284 rows."
-      : "Run `lore migrate` to add missing schema columns."
+      ? "Run `kennen migrate` to add issue #284 transaction-time columns, then `kennen migrate --backfill-fact-observed-at` to seed pre-#284 rows."
+      : "Run `kennen migrate` to add missing schema columns."
   process.stderr.write(
-    `[lore] fact-create: vault schema lacks \`${propertyName}\`; ` +
+    `[kennen] fact-create: vault schema lacks \`${propertyName}\`; ` +
       `dropping that column from the create write so the fact still lands. ${hint}\n`
   )
 }
@@ -70,9 +70,9 @@ function logDedupDuplicateScopeMatchOnce(dedupKey: string): void {
   if (dedupDuplicateScopeMatchWarned) return
   dedupDuplicateScopeMatchWarned = true
   process.stderr.write(
-    "[lore] fact-dedup: scope-constrained probe found multiple live " +
+    "[kennen] fact-dedup: scope-constrained probe found multiple live " +
       `rows for dedup key ${dedupKey.slice(0, 12)}... — using the ` +
-      "earliest-created match. Run `lore migrate --dedup-keys --merge` " +
+      "earliest-created match. Run `kennen migrate --dedup-keys --merge` " +
       "to collapse the duplicate state (the migration's grouping is " +
       "scope-aware so legitimate same-triple-different-scope rows " +
       "stay distinct).\n"
@@ -85,10 +85,10 @@ export function __resetDedupDuplicateScopeMatchWarnedForTests(): void {
 }
 
 /**
- * On an unmigrated vault every `lore-fact action='create'` probe fails with the same
+ * On an unmigrated vault every `kennen-fact action='create'` probe fails with the same
  * "DedupKey column missing" error. Autosave fires every 5 messages, so
  * logging per-probe turns the MCP server's stderr into a firehose. The
- * fix is guaranteed by `lore migrate`, so we warn once per process and
+ * fix is guaranteed by `kennen migrate`, so we warn once per process and
  * then stay quiet.
  */
 let probeFailureLogged = false
@@ -96,8 +96,8 @@ function logProbeFailureOnce(err: unknown): void {
   if (probeFailureLogged) return
   probeFailureLogged = true
   console.error(
-    "[lore] Fact dedup probe failed, falling back to blind create. " +
-      "Run `lore migrate` to add the DedupKey column. Underlying error:",
+    "[kennen] Fact dedup probe failed, falling back to blind create. " +
+      "Run `kennen migrate` to add the DedupKey column. Underlying error:",
     err instanceof Error ? err.message : err
   )
 }
@@ -189,7 +189,7 @@ export function classifyTailFallback(err: unknown): TailFallback {
  * The wrapper falls back per-input via `pages.create` regardless,
  * so the operator's writes still land — but without this warning
  * an operator running on integration-secret auth and having flipped
- * `LORE_USE_RUNTOOL_BATCH_CREATES=1` would burn a wasted RunTool
+ * `KENNEN_USE_RUNTOOL_BATCH_CREATES=1` would burn a wasted RunTool
  * round-trip per save and never learn why the new path silently
  * doesn't apply. One warning per process keeps stderr quiet on
  * happy-path callers; once-per-process matches the existing
@@ -216,11 +216,11 @@ function logRunToolBatchCreatesAuthFallbackOnce(err: unknown): void {
   }
   runtoolBatchCreatesAuthFallbackLogged = true
   process.stderr.write(
-    "[lore] runtool batch_create: " +
+    "[kennen] runtool batch_create: " +
       `${status ?? "?"} ${code ?? "auth"} on token; falling back ` +
       "to per-input pages.create. RunTool requires an ntn-issued " +
       "user-actor token; integration-secret auth cannot use RunTool. " +
-      "Set LORE_USE_RUNTOOL_BATCH_CREATES=0 to " +
+      "Set KENNEN_USE_RUNTOOL_BATCH_CREATES=0 to " +
       "silence this and skip the wasted RunTool round-trip per save.\n"
   )
 }
@@ -274,20 +274,20 @@ export class FactCreatePipeline {
    *   contract without clobbering an existing provenance link).
    *
    * The set of mutations is returned in `enriched` so
-   * `lore-fact action='create'` can surface them; "deduped" without
+   * `kennen-fact action='create'` can surface them; "deduped" without
    * enrichment means "matched, nothing new to merge."
    *
    * On miss — or on probe failure — falls through to a plain create with
    * the dedup key attached. Cost: one extra `dataSources.query` per write
    * on cold miss, which is cheaper than the eventual
-   * `lore-query action='ask'` / wake-up tax from duplicates.
+   * `kennen-query action='ask'` / wake-up tax from duplicates.
    *
    * Concurrency: Notion has no unique-index or conditional-write primitive,
    * so two concurrent writers with the same triple can both see an empty
    * probe and both create rows. This applies to both cross-process callers
    * and intra-process back-to-back autosaves (Notion's query index is
    * eventually consistent by a few hundred ms). The
-   * `lore migrate --dedup-keys --merge` pass is the authoritative collapse
+   * `kennen migrate --dedup-keys --merge` pass is the authoritative collapse
    * path for any duplicates that slip through.
    */
   async createWithDedup(input: CreateFactInput): Promise<CreateFactResult> {
@@ -327,7 +327,7 @@ export class FactCreatePipeline {
     // Same-triple-different-scope inputs remain distinct rows because
     // every scope column is bound on the server.
     //
-    // The `lore migrate --dedup-keys --merge` migration uses the
+    // The `kennen migrate --dedup-keys --merge` migration uses the
     // matching grouping (`computeFactGroupKey` joins all five
     // columns) so create-time dedup and migration-time merge
     // converge on the same identity rule.
@@ -382,7 +382,7 @@ export class FactCreatePipeline {
       projectIds: relationSafeInput.projectIds,
       validFrom,
       // `Observed At` is the transaction-time anchor: when
-      // Lore learned about the fact. Defaults to today (matching
+      // Kennen learned about the fact. Defaults to today (matching
       // `validFrom`'s default) so a vanilla create lands with both
       // axes seeded; callers backfilling historical facts can decouple
       // by passing `validFrom` explicitly while leaving `observedAt`
@@ -403,7 +403,7 @@ export class FactCreatePipeline {
     }) as Record<string, unknown>
     // Surgical retry on stale-schema vaults. The migration runner
     // normally adds new columns before writes depend on them. A vault
-    // that has not run `lore migrate` 400s on unknown properties such
+    // that has not run `kennen migrate` 400s on unknown properties such
     // as `Observed At` before Notion creates the page.
     //
     // Mirror the surgical-drop loop `invalidate` uses on the same
@@ -481,7 +481,7 @@ export class FactCreatePipeline {
     // than landing a row with no observable state.
     throw new Error(
       `FactService.createPageWithMissingPropertyRetry: exhausted ${MAX_OPTIONAL_DROPS} drops + 1 retry; ` +
-        `vault schema appears to be severely out of date — run \`lore migrate\` to refresh.`
+        `vault schema appears to be severely out of date — run \`kennen migrate\` to refresh.`
     )
   }
 
@@ -536,7 +536,7 @@ export class FactCreatePipeline {
    * out-of-process writer could land a matching row that this
    * batch's probes did not see. The result on a race is at most
    * one extra duplicate row per racing input, collapsed by the
-   * authoritative `lore migrate --dedup-keys --merge` pass per
+   * authoritative `kennen migrate --dedup-keys --merge` pass per
    * the existing dedup contract. The blast radius is acceptable for
    * auto-mention emission (the documented caller, where mentions
    * facts ship at `confidence: speculative` and the migration
@@ -856,7 +856,7 @@ export class FactCreatePipeline {
    * violating the five-database integrity contract during a Notion
    * incident or sustained 429 backoff window. Failing loud is correct:
    * surfacing a 503 to `createWithDedup` is better than landing a
-   * relation-empty row that `lore migrate --build-entities` would have
+   * relation-empty row that `kennen migrate --build-entities` would have
    * to repair.
    */
   private async liveEntityRelationId(
@@ -1119,7 +1119,7 @@ export class FactCreatePipeline {
     // instead of silently picking position 0. We log a stderr
     // warning when that happens; the caller still merges into the
     // first match (deterministic by the explicit `created_time
-    // ASC` sort below) and `lore migrate --dedup-keys --merge`
+    // ASC` sort below) and `kennen migrate --dedup-keys --merge`
     // collapses the duplicates on the next pass.
     const response = await this.deps.client.dataSources.query({
       data_source_id: this.deps.db.dataSourceId,

@@ -24,7 +24,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 const AUTH_ENV_KEYS = [
   "NOTION_API_TOKEN",
   "NOTION_WORKSPACE_ID",
-  "LORE_NOTION_BASE_URL",
+  "KENNEN_NOTION_BASE_URL",
   "NOTION_BASE_URL",
   "NOTION_API_BASE_URL",
   "NOTION_ENV",
@@ -59,9 +59,9 @@ vi.mock("../auth/ntn.js", async () => {
 
 import { deriveStopAuthSource, type StopFailureContext } from "./helpers.js"
 import { withClearedRuntimeEnv } from "./test-utils.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 
-const BASE_CONFIG: LoreConfig = {
+const BASE_CONFIG: KennenConfig = {
   vault: { pageId: "v" },
   projects: [{ name: "Widget", path: "." }],
 }

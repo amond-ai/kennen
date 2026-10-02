@@ -44,7 +44,7 @@ import {
 } from "../migration-lock.js"
 
 export const profileCommand = new Command("profile").description(
-  "Manage Lore profiles: list / show / validate / preview / install / set / migrate."
+  "Manage Kennen profiles: list / show / validate / preview / install / set / migrate."
 )
 
 profileCommand
@@ -174,7 +174,7 @@ profileCommand
   )
   .option(
     "-y, --yes",
-    "Non-interactive install. Requires an exact allowedInstallSources entry in .lore.yaml or a same-digest lock no-op."
+    "Non-interactive install. Requires an exact allowedInstallSources entry in .kennen.yaml or a same-digest lock no-op."
   )
   .action(async (sourceArg: string, opts: { yes?: boolean }) => {
     let preview: InstallPreview | null = null
@@ -182,7 +182,7 @@ profileCommand
       const found = await findConfigFile(process.cwd())
       if (!found) {
         console.error(
-          "Profile install failed: no .lore.yaml found. Run `lore init` first."
+          "Profile install failed: no .kennen.yaml found. Run `kennen init` first."
         )
         process.exit(1)
         return
@@ -239,20 +239,22 @@ profileCommand
 
 profileCommand
   .command("set <selector>")
-  .description("Pin `.lore.yaml profile:` to an exact <name>@<version> selector.")
+  .description("Pin `.kennen.yaml profile:` to an exact <name>@<version> selector.")
   .action(async (selectorArg: string) => {
     try {
       const parsed = parseProfileSelector(selectorArg)
       const found = await findConfigFile(process.cwd())
       if (!found) {
-        console.error("Profile set failed: no .lore.yaml found. Run `lore init` first.")
+        console.error(
+          "Profile set failed: no .kennen.yaml found. Run `kennen init` first."
+        )
         process.exit(1)
         return
       }
       const resolution = resolveProfileSelector(parsed, found.root)
       if (!resolution) {
         console.error(
-          `Profile set failed: ${parsed.selector} is not resolvable under built-in, local, or installed profiles. Install it first with \`lore profile install\`.`
+          `Profile set failed: ${parsed.selector} is not resolvable under built-in, local, or installed profiles. Install it first with \`kennen profile install\`.`
         )
         process.exit(1)
         return

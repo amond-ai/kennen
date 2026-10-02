@@ -1,4 +1,4 @@
-import type { LoreFeatureConfig } from "./types.js"
+import type { KennenFeatureConfig } from "./types.js"
 import {
   isRunToolAggregateEnabled,
   isRunToolBlockEditEnabled,
@@ -7,7 +7,7 @@ import {
   isRunToolSearchEnabled,
 } from "./notion/runtool/index.js"
 
-export interface LoreFeatureFlags {
+export interface KennenFeatureFlags {
   nearDuplicateProbe: boolean
   autosaveLearningDedup: boolean
   autoMentions: boolean
@@ -26,27 +26,27 @@ export interface LoreFeatureFlags {
   }
 }
 
-export const LORE_FEATURE_FLAG_TAXONOMY = {
+export const KENNEN_FEATURE_FLAG_TAXONOMY = {
   killSwitches: [
-    "LORE_DISABLE_NEAR_DUPLICATE_PROBE",
-    "LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP",
-    "LORE_DISABLE_AUTO_MENTIONS",
-    "LORE_DISABLE_TASK_REUSE",
-    "LORE_DISABLE_TASK_CROSSREF",
-    "LORE_DISABLE_LEARNING_EXTRACTION",
+    "KENNEN_DISABLE_NEAR_DUPLICATE_PROBE",
+    "KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP",
+    "KENNEN_DISABLE_AUTO_MENTIONS",
+    "KENNEN_DISABLE_TASK_REUSE",
+    "KENNEN_DISABLE_TASK_CROSSREF",
+    "KENNEN_DISABLE_LEARNING_EXTRACTION",
   ],
-  forceSwitches: ["LORE_FORCE_SEMANTIC_SEARCH"],
+  forceSwitches: ["KENNEN_FORCE_SEMANTIC_SEARCH"],
   runTool: [
-    "LORE_USE_RUNTOOL",
-    "LORE_USE_RUNTOOL_BLOCK_EDIT",
-    "LORE_USE_RUNTOOL_FILTER_SQL",
-    "LORE_USE_RUNTOOL_SEARCH",
-    "LORE_USE_RUNTOOL_AGGREGATE",
-    "LORE_USE_RUNTOOL_BATCH_CREATES",
+    "KENNEN_USE_RUNTOOL",
+    "KENNEN_USE_RUNTOOL_BLOCK_EDIT",
+    "KENNEN_USE_RUNTOOL_FILTER_SQL",
+    "KENNEN_USE_RUNTOOL_SEARCH",
+    "KENNEN_USE_RUNTOOL_AGGREGATE",
+    "KENNEN_USE_RUNTOOL_BATCH_CREATES",
   ],
 } as const
 
-const DEFAULT_FLAGS: LoreFeatureFlags = {
+const DEFAULT_FLAGS: KennenFeatureFlags = {
   nearDuplicateProbe: true,
   autosaveLearningDedup: true,
   autoMentions: true,
@@ -65,7 +65,7 @@ const DEFAULT_FLAGS: LoreFeatureFlags = {
   },
 }
 
-function cloneDefaultFlags(): LoreFeatureFlags {
+function cloneDefaultFlags(): KennenFeatureFlags {
   return {
     ...DEFAULT_FLAGS,
     runTool: { ...DEFAULT_FLAGS.runTool },
@@ -92,9 +92,9 @@ function hasEnvFlag(env: NodeJS.ProcessEnv, name: string): boolean {
 
 function resolveRunToolParent(
   env: NodeJS.ProcessEnv,
-  config: LoreFeatureConfig["runTool"] | undefined
+  config: KennenFeatureConfig["runTool"] | undefined
 ): boolean {
-  if (hasEnvFlag(env, "LORE_USE_RUNTOOL")) return isRunToolEnabled(env)
+  if (hasEnvFlag(env, "KENNEN_USE_RUNTOOL")) return isRunToolEnabled(env)
   return config?.enabled ?? DEFAULT_FLAGS.runTool.enabled
 }
 
@@ -106,23 +106,23 @@ function resolveRunToolInheritedSubFlag(
   parent: boolean
 ): boolean {
   if (hasEnvFlag(env, envName)) return readEnvFlag(env)
-  if (hasEnvFlag(env, "LORE_USE_RUNTOOL")) return parent
+  if (hasEnvFlag(env, "KENNEN_USE_RUNTOOL")) return parent
   return configured ?? parent
 }
 
 function resolveRunToolBatchCreates(
   env: NodeJS.ProcessEnv,
-  config: LoreFeatureConfig["runTool"] | undefined
+  config: KennenFeatureConfig["runTool"] | undefined
 ): boolean {
-  const raw = env["LORE_USE_RUNTOOL_BATCH_CREATES"]
+  const raw = env["KENNEN_USE_RUNTOOL_BATCH_CREATES"]
   if (raw !== undefined) return raw === "1"
   return config?.batchCreates ?? DEFAULT_FLAGS.runTool.batchCreates
 }
 
 export function resolveFeatureFlags(
   env: NodeJS.ProcessEnv = process.env,
-  config?: { features?: LoreFeatureConfig } | null
-): LoreFeatureFlags {
+  config?: { features?: KennenFeatureConfig } | null
+): KennenFeatureFlags {
   const featureConfig = config?.features
   const runToolConfig = featureConfig?.runTool
   const runToolParent = resolveRunToolParent(env, runToolConfig)
@@ -131,63 +131,63 @@ export function resolveFeatureFlags(
     nearDuplicateProbe: configThenDisableEnv(
       featureConfig?.nearDuplicateProbe,
       env,
-      "LORE_DISABLE_NEAR_DUPLICATE_PROBE"
+      "KENNEN_DISABLE_NEAR_DUPLICATE_PROBE"
     ),
     autosaveLearningDedup: configThenDisableEnv(
       featureConfig?.autosaveLearningDedup,
       env,
-      "LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP"
+      "KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP"
     ),
     autoMentions: configThenDisableEnv(
       featureConfig?.autoMentions,
       env,
-      "LORE_DISABLE_AUTO_MENTIONS"
+      "KENNEN_DISABLE_AUTO_MENTIONS"
     ),
     taskReuse: configThenDisableEnv(
       featureConfig?.taskReuse,
       env,
-      "LORE_DISABLE_TASK_REUSE"
+      "KENNEN_DISABLE_TASK_REUSE"
     ),
     taskCrossref: configThenDisableEnv(
       featureConfig?.taskCrossref,
       env,
-      "LORE_DISABLE_TASK_CROSSREF"
+      "KENNEN_DISABLE_TASK_CROSSREF"
     ),
     learningExtraction: configThenDisableEnv(
       featureConfig?.learningExtraction,
       env,
-      "LORE_DISABLE_LEARNING_EXTRACTION"
+      "KENNEN_DISABLE_LEARNING_EXTRACTION"
     ),
     queryPlanning: featureConfig?.queryPlanning ?? DEFAULT_FLAGS.queryPlanning,
     forceSemanticSearch:
       featureConfig?.forceSemanticSearch === true ||
-      env["LORE_FORCE_SEMANTIC_SEARCH"] === "1",
+      env["KENNEN_FORCE_SEMANTIC_SEARCH"] === "1",
     runTool: {
       enabled: runToolParent,
       blockEdit: resolveRunToolInheritedSubFlag(
         env,
-        "LORE_USE_RUNTOOL_BLOCK_EDIT",
+        "KENNEN_USE_RUNTOOL_BLOCK_EDIT",
         isRunToolBlockEditEnabled,
         runToolConfig?.blockEdit,
         runToolParent
       ),
       filterSql: resolveRunToolInheritedSubFlag(
         env,
-        "LORE_USE_RUNTOOL_FILTER_SQL",
+        "KENNEN_USE_RUNTOOL_FILTER_SQL",
         isRunToolFilterSqlEnabled,
         runToolConfig?.filterSql,
         runToolParent
       ),
       search: resolveRunToolInheritedSubFlag(
         env,
-        "LORE_USE_RUNTOOL_SEARCH",
+        "KENNEN_USE_RUNTOOL_SEARCH",
         isRunToolSearchEnabled,
         runToolConfig?.search,
         runToolParent
       ),
       aggregate: resolveRunToolInheritedSubFlag(
         env,
-        "LORE_USE_RUNTOOL_AGGREGATE",
+        "KENNEN_USE_RUNTOOL_AGGREGATE",
         isRunToolAggregateEnabled,
         runToolConfig?.aggregate,
         runToolParent
@@ -197,6 +197,6 @@ export function resolveFeatureFlags(
   }
 }
 
-export function defaultFeatureFlags(): LoreFeatureFlags {
+export function defaultFeatureFlags(): KennenFeatureFlags {
   return cloneDefaultFlags()
 }

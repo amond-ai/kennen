@@ -1,7 +1,7 @@
 /**
  * PID-backed lock for operator-run migrations.
  *
- * Migration locks live under the shared Lore state dir but inside their
+ * Migration locks live under the shared Kennen state dir but inside their
  * own subdirectory so they do not count toward the hook background-save
  * concurrency cap. A lock is held only while its owner PID is alive; stale
  * files from crashed CLI processes are reclaimed on the next acquire.

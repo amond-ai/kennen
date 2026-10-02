@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { toolError } from "../../helpers.js"
 import { buildVaultTopology } from "../../../core/topology.js"
 import { preparePromotion, promoteMemory } from "../../../core/promote.js"
@@ -13,9 +13,9 @@ export interface PromoteArgs {
 }
 
 /**
- * MCP equivalent of `lore promote`. Resolves the named
+ * MCP equivalent of `kennen promote`. Resolves the named
  * promotion target from `config.promotionTargets`, resolves the
- * promoter identity via the standard `LORE_USER_NAME` → `users.me`
+ * promoter identity via the standard `KENNEN_USER_NAME` → `users.me`
  * chain (NO client-supplied override on this surface — see below),
  * and delegates to the shared `promoteMemory` service helper.
  *
@@ -43,7 +43,7 @@ export interface PromoteArgs {
  * across surfaces.
  */
 export async function handlePromote(
-  services: LoreServices,
+  services: KennenServices,
   args: PromoteArgs
 ): Promise<ToolResult> {
   try {
@@ -54,7 +54,7 @@ export async function handlePromote(
     if (!target) {
       const configured =
         topology.promotionTargets.length === 0
-          ? "no promotion targets are configured — add a `promotionTargets:` block to .lore.yaml"
+          ? "no promotion targets are configured — add a `promotionTargets:` block to .kennen.yaml"
           : `configured targets: ${topology.promotionTargets
               .map((entry) => `"${entry.label}"`)
               .join(", ")}`
@@ -71,9 +71,9 @@ export async function handlePromote(
       return toolError(
         new Error(
           `Cannot promote memory ${args.memoryId}: no promoter identity ` +
-            `available. Set \`LORE_USER_NAME\` so the origin audit block ` +
+            `available. Set \`KENNEN_USER_NAME\` so the origin audit block ` +
             `can record who promoted the row, or use the CLI's ` +
-            `\`lore promote --promoter <name>\` for operator-driven ` +
+            `\`kennen promote --promoter <name>\` for operator-driven ` +
             `attribution.`
         )
       )

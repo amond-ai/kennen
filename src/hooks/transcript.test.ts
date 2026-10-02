@@ -63,7 +63,7 @@ describe("transcript helpers", () => {
         type: "event_msg",
         payload: {
           type: "user_message",
-          message: "Fix Lore for Codex.",
+          message: "Fix Kennen for Codex.",
         },
       }),
       JSON.stringify({
@@ -85,14 +85,14 @@ describe("transcript helpers", () => {
 
     expect(countTranscriptUserMessages(transcript)).toBe(1)
     expect(extractTranscriptSessionContent(transcript)).toBe(
-      "User: Fix Lore for Codex.\n\nAssistant: I'm checking Codex docs first."
+      "User: Fix Kennen for Codex.\n\nAssistant: I'm checking Codex docs first."
     )
   })
 
   it("parses Codex exec JSONL sidecars with command evidence", () => {
     const transcript = [
       JSON.stringify({
-        type: "lore.eval.agent_run.started",
+        type: "kennen.eval.agent_run.started",
         prompt: "Inspect the previous implementation.",
       }),
       JSON.stringify({

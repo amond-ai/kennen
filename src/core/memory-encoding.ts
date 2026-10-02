@@ -2,7 +2,7 @@
  * Memory HTML-entity decode migration.
  *
  * Companion to the fact-encoding migration and `fixTopicEncoding`
- * for the Memories DB. `lore migrate --fix-memory-encoding` uses the
+ * for the Memories DB. `kennen migrate --fix-memory-encoding` uses the
  * functions
  * here to scan every memory, flag rows whose `Title` — and optionally body
  * markdown — differ from their decoded form, then rewrite them.
@@ -10,7 +10,7 @@
  * Scope and exclusions:
  * - Archived memories are skipped (no need to fix data the agent can't read).
  * - Memory body markdown is rewritten by one of two paths depending on the
- *   `LORE_USE_RUNTOOL_BLOCK_EDIT` flag (via the RunTool block-edit flag):
+ *   `KENNEN_USE_RUNTOOL_BLOCK_EDIT` flag (via the RunTool block-edit flag):
  *   - **Flag off (default)**: bodies above `BODY_SIZE_CAP_BYTES` are
  *     skipped and surfaced in `oversizedSkipped` so the operator can
  *     fix them manually. The full body would otherwise need to be
@@ -45,10 +45,10 @@ import {
 } from "../notion/runtool/index.js"
 import { logRunToolFallback } from "../notion/runtool/error-helpers.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
-import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { resolveFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 
 /**
- * 100 KB cap on body markdown we'll migrate in a single pass. `lore mine`
+ * 100 KB cap on body markdown we'll migrate in a single pass. `kennen mine`
  * occasionally produces multi-hundred-KB outputs; rewriting those via
  * `pages.updateMarkdown` is technically possible but introduces long
  * round-trips and extra partial-failure surface area that this migration
@@ -59,12 +59,12 @@ import { resolveFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
 export const BODY_SIZE_CAP_BYTES = 100 * 1024
 
 type MemoryEncodingFeatureFlags = {
-  runTool: Pick<LoreFeatureFlags["runTool"], "blockEdit">
+  runTool: Pick<KennenFeatureFlags["runTool"], "blockEdit">
 }
 
 /** Per-row plan for the memory encoding fix. Title fix is always
  *  required when present; content fix is best-effort and routes
- *  through one of two paths depending on `LORE_USE_RUNTOOL_BLOCK_EDIT`
+ *  through one of two paths depending on `KENNEN_USE_RUNTOOL_BLOCK_EDIT`
  *  (via the RunTool block-edit flag).
  *
  *  Default-off semantics: oversized bodies (`contentTooLargeToFix`)
@@ -148,7 +148,7 @@ export interface MemoryEncodingReport {
   oversizedSkipped: EncodedMemoryRow[]
   /** Rows whose body exceeds `BODY_SIZE_CAP_BYTES` AND will be fixed
    *  via the RunTool-anchored path on apply (via the RunTool block-edit flag).
-   *  Populated only when `LORE_USE_RUNTOOL_BLOCK_EDIT` is on and the
+   *  Populated only when `KENNEN_USE_RUNTOOL_BLOCK_EDIT` is on and the
    *  row's local guards predict success. Empty when the flag is off
    *  — the row would land in `oversizedSkipped` instead. Duplicates
    *  rows in `encoded`. */
@@ -301,7 +301,7 @@ export async function findEncodedMemories(
 /**
  * Run the memory encoding fix pass. Scans every non-archived memory,
  * rewrites `Title` via `pages.update`, and rewrites body markdown via
- * one of two paths gated by `LORE_USE_RUNTOOL_BLOCK_EDIT`:
+ * one of two paths gated by `KENNEN_USE_RUNTOOL_BLOCK_EDIT`:
  *
  * - **Default-off** (and flag-on, body within `BODY_SIZE_CAP_BYTES`):
  *   `pages.updateMarkdown({ type: "replace_content", replace_content: {

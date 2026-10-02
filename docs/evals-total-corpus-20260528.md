@@ -34,12 +34,12 @@ false-negatives.
 
 | Comparison | n | no-memory | memory arm | Δ | lifted / harmed | both-pass / both-fail | exact McNemar p |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| seeded-lore vs no-memory | 137 | 82 (59.9%) | 92 (67.2%) | **+10 (+7.3 pp)** | 17 / 7 | 75 / 38 | 0.0639 |
-| lore-full-loop vs no-memory | 136 | 81 (59.6%) | 83 (61.0%) | +2 (+1.5 pp) | 10 / 8 | 73 / 45 | 0.8145 |
+| seeded-kennen vs no-memory | 137 | 82 (59.9%) | 92 (67.2%) | **+10 (+7.3 pp)** | 17 / 7 | 75 / 38 | 0.0639 |
+| kennen-full-loop vs no-memory | 136 | 81 (59.6%) | 83 (61.0%) | +2 (+1.5 pp) | 10 / 8 | 73 / 45 | 0.8145 |
 
-- **Seeded-lore** shows a consistent directional correctness lift (17 lifted vs 7
+- **Seeded-kennen** shows a consistent directional correctness lift (17 lifted vs 7
   harmed) that approaches but does not reach significance (p = 0.064).
-- **Lore-full-loop** is essentially flat in raw terms. This is substantially a
+- **Kennen-full-loop** is essentially flat in raw terms. This is substantially a
   measurement-artifact effect: many full-loop losses on hard scenarios are
   `formation` / `wake-up` / `agent-exit` failures and verifier false-negatives,
   not behavioral failures. Two of those gate bugs are fixed in this branch
@@ -70,8 +70,8 @@ applied symmetrically:
 
 | Comparison | recovery rate (raw → adj) = ceiling-EXCLUDED lift | harm rate | McNemar p (adj) |
 |---|---:|---:|---:|
-| seeded-lore vs no-memory | 30.9% → **36.2%** (17/47 contested) | 8.5% | 0.064 |
-| lore-full-loop vs no-memory | 18.2% → **21.7%** (10/46 contested) | 9.9% → 7.5% | 0.455 |
+| seeded-kennen vs no-memory | 30.9% → **36.2%** (17/47 contested) | 8.5% | 0.064 |
+| kennen-full-loop vs no-memory | 18.2% → **21.7%** (10/46 contested) | 9.9% → 7.5% | 0.455 |
 
 Read this as: **on tasks hard enough to defeat no-memory, seeded memory recovers
 roughly a third of them (≈36% after excluding infra), and full-loop about a
@@ -100,8 +100,8 @@ pairs where the two conditions disagree — exactly what the McNemar test scores
 
 | Arm (adjudicated) | discordant pairs | memory wins | net | McNemar p |
 |---|---:|---:|---:|---:|
-| seeded-lore | 24 (17 lift / 7 harm) | **70.8%** | +10 (+41.7 pp of discordant) | 0.064 |
-| lore-full-loop | 16 (10 lift / 6 harm) | **62.5%** | +4 (+25.0 pp of discordant) | 0.455 |
+| seeded-kennen | 24 (17 lift / 7 harm) | **70.8%** | +10 (+41.7 pp of discordant) | 0.064 |
+| kennen-full-loop | 16 (10 lift / 6 harm) | **62.5%** | +4 (+25.0 pp of discordant) | 0.455 |
 
 Raw: seeded is identical (its exclusions were concordant both-fails); full-loop is
 18 pairs (10/8 = 55.6%) raw, lifting to 62.5% after removing one infra/gate harm
@@ -112,7 +112,7 @@ gated by the small discordant n (24, 16).
 
 ## Discordant pairs (transparency)
 
-Seeded-lore lifted (17): `gh-cli-alias-set-clobber-shorthand`,
+Seeded-kennen lifted (17): `gh-cli-alias-set-clobber-shorthand`,
 `gh-cli-discussion-view-threaded-replies-json`,
 `gh-cli-extension-upgrade-json-dry-run-no-mutation`,
 `gh-cli-key-add-dry-run-fingerprint-shared-memory-followup`,
@@ -130,14 +130,14 @@ Seeded-lore lifted (17): `gh-cli-alias-set-clobber-shorthand`,
 `gh-cli-skills-publish-allow-hidden-dirs`,
 `httpx-cross-boundary-protocol-epic-v1`.
 
-Seeded-lore harmed (7): `gh-cli-autolink-edit-replacement-memory-contract-v2`,
+Seeded-kennen harmed (7): `gh-cli-autolink-edit-replacement-memory-contract-v2`,
 `gh-cli-codespace-ssh-config-quotes-auto-key`,
 `gh-cli-comment-edit-last-paginated-author-memory-followup`,
 `gh-cli-pr-checks-display-names`,
 `gh-cli-repo-create-dry-run-json-plan-memory-contract-v2`,
 `pytest-lastfailed-nested-package-v1`, `pytest-parametrize-trailing-comma-v1`.
 
-Lore-full-loop lifted (10): `gh-cli-extension-upgrade-json-dry-run-no-mutation`,
+Kennen-full-loop lifted (10): `gh-cli-extension-upgrade-json-dry-run-no-mutation`,
 `gh-cli-key-add-dry-run-fingerprint-memory-contract-v2`,
 `gh-cli-key-add-dry-run-fingerprint-shared-memory-followup`,
 `gh-cli-repo-edit-auto-merge-prerequisite`,
@@ -148,7 +148,7 @@ Lore-full-loop lifted (10): `gh-cli-extension-upgrade-json-dry-run-no-mutation`,
 `gh-cli-secret-variable-env-file-plan-memory-contract-v2`,
 `gh-cli-skills-publish-allow-hidden-dirs`.
 
-Lore-full-loop harmed (8): `gh-cli-auth-token-flow-preserves-client-context`,
+Kennen-full-loop harmed (8): `gh-cli-auth-token-flow-preserves-client-context`,
 `gh-cli-issue-develop-ref-validation-v3`,
 `gh-cli-pr-close-delete-branch-worktree-guard-v3`,
 `gh-cli-pr-status-display-names`,

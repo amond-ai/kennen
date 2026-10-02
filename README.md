@@ -1,4 +1,4 @@
-# Lore
+# Kennen
 
 AI memory backed by Notion.
 
@@ -7,7 +7,7 @@ AI memory backed by Notion.
 > independently by PassionFactory Corp. It is not affiliated with or endorsed
 > by Notion Labs, Inc.
 
-Lore gives your AI assistants a persistent, shared memory: it stores
+Kennen gives your AI assistants a persistent, shared memory: it stores
 conversations, decisions, follow-up tasks, and durable relationships as Notion
 pages that any teammate or agent session can read back. Anything you use with
 the [Model Context Protocol](https://modelcontextprotocol.io) (Claude Code,
@@ -15,7 +15,7 @@ Codex, Cursor, OMP, and other MCP hosts) can recall, save, and reason over the
 same vault, so context survives `/clear`, new branches, and handoffs between
 people.
 
-Under the hood, Lore organizes a vault into five core Notion databases:
+Under the hood, Kennen organizes a vault into five core Notion databases:
 Projects, Topics, Memories, Entities (canonical-handle resolution), and
 Facts. The same domain services power three surfaces: an MCP server for
 AI assistants, a CLI for humans, and hook commands that wire automatic
@@ -23,14 +23,14 @@ context loading and session saving into supported hosts.
 
 ## Quick Start
 
-### 1. Install Lore
+### 1. Install Kennen
 
 #### Install from npm (recommended)
 
 ```bash
-npm install -g @notionhq/lore
+npm install -g @amond-ai/kennen
 # or
-npm install -D @notionhq/lore
+npm install -D @amond-ai/kennen
 ```
 
 Public npm requires no registry configuration or package token.
@@ -38,29 +38,29 @@ Public npm requires no registry configuration or package token.
 #### Build from source
 
 ```bash
-git clone https://github.com/amond-ai/memory.git
-cd memory && npm install && npm run build && npm link
+git clone https://github.com/amond-ai/kennen.git
+cd kennen && npm install && npm run build && npm link
 ```
 
-`npm link` makes `lore` available globally on your `PATH` from the clone.
-Run `lore --version` to confirm either installation route, then continue with
+`npm link` makes `kennen` available globally on your `PATH` from the clone.
+Run `kennen --version` to confirm either installation route, then continue with
 step 2 below.
 
-For project-local installs, run `npx lore <command>` from inside the project
-or add a `lore` script to `package.json`. See
+For project-local installs, run `npx kennen <command>` from inside the project
+or add a `kennen` script to `package.json`. See
 [`docs/dev-dependency-install.md`](docs/dev-dependency-install.md) for the
 Yarn PnP wiring and path-portable setup teams use to share assistant config
 across a repo.
 
 ### 2. Join an Existing Shared Vault
 
-Most operators should join an already initialized shared vault. A Lore vault is
+Most operators should join an already initialized shared vault. A Kennen vault is
 a Notion page that already contains the five databases (Projects, Topics,
 Memories, Entities, Facts). Joining that vault means pointing your local
-`.lore.yaml` at the shared `vault.pageId`; do not run database initialization
+`.kennen.yaml` at the shared `vault.pageId`; do not run database initialization
 against a shared page that your team lead has already bootstrapped.
 
-`.lore.yaml` is local-only. Keep it out of version control, and distribute
+`.kennen.yaml` is local-only. Keep it out of version control, and distribute
 shared values such as `vault.pageId` through onboarding docs instead of
 committing config. This is the current policy even for credential-free shared
 vault config and supersedes older changelog notes that allowed intentional
@@ -75,20 +75,20 @@ the page owner whether to replace the page or rewrite history.
 
 #### Internal Notion engineer + shared vault
 
-Use Lore's ntn-backed auth flow. It auto-installs `ntn` when needed, runs
-`ntn login`, and stores the per-user token where Lore can read it.
+Use Kennen's ntn-backed auth flow. It auto-installs `ntn` when needed, runs
+`ntn login`, and stores the per-user token where Kennen can read it.
 
 ```bash
 # Join by pointing local config at the initialized shared vault.
 # Do not run database initialization against an existing shared vault.
-cat > .lore.yaml <<'YAML'
+cat > .kennen.yaml <<'YAML'
 vault:
   pageId: "<shared-vault-page-id>"
 YAML
 
-lore auth --login
-lore auth --status
-lore status
+kennen auth --login
+kennen auth --status
+kennen status
 ```
 
 #### External operator + shared vault
@@ -98,23 +98,23 @@ use it through the canonical Notion SDK environment variable. Do not use
 `secret_` integration tokens from `notion.so/profile/integrations` for team
 rollout; they share one rate-limit bucket across every operator using the same
 integration. Persist `NOTION_API_TOKEN` in your shell profile or assistant host
-environment before running `lore install` and restarting your assistant.
+environment before running `kennen install` and restarting your assistant.
 
 ```bash
 export NOTION_API_TOKEN="<notion-pat>"
 
 # Join by pointing local config at the initialized shared vault.
 # Do not run database initialization against an existing shared vault.
-cat > .lore.yaml <<'YAML'
+cat > .kennen.yaml <<'YAML'
 vault:
   pageId: "<shared-vault-page-id>"
 YAML
 
-lore auth --status
-lore status
+kennen auth --status
+kennen status
 ```
 
-The last two commands verify that Lore can resolve auth and read the vault.
+The last two commands verify that Kennen can resolve auth and read the vault.
 After they pass, configure your assistant in step 3. Restart or reconnect the
 assistant after install or config changes so it reloads the MCP server and
 hooks.
@@ -124,7 +124,7 @@ The first source available wins. See
 [`docs/authentication.md`](docs/authentication.md) for the full priority chain,
 multi-workspace selection, and troubleshooting.
 
-If setup is broken and the next command is unclear, run `lore doctor` from the
+If setup is broken and the next command is unclear, run `kennen doctor` from the
 project. It performs read-only checks across config discovery, auth, vault
 access, MCP host config, hooks, and recent background hook failures, then ends
 with one prioritized next action.
@@ -133,10 +133,10 @@ with one prioritized next action.
 
 ```bash
 # Internal ntn path:
-lore install --ntn
+kennen install --ntn
 
 # External PAT path, after exporting NOTION_API_TOKEN:
-lore install
+kennen install
 ```
 
 Both install paths configure every supported assistant integration
@@ -146,11 +146,11 @@ commands when using the internal ntn path; omit it for the PAT path after
 exporting `NOTION_API_TOKEN`:
 
 ```bash
-lore install --ntn --client claude
-lore install --ntn --client codex
-lore install --ntn --client cursor
-lore install --ntn --client omp
-lore install --ntn --client cursor --cursor-global
+kennen install --ntn --client claude
+kennen install --ntn --client codex
+kennen install --ntn --client cursor
+kennen install --ntn --client omp
+kennen install --ntn --client cursor --cursor-global
 ```
 
 - `claude`: writes Claude Code settings plus `.mcp.json`
@@ -160,7 +160,7 @@ lore install --ntn --client cursor --cursor-global
 - `omp`: writes the project `.omp/mcp.json`
 
 OMP's native `.omp/mcp.json` takes precedence over a root `.mcp.json` for OMP
-discovery. OMP receives Lore's MCP tools without Claude/Codex lifecycle hooks;
+discovery. OMP receives Kennen's MCP tools without Claude/Codex lifecycle hooks;
 restart OMP or run `/mcp reload` after installing or changing its config.
 
 Codex only loads project-scoped `.codex/*` files for trusted projects.
@@ -173,15 +173,15 @@ and OMP.
 
 #### Other MCP Hosts
 
-For agents not directly supported by `lore install --client`, run
-`lore install --print-config json` or `lore install --print-config toml` and
+For agents not directly supported by `kennen install --client`, run
+`kennen install --print-config json` or `kennen install --print-config toml` and
 paste the emitted MCP server snippet into the host's config file. See
 [`docs/mcp-hosts.md`](docs/mcp-hosts.md) for host notes and hook limitations.
 OMP is already supported natively; do not use `--print-config` for OMP.
 
-Restart or reconnect your assistant after `lore install` or manual host config
+Restart or reconnect your assistant after `kennen install` or manual host config
 changes so it reloads the MCP server. For OMP, `/mcp reload` is also available;
-OMP does not install Lore lifecycle hooks.
+OMP does not install Kennen lifecycle hooks.
 
 ### 4. Advanced and Maintenance Flows
 
@@ -192,11 +192,11 @@ first time. Pick or create the Notion page your team will share, make sure your
 auth source can write to it, then run:
 
 ```bash
-lore init <page-id>
+kennen init <page-id>
 ```
 
 That command creates the five databases inside the page (Projects, Topics,
-Memories, Entities, Facts) and writes your local `.lore.yaml`. Operators who
+Memories, Entities, Facts) and writes your local `.kennen.yaml`. Operators who
 join the initialized vault later should use step 2 instead of running
 initialization again.
 
@@ -208,11 +208,11 @@ onboarding flow and team-lead runbook.
 For personal vaults or fresh-onboarding scratch use, the no-arg flow creates a
 workspace-level page on your behalf using the active auth source. If no auth
 resolves, it auto-installs ntn, runs `ntn login`, and then writes
-`.lore.yaml`:
+`.kennen.yaml`:
 
 ```bash
-lore init                            # default title: "Lore Vault - <basename(cwd)>"
-lore init --name "Lore Vault Widget" # explicit title
+kennen init                            # default title: "Kennen Vault - <basename(cwd)>"
+kennen init --name "Kennen Vault Widget" # explicit title
 ```
 
 For direct non-ntn setup, create a Notion Personal Access Token at
@@ -230,56 +230,56 @@ Use the dev environment only when you intentionally want a dev-environment
 vault:
 
 ```bash
-lore init --ntn-env dev
+kennen init --ntn-env dev
 ```
 
 If your existing ntn auth points at a different environment than `--ntn-env`,
-Lore exits 1 with recovery copy (typically
+Kennen exits 1 with recovery copy (typically
 `ntn logout && NOTION_KEYRING=0 NOTION_ENV=<env> ntn login`) rather than
 silently creating a vault in the wrong environment.
 
 To run `ntn` yourself, set `NOTION_KEYRING=0` before logging in. `ntn` defaults
-to macOS Keychain storage, which Lore does not read; the env var forces
+to macOS Keychain storage, which Kennen does not read; the env var forces
 file-mode storage at `~/.config/notion/auth.json`:
 
 ```bash
 NOTION_KEYRING=0 ntn login
 ```
 
-Lore reads the resulting `auth.json` automatically. See
-[`docs/team-rollout.md#known-gotcha-direct-ntn-login-outside-lore`](docs/team-rollout.md#known-gotcha-direct-ntn-login-outside-lore)
+Kennen reads the resulting `auth.json` automatically. See
+[`docs/team-rollout.md#known-gotcha-direct-ntn-login-outside-kennen`](docs/team-rollout.md#known-gotcha-direct-ntn-login-outside-kennen)
 for the persistent shell-rc setup if you use `ntn` for other tooling too.
 
 #### Refresh Auth for an Existing Vault
 
-Once your local `.lore.yaml` points at a configured vault, refresh ntn auth
+Once your local `.kennen.yaml` points at a configured vault, refresh ntn auth
 and preflight access with:
 
 ```bash
-lore auth --login
+kennen auth --login
 ```
 
-Legacy token sources are not valid for new setup. `LORE_NOTION_TOKEN` is no
-longer read as an auth source; when no supported auth source resolves, Lore
-only mentions it as a migration hint. Any `auth.token` value in `.lore.yaml`
+Legacy token sources are not valid for new setup. `KENNEN_NOTION_TOKEN` is no
+longer read as an auth source; when no supported auth source resolves, Kennen
+only mentions it as a migration hint. Any `auth.token` value in `.kennen.yaml`
 is rejected at config load time. Use `NOTION_API_TOKEN` for Personal Access
-Tokens or `lore auth --login` for ntn auth.
+Tokens or `kennen auth --login` for ntn auth.
 
 #### Legacy Four-Database Vault Migration
 
 Vaults created before the Entities database was introduced need one
 bootstrap step before the entity backfill: run
-`lore vault ensure-entities`, then run
-`lore migrate --build-entities --allow-unscoped` to preview the vault-wide
-backfill and `lore migrate --build-entities --allow-unscoped --yes` in a quiet
+`kennen vault ensure-entities`, then run
+`kennen migrate --build-entities --allow-unscoped` to preview the vault-wide
+backfill and `kennen migrate --build-entities --allow-unscoped --yes` in a quiet
 window to canonicalize the fact graph. Use `--project <name>` in both commands
 for a project-scoped pass.
 
-### 5. Teach Your Agents to Use Lore
+### 5. Teach Your Agents to Use Kennen
 
-`lore install` wires the MCP server and hooks into the assistant host, but
+`kennen install` wires the MCP server and hooks into the assistant host, but
 agents still need repo-local instructions that tell them to prefer the shared
-Lore vault for team knowledge. Add a "Memory and note-taking" section to the
+Kennen vault for team knowledge. Add a "Memory and note-taking" section to the
 root `AGENTS.md` and, when the repo uses Claude Code, mirror it in
 `CLAUDE.md` or another host-specific instruction file.
 
@@ -288,31 +288,31 @@ A minimal starter:
 ```markdown
 ### Memory and note-taking
 
-- Use Lore for cross-session and cross-team knowledge. Lore stores memories,
+- Use Kennen for cross-session and cross-team knowledge. Kennen stores memories,
   facts, decisions, and tasks in the shared vault, so every team member and
-  agent session benefits. Prefer Lore over file-based memory for anything the
+  agent session benefits. Prefer Kennen over file-based memory for anything the
   team should know.
 - Use file-based memory only for personal preferences or local-only context
   that should not be shared.
-- At session start, call `lore-context` with `action: "wake-up"` to load recent
+- At session start, call `kennen-context` with `action: "wake-up"` to load recent
   project context when the tool is available.
 - In Codex, automatic wake-up ranks against the first prompt. After `/clear` or
-  a major topic pivot, call `lore-context` again with `action: "wake-up"` and
+  a major topic pivot, call `kennen-context` again with `action: "wake-up"` and
   `userQuery` set to the new task prompt.
-- Save non-obvious discoveries with `lore-memory` and `action: "save"`.
-- Record architectural decisions with `lore-decision` and `action: "create"`.
-- Record durable component relationships with `lore-fact` and
+- Save non-obvious discoveries with `kennen-memory` and `action: "save"`.
+- Record architectural decisions with `kennen-decision` and `action: "create"`.
+- Record durable component relationships with `kennen-fact` and
   `action: "create"` after saving a supporting memory; pass
-  `sourceMemoryId`, or pass `agent` + `session` so Lore can auto-link the
+  `sourceMemoryId`, or pass `agent` + `session` so Kennen can auto-link the
   fact to the earlier memory in the same process.
-- Track follow-up work with `lore-task` and `action: "create"`; close tasks
+- Track follow-up work with `kennen-task` and `action: "create"`; close tasks
   with `action: "close"` as soon as the work is done or cancelled.
 ```
 
-Adapt the snippet to the repo. For example, if Lore is installed as a Yarn PnP
+Adapt the snippet to the repo. For example, if Kennen is installed as a Yarn PnP
 devDependency, tell agents to run CLI commands as
-`yarn run -T lore <subcommand>` while still calling MCP tools by their normal
-`lore-*` names.
+`yarn run -T kennen <subcommand>` while still calling MCP tools by their normal
+`kennen-*` names.
 
 ## Data Model
 
@@ -326,18 +326,18 @@ A vault is a Notion page containing five core databases:
 | **Entities** | Name           | Aliases, Kind, Description                             | Project, Source (Memory)                              |
 | **Facts**    | Subject        | Predicate, Object, Valid From, Valid Until, Confidence | Project, Source (Memory), SubjectEntity, ObjectEntity |
 
-`lore init` creates all five databases on a new vault. Vaults created
+`kennen init` creates all five databases on a new vault. Vaults created
 before the Entities database was introduced only have four (no Entities);
-they need a one-time legacy migration via `lore vault ensure-entities` to
+they need a one-time legacy migration via `kennen vault ensure-entities` to
 create the Entities database and add the `SubjectEntity` / `ObjectEntity`
 relation columns to Facts. Plan/apply the vault-wide backfill with
-`lore migrate --build-entities --allow-unscoped` and
-`lore migrate --build-entities --allow-unscoped --yes`, or use
+`kennen migrate --build-entities --allow-unscoped` and
+`kennen migrate --build-entities --allow-unscoped --yes`, or use
 `--project <name>` in both commands for a project-scoped pass, to fill
 historical rows that do not already have relation values. See
 [`docs/team-rollout.md#entities-database-cutover`](docs/team-rollout.md#entities-database-cutover).
 
-**Predicate values accepted by `lore-fact action='create'`** are profile-aware.
+**Predicate values accepted by `kennen-fact action='create'`** are profile-aware.
 Generic predicates `is_a`, `has_a`, and `related_to` are always available; the
 active profile contributes the rest of the agent-writable predicate set. The
 default profile currently adds `uses`, `depends_on`, `created_by`, `owned_by`,
@@ -346,10 +346,10 @@ different domain-specific predicates. See
 [`docs/profiles.md#taxonomy-contract`](docs/profiles.md#taxonomy-contract) and
 the active profile taxonomy for the writable set in a given vault.
 System-managed predicates are `decided_by`, `supersedes_decision`, `informs`
-(`lore-decision action='create'` / `supersede`) and `mentions`
-(`lore-memory action='save'`). Historical tracking predicates (`needs_action`,
+(`kennen-decision action='create'` / `supersede`) and `mentions`
+(`kennen-memory action='save'`). Historical tracking predicates (`needs_action`,
 `waiting_on`, `blocked_by`) are legacy row values only; use
-`lore-task action='create'` for tracked work.
+`kennen-task action='create'` for tracked work.
 
 **Fact confidence (categorical)**: `certain`, `likely`, `speculative`. This is
 the agent-writable stance on Facts. The separate numeric Facts `Confidence
@@ -363,9 +363,9 @@ and explicit audit recall only.
 
 **Memory kinds**: `note`, `decision`, `incident`, `runbook`, `postmortem`,
 `policy`, `task`, `procedure`. Procedures are reviewed governance memory:
-propose them through `lore-procedure action='propose'`, then approve or reject
-them through `lore-memory action='approve'` /
-`lore-memory action='reject'`. `lore-memory action='save'` does not create
+propose them through `kennen-procedure action='propose'`, then approve or reject
+them through `kennen-memory action='approve'` /
+`kennen-memory action='reject'`. `kennen-memory action='save'` does not create
 `kind: "procedure"` rows.
 
 **Memory statuses**: `informational`, `proposed`, `accepted`, `superseded`, `deprecated`, `rejected`
@@ -374,28 +374,28 @@ them through `lore-memory action='approve'` /
 
 Recurring non-procedure memory topics (`decision`, `runbook`, `incident`,
 `postmortem`, and `policy`) can pass `topicKey` to
-`lore-memory action='save'`. Rows upsert by `(Topic Key + exact Project relation
+`kennen-memory action='save'`. Rows upsert by `(Topic Key + exact Project relation
 set)`: a matching row gets a revision appended and its `Revision Count`
 incremented instead of creating a new memory. Use stable prefixes matching those
 save families: `decision/`, `runbook/`, `incident/`, `postmortem/`, and
 `policy/`. Procedure topic keys use the `procedure/` family, but they are
-supplied to `lore-procedure action='propose'` for proposal idempotency and
-conflict detection rather than to `lore-memory action='save'` for revision
-chains. Only the non-procedure save families form `lore-memory` revision chains;
+supplied to `kennen-procedure action='propose'` for proposal idempotency and
+conflict detection rather than to `kennen-memory action='save'` for revision
+chains. Only the non-procedure save families form `kennen-memory` revision chains;
 `note` and `task` kinds do not form revision chains. Use
-`lore-memory action='suggest-topic-key'` to derive a key, and see
+`kennen-memory action='suggest-topic-key'` to derive a key, and see
 [`docs/memory-workflows.md`](docs/memory-workflows.md#topic-keys) for
 promotion and re-keying rules.
 
-Save digests regularly (`lore-context action='digest'` → synthesize →
-`lore-memory action='save'` with `source: "digest"`). When a digest from the
-last 7 days exists, `lore-context action='wake-up'` surfaces it at the top and
+Save digests regularly (`kennen-context action='digest'` → synthesize →
+`kennen-memory action='save'` with `source: "digest"`). When a digest from the
+last 7 days exists, `kennen-context action='wake-up'` surfaces it at the top and
 trims the raw-memory list underneath — a denser, lower-token starting point
 than a long stream of individual memories.
 
 ## MCP Tools
 
-Lore exposes a small set of polymorphic tools, each multiplexing several
+Kennen exposes a small set of polymorphic tools, each multiplexing several
 actions behind one MCP registration. The prior single-purpose tool names and
 task aliases were removed in the 0.6.0 deprecation purge. See
 [`docs/mcp-tools.md`](docs/mcp-tools.md) for the current tool list, action
@@ -405,21 +405,21 @@ reference, and task/fact migration notes.
 
 Core commands:
 
-- `lore init [page-id]` creates vault databases and writes `.lore.yaml`.
-- `lore install` writes assistant MCP config and supported hooks; add `--ntn`
+- `kennen init [page-id]` creates vault databases and writes `.kennen.yaml`.
+- `kennen install` writes assistant MCP config and supported hooks; add `--ntn`
   to select the internal ntn bootstrap path.
-- `lore auth --login` refreshes ntn auth and verifies vault access.
-- `lore doctor` diagnoses setup health and prints the next repair action.
-- `lore search <query>` searches memories.
-- `lore memory save <title>` saves a manual memory from the shell.
-- `lore decision create <statement>` records a decision with rationale.
-- `lore ask <entity>` queries facts and tasks about an entity.
-- `lore status` reports vault health and active project resolution.
-- `lore costs summary` summarizes the opt-in local cost ledger.
-- `lore migrate` runs schema and one-shot data migrations.
-- `lore entities merge --from <loser-id> --into <winner-id>` previews or applies
+- `kennen auth --login` refreshes ntn auth and verifies vault access.
+- `kennen doctor` diagnoses setup health and prints the next repair action.
+- `kennen search <query>` searches memories.
+- `kennen memory save <title>` saves a manual memory from the shell.
+- `kennen decision create <statement>` records a decision with rationale.
+- `kennen ask <entity>` queries facts and tasks about an entity.
+- `kennen status` reports vault health and active project resolution.
+- `kennen costs summary` summarizes the opt-in local cost ledger.
+- `kennen migrate` runs schema and one-shot data migrations.
+- `kennen entities merge --from <loser-id> --into <winner-id>` previews or applies
   duplicate Entity merges.
-- `lore conflicts scan` surfaces read-only conflict candidates for agent
+- `kennen conflicts scan` surfaces read-only conflict candidates for agent
   judgment.
 
 See [`docs/cli.md`](docs/cli.md) for a compact CLI command overview. See
@@ -428,15 +428,15 @@ rules, scan caps, and the repeat-until-clean workflow.
 
 ## Hooks
 
-Lore installs hook commands for supported AI coding assistants:
+Kennen installs hook commands for supported AI coding assistants:
 
-- **Auto-save** (`lore hooks autosave`) runs on assistant `Stop` and saves
+- **Auto-save** (`kennen hooks autosave`) runs on assistant `Stop` and saves
   the session after enough user messages.
-- **Wake-up** (`lore hooks wakeup`) loads the latest digest, recent memories,
+- **Wake-up** (`kennen hooks wakeup`) loads the latest digest, recent memories,
   active facts, and task-matched context before the first response.
 
 Claude Code and Codex installs wire hooks automatically using bin dispatch
-(`lore hooks ...`, or `yarn run -T lore hooks ...` under Yarn PnP). The
+(`kennen hooks ...`, or `yarn run -T kennen hooks ...` under Yarn PnP). The
 `hooks/autosave.sh` and `hooks/wakeup.sh` scripts are compatibility
 entrypoints for older absolute-path installs. Cursor and `--print-config`
 hosts only get the MCP tool surface.
@@ -445,12 +445,12 @@ behavior, and compatibility notes.
 
 ## Configuration
 
-Lore is configured via `.lore.yaml`. The file is located by searching upward
+Kennen is configured via `.kennen.yaml`. The file is located by searching upward
 from the current working directory.
 
-`.lore.yaml` is local-only — keep it out of version control. Copy
-`.lore.example.yaml` to `.lore.yaml` and fill in your values, or run
-`lore init` to generate one. Distribute shared team values (`vault.pageId`,
+`.kennen.yaml` is local-only — keep it out of version control. Copy
+`.kennen.example.yaml` to `.kennen.yaml` and fill in your values, or run
+`kennen init` to generate one. Distribute shared team values (`vault.pageId`,
 `auth.workspaceId`) through your onboarding docs rather than committing config;
 even credential-free shared vault config stays outside git under the current
 policy. Never put `auth.token`, personal scratch vault page IDs, or personally
@@ -509,7 +509,7 @@ hooks:
 
 Token resolution order: `NOTION_API_TOKEN` environment variable, then
 ntn-resolved `~/.config/notion/auth.json`. The first available source wins.
-Any `auth.token` value in `.lore.yaml` is rejected at config load time; move
+Any `auth.token` value in `.kennen.yaml` is rejected at config load time; move
 credentials to `NOTION_API_TOKEN` or ntn auth. Multi-workspace ntn setups
 select a workspace with `NOTION_WORKSPACE_ID` or `auth.workspaceId`.
 
@@ -526,16 +526,16 @@ implementation, ntn version policy, and keychain-mode workaround.
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `NOTION_API_TOKEN`       | Canonical Notion bearer token env var for Personal Access Tokens. Takes precedence over ntn `auth.json`                                                                               |
 | `NOTION_WORKSPACE_ID`    | Selects a workspace from a multi-workspace ntn `auth.json`                                                                                                                            |
-| `LORE_AGENT_NAME`        | Override the `Agent:` field on saved memories (e.g., `LORE_AGENT_NAME=Codex`)                                                                                                         |
-| `LORE_USER_NAME`         | Override the `Author:` field on saved memories with a human display name. When unset, Lore resolves the engineer identity from `users.me` on the active ntn-issued token.             |
-| `LORE_AUTO_DIGEST=false` | Suppress the Stop-triggered auto-digest scheduler (CLI `lore digest` still works)                                                                                                     |
-| `LORE_NO_HYPERLINKS=1`   | Skip OSC 8 clickable hyperlinks in `lore search` and `lore status` output, even under TTY. Same fallback as the non-TTY path. `=0`, `=false`, and empty string are treated as not set |
-| `NO_COLOR=1`             | Honored alongside `LORE_NO_HYPERLINKS` to skip OSC 8 emission                                                                                                                         |
+| `KENNEN_AGENT_NAME`        | Override the `Agent:` field on saved memories (e.g., `KENNEN_AGENT_NAME=Codex`)                                                                                                         |
+| `KENNEN_USER_NAME`         | Override the `Author:` field on saved memories with a human display name. When unset, Kennen resolves the engineer identity from `users.me` on the active ntn-issued token.             |
+| `KENNEN_AUTO_DIGEST=false` | Suppress the Stop-triggered auto-digest scheduler (CLI `kennen digest` still works)                                                                                                     |
+| `KENNEN_NO_HYPERLINKS=1`   | Skip OSC 8 clickable hyperlinks in `kennen search` and `kennen status` output, even under TTY. Same fallback as the non-TTY path. `=0`, `=false`, and empty string are treated as not set |
+| `NO_COLOR=1`             | Honored alongside `KENNEN_NO_HYPERLINKS` to skip OSC 8 emission                                                                                                                         |
 
 ## Monorepo Support
 
 Projects map directories to named scopes using the `projects` array in
-`.lore.yaml`. Lore resolves the current project from your working directory
+`.kennen.yaml`. Kennen resolves the current project from your working directory
 using longest-prefix matching.
 
 Given this config:

@@ -39,7 +39,7 @@ import {
   runNtnLogin,
 } from "./ntn.js"
 
-const SCRATCH = mkdtempSync(join(tmpdir(), "lore-ntn-test-"))
+const SCRATCH = mkdtempSync(join(tmpdir(), "kennen-ntn-test-"))
 const AUTH_JSON_FULL_SUITE_TIMEOUT_MS = 15_000
 
 afterAll(() => {
@@ -87,7 +87,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks()
   delete process.env["XDG_CONFIG_HOME"]
-  delete process.env["LORE_NOTION_BASE_URL"]
+  delete process.env["KENNEN_NOTION_BASE_URL"]
   delete process.env["NOTION_BASE_URL"]
   delete process.env["NOTION_API_BASE_URL"]
   delete process.env["NOTION_ENV"]
@@ -145,11 +145,11 @@ describe("loadNtnToken", () => {
     expect(await loadNtnToken({ workspaceId: "ws-missing" })).toBeNull()
     expect(stderrText()).toContain("not among them")
     expect(stderrText()).toContain("ws-1")
-    // Recovery hint points at `lore auth --login` (the canonical
+    // Recovery hint points at `kennen auth --login` (the canonical
     // wrapper that forces NOTION_KEYRING=0); bare `ntn login` on
     // macOS defaults to keychain mode and would loop the operator
     // back into this same miss. Round-4 review blocker.
-    expect(stderrText()).toContain("lore auth --login")
+    expect(stderrText()).toContain("kennen auth --login")
     expect(stderrText()).not.toMatch(/Run `ntn login` against/)
   })
 
@@ -157,13 +157,13 @@ describe("loadNtnToken", () => {
     setupNtnConfigHome("not-json")
     expect(await loadNtnToken()).toBeNull()
     expect(stderrText()).toContain("malformed")
-    // Recovery copy now leads with `lore auth --login` (the canonical
+    // Recovery copy now leads with `kennen auth --login` (the canonical
     // Phase-2 wrapper) and offers `NOTION_KEYRING=0 ntn login` as the
     // manual fallback inside parens. Operators see the supported path
     // first; the manual ntn invocation is the escape hatch.
-    expect(stderrText()).toContain("lore auth --login")
+    expect(stderrText()).toContain("kennen auth --login")
     expect(stderrText()).toContain("NOTION_KEYRING=0 ntn login")
-    const wrapperIdx = stderrText().indexOf("lore auth --login")
+    const wrapperIdx = stderrText().indexOf("kennen auth --login")
     const manualIdx = stderrText().indexOf("NOTION_KEYRING=0 ntn login")
     expect(wrapperIdx).toBeGreaterThan(-1)
     expect(wrapperIdx).toBeLessThan(manualIdx)
@@ -173,7 +173,7 @@ describe("loadNtnToken", () => {
     setupNtnConfigHome("null")
     expect(await loadNtnToken()).toBeNull()
     expect(stderrText()).toContain("unexpected shape")
-    expect(stderrText()).toContain("lore auth --login")
+    expect(stderrText()).toContain("kennen auth --login")
   })
 
   it("returns null with unexpected-shape hint when auth.json is a JSON array", async () => {
@@ -234,9 +234,9 @@ describe("loadNtnToken", () => {
     })
   })
 
-  it("honors LORE_NOTION_BASE_URL as the baseUrl override", async () => {
+  it("honors KENNEN_NOTION_BASE_URL as the baseUrl override", async () => {
     setupNtnConfigHome(JSON.stringify({ "ws-1": "tok-1" }))
-    process.env["LORE_NOTION_BASE_URL"] = "https://staging.example.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://staging.example.com"
     const result = await loadNtnToken()
     expect(result).toEqual({
       token: "tok-1",
@@ -247,10 +247,10 @@ describe("loadNtnToken", () => {
 
   it("rejects invalid env baseUrl overrides after selecting the auth.json token", async () => {
     setupNtnConfigHome(JSON.stringify({ "ws-1": "tok-1" }))
-    process.env["LORE_NOTION_BASE_URL"] = "api.notion.so"
+    process.env["KENNEN_NOTION_BASE_URL"] = "api.notion.so"
 
     await expect(loadNtnToken()).rejects.toThrow(
-      /Invalid Notion API base URL from LORE_NOTION_BASE_URL/
+      /Invalid Notion API base URL from KENNEN_NOTION_BASE_URL/
     )
     expect(stderrText()).not.toContain("tok-1")
   })
@@ -526,7 +526,7 @@ describe("runNtnLogin", () => {
   })
 
   it("preserves the rest of process.env alongside the NOTION_KEYRING override", async () => {
-    process.env["LORE_NTN_TEST_SENTINEL"] = "passthrough-value"
+    process.env["KENNEN_NTN_TEST_SENTINEL"] = "passthrough-value"
     const child = makeFakeChild()
     spawnMock.mockReturnValue(child)
     const promise = runNtnLogin()
@@ -534,8 +534,8 @@ describe("runNtnLogin", () => {
     await promise
 
     const options = spawnMock.mock.calls[0]![2] as { env: Record<string, string> }
-    expect(options.env["LORE_NTN_TEST_SENTINEL"]).toBe("passthrough-value")
-    delete process.env["LORE_NTN_TEST_SENTINEL"]
+    expect(options.env["KENNEN_NTN_TEST_SENTINEL"]).toBe("passthrough-value")
+    delete process.env["KENNEN_NTN_TEST_SENTINEL"]
   })
 
   it("does NOT set NOTION_ENV in the spawn env when called without an env opt (default / prod path)", async () => {
@@ -590,7 +590,7 @@ describe("runNtnLogin", () => {
 
   it("explicit { env: 'prod' } CLOBBERS an inherited NOTION_ENV=dev (operator-supplied override wins)", async () => {
     // The flag is the explicit-override surface. An operator who has
-    // shell-rc dev but passes `--ntn-env prod` to a Lore command
+    // shell-rc dev but passes `--ntn-env prod` to a Kennen command
     // wants prod. Pin that the explicit value wins over the
     // inherited shell value.
     process.env["NOTION_ENV"] = "dev"
@@ -630,7 +630,7 @@ describe("parseNtnEnv", () => {
   it("returns undefined when the input is undefined (flag not passed)", () => {
     // We need this distinction so consumers can leave the spawn env
     // untouched on the no-flag path; treating absence as a bad value
-    // would force every Lore command without `--ntn-env` into an
+    // would force every Kennen command without `--ntn-env` into an
     // error-handling branch.
     expect(parseNtnEnv(undefined)).toBeUndefined()
   })
@@ -683,7 +683,7 @@ describe("installNtn", () => {
     expect(result).toEqual({ kind: "spawn-error", error: err })
   })
 
-  it("spawns Lore's verified install script without shell interpolation", async () => {
+  it("spawns Kennen's verified install script without shell interpolation", async () => {
     const child = makeFakeChild()
     spawnMock.mockReturnValue(child)
     const promise = installNtn()
@@ -737,7 +737,7 @@ describe("installNtn", () => {
 
   it("scrubs the spawn env to an allowlist — token-bearing variables do NOT leak to the installer", async () => {
     // The install process does not need NOTION_API_TOKEN,
-    // GITHUB_TOKEN, npm credentials, or any other Lore/CI-injected
+    // GITHUB_TOKEN, npm credentials, or any other Kennen/CI-injected
     // secret. Pin the scrub so a future contributor who reverts to
     // `{ ...process.env, NOTION_KEYRING: "0" }` exfiltration breaks
     // this test loudly.

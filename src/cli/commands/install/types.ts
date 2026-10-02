@@ -4,38 +4,38 @@ import type { RuntimeForwardedKey } from "../../../auth/forwarded-env.js"
 export type InstallClient = "claude" | "codex" | "cursor" | "omp" | "all"
 
 /**
- * Status of a single Lore-owned config entry on disk.
+ * Status of a single Kennen-owned config entry on disk.
  *
- * - `current` — entry is in the bin-dispatch form (`lore mcp` /
- *   `lore hooks <event>`), matching `buildClaudeMcpEntry()` /
+ * - `current` — entry is in the bin-dispatch form (`kennen mcp` /
+ *   `kennen hooks <event>`), matching `buildClaudeMcpEntry()` /
  *   `buildClaudeHookCommand()` / `buildCodexMcpSection()` /
  *   `buildCodexHookCommand()` byte-for-byte.
  * - `legacy-current` — entry is in the absolute-path form and matches
  *   `buildLegacyClaudeMcpEntry(...)` / etc. for the resolved `pkgRoot`.
- *   Default `lore install` (no legacy absolute-path mode) reports this and
- *   rewrites to bin-dispatch; `lore install` treats it
+ *   Default `kennen install` (no legacy absolute-path mode) reports this and
+ *   rewrites to bin-dispatch; `kennen install` treats it
  *   as `current`.
  * - `stale` — entry exists but matches neither shape (e.g., points at
  *   a different `pkgRoot`, hand-edited args). Reinstall replaces it.
- * - `missing` — no Lore entry at all.
+ * - `missing` — no Kennen entry at all.
  */
 export type HookStatus = "current" | "legacy-current" | "stale" | "missing"
 
 /**
- * The shape of the bin-dispatched command lore writes into committed
+ * The shape of the bin-dispatched command kennen writes into committed
  * config. Two valid shapes:
  *
- * - `bare` — `command: "lore"`, `args: ["mcp"]`. Resolves through the
- *   consumer's `node_modules/.bin/lore` symlink that npm and Yarn 1
+ * - `bare` — `command: "kennen"`, `args: ["mcp"]`. Resolves through the
+ *   consumer's `node_modules/.bin/kennen` symlink that npm and Yarn 1
  *   create. Default for non-Yarn-PnP consumers.
  *
- * - `yarn` — `command: "yarn"`, `args: ["run", "-T", "lore", "mcp"]`.
+ * - `yarn` — `command: "yarn"`, `args: ["run", "-T", "kennen", "mcp"]`.
  *   Resolves through Yarn Berry / Yarn 4 PnP, which does NOT populate
  *   `node_modules/.bin` and therefore cannot satisfy the bare shape
- *   when a host launches `command: "lore"` directly. The `yarn run
+ *   when a host launches `command: "kennen"` directly. The `yarn run
  *   -T` (top-level) form resolves the workspace-root binary even
  *   when the host launches the MCP from a workspace subdirectory —
- *   bare `yarn lore` only resolves bins in the cwd's package and
+ *   bare `yarn kennen` only resolves bins in the cwd's package and
  *   fails on subdirectory launches that monorepo hosts often
  *   produce. `-T` is Yarn 4's flag spelling; pre-Berry Yarn 1
  *   silently ignores unknown flags and falls back to top-level
@@ -58,10 +58,10 @@ export interface McpEnvBuild {
   env: Record<string, string>
   /**
    * Literal KEY=value entries always present:
-   *   - `LORE_CONFIG_ROOT`  — so the spawned MCP child resolves the
-   *     right .lore.yaml even when the host's spawn-time cwd does
+   *   - `KENNEN_CONFIG_ROOT`  — so the spawned MCP child resolves the
+   *     right .kennen.yaml even when the host's spawn-time cwd does
    *     not match the operator's vault directory.
-   *   - `LORE_SUPPRESS_DEPRECATIONS` — keeps older spawned children quiet
+   *   - `KENNEN_SUPPRESS_DEPRECATIONS` — keeps older spawned children quiet
    *     when an operator runs mixed local/global versions during upgrade.
    * Claude / Cursor consumers merge these into `env` directly. Codex
    * consumers prefix them onto its `bash -lc` launch command because
@@ -74,14 +74,14 @@ export interface McpEnvBuild {
 
 export interface BuildMcpEnvOptions {
   /**
-   * Skip the `LORE_CONFIG_ROOT` static entry. Used by the Yarn-PnP
+   * Skip the `KENNEN_CONFIG_ROOT` static entry. Used by the Yarn-PnP
    * shape because committed .mcp.json / .cursor/mcp.json /
    * .codex/config.toml files are workspace-shared across
    * developers, and an absolute machine path (`/Users/foo/myrepo`)
    * leaks one developer's checkout into the others'. Under PnP
-   * launches via `yarn run -T lore mcp`, the spawned MCP server's
+   * launches via `yarn run -T kennen mcp`, the spawned MCP server's
    * cwd is the workspace root — `findConfigFile(cwd)` walks
-   * upward from there and resolves .lore.yaml without help.
+   * upward from there and resolves .kennen.yaml without help.
    * Bare-bin (non-PnP) installs keep the static because the host's
    * spawn cwd may not match the operator's vault directory.
    */
@@ -107,7 +107,7 @@ export interface BuildMcpEnvOptions {
   /**
    * When set, write `NOTION_BASE_URL` to the MCP env as a LITERAL
    * value (not a `${VAR}` placeholder), and suppress the conditional
-   * forwarding of the same key. Used by `lore install --dev` so the
+   * forwarding of the same key. Used by `kennen install --dev` so the
    * spawned MCP child targets the configured Notion API regardless
    * of whether the operator's shell carries `NOTION_BASE_URL` /
    * `NOTION_ENV` at MCP-spawn time. Without this, `--dev` would be
@@ -117,8 +117,8 @@ export interface BuildMcpEnvOptions {
    * dev signals.
    *
    * Literal-value MCP env entries are the same shape Codex's
-   * `bash -lc` prefix uses for `LORE_CONFIG_ROOT` and
-   * `LORE_SUPPRESS_DEPRECATIONS`; this is the recognized pattern for
+   * `bash -lc` prefix uses for `KENNEN_CONFIG_ROOT` and
+   * `KENNEN_SUPPRESS_DEPRECATIONS`; this is the recognized pattern for
    * "the install knows the right value, don't depend on operator
    * shell."
    */
@@ -142,10 +142,10 @@ export interface InstallContext {
   projectDir: string
   pkgRoot: string
   /**
-   * Resolved .lore.yaml directory — `findConfigFile(projectDir).root`
+   * Resolved .kennen.yaml directory — `findConfigFile(projectDir).root`
    * when a config exists, falling back to `projectDir` otherwise. This
-   * is the value forwarded into the MCP entry as `LORE_CONFIG_ROOT` so
-   * the spawned MCP server's `resolveAuth` walks the right .lore.yaml
+   * is the value forwarded into the MCP entry as `KENNEN_CONFIG_ROOT` so
+   * the spawned MCP server's `resolveAuth` walks the right .kennen.yaml
    * regardless of the host's spawn-time cwd.
    */
   configRoot: string
@@ -154,17 +154,17 @@ export interface InstallContext {
   mcpJsPath: string
   skipPrompts: boolean
   /**
-   * `true`/`false` when .lore.yaml sets `hooks.wakeUp` explicitly; `null`
+   * `true`/`false` when .kennen.yaml sets `hooks.wakeUp` explicitly; `null`
    * when no config exists yet or the flag is unset (hook default applies).
    */
   wakeUpConfig: boolean | null
   /**
    * legacy absolute-path mode opt-in. When `true`, the install path emits the
    * legacy absolute-path shape (an explicit `node` invocation against
-   * the built MCP entry under `${HOME}/.lore/`, plus the matching shell
+   * the built MCP entry under `${HOME}/.kennen/`, plus the matching shell
    * wakeup wrapper) and the prerequisite checks verify the legacy
    * shell wrappers exist. When `false` (default), the install path
-   * emits the bin-dispatch shape (`lore mcp`, `lore hooks <event>`)
+   * emits the bin-dispatch shape (`kennen mcp`, `kennen hooks <event>`)
    * and the prerequisite checks skip the shell-wrapper verification
    * entirely because the bin-dispatch path doesn't depend on the
    * legacy hook scripts.
@@ -173,9 +173,9 @@ export interface InstallContext {
   /**
    * `--yarn-pnp` (auto-detected via `.pnp.cjs` marker). When `true`,
    * the install path emits the yarn-wrapped bin-dispatch shape
-   * (`command: "yarn", args: ["run", "-T", "lore", "mcp"]` and
-   * `yarn run -T lore hooks <event>`) so the host assistant can
-   * invoke the lore bin through Yarn Berry / Yarn 4 PnP, which does
+   * (`command: "yarn", args: ["run", "-T", "kennen", "mcp"]` and
+   * `yarn run -T kennen hooks <event>`) so the host assistant can
+   * invoke the kennen bin through Yarn Berry / Yarn 4 PnP, which does
    * NOT populate `node_modules/.bin/`. The `run -T` (top-level) flag
    * resolves the workspace-root binary even when the host launches
    * from a nested workspace package's cwd. Ignored when

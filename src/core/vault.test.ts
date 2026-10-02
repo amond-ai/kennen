@@ -139,7 +139,7 @@ describe("VaultManager.init — partial schema guard", () => {
     ])
     const manager = new VaultManager(client, "page-1")
 
-    await expect(manager.init()).rejects.toThrow("do not run 'lore init'")
+    await expect(manager.init()).rejects.toThrow("do not run 'kennen init'")
     expect(createMock).not.toHaveBeenCalled()
   })
 })

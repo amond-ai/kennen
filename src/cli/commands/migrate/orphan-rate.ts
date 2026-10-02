@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import { resolveFeatureFlags } from "../../../feature-flags.js"
 import {
   computeOrphanRateFromAggregateRows,
@@ -15,8 +15,8 @@ import { FACT_PROPS } from "../../../notion/schema.js"
 /**
  * Drive the orphan-rate report after `--build-entities`.
  *
- * Two execution paths, gated by `LORE_USE_RUNTOOL_AGGREGATE` (defaults
- * to the parent `LORE_USE_RUNTOOL`, which itself defaults ON):
+ * Two execution paths, gated by `KENNEN_USE_RUNTOOL_AGGREGATE` (defaults
+ * to the parent `KENNEN_USE_RUNTOOL`, which itself defaults ON):
  *
  * 1. **RunTool aggregate path.** Issues a single
  *    `query_data_sources` SQL query that groups facts by
@@ -37,8 +37,8 @@ import { FACT_PROPS } from "../../../notion/schema.js"
  * `SqlPartialResultError` / malformed response). A 400 /
  * `validation_error` re-throws so query-shape drift surfaces as an
  * operator-actionable failure rather than silently masking. The
- * fallback emits a one-line `[lore] partial-failure` notice under
- * `LORE_DEBUG=1`.
+ * fallback emits a one-line `[kennen] partial-failure` notice under
+ * `KENNEN_DEBUG=1`.
  *
  * **Pre/post-pass labeling**. `apply` is the canonical signal for
  * which graph the metric measured. On `apply === true` (i.e.
@@ -57,7 +57,7 @@ import { FACT_PROPS } from "../../../notion/schema.js"
  * the time this runs.
  */
 export async function runOrphanRateReport(
-  services: LoreServices,
+  services: KennenServices,
   options: { apply: boolean; projectId?: string; projectName?: string }
 ): Promise<void> {
   const aggregateEnabled = (services.features ?? resolveFeatureFlags()).runTool.aggregate

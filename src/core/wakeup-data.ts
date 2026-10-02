@@ -1,6 +1,6 @@
 /**
  * Wake-up data loading — shared by the MCP
- * `lore-context action='wake-up'` tool and the shell wake-up hook.
+ * `kennen-context action='wake-up'` tool and the shell wake-up hook.
  *
  * When a project has a recently saved digest (source = "digest"), wake-up
  * surfaces that digest as the primary context and trims the raw-memory
@@ -163,14 +163,14 @@ export interface WakeUpServices {
    * fixtures and the shell hook's lightweight wake-up wiring;
    * absent / empty array suppresses the inherited section entirely
    * (byte-identical behavior to single-vault wake-up). Production wiring
-   * threads `LoreServices.upstreams` through directly.
+   * threads `KennenServices.upstreams` through directly.
    *
    * **Optional is the deliberate test-fixture compatibility
    * choice**, not a feature toggle. The
    * downstream consumer `runWakeUpFanOut` treats `undefined` and
    * `[]` identically — both suppress the section. New callers
    * constructing a `WakeUpServices` standalone should thread the
-   * `LoreServices.upstreams` array directly; the optionality is
+   * `KennenServices.upstreams` array directly; the optionality is
    * for existing test stubs that don't carry the field.
    */
   upstreams?: readonly UpstreamVaultBundle[]
@@ -278,8 +278,8 @@ export interface WakeUpOptions {
   pinnedReaderContext?: MemoryScopeContext
   /**
    * When true, compute privacy-conscious wake-up coverage counters for
-   * observability surfaces (`LORE_DEBUG=1` hook logging and MCP
-   * `lore-context action='wake-up' debug: true`). Defaults to false so
+   * observability surfaces (`KENNEN_DEBUG=1` hook logging and MCP
+   * `kennen-context action='wake-up' debug: true`). Defaults to false so
    * normal wake-up callers do not pay for counters they do not render.
    */
   includeCoverage?: boolean
@@ -465,7 +465,7 @@ export async function loadWakeUpData(
     // after midnight under the same key — the data layer's effective
     // `todayDate` would have advanced (driving `Nd ago` arithmetic)
     // but a key built from raw
-    // `opts` would collide. `lore-context action='status'` and the
+    // `opts` would collide. `kennen-context action='status'` and the
     // hook wake-up path both omit `todayDate` and rely on this
     // defaulting. Mirrors the same `now → todayDate` derivation
     // applied below for the fan-out.
@@ -638,7 +638,7 @@ async function runWakeUpFanOut(
         // (and the section heading driven by `proposedMemoriesTotal`)
         // would exclude it — heading-vs-slice drift the
         // single-source-of-truth helper exists to prevent. The
-        // `lore-decision action='accept'` / `'supersede'` flow is the
+        // `kennen-decision action='accept'` / `'supersede'` flow is the
         // canonical lifecycle for proposed-state decisions, not the
         // memory inbox.
         excludeKinds: ["decision"],

@@ -12,7 +12,7 @@ import type { CreateFactInput, Decision, Fact, MemoryStatus } from "../types.js"
  *
  * - When `subjectEntityId` is populated (post-PF3-01 row that's been
  *   filled by `--build-entities` or written through
- *   `lore-fact action='create'` after the resolver), the relation id
+ *   `kennen-fact action='create'` after the resolver), the relation id
  *   is the canonical key.
  * - When the relation column is empty (unmigrated row), fall back
  *   to `computeSubjectKey(subject)` — the same case/whitespace fold

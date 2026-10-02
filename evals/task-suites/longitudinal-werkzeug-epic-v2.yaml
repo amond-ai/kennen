@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-werkzeug-epic-v2
+name: kennen-longitudinal-werkzeug-epic-v2
 description: >-
   Public-spec Werkzeug routing longitudinal suite. The single scenario is
   pinned before real upstream routing fixes and verified through deterministic
@@ -9,8 +9,8 @@ description: >-
 seededCorpus: ../vault-seeds/werkzeug-epic-v2.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: werkzeug-routing-matcher-epic-v2
     difficulty: hard
@@ -72,10 +72,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/tests/test_lore_hidden_routing.py b/tests/test_lore_hidden_routing.py
+          diff --git a/tests/test_kennen_hidden_routing.py b/tests/test_kennen_hidden_routing.py
           new file mode 100644
           --- /dev/null
-          +++ b/tests/test_lore_hidden_routing.py
+          +++ b/tests/test_kennen_hidden_routing.py
           @@ -0,0 +1,70 @@
           +import pytest
           +
@@ -157,6 +157,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - tests/test_lore_hidden_routing.py
+          - tests/test_kennen_hidden_routing.py
           - -q
         timeoutMs: 300000

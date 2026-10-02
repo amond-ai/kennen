@@ -46,7 +46,7 @@ export type TaskEvalAgent = (typeof TASK_EVAL_AGENTS)[number]
  * stay aligned.
  */
 export const TASK_EVAL_MEMORY_CONDITIONS = [
-  "no-lore",
+  "no-kennen",
   "helpful",
   "noisy",
   "stale",
@@ -55,8 +55,8 @@ export const TASK_EVAL_MEMORY_CONDITIONS = [
 export type TaskEvalMemoryCondition = (typeof TASK_EVAL_MEMORY_CONDITIONS)[number]
 
 export const REQUIRED_ABLATION_SCENARIOS = [
-  "no-lore",
-  "empty-lore",
+  "no-kennen",
+  "empty-kennen",
   "helpful-memory",
 ] as const
 
@@ -232,35 +232,35 @@ export const evalMemoryScenarioSchema = z
 /**
  * Ingestion strategy for the bench. Three values:
  *
- * - `lore-mine` (V1 default): each session is mined through the
+ * - `kennen-mine` (V1 default): each session is mined through the
  *   production Stop-hook autosave pipeline (`runConversationMining`
- *   → `claude -p` → `lore mcp` tools). Faithful to Lore's production
+ *   → `claude -p` → `kennen mcp` tools). Faithful to Kennen's production
  *   write path. On LongMemEval's synthetic-conversation corpus the
  *   autosave's "durable knowledge" filter intentionally rejects
  *   casual conversational facts, so mining produces ~1 memory per
  *   ~30-session haystack and the agent recalls little. The bench
- *   number measures "Lore's production filter against the LongMemEval
+ *   number measures "Kennen's production filter against the LongMemEval
  *   workload" -- honest but specific to this conversation-memory corpus.
  *
  * - `raw-transcript`: each session is stored verbatim as one memory
  *   (title `Session <i>`, body = the session transcript). Bypasses
- *   the autosave filter; the agent's `lore-query` / `lore-context`
+ *   the autosave filter; the agent's `kennen-query` / `kennen-context`
  *   retrieves the transcript memory and answers from its body. Every
  *   conversational token is stored, so this lane isolates retrieval
  *   over full-fidelity LongMemEval transcripts.
  *
  * - `simulated-autosave`: each session is transformed by a structured
- *   extraction prompt into Lore-shaped memories plus explicit mention
+ *   extraction prompt into Kennen-shaped memories plus explicit mention
  *   facts. Bypasses production autosave's durability filter like
  *   raw-transcript, but preserves the enriched recall fields a
  *   memory system would normally build at ingest time.
  *
  * The strategies measure different things; suite YAML picks. The
- * committed `longmemeval.yaml` keeps `lore-mine`; sibling suites cover
+ * committed `longmemeval.yaml` keeps `kennen-mine`; sibling suites cover
  * raw transcript and simulated-autosave reference variants.
  */
 export const BENCH_INGESTION_STRATEGIES = [
-  "lore-mine",
+  "kennen-mine",
   "raw-transcript",
   "simulated-autosave",
 ] as const
@@ -269,10 +269,10 @@ export type BenchIngestionStrategy = (typeof BENCH_INGESTION_STRATEGIES)[number]
 /**
  * Retrieval strategy for the agent. Two values:
  *
- * - `tool-driven` (V1 default): the agent gets live Lore read tools
+ * - `tool-driven` (V1 default): the agent gets live Kennen read tools
  *   and decides for itself when to call them. Codex bench runs expose
- *   those tools through runner-installed `lore-query` / `lore-memory`
- *   command shims, which call the same Lore services during the agent
+ *   those tools through runner-installed `kennen-query` / `kennen-memory`
+ *   command shims, which call the same Kennen services during the agent
  *   run and trace every retrieval action into the artifact. This
  *   measures selective mid-session retrieval, not preloaded context.
  *
@@ -281,8 +281,8 @@ export type BenchIngestionStrategy = (typeof BENCH_INGESTION_STRATEGIES)[number]
  *   relevance-ranked top memories (bodies included) are rendered as
  *   a system-prompt addendum the agent reads inline. No MCP tools
  *   required — the agent just answers from the injected context.
- *   Maps to how Lore's wake-up hook actually works at session start:
- *   the hook calls `lore-context action='wake-up' userQuery=<task>`
+ *   Maps to how Kennen's wake-up hook actually works at session start:
+ *   the hook calls `kennen-context action='wake-up' userQuery=<task>`
  *   via the agent's MCP integration and the response is pasted into
  *   the agent's context window. For the bench surface, this is
  *   functionally equivalent: pre-fetched relevance bundle, agent
@@ -331,7 +331,7 @@ export const benchSuiteSchema = z
       .strict(),
     ingestion: z
       .object({
-        strategy: z.enum(BENCH_INGESTION_STRATEGIES).default("lore-mine"),
+        strategy: z.enum(BENCH_INGESTION_STRATEGIES).default("kennen-mine"),
         memoryCaptureMode: z.enum(MEMORY_CAPTURE_MODES).optional(),
         extractionPrompt: z.string().min(1).optional(),
         extractionModel: z.literal(SIMULATED_AUTOSAVE_EXTRACTION_MODEL).optional(),
@@ -347,14 +347,14 @@ export const benchSuiteSchema = z
           "extractionMaxTokens",
         ] as const
         if (
-          ingestion.strategy !== "lore-mine" &&
+          ingestion.strategy !== "kennen-mine" &&
           ingestion.memoryCaptureMode !== undefined
         ) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["memoryCaptureMode"],
             message:
-              'memoryCaptureMode is only valid when ingestion.strategy is "lore-mine"',
+              'memoryCaptureMode is only valid when ingestion.strategy is "kennen-mine"',
           })
         }
         if (ingestion.strategy === "simulated-autosave") {
@@ -383,7 +383,7 @@ export const benchSuiteSchema = z
           }
         }
       })
-      .default({ strategy: "lore-mine" }),
+      .default({ strategy: "kennen-mine" }),
     caps: z
       .object({
         perExampleWrites: z.number().int().positive().default(500),

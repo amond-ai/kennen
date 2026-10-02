@@ -23,7 +23,7 @@ caps:
   perSuiteWrites: 250000
 notes: |
   Structured-extraction ingestion variant: each haystack session is
-  transformed into Lore-shaped memory rows with title, synopsis,
+  transformed into Kennen-shaped memory rows with title, synopsis,
   keywords, closed-vocabulary tags, content, and auto-emitted mentions
   facts. This bypasses the production durability filter while retaining
   the enriched recall surface production autosave normally creates.

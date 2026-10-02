@@ -130,9 +130,9 @@ describe("statusCommand", () => {
   })
 
   it("renders configured topology health and reuses cached probes", async () => {
-    const stateDir = await mkdtemp(join(tmpdir(), "lore-cli-topology-status-"))
-    const previousStateDir = process.env["LORE_HOOK_STATE_DIR"]
-    process.env["LORE_HOOK_STATE_DIR"] = stateDir
+    const stateDir = await mkdtemp(join(tmpdir(), "kennen-cli-topology-status-"))
+    const previousStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+    process.env["KENNEN_HOOK_STATE_DIR"] = stateDir
 
     try {
       const listBlocks = vi.fn(async ({ block_id }: { block_id: string }) => {
@@ -207,9 +207,9 @@ describe("statusCommand", () => {
       expect(text).toContain("health unavailable (not shared: team-page; cached")
     } finally {
       if (previousStateDir === undefined) {
-        delete process.env["LORE_HOOK_STATE_DIR"]
+        delete process.env["KENNEN_HOOK_STATE_DIR"]
       } else {
-        process.env["LORE_HOOK_STATE_DIR"] = previousStateDir
+        process.env["KENNEN_HOOK_STATE_DIR"] = previousStateDir
       }
       await rm(stateDir, { recursive: true, force: true })
     }

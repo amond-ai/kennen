@@ -1,12 +1,12 @@
 /**
  * Backfill the transaction-time provenance columns on every fact.
  *
- * `lore migrate --backfill-fact-observed-at` walks every fact row,
+ * `kennen migrate --backfill-fact-observed-at` walks every fact row,
  * including invalidated rows, and writes:
  *
  * - `Observed At = page.created_time` (YYYY-MM-DD) on rows whose
  *   `Observed At` is empty. The Notion `created_time` is the best
- *   available proxy for "when Lore learned this fact" on rows
+ *   available proxy for "when Kennen learned this fact" on rows
  *   without the column populated — the write side seeds `Observed
  *   At` at create time, but every row written before the
  *   transaction-time columns existed needs the backfill.
@@ -22,7 +22,7 @@
  * invalidated-at != null` for rows that need both, with each axis
  * checked independently — a row already backfilled on one axis stays
  * untouched on the next run). Plan-then-execute via
- * `lore migrate --backfill-fact-observed-at --yes`; bare invocation
+ * `kennen migrate --backfill-fact-observed-at --yes`; bare invocation
  * prints the plan and exits.
  *
  * Mirrors the fact-confidence-baseline migration line-for-line on
@@ -30,7 +30,7 @@
  * running both migrations sees a consistent shape across surfaces.
  */
 
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import { DEFAULT_NOTION_CONCURRENCY } from "../notion/rate-limit.js"
 import {
   PROJECT_SCOPE_MIGRATION_DOC,
@@ -39,7 +39,7 @@ import {
 } from "./project-scope.js"
 
 export interface BackfillFactObservedAtOptions {
-  services: LoreServices
+  services: KennenServices
   /** When false, builds and prints the plan but does not write. */
   apply: boolean
   /** When true, suppresses writes regardless of `apply`. */
@@ -122,7 +122,7 @@ async function buildPlan(
   // sibling fact-confidence migration.
   let projectId = opts.projectId
   const explicitProjectName = validateExplicitProjectScopeName(projectName, "--project", {
-    listHint: "run `lore status projects` to list configured projects",
+    listHint: "run `kennen status projects` to list configured projects",
     omittedScopeLabel: "vault-wide scope",
     docsHint: PROJECT_SCOPE_MIGRATION_DOC,
   })
@@ -132,7 +132,7 @@ async function buildPlan(
       explicitProjectName,
       "--project",
       {
-        listHint: "run `lore status projects` to list configured projects",
+        listHint: "run `kennen status projects` to list configured projects",
         omittedScopeLabel: "vault-wide scope",
         docsHint: PROJECT_SCOPE_MIGRATION_DOC,
       }
@@ -160,7 +160,7 @@ async function buildPlan(
     // contamination at the right call site.
     if (fact.createdAt === undefined) {
       throw new Error(
-        `lore migrate --backfill-fact-observed-at: Fact.createdAt is ` +
+        `kennen migrate --backfill-fact-observed-at: Fact.createdAt is ` +
           `unexpectedly undefined (fact id=${fact.id}). listAllForBackfill ` +
           `routes through pageToFact which always populates the field; a ` +
           `missing value indicates a partial Fact reached the migration ` +
@@ -246,7 +246,7 @@ async function executePlan(
     })
     if (processed >= nextProgressMark) {
       process.stderr.write(
-        `[lore] backfill-fact-observed-at: ${processed}/${plan.rowsToBackfill.length} ` +
+        `[kennen] backfill-fact-observed-at: ${processed}/${plan.rowsToBackfill.length} ` +
           `(${written} written, ${failures.length} failed)\n`
       )
       nextProgressMark = Math.floor(processed / 100) * 100 + 100

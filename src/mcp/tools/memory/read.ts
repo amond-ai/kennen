@@ -1,7 +1,7 @@
 import { fireTouchOnRead, paginationFooter, toolError } from "../../helpers.js"
 import { resolveReadProjectScope } from "../../resolve.js"
 import { defaultMemoryMetaBuilder, formatMemoryListItem } from "../../render.js"
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { redactDebugMessage } from "../../../debug-redact.js"
 import type { MemoryResultSetRegistration } from "../../../memory-result-handles.js"
 import type {
@@ -32,7 +32,7 @@ export interface RecallArgs {
 }
 
 export async function handleRecall(
-  services: LoreServices,
+  services: KennenServices,
   args: RecallArgs
 ): Promise<ToolResult> {
   try {
@@ -114,7 +114,7 @@ export async function handleRecall(
     // response is composed — write latency cannot block the agent's
     // read. Failure handling and contract details live in
     // `fireTouchOnRead`'s docstring.
-    await fireTouchOnRead(services.memories, memories, "lore-query (recall)")
+    await fireTouchOnRead(services.memories, memories, "kennen-query (recall)")
 
     return response
   } catch (err) {
@@ -142,7 +142,7 @@ export interface SearchArgs {
 }
 
 export async function handleSearch(
-  services: LoreServices,
+  services: KennenServices,
   args: SearchArgs
 ): Promise<ToolResult> {
   try {
@@ -271,7 +271,7 @@ export async function handleSearch(
     // row, not just the slice the agent might read — surfacing alone
     // is the signal that the row passed the filter and is contextually
     // relevant. Fires post-response composition.
-    await fireTouchOnRead(services.memories, results, "lore-query (search)")
+    await fireTouchOnRead(services.memories, results, "kennen-query (search)")
 
     return response
   } catch (err) {
@@ -280,7 +280,7 @@ export async function handleSearch(
 }
 
 function registerMemoryResultSet(
-  services: LoreServices,
+  services: KennenServices,
   memories: readonly Memory[]
 ): MemoryResultSetRegistration | null {
   const store = services.memoryResultHandles
@@ -318,7 +318,7 @@ function formatBodiesFooter(
 
   return (
     "\n\n_Bodies omitted — expand selected rows with " +
-    `\`lore-memory action='expand' ids=["${firstHandle}"]\`, ` +
+    `\`kennen-memory action='expand' ids=["${firstHandle}"]\`, ` +
     "or re-call with `includeContent: true` when you need every body._"
   )
 }
@@ -348,7 +348,7 @@ function formatQueryPlanTrace(planTrace: SearchPlanResultTrace[] | undefined): s
 }
 
 /**
- * Render a `## Score trace` footer for `lore-query action='search'` when
+ * Render a `## Score trace` footer for `kennen-query action='search'` when
  * the caller passes `explain: true`. One row per result; null fields
  * render as `—` (em dash) uniformly so the format is grep-friendly across
  * branches.
@@ -365,7 +365,7 @@ function formatScoreTrace(explain: SearchExplain[]): string {
     // Six decimals (rather than four) keeps the rendered score
     // information-bearing across the plausible RRF_K range. With the
     // current RRF_K=60, scores are in the 0.01–0.04 range and four
-    // decimals would suffice. A future env knob (`LORE_HYBRID_RRF_K`)
+    // decimals would suffice. A future env knob (`KENNEN_HYBRID_RRF_K`)
     // pushing RRF_K toward 1000+ would crush scores below the four-
     // decimal threshold and silently render them as `0.0000`. Six
     // decimals covers RRF_K up to ~100000 without information loss.

@@ -31,8 +31,8 @@ describe("collectLivePages", () => {
         next_cursor: "cursor-2",
       })
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    const original = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const original = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
 
     try {
       const result = await collectLivePages({
@@ -52,16 +52,16 @@ describe("collectLivePages", () => {
     } finally {
       stderrSpy.mockRestore()
       if (original === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = original
+        process.env["KENNEN_DEBUG"] = original
       }
     }
   })
 
   it("normalizes malformed opaque cursors to a stable error", async () => {
     const badCursor =
-      "lore-live-page:" + Buffer.from("not-json", "utf8").toString("base64url")
+      "kennen-live-page:" + Buffer.from("not-json", "utf8").toString("base64url")
 
     await expect(
       collectLivePages({
@@ -70,7 +70,7 @@ describe("collectLivePages", () => {
         source: "test-source",
         query: vi.fn(),
       })
-    ).rejects.toThrow("Invalid Lore live-page cursor.")
+    ).rejects.toThrow("Invalid Kennen live-page cursor.")
   })
 
   it("rethrows non-throwing missing-property payloads with Notion's validation shape", async () => {
@@ -110,7 +110,7 @@ describe("collectLivePages", () => {
 
   it("rejects opaque cursors whose skip list exceeds one Notion page", async () => {
     const oversized =
-      "lore-live-page:" +
+      "kennen-live-page:" +
       Buffer.from(
         JSON.stringify({
           v: 1,
@@ -127,12 +127,12 @@ describe("collectLivePages", () => {
         source: "test-source",
         query: vi.fn(),
       })
-    ).rejects.toThrow("Invalid Lore live-page cursor.")
+    ).rejects.toThrow("Invalid Kennen live-page cursor.")
   })
 
   it("prunes stale skip ids before emitting the next opaque cursor", async () => {
     const staleCursor =
-      "lore-live-page:" +
+      "kennen-live-page:" +
       Buffer.from(
         JSON.stringify({
           v: 1,

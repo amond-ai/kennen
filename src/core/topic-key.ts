@@ -2,7 +2,7 @@
  * Topic-key suggester.
  *
  * Pure heuristic over `(title, kind)` that returns a stable kebab-case
- * key suitable for `lore-memory action='save'`'s `topicKey` parameter
+ * key suitable for `kennen-memory action='save'`'s `topicKey` parameter
  * for durable non-state memory kinds.
  * The function is deliberately deterministic and
  * side-effect free: an agent calling this with the same input twice
@@ -137,7 +137,7 @@ const TOKEN_CAP = 4
 /**
  * Maximum character length of the slug *suffix* (excluding the family
  * prefix and the separating `/`). 48 keeps `decision/<48 chars>` under
- * the 60-char comfortable-read width that `lore-context action='wake-up'`
+ * the 60-char comfortable-read width that `kennen-context action='wake-up'`
  * listings target. When the joined slug exceeds the cap, it is truncated
  * at the last hyphen boundary that fits — preserving whole tokens — and
  * if no hyphen survives, hard-cut at the cap. A title whose first token

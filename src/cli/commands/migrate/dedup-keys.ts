@@ -1,7 +1,7 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 
 export async function runDedupKeysMigration(
-  services: LoreServices,
+  services: KennenServices,
   options: { merge?: boolean; dryRun?: boolean; yes?: boolean }
 ): Promise<void> {
   const result = await services.facts.backfillDedupKeys({

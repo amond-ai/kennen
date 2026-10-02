@@ -2,7 +2,7 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore profile` owns profile distribution. See [`profiles.md`](../../profiles.md) for
+`kennen profile` owns profile distribution. See [`profiles.md`](../../profiles.md) for
 resolution priority, install collision handling, allow-list behavior, and the
 migration DSL.
 
@@ -21,7 +21,7 @@ Contracts:
 - `profile install <path|git-url#sha>` stages, validates, computes manifest
   digest, surfaces collisions and shadowing, and writes or updates
   `profiles.lock.json`. Git installs must be pinned to a full commit SHA.
-- `profile set <name@version>` pins `.lore.yaml profile:` only after verifying
+- `profile set <name@version>` pins `.kennen.yaml profile:` only after verifying
   the selector resolves.
 - `profile migrate <name@version>` is dry-run by default. Apply mode takes the
   migration lock, verifies every step post-write, and writes a per-vault ledger.

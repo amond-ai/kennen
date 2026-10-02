@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-httpx-public-spec-v1
+name: kennen-longitudinal-httpx-public-spec-v1
 description: >-
   Public-spec HTTPX longitudinal suite. Scenarios are pinned before real
   upstream protocol fixes and verified through deterministic in-process tests
@@ -9,8 +9,8 @@ description: >-
 seededCorpus: ../vault-seeds/httpx-public-spec-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: httpx-cross-boundary-protocol-epic-v1
     difficulty: hard
@@ -66,10 +66,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_httpx.py b/lore_eval_hidden_httpx.py
+          diff --git a/kennen_eval_hidden_httpx.py b/kennen_eval_hidden_httpx.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_httpx.py
+          +++ b/kennen_eval_hidden_httpx.py
           @@ -0,0 +1,104 @@
           +import json
           +import os
@@ -213,7 +213,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_httpx.py
+          - kennen_eval_hidden_httpx.py
           - -q
         timeoutMs: 300000
 
@@ -261,10 +261,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_httpx_hooks.py b/lore_eval_hidden_httpx_hooks.py
+          diff --git a/kennen_eval_hidden_httpx_hooks.py b/kennen_eval_hidden_httpx_hooks.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_httpx_hooks.py
+          +++ b/kennen_eval_hidden_httpx_hooks.py
           @@ -0,0 +1,87 @@
           +import inspect
           +
@@ -366,6 +366,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_httpx_hooks.py
+          - kennen_eval_hidden_httpx_hooks.py
           - -q
         timeoutMs: 300000

@@ -221,7 +221,7 @@ export function formatWakeUpCoverage(
 ): string {
   const counts = coverage.sectionCounts
   const parts = [
-    "[lore] wakeup:",
+    "[kennen] wakeup:",
     `mode=${coverage.mode}`,
     `shape=${coverage.wakeUpMode}`,
     `ranked=${coverage.mode === "ranked"}`,

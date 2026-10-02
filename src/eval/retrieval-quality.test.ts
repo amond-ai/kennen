@@ -3,9 +3,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { Client, PageObjectResponse } from "@notionhq/client"
 import { describe, expect, it, vi } from "vitest"
-import { defaultFeatureFlags, type LoreFeatureFlags } from "../feature-flags.js"
+import { defaultFeatureFlags, type KennenFeatureFlags } from "../feature-flags.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import type { DatabaseRef, Project } from "../types.js"
 import {
   buildRetrievalQualityResult,
@@ -71,10 +71,10 @@ function memoryPage(id: string, title: string): PageObjectResponse {
 }
 
 function features(
-  overrides: Partial<Omit<LoreFeatureFlags, "runTool">> & {
-    runTool?: Partial<LoreFeatureFlags["runTool"]>
+  overrides: Partial<Omit<KennenFeatureFlags, "runTool">> & {
+    runTool?: Partial<KennenFeatureFlags["runTool"]>
   } = {}
-): LoreFeatureFlags {
+): KennenFeatureFlags {
   const defaults = defaultFeatureFlags()
   return {
     ...defaults,
@@ -109,8 +109,8 @@ function qualitySuite(): RetrievalQualitySuite {
   }
 }
 
-function makeLaneServices(featureFlags: LoreFeatureFlags): {
-  services: LoreServices
+function makeLaneServices(featureFlags: KennenFeatureFlags): {
+  services: KennenServices
   spies: {
     request: ReturnType<typeof vi.fn>
     search: ReturnType<typeof vi.fn>
@@ -169,7 +169,7 @@ function makeLaneServices(featureFlags: LoreFeatureFlags): {
         },
       },
       scopeContext: {},
-    } as unknown as LoreServices,
+    } as unknown as KennenServices,
     spies: {
       request,
       search,
@@ -278,7 +278,7 @@ describe("retrieval-quality eval runner", () => {
     const item = suite.cases[0]!
     const runs: Array<{
       lane: RetrievalQualityLane
-      featureFlags: LoreFeatureFlags
+      featureFlags: KennenFeatureFlags
       expected: "tools-run" | "data-source"
     }> = [
       {
@@ -328,7 +328,7 @@ describe("retrieval-quality eval runner", () => {
   })
 
   it("rejects suites that cannot measure recall@10", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-retrieval-quality-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-retrieval-quality-"))
     const suitePath = join(dir, "suite.yaml")
     await writeFile(
       suitePath,
@@ -353,7 +353,7 @@ cases:
   })
 
   it("rejects contradictory expected and harmful labels", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-retrieval-quality-labels-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-retrieval-quality-labels-"))
     const suitePath = join(dir, "suite.yaml")
     await writeFile(
       suitePath,
@@ -387,7 +387,7 @@ cases:
   })
 
   it("runs a suite and gates only required lanes", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-retrieval-quality-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-retrieval-quality-"))
     const suitePath = join(dir, "suite.yaml")
     const outPath = join(dir, "result.json")
     await writeFile(
@@ -425,7 +425,7 @@ cases:
       projects: {
         findByName: async (name: string) => (name === "Project" ? project : null),
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     const laneResults: Record<RetrievalQualityLane, string[]> = {
       product: ["target-memory"],
       "runtool-ai": ["target-memory"],

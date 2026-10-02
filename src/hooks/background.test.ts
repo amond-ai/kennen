@@ -47,8 +47,8 @@ import { join } from "node:path"
 // don't collide with sibling test files running in parallel. Hoisted so
 // the assignment runs before `./lock.js` reads the env var.
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-background-state-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-background-state-${process.pid}-${Date.now()}`
 })
 
 const realFs = vi.hoisted(() => {
@@ -141,7 +141,7 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     } catch {
       // Nothing to clean.
     }
-    tmpDir = realpathSync(mkdtempSync(join(tmpdir(), "lore-bg-test-")))
+    tmpDir = realpathSync(mkdtempSync(join(tmpdir(), "kennen-bg-test-")))
 
     envGuard.install()
 
@@ -171,13 +171,13 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     const env = lastSpawnEnv()
     expect(env["PATH"]).toBe("/usr/bin:/bin")
     expect(env["HOME"]).toBe("/home/test")
-    // The `LORE_AUTOSAVE=false` guard prevents the spawned `claude -p`
+    // The `KENNEN_AUTOSAVE=false` guard prevents the spawned `claude -p`
     // from triggering its own autosave on its Stop event — without
     // it, every spawn would recursively spawn another spawn.
-    expect(env["LORE_AUTOSAVE"]).toBe("false")
+    expect(env["KENNEN_AUTOSAVE"]).toBe("false")
     // The private sentinel tells the spawned agent's MCP child to fail
     // fast on init errors instead of staying alive as a diagnostic server.
-    expect(env["LORE_BACKGROUND_AGENT"]).toBe("true")
+    expect(env["KENNEN_BACKGROUND_AGENT"]).toBe("true")
   })
 
   it("forwards NOTION_API_TOKEN so an env-token operator's hook worker auths", () => {
@@ -208,7 +208,7 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     // `resolveOperatorBaseUrl` reads the four keys in priority
     // order. Forwarding all four keeps the spawned child on the
     // same priority chain as the foreground `resolveAuth`.
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
     process.env["NOTION_BASE_URL"] = "https://api-stg.notion.com"
     process.env["NOTION_API_BASE_URL"] = "https://api-legacy.notion.com"
     process.env["NOTION_ENV"] = "dev"
@@ -217,19 +217,19 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     expect(result.kind).toBe("spawned")
 
     const env = lastSpawnEnv()
-    expect(env["LORE_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
+    expect(env["KENNEN_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
     expect(env["NOTION_BASE_URL"]).toBe("https://api-stg.notion.com")
     expect(env["NOTION_API_BASE_URL"]).toBe("https://api-legacy.notion.com")
     expect(env["NOTION_ENV"]).toBe("dev")
   })
 
-  it("forwards LORE_USER_NAME (DEFERRED-ATTRIBUTION) when set so the spawned MCP child skips the users.me round-trip", () => {
-    process.env["LORE_USER_NAME"] = "Test User"
+  it("forwards KENNEN_USER_NAME (DEFERRED-ATTRIBUTION) when set so the spawned MCP child skips the users.me round-trip", () => {
+    process.env["KENNEN_USER_NAME"] = "Test User"
 
     const result = spawnBackgroundSave(tmpDir, "prompt body", undefined)
     expect(result.kind).toBe("spawned")
 
-    expect(lastSpawnEnv()["LORE_USER_NAME"]).toBe("Test User")
+    expect(lastSpawnEnv()["KENNEN_USER_NAME"]).toBe("Test User")
   })
 
   it("does NOT inject any forwarded key when none are set in the parent env (no empty-string injection)", () => {
@@ -251,14 +251,14 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     // chain in the spawned child. Same posture as `buildMcpEnv` in
     // `install.ts` — empty strings drop from the forward.
     process.env["NOTION_API_TOKEN"] = ""
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
 
     const result = spawnBackgroundSave(tmpDir, "prompt body", undefined)
     expect(result.kind).toBe("spawned")
 
     const env = lastSpawnEnv()
     expect("NOTION_API_TOKEN" in env).toBe(false)
-    expect(env["LORE_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
+    expect(env["KENNEN_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
   })
 
   it("forwards the full allowlist when the operator has a complete dev shell environment", () => {
@@ -267,14 +267,14 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     // forwarder fails one assertion and surfaces the dropped key by
     // name in the diff.
     process.env["NOTION_API_TOKEN"] = "secret_api"
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
     process.env["NOTION_WORKSPACE_ID"] = "ws_dev"
     process.env["NOTION_ENV"] = "dev"
     process.env["NOTION_BASE_URL"] = "https://api-dev.notion.com"
     process.env["NOTION_API_BASE_URL"] = "https://api-dev.notion.com"
-    process.env["LORE_USER_NAME"] = "Test User"
-    process.env["LORE_MCP_WRITE_BUDGET"] = "500"
-    process.env["LORE_MCP_BUDGET_STATE_FILE"] = "/tmp/state.json"
+    process.env["KENNEN_USER_NAME"] = "Test User"
+    process.env["KENNEN_MCP_WRITE_BUDGET"] = "500"
+    process.env["KENNEN_MCP_BUDGET_STATE_FILE"] = "/tmp/state.json"
 
     const result = spawnBackgroundSave(tmpDir, "prompt body", undefined)
     expect(result.kind).toBe("spawned")
@@ -285,19 +285,19 @@ describe("spawnBackgroundSave safeEnv (#188)", () => {
     }
   })
 
-  it("does not forward LORE_AGENT_NAME — agent identity rides in the prompt text, not the spawn env", () => {
+  it("does not forward KENNEN_AGENT_NAME — agent identity rides in the prompt text, not the spawn env", () => {
     // The hook's prompt text already carries `Agent: <name>` and the
     // `pass agent: "..." verbatim` instruction, and the MCP boundary
     // applies the override via `args.agent` — forwarding via env
     // would double up and conflict with the prompt-text path.
-    process.env["LORE_AGENT_NAME"] = "Codex"
+    process.env["KENNEN_AGENT_NAME"] = "Codex"
     try {
       const result = spawnBackgroundSave(tmpDir, "prompt body", undefined)
       expect(result.kind).toBe("spawned")
 
-      expect("LORE_AGENT_NAME" in lastSpawnEnv()).toBe(false)
+      expect("KENNEN_AGENT_NAME" in lastSpawnEnv()).toBe(false)
     } finally {
-      delete process.env["LORE_AGENT_NAME"]
+      delete process.env["KENNEN_AGENT_NAME"]
     }
   })
 })
@@ -318,7 +318,7 @@ describe("spawnBackgroundSave authSource partition (#475)", () => {
     } catch {
       // Nothing to clean.
     }
-    tmpDir = realpathSync(mkdtempSync(join(tmpdir(), "lore-bg-authsource-")))
+    tmpDir = realpathSync(mkdtempSync(join(tmpdir(), "kennen-bg-authsource-")))
 
     envGuard.install()
 
@@ -361,12 +361,12 @@ describe("spawnBackgroundSave authSource partition (#475)", () => {
     // operator-controlled selectors so the child's loadNtnToken
     // picks the same workspace as the foreground.
     process.env["NOTION_API_TOKEN"] = "secret_canonical_token"
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
     process.env["NOTION_WORKSPACE_ID"] = "ws_team_alpha"
     process.env["NOTION_ENV"] = "dev"
     process.env["NOTION_BASE_URL"] = "https://api-dev.notion.com"
     process.env["NOTION_API_BASE_URL"] = "https://api-dev.notion.com"
-    process.env["LORE_USER_NAME"] = "Test User"
+    process.env["KENNEN_USER_NAME"] = "Test User"
 
     const result = spawnBackgroundSave(tmpDir, "prompt body", undefined, {
       authSource: "ntn-auth-json",
@@ -374,12 +374,12 @@ describe("spawnBackgroundSave authSource partition (#475)", () => {
     expect(result.kind).toBe("spawned")
 
     const env = lastSpawnEnv()
-    expect(env["LORE_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
+    expect(env["KENNEN_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
     expect(env["NOTION_WORKSPACE_ID"]).toBe("ws_team_alpha")
     expect(env["NOTION_ENV"]).toBe("dev")
     expect(env["NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
     expect(env["NOTION_API_BASE_URL"]).toBe("https://api-dev.notion.com")
-    expect(env["LORE_USER_NAME"]).toBe("Test User")
+    expect(env["KENNEN_USER_NAME"]).toBe("Test User")
   })
 
   it("under authSource=env-notion-api-token, forwards NOTION_API_TOKEN as today", () => {
@@ -399,14 +399,14 @@ describe("spawnBackgroundSave authSource partition (#475)", () => {
 
   it("with authSource omitted, forwards every set runtime key", () => {
     process.env["NOTION_API_TOKEN"] = "secret_canonical_token"
-    process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+    process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
 
     const result = spawnBackgroundSave(tmpDir, "prompt body", undefined)
     expect(result.kind).toBe("spawned")
 
     const env = lastSpawnEnv()
     expect(env["NOTION_API_TOKEN"]).toBe("secret_canonical_token")
-    expect(env["LORE_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
+    expect(env["KENNEN_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
   })
 })
 
@@ -416,7 +416,7 @@ describe("spawnBackgroundSave hook-state log modes", () => {
   beforeEach(() => {
     rmSync(getStateDir(), { recursive: true, force: true })
     mkdirSync(getStateDir(), { recursive: true })
-    tmpDir = realpathSync(mkdtempSync(join(tmpdir(), "lore-bg-log-mode-")))
+    tmpDir = realpathSync(mkdtempSync(join(tmpdir(), "kennen-bg-log-mode-")))
 
     spawnMock.mockReset()
     spawnMock.mockImplementation(() => fakeLiveChild())
@@ -493,7 +493,7 @@ function setupPrepProbe(opts: {
         throw new Error(`simulated openSync failure at call ${n}`)
       }
       const fd = realFs.openSync(path, flags as never, mode as never)
-      if (typeof path === "string" && path.includes("lore-prompt-")) {
+      if (typeof path === "string" && path.includes("kennen-prompt-")) {
         probe.paths.push(path)
         probe.fds.push(fd)
       }
@@ -623,7 +623,7 @@ describe("spawnBackgroundSave prompt-file cleanup on prep failure (#195)", () =>
       ) => {
         openCalls++
         const fd = realFs.openSync(path, flags as never, mode as never)
-        if (typeof path === "string" && path.includes("lore-prompt-")) {
+        if (typeof path === "string" && path.includes("kennen-prompt-")) {
           probe.paths.push(path)
           probe.fds.push(fd)
         }
@@ -648,7 +648,9 @@ describe("spawnBackgroundSave prompt-file cleanup on prep failure (#195)", () =>
       expect(probe.closedFds).toContain(probe.fds[1]!)
       // Production unlink (1st call) threw; cleanup retried (2nd call), which
       // also threw and was swallowed. spawnBackgroundSave returned cleanly.
-      expect(probe.unlinkedPaths.filter((p) => p.includes("lore-prompt-")).length).toBe(2)
+      expect(probe.unlinkedPaths.filter((p) => p.includes("kennen-prompt-")).length).toBe(
+        2
+      )
     } finally {
       // The mock threw on every unlink, so the file was never actually
       // removed. Clean up directly even if an assertion above failed —

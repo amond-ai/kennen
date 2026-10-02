@@ -32,7 +32,7 @@ describe("hook cost events", () => {
   })
 
   function tempDir(): string {
-    const dir = mkdtempSync(join(tmpdir(), "lore-hook-cost-events-"))
+    const dir = mkdtempSync(join(tmpdir(), "kennen-hook-cost-events-"))
     dirs.push(dir)
     return dir
   }
@@ -163,7 +163,7 @@ describe("hook cost events", () => {
     expect(wakeupEvent).not.toHaveProperty("sessionId")
   })
 
-  it("records longitudinal eval mining as Lore-owned CLI model cost", async () => {
+  it("records longitudinal eval mining as Kennen-owned CLI model cost", async () => {
     const root = tempDir()
     const costTracking = resolveCostTracking(
       {

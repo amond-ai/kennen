@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-requests-epic-v2
+name: kennen-longitudinal-requests-epic-v2
 description: >-
   Cross-boundary Requests redirect-resolution security epic. The single
   scenario is pinned before a real upstream credential-leak fix and verified
@@ -10,8 +10,8 @@ description: >-
 seededCorpus: ../vault-seeds/requests-epic-v2.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: requests-cross-host-redirect-security-epic-v2
     difficulty: hard
@@ -74,11 +74,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/tests/test_lore_hidden_redirect_security.py b/tests/test_lore_hidden_redirect_security.py
+          diff --git a/tests/test_kennen_hidden_redirect_security.py b/tests/test_kennen_hidden_redirect_security.py
           new file mode 100644
           index 0000000..4a068c0
           --- /dev/null
-          +++ b/tests/test_lore_hidden_redirect_security.py
+          +++ b/tests/test_kennen_hidden_redirect_security.py
           @@ -0,0 +1,140 @@
           +import io
           +import os
@@ -231,6 +231,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - tests/test_lore_hidden_redirect_security.py
+          - tests/test_kennen_hidden_redirect_security.py
           - -q
         timeoutMs: 300000

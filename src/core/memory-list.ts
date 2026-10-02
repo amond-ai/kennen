@@ -25,7 +25,7 @@ import {
   isSqlValidationError,
   logRunToolFallback,
 } from "../notion/runtool/error-helpers.js"
-import type { LoreFeatureFlags } from "../feature-flags.js"
+import type { KennenFeatureFlags } from "../feature-flags.js"
 import { MEMORY_CLEANUP_ORPHAN_SENTINEL } from "./near-duplicate.js"
 import { todayUtc } from "./task.js"
 import { withCleanupOrphanExclusion } from "./memory-filters.js"
@@ -90,9 +90,9 @@ function isKnownAbsentHydrationError(err: unknown): boolean {
 }
 
 function logNearDuplicateHydrationPartialFailure(id: string, err: unknown): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] partial-failure: source=near-duplicate-hydrate ` +
+    `[kennen] partial-failure: source=near-duplicate-hydrate ` +
       `pageId=${oneLine(id)} error=${oneLine(redactDebugError(err))}\n`
   )
 }
@@ -165,7 +165,7 @@ export class MemoryList {
   constructor(
     private readonly client: Client,
     private readonly db: DatabaseRef,
-    private readonly features: LoreFeatureFlags,
+    private readonly features: KennenFeatureFlags,
     private readonly getScopeContext: () => MemoryScopeContext,
     private readonly isScopeFilterEnabled: () => boolean,
     private readonly pageToMemory: PageToMemory,
@@ -466,7 +466,7 @@ export class MemoryList {
 
     // Resurfaced cleanup-orphan exclusion. Pushed
     // server-side here so every consumer of `list` — including
-    // `lore-query action='recall'`, the wake-up related-memories
+    // `kennen-query action='recall'`, the wake-up related-memories
     // pass, the autosave-learning probe, and `findNearDuplicates` —
     // uniformly drops sentinel-tagged rows. Without this, an orphan
     // restored from Notion's trash would surface in recall, wake-up,
@@ -476,7 +476,7 @@ export class MemoryList {
     // Default scope filter. Composed before the orphan
     // exclusion so both clauses live in the same top-level `and`.
     // `includeOutOfScope: true` skips the scope clause for audit
-    // paths (`lore status` expiring-rows surface, conflict scanner,
+    // paths (`kennen status` expiring-rows surface, conflict scanner,
     // near-duplicate probe pool).
     const filter = buildFilter(filters)
     const fallbackFilter =

@@ -37,18 +37,18 @@ export interface CursorMcpEntry {
  * project-scoped default writes the entry into the project's
  * .cursor/mcp.json which is shared across every engineer
  * with a checkout, so the PnP shape omits machine-specific anchors
- * (`cwd`, `LORE_CONFIG_ROOT`) and trusts Cursor's launch cwd to land
+ * (`cwd`, `KENNEN_CONFIG_ROOT`) and trusts Cursor's launch cwd to land
  * inside the PnP project. The global shape writes to
  * ~/.cursor/mcp.json which is per-machine — Cursor launches the
  * server from its own process cwd at fire time, which is NOT
  * guaranteed to be inside any PnP project. Under PnP + global, the
  * entry has to anchor itself with `cwd` (so `yarn run -T` finds the
- * right `.pnp.cjs` upward) and keep `LORE_CONFIG_ROOT` (so the
- * spawned MCP child resolves the right .lore.yaml); without those
+ * right `.pnp.cjs` upward) and keep `KENNEN_CONFIG_ROOT` (so the
+ * spawned MCP child resolves the right .kennen.yaml); without those
  * anchors, the global launcher fires from Cursor's process cwd and
- * neither yarn nor .lore.yaml discovery succeeds.
+ * neither yarn nor .kennen.yaml discovery succeeds.
  *
- * `launchCwd` and `LORE_CONFIG_ROOT` derive from DIFFERENT roots and
+ * `launchCwd` and `KENNEN_CONFIG_ROOT` derive from DIFFERENT roots and
  * the function won't conflate them:
  *
  * - `launchCwd` must sit at or below the Yarn PnP workspace root
@@ -57,26 +57,26 @@ export interface CursorMcpEntry {
  *   guarantees this by passing `context.projectDir` — the exact
  *   directory `detectYarnPnp` was called against, so when it
  *   returned `true`, the directory is at-or-below the PnP root.
- * - `LORE_CONFIG_ROOT` (sourced from `configRoot`) must point at
- *   the .lore.yaml directory. `findConfigFile` walks upward, and
- *   .lore.yaml can legitimately live ABOVE the PnP workspace —
+ * - `KENNEN_CONFIG_ROOT` (sourced from `configRoot`) must point at
+ *   the .kennen.yaml directory. `findConfigFile` walks upward, and
+ *   .kennen.yaml can legitimately live ABOVE the PnP workspace —
  *   for example, a monorepo umbrella containing multiple PnP
- *   workspaces with one shared .lore.yaml at the umbrella root.
+ *   workspaces with one shared .kennen.yaml at the umbrella root.
  *   In that layout, deriving `cwd` from `configRoot` would anchor
  *   the launcher to a directory OUTSIDE the PnP workspace, and
  *   `yarn run -T` would never walk into `.pnp.cjs` territory.
  *
  * `launchCwd` defaults to `configRoot` when omitted — the safe
- * default for the typical case where .lore.yaml lives inside the
+ * default for the typical case where .kennen.yaml lives inside the
  * PnP workspace. Production callers (`runCursorInstall`) pass
  * `context.projectDir` explicitly so the split-roots case (config
  * above workspace) doesn't break.
  *
- * The bare (non-PnP) shape already retains `LORE_CONFIG_ROOT` on
+ * The bare (non-PnP) shape already retains `KENNEN_CONFIG_ROOT` on
  * both project and global paths because `omitConfigRoot` only
  * triggers under `shape === "yarn"`. The bare path doesn't need
- * `cwd` because `lore` is on PATH and the spawned MCP child reads
- * `LORE_CONFIG_ROOT` to short-circuit config discovery; `launchCwd`
+ * `cwd` because `kennen` is on PATH and the spawned MCP child reads
+ * `KENNEN_CONFIG_ROOT` to short-circuit config discovery; `launchCwd`
  * is ignored on the bare path.
  */
 export interface BuildCursorMcpEntryOptions {
@@ -92,7 +92,7 @@ export interface BuildCursorMcpEntryOptions {
   /**
    * Pass-through to `buildMcpEnv`'s `notionBaseUrlLiteral` option.
    * See `BuildMcpEnvOptions.notionBaseUrlLiteral` for the rationale —
-   * `lore install --dev` populates this so the spawned MCP child
+   * `kennen install --dev` populates this so the spawned MCP child
    * targets the dev base URL via a literal env entry rather than a
    * `${VAR}` placeholder that would silently degrade to prod on
    * operator shells without the matching signal.
@@ -109,7 +109,7 @@ export function buildCursorMcpEntry(
   const useGlobalScope = options.useGlobalScope ?? false
   // PnP omission rationale only applies to committed config. Under
   // global scope the entry is machine-local; an absolute
-  // `LORE_CONFIG_ROOT` is the right anchor, not a portability leak.
+  // `KENNEN_CONFIG_ROOT` is the right anchor, not a portability leak.
   const omitConfigRoot = shape === "yarn" && !useGlobalScope
   const build = buildMcpEnv(configRoot, envSource, {
     omitConfigRoot,
@@ -120,20 +120,20 @@ export function buildCursorMcpEntry(
   if (shape === "yarn") {
     const entry: CursorMcpEntry = {
       command: "yarn",
-      args: ["run", "-T", "lore", "mcp"],
+      args: ["run", "-T", "kennen", "mcp"],
       env,
     }
     if (useGlobalScope) {
       // Anchor `yarn run -T` to a directory inside the PnP
       // workspace. `launchCwd` (typically `context.projectDir`)
-      // can differ from `configRoot` when .lore.yaml lives
+      // can differ from `configRoot` when .kennen.yaml lives
       // above the workspace. See `BuildCursorMcpEntryOptions`
       // for the split-roots rationale.
       entry.cwd = toPortablePath(options.launchCwd ?? configRoot)
     }
     return entry
   }
-  return { command: "lore", args: ["mcp"], env }
+  return { command: "kennen", args: ["mcp"], env }
 }
 
 export function buildLegacyCursorMcpEntry(
@@ -231,22 +231,22 @@ export async function runCursorInstall(
 ): Promise<void> {
   const cursorMcpJson = await readJsonSafe(cursorMcpPath)
   const mcpServers = (cursorMcpJson.mcpServers ?? {}) as Record<string, unknown>
-  const existingMcp = mcpServers["lore"] as Record<string, unknown> | undefined
+  const existingMcp = mcpServers["kennen"] as Record<string, unknown> | undefined
 
   const portableMcpJsPath = toPortablePath(context.mcpJsPath)
   const portablePkgRoot = toPortablePath(context.pkgRoot)
   const binShape: BinDispatchShape = context.yarnPnp ? "yarn" : "bare"
   // Under `--cursor-global` + PnP, the entry needs to carry `cwd`
-  // and `LORE_CONFIG_ROOT` because Cursor's launch cwd is not
+  // and `KENNEN_CONFIG_ROOT` because Cursor's launch cwd is not
   // guaranteed to be inside the PnP project at fire time.
   //
-  // `launchCwd` and `LORE_CONFIG_ROOT` (= configRoot) thread
+  // `launchCwd` and `KENNEN_CONFIG_ROOT` (= configRoot) thread
   // separately. `projectDir` is the directory `detectYarnPnp`
   // resolved against, so when `context.yarnPnp === true` it sits
   // at or below the PnP root and `yarn run -T`'s upward walk is
   // guaranteed to reach `.pnp.cjs`. `configRoot` may live ABOVE
-  // the PnP workspace when .lore.yaml resolves to a parent
-  // (monorepo umbrella with shared lore config); using it for
+  // the PnP workspace when .kennen.yaml resolves to a parent
+  // (monorepo umbrella with shared kennen config); using it for
   // `cwd` would anchor the launcher OUTSIDE the workspace and
   // re-introduce the failure mode this fix exists to close. See
   // `BuildCursorMcpEntryOptions` for the full rationale.
@@ -286,7 +286,7 @@ export async function runCursorInstall(
   }
 
   console.log()
-  const proceed = await confirm(rl, "Install Lore Cursor integration for this project?")
+  const proceed = await confirm(rl, "Install Kennen Cursor integration for this project?")
   if (!proceed) {
     console.log("  Skipped.")
     return
@@ -295,7 +295,7 @@ export async function runCursorInstall(
   const mergedMcpJson: Record<string, unknown> = { ...cursorMcpJson }
   mergedMcpJson.mcpServers = {
     ...((cursorMcpJson.mcpServers as Record<string, unknown>) ?? {}),
-    lore: desiredMcpEntry,
+    kennen: desiredMcpEntry,
   }
 
   console.log()
@@ -308,11 +308,11 @@ export async function runCursorInstall(
     !portableMcpJsPath.startsWith("${HOME}")
   ) {
     console.warn()
-    console.warn("  Warning: lore is installed outside your home directory")
+    console.warn("  Warning: kennen is installed outside your home directory")
     console.warn(`    (${context.pkgRoot}).`)
     console.warn("  The generated .cursor/mcp.json uses an absolute path and is not")
     console.warn("  portable across machines - avoid committing it, or reinstall")
-    console.warn("  lore under ~/.lore so the path can use ${HOME}.")
+    console.warn("  kennen under ~/.kennen so the path can use ${HOME}.")
   }
 
   console.log()
@@ -321,8 +321,8 @@ export async function runCursorInstall(
   )
   console.log(
     "  Cursor does not currently support Stop hooks. The Stop-triggered\n" +
-      "  autosave and the detached auto-digest spawn will not run when lore is\n" +
-      "  invoked from Cursor. Lore tools work the same; only the background\n" +
+      "  autosave and the detached auto-digest spawn will not run when kennen is\n" +
+      "  invoked from Cursor. Kennen tools work the same; only the background\n" +
       "  session-close persistence differs."
   )
   console.log("  Restart Cursor for changes to take effect.")

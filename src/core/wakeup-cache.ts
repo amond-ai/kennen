@@ -22,11 +22,11 @@
  * digest markers) is a follow-up — out of scope for this issue.
  *
  * **Write-epoch invalidation.** A monotonic counter (`writeEpoch`) is
- * bumped by every MCP tool action that mutates a `lore-*` write
- * surface — `lore-memory action='save' | 'update' | 'archive' |
- * 'compare' | 'approve' | 'reject'`, `lore-fact action='create' |
- * 'invalidate' | 'extend'`, `lore-task action='create' | 'update' |
- * 'close'`, `lore-decision action='create' | 'supersede' | 'review'`.
+ * bumped by every MCP tool action that mutates a `kennen-*` write
+ * surface — `kennen-memory action='save' | 'update' | 'archive' |
+ * 'compare' | 'approve' | 'reject'`, `kennen-fact action='create' |
+ * 'invalidate' | 'extend'`, `kennen-task action='create' | 'update' |
+ * 'close'`, `kennen-decision action='create' | 'supersede' | 'review'`.
  * `loadWakeUpData` captures the epoch at dispatch and only commits
  * its result to the cache if `writeEpoch === startEpoch` after
  * fan-out — a capture-then-check sandwich at the cache layer (not to
@@ -48,8 +48,8 @@
  * pre-write validation failure costs one fan-out next time wake-up
  * fires; serving stale state after a partial write is silently
  * incorrect. Conservative wins. Handlers that genuinely did NOT
- * touch Notion (the assertive-reuse branch in `lore-task
- * action='create'`, the already-judged branch in `lore-memory
+ * touch Notion (the assertive-reuse branch in `kennen-task
+ * action='create'`, the already-judged branch in `kennen-memory
  * action='compare'`) opt out of the bump by tagging the result with
  * `noopWrite: true`.
  *
@@ -100,7 +100,7 @@ import type { WakeUpData, WakeUpOptions } from "./wakeup.js"
 /**
  * TTL and capacity defaults are module-private. They aren't tunable
  * via env today (no real-vault data has motivated knobs); a future
- * `LORE_WAKEUP_CACHE_TTL_MS` would re-export them. Tests pass `ttlMs`
+ * `KENNEN_WAKEUP_CACHE_TTL_MS` would re-export them. Tests pass `ttlMs`
  * and `max` through the constructor instead.
  */
 const WAKEUP_CACHE_TTL_MS = 30_000

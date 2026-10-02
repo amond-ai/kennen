@@ -1,5 +1,5 @@
 /**
- * Compatibility barrel for Lore shared types and policy constants.
+ * Compatibility barrel for Kennen shared types and policy constants.
  *
  * Concern-specific modules live under `types/` and `policy/`; keep this
  * barrel so existing internal and external imports remain stable.

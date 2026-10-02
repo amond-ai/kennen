@@ -3,7 +3,7 @@ import type { PageObjectResponse, QueryDataSourceResponse } from "@notionhq/clie
 import { isLiveFullPage } from "./extractors.js"
 import { requireQueryResults } from "./query-response.js"
 
-const LIVE_PAGE_CURSOR_PREFIX = "lore-live-page:"
+const LIVE_PAGE_CURSOR_PREFIX = "kennen-live-page:"
 const LIVE_PAGE_QUERY_SIZE = 100
 
 export const LIVE_PAGE_REFILL_MAX_PAGES = 5
@@ -46,7 +46,7 @@ export async function collectLivePages(input: {
    * reader's narrow kinds" but cannot bind kind+key together.
    * `extraFilter` enforces the kind+key binding client-side: a row
    * with `Scope Kind = "session"` whose `Scope Key` does not match
-   * the reader's `LORE_SESSION_ID` drops here, the walker
+   * the reader's `KENNEN_SESSION_ID` drops here, the walker
    * over-fetches by one slot, and the result still hits the
    * caller's requested limit.
    */
@@ -155,7 +155,7 @@ function decodeLivePageCursor(cursor: string | undefined): {
     const raw = Buffer.from(encoded, "base64url").toString("utf8")
     parsed = JSON.parse(raw) as Partial<LivePageCursorPayload>
   } catch {
-    throw new Error("Invalid Lore live-page cursor.")
+    throw new Error("Invalid Kennen live-page cursor.")
   }
   if (
     parsed.v !== 1 ||
@@ -166,7 +166,7 @@ function decodeLivePageCursor(cursor: string | undefined): {
     parsed.skipIds.length > LIVE_PAGE_QUERY_SIZE ||
     !parsed.skipIds.every((id): id is string => typeof id === "string")
   ) {
-    throw new Error("Invalid Lore live-page cursor.")
+    throw new Error("Invalid Kennen live-page cursor.")
   }
 
   return {
@@ -181,7 +181,7 @@ function debugLogLivePageCapFired(info: {
   accumulated: number
   limit: number
 }): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(formatLivePageCapLine(info))
 }
 
@@ -192,7 +192,7 @@ function formatLivePageCapLine(info: {
   limit: number
 }): string {
   return (
-    `[lore] live-page-refill-cap-fired: source=${info.source} ` +
+    `[kennen] live-page-refill-cap-fired: source=${info.source} ` +
     `pages=${info.pages} accumulated=${info.accumulated} limit=${info.limit}\n`
   )
 }

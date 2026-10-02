@@ -2,14 +2,14 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore mine` walks a directory tree, filters mineable text files, and creates or
+`kennen mine` walks a directory tree, filters mineable text files, and creates or
 updates one `source: "file"` memory per file.
 
 Discovery:
 
 - Skips local tooling and generated directories such as `node_modules`, `dist`,
   `build`, `.git`, `.next`, and `__pycache__`.
-- Skips local config and lockfiles such as `.lore.yaml`, `package-lock.json`,
+- Skips local config and lockfiles such as `.kennen.yaml`, `package-lock.json`,
   `yarn.lock`, and `pnpm-lock.yaml`.
 - Indexes recognized text extensions plus explicit basenames such as
   `Dockerfile` and `Containerfile`.
@@ -73,7 +73,7 @@ Failure isolation and concurrency:
 
 Concurrent runs:
 
-- Parallel `lore mine` runs against the same vault, project, and file serialize
+- Parallel `kennen mine` runs against the same vault, project, and file serialize
   through a per-file lock around the `findExistingFileMemory -> create-or-update`
   critical section.
 - Fresh creates hold the lock through a short stabilization delay so Notion's

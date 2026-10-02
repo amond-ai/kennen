@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-werkzeug-modelhard-v1
+name: kennen-longitudinal-werkzeug-modelhard-v1
 description: >-
   Model-hard Werkzeug longitudinal suite. Scenarios are pinned before real
   upstream URL-encoding and cookie fixes whose correct behavior is per-component
@@ -10,8 +10,8 @@ description: >-
 seededCorpus: ../vault-seeds/werkzeug-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: werkzeug-iri-uri-component-quoting-v1
     difficulty: hard
@@ -59,10 +59,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_urls.py b/lore_eval_hidden_urls.py
+          diff --git a/kennen_eval_hidden_urls.py b/kennen_eval_hidden_urls.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_urls.py
+          +++ b/kennen_eval_hidden_urls.py
           @@ -0,0 +1,52 @@
           +from werkzeug import urls
           +
@@ -132,7 +132,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_urls.py
+          - kennen_eval_hidden_urls.py
           - -q
         timeoutMs: 180000
 
@@ -182,10 +182,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_cookie.py b/lore_eval_hidden_cookie.py
+          diff --git a/kennen_eval_hidden_cookie.py b/kennen_eval_hidden_cookie.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_cookie.py
+          +++ b/kennen_eval_hidden_cookie.py
           @@ -0,0 +1,44 @@
           +from werkzeug.http import dump_cookie
           +from werkzeug.http import parse_cookie
@@ -242,6 +242,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_cookie.py
+          - kennen_eval_hidden_cookie.py
           - -q
         timeoutMs: 180000

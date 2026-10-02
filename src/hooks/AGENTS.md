@@ -5,13 +5,13 @@
 
 ## Purpose
 
-This directory implements Lore's hook runner. Default Claude Code and Codex
-installs invoke `lore hooks <action>` at defined lifecycle events, or
-`yarn run -T lore hooks <action>` under Yarn PnP. Older absolute-path installs
+This directory implements Kennen's hook runner. Default Claude Code and Codex
+installs invoke `kennen hooks <action>` at defined lifecycle events, or
+`yarn run -T kennen hooks <action>` under Yarn PnP. Older absolute-path installs
 invoke `node dist/hooks/helpers.js <action>` through the checked-in
 `hooks/*.sh` scripts.
 
-The helper reads the hook event from stdin or env vars, loads `.lore.yaml`, and
+The helper reads the hook event from stdin or env vars, loads `.kennen.yaml`, and
 routes to one of the supported handlers:
 
 | Action        | Runtime flow                                                    | Detailed contract                                            |
@@ -46,11 +46,11 @@ unless it is required to operate the current runtime.
 | `conversation-mining.ts`       | Awaitable counterpart to the detached background save spawn for deterministic replays and eval harnesses |
 | `transcript.ts`                | Parse Claude Code and Codex transcript formats into messages                                             |
 | `lock.ts`                      | Per-session concurrency guard for background saves; owns `getStateDir()` for hook state                  |
-| `config.ts`                    | `.lore.yaml` `hooks` section defaults and merge logic                                                    |
+| `config.ts`                    | `.kennen.yaml` `hooks` section defaults and merge logic                                                  |
 | `digest-scheduler.ts`          | `fireDigestIfStale` in-child digest logic and `scheduleAutoDigestSpawn` parent-side fork                 |
 | `digest-marker.ts`             | Per-config-root debounce marker for the auto-digest scheduler                                            |
 | `drift-marker.ts`              | Per-config-root debounce marker for schema drift checks                                                  |
-| `background-failure-marker.ts` | Bounded per-config-root health markers rendered by `lore status`                                         |
+| `background-failure-marker.ts` | Bounded per-config-root health markers rendered by `kennen status`                                       |
 | `marker-key.ts`                | Shared `configKey()` and `safeFilenameSegment()` helpers for marker, lock, log, and count files          |
 
 New marker modules under `src/hooks/` derive their config key and sanitize
@@ -59,7 +59,7 @@ regex in another module. The lock, log, count, and prompt identity paths rely on
 the same policy so malformed `sessionId` values cannot escape `getStateDir()`
 or inject prompt content into a spawned background agent.
 
-The marker sanitizer is POSIX-oriented. Lore's hook runner already assumes POSIX
+The marker sanitizer is POSIX-oriented. Kennen's hook runner already assumes POSIX
 for process liveness probing and temp-dir state, so a future Windows port should
 add reserved-device-name handling at the same boundary instead of widening the
 regex.

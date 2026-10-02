@@ -1,7 +1,7 @@
 # Support Profile
 
 The support profile is a first-party pilot profile for support escalation
-memory. It keeps Lore's five-database core unchanged while replacing the
+memory. It keeps Kennen's five-database core unchanged while replacing the
 write-time tag/entity/predicate vocabulary with support-oriented terms and
 adding a few optional Notion properties for support triage.
 

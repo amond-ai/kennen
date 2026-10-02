@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-github-cli-contracts-v2
+name: kennen-longitudinal-github-cli-contracts-v2
 description: >-
   GitHub CLI command/output-contract longitudinal suite, batch 2. Phase B asks
   for a concrete behavior whose non-inferable rule (an anchored qualifier-reject
@@ -14,8 +14,8 @@ description: >-
 seededCorpus: ../vault-seeds/github-cli-contracts-v2.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: gh-cli-issue-list-reject-pr-search-qualifiers-v2
     difficulty: hard
@@ -70,11 +70,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,26 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -103,7 +103,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/issue/list -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/issue/list -count=1
         timeoutMs: 300000
   - id: gh-cli-cache-delete-succeed-on-no-caches-exit-v2
     difficulty: hard
@@ -156,11 +156,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,25 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -189,7 +189,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/cache/delete -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/cache/delete -count=1
         timeoutMs: 300000
   - id: gh-cli-cache-delete-ref-id-guard-ordering-v2
     difficulty: hard
@@ -242,11 +242,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,24 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -273,7 +273,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/cache/delete -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/cache/delete -count=1
         timeoutMs: 300000
   - id: gh-cli-pr-reopen-dry-run-state-exit-asymmetry-v2
     difficulty: hard
@@ -326,11 +326,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,26 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -359,7 +359,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/pr/reopen -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/pr/reopen -count=1
         timeoutMs: 300000
   - id: gh-cli-gist-rename-dry-run-empty-file-delete-payload-v2
     difficulty: hard
@@ -413,11 +413,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,25 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -446,7 +446,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/gist/rename -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/gist/rename -count=1
         timeoutMs: 300000
   - id: gh-cli-ssh-key-add-type-endpoint-routing-dry-run-v2
     difficulty: hard
@@ -499,11 +499,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,25 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -532,7 +532,7 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/ssh-key/add -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/ssh-key/add -count=1
         timeoutMs: 300000
   - id: gh-cli-repo-set-default-dry-run-base-literal-resolution-v2
     difficulty: hard
@@ -586,11 +586,11 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/.lore-hidden-verify.mjs b/.lore-hidden-verify.mjs
+          diff --git a/.kennen-hidden-verify.mjs b/.kennen-hidden-verify.mjs
           new file mode 100644
           index 0000000..0000000
           --- /dev/null
-          +++ b/.lore-hidden-verify.mjs
+          +++ b/.kennen-hidden-verify.mjs
           @@ -0,0 +1,24 @@
           +import fs from 'node:fs';
           +import path from 'node:path';
@@ -618,5 +618,5 @@ scenarios:
         command: bash
         args:
           - -lc
-          - node .lore-hidden-verify.mjs && go test ./pkg/cmd/repo/setdefault -count=1
+          - node .kennen-hidden-verify.mjs && go test ./pkg/cmd/repo/setdefault -count=1
         timeoutMs: 300000

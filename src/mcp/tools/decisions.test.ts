@@ -133,7 +133,7 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const create = mockServer.getActionHandler("lore-decision", "create")
+    const create = mockServer.getActionHandler("kennen-decision", "create")
 
     const result = await create({
       decision: "New decision",
@@ -181,7 +181,7 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const create = mockServer.getActionHandler("lore-decision", "create")
+    const create = mockServer.getActionHandler("kennen-decision", "create")
 
     const result = await create({
       decision: "New decision",
@@ -228,7 +228,7 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const createDecision = mockServer.getActionHandler("lore-decision", "create")
+    const createDecision = mockServer.getActionHandler("kennen-decision", "create")
 
     const result = await createDecision({
       decision: "unscoped topic skip",
@@ -292,9 +292,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    await loreDecide({
+    await kennenDecide({
       decision: "New decision",
       rationale: "Because reasons",
       affects: ["AuthService"],
@@ -363,9 +363,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "Adopt cache",
       rationale: "Because reasons",
       affects: ["AuthService", "CacheLayer", "Queue"],
@@ -445,9 +445,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "Adopt cache",
       rationale: "Because reasons",
       supersedesIds: ["dec-a", "dec-b", "dec-c"],
@@ -531,9 +531,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "Adopt cache",
       rationale: "Because reasons",
       supersedesIds: ["dec-a", "dec-b", "dec-c"],
@@ -559,7 +559,7 @@ describe("registerDecisionTools", () => {
     expect(queryBySourceMemory).toHaveBeenCalledTimes(4)
   })
 
-  it("surfaces near-duplicate decisions with a lore-supersede hint", async () => {
+  it("surfaces near-duplicate decisions with a kennen-supersede hint", async () => {
     // P2-03 acceptance: a decision near-identical to an existing active
     // decision (trigram ≥ 0.6, same project, same topic) lights up a
     // structured supersession suggestion in the response.
@@ -599,9 +599,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "Replace auth middleware",
       rationale: "Because reasons",
     } as never)
@@ -611,8 +611,8 @@ describe("registerDecisionTools", () => {
     expect(text).toContain("Warning:")
     expect(text).toContain("dec-old")
     // Post-P3-01 the supersede call site is rendered via the polymorphic
-    // tool (`lore-decision({ action: 'supersede', ... })`).
-    expect(text).toContain("lore-decision")
+    // tool (`kennen-decision({ action: 'supersede', ... })`).
+    expect(text).toContain("kennen-decision")
     expect(text).toContain('action: "supersede"')
     expect(text).toContain('newDecisionId: "dec-new"')
     expect(text).toContain('oldDecisionId: "dec-old"')
@@ -667,9 +667,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "Replace auth middleware",
       rationale: "Because reasons",
     } as never)
@@ -719,9 +719,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    await loreDecide({
+    await kennenDecide({
       decision: "Replace auth middleware",
       rationale: "Because reasons",
       topicName: "Auth",
@@ -779,9 +779,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "Replace auth middleware",
       rationale: "Because reasons",
       supersedesIds: ["dec-known-old"],
@@ -795,7 +795,7 @@ describe("registerDecisionTools", () => {
   })
 
   it("records the new decision with project scope into sessionMemories", async () => {
-    // P1-09 integration point: a `lore-learn` call made later in the same
+    // P1-09 integration point: a `kennen-learn` call made later in the same
     // (agent, session) must be able to evaluate project-overlap safety
     // against the decision's scope.
     const mockServer = createMockServer()
@@ -824,9 +824,9 @@ describe("registerDecisionTools", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    await loreDecide({
+    await kennenDecide({
       decision: "New decision",
       rationale: "Because reasons",
       session: "session-xyz",
@@ -840,7 +840,7 @@ describe("registerDecisionTools", () => {
   })
 })
 
-describe("lore-list-decisions projectName resolution", () => {
+describe("kennen-list-decisions projectName resolution", () => {
   it("returns an explicit error when projectName does not resolve", async () => {
     const mockServer = createMockServer()
     const decisionsList = vi.fn()
@@ -853,7 +853,7 @@ describe("lore-list-decisions projectName resolution", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
 
     const result = await handler({ projectName: "Typo" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -864,7 +864,7 @@ describe("lore-list-decisions projectName resolution", () => {
   })
 })
 
-describe("lore-decision date validation", () => {
+describe("kennen-decision date validation", () => {
   function setUpReviewHarness() {
     const mockServer = createMockServer()
     const reviewCompleted = vi.fn().mockResolvedValue(undefined)
@@ -874,8 +874,8 @@ describe("lore-decision date validation", () => {
 
     registerDecisionTools(mockServer.server, services as never)
     return {
-      review: mockServer.getActionHandler("lore-decision", "review"),
-      create: mockServer.getActionHandler("lore-decision", "create"),
+      review: mockServer.getActionHandler("kennen-decision", "review"),
+      create: mockServer.getActionHandler("kennen-decision", "create"),
       reviewCompleted,
       createDecision: services.decisions.create,
     }
@@ -949,7 +949,7 @@ describe("lore-decision date validation", () => {
   })
 })
 
-describe("lore-decision-context projectName resolution", () => {
+describe("kennen-decision-context projectName resolution", () => {
   it("returns an explicit error when projectName does not resolve", async () => {
     const mockServer = createMockServer()
     const queryByEntity = vi.fn()
@@ -962,7 +962,7 @@ describe("lore-decision-context projectName resolution", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     const result = await handler({ entity: "AuthService", projectName: "Typo" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -973,7 +973,7 @@ describe("lore-decision-context projectName resolution", () => {
   })
 })
 
-describe("lore-decision-context — partial decision resolution", () => {
+describe("kennen-decision-context — partial decision resolution", () => {
   function servicesWithPartialFailure() {
     const goodDecision = makeDecision("good-id", { title: "Working decision" })
     return {
@@ -1004,48 +1004,48 @@ describe("lore-decision-context — partial decision resolution", () => {
     // Tool-layer acceptance for PF1-02: the `settleAll` wrapper inside
     // resolveCanonicalDecisionLinks produces `failures`, and the tool
     // handler routes them through the same `formatWarnings` shape
-    // `lore-ask` uses. This pins end-to-end behaviour that decision-graph
+    // `kennen-ask` uses. This pins end-to-end behaviour that decision-graph
     // unit tests cannot.
     const mockServer = createMockServer()
     const services = servicesWithPartialFailure()
 
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     const result = await handler({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
     // The resolved decision still renders.
     expect(text).toContain("Working decision")
-    // Warning matches lore-ask's format: single "Warnings:" footer
+    // Warning matches kennen-ask's format: single "Warnings:" footer
     // with failing root IDs inside it. Regex co-location pin so a
     // leak of `bad-root` into the decision render above still fails.
     expect(text).toMatch(/Warnings:[^\n]*bad-root/)
     expect(text).toContain("retry before relying on this result")
   })
 
-  it("emits one stderr line per failing root when LORE_DEBUG=1", async () => {
-    // Operator observability parity with lore-ask — same log shape so a
-    // single `grep "[lore] partial-failure:"` sweep catches both tools.
+  it("emits one stderr line per failing root when KENNEN_DEBUG=1", async () => {
+    // Operator observability parity with kennen-ask — same log shape so a
+    // single `grep "[kennen] partial-failure:"` sweep catches both tools.
     const mockServer = createMockServer()
     const services = servicesWithPartialFailure()
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    vi.stubEnv("LORE_DEBUG", "1")
+    vi.stubEnv("KENNEN_DEBUG", "1")
 
     try {
       await handler({ entity: "AuthService" } as never)
 
       expect(stderr).toHaveBeenCalledTimes(1)
       const logged = String(stderr.mock.calls[0][0])
-      // Same exact-format pin as `lore-query action='ask'`: ensures both
+      // Same exact-format pin as `kennen-query action='ask'`: ensures both
       // tools emit the identical canonical line so ops filters work
       // uniformly. A field reorder in one call site without the other
       // would break cross-tool correlation silently; pinning the full
       // line here catches the drift.
       expect(logged).toBe(
-        "[lore] partial-failure: root=bad-root error=notion 5xx tool=lore-decision\n"
+        "[kennen] partial-failure: root=bad-root error=notion 5xx tool=kennen-decision\n"
       )
     } finally {
       vi.unstubAllEnvs()
@@ -1053,13 +1053,13 @@ describe("lore-decision-context — partial decision resolution", () => {
     }
   })
 
-  it("is silent on stderr when LORE_DEBUG is unset, even with partial failures", async () => {
+  it("is silent on stderr when KENNEN_DEBUG is unset, even with partial failures", async () => {
     const mockServer = createMockServer()
     const services = servicesWithPartialFailure()
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
-    vi.stubEnv("LORE_DEBUG", "")
+    vi.stubEnv("KENNEN_DEBUG", "")
 
     try {
       const result = await handler({ entity: "AuthService" } as never)
@@ -1074,7 +1074,7 @@ describe("lore-decision-context — partial decision resolution", () => {
   })
 })
 
-describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
+describe("kennen-decision-context — PF3-01 canonical entity resolution", () => {
   function makeServicesWithEntities(opts: {
     entityResolution?: {
       entity?: { id: string; name: string; aliases: string[] } | null
@@ -1139,7 +1139,7 @@ describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
       },
     })
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     await handler({ entity: "AuthSvc" } as never)
 
@@ -1174,7 +1174,7 @@ describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
       },
     })
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     const result = await handler({ entity: "User" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1204,7 +1204,7 @@ describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
     const mockServer = createMockServer()
     const services = makeServicesWithEntities({})
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     await handler({ entity: "AuthService" } as never)
 
@@ -1239,7 +1239,7 @@ describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
       facts: [],
     })
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     const result = await handler({ entity: "User" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1260,7 +1260,7 @@ describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
       .fn()
       .mockRejectedValue(new Error("notion 429"))
     registerDecisionTools(mockServer.server, services as never)
-    const handler = mockServer.getActionHandler("lore-decision", "context")
+    const handler = mockServer.getActionHandler("kennen-decision", "context")
 
     const result = await handler({ entity: "AuthService" } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
@@ -1271,7 +1271,7 @@ describe("lore-decision-context — PF3-01 canonical entity resolution", () => {
   })
 })
 
-describe("lore-decision synopsis surface (issue 0.7.0/02)", () => {
+describe("kennen-decision synopsis surface (issue 0.7.0/02)", () => {
   it("threads synopsis on action='create' through to decisions.create", async () => {
     const mockServer = createMockServer()
     const created = makeDecision("dec-1", {
@@ -1300,9 +1300,9 @@ describe("lore-decision synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
 
-    await loreDecide({
+    await kennenDecide({
       decision: "Cache project resolutions for 60s",
       rationale: "Long-form rationale here.",
       synopsis: "All resolved projects are cached in-process for 60s.",
@@ -1332,10 +1332,10 @@ describe("lore-decision synopsis surface (issue 0.7.0/02)", () => {
     }
 
     registerDecisionTools(mockServer.server, services as never)
-    const loreDecide = mockServer.getActionHandler("lore-decision", "create")
+    const kennenDecide = mockServer.getActionHandler("kennen-decision", "create")
     const overCap = "x".repeat(501)
 
-    const result = await loreDecide({
+    const result = await kennenDecide({
       decision: "T",
       rationale: "R",
       synopsis: overCap,
@@ -1348,7 +1348,7 @@ describe("lore-decision synopsis surface (issue 0.7.0/02)", () => {
   })
 })
 
-describe("lore-decision action='create' Alternatives/Consequences rich_text cap (#270)", () => {
+describe("kennen-decision action='create' Alternatives/Consequences rich_text cap (#270)", () => {
   function setUpCreateHarness() {
     const mockServer = createMockServer()
     const created = makeDecision("dec-rich-text-cap", { projectIds: [] })
@@ -1369,7 +1369,7 @@ describe("lore-decision action='create' Alternatives/Consequences rich_text cap 
     }
     registerDecisionTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-decision", "create"),
+      handler: mockServer.getActionHandler("kennen-decision", "create"),
       create,
     }
   }
@@ -1414,7 +1414,7 @@ describe("lore-decision action='create' Alternatives/Consequences rich_text cap 
   })
 })
 
-describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
+describe("kennen-decision action='list' synopsis rendering (DEFERRED-01)", () => {
   function listServices(items: ReturnType<typeof makeDecision>[]) {
     return {
       decisions: { list: vi.fn().mockResolvedValue({ items, nextCursor: null }) },
@@ -1433,7 +1433,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerDecisionTools(mockServer.server, listServices([decision]) as never)
 
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1468,7 +1468,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     }
     registerDecisionTools(mockServer.server, services as never)
 
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1484,7 +1484,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerDecisionTools(mockServer.server, listServices([decision]) as never)
 
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1513,7 +1513,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerDecisionTools(mockServer.server, listServices([decision]) as never)
 
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1532,7 +1532,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerDecisionTools(mockServer.server, listServices([decision]) as never)
 
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
     const result = await handler({ includeSynopsis: false } as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1556,7 +1556,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     const mockServer = createMockServer()
     registerDecisionTools(mockServer.server, listServices([decision]) as never)
 
-    const handler = mockServer.getActionHandler("lore-decision", "list")
+    const handler = mockServer.getActionHandler("kennen-decision", "list")
     const result = await handler({} as never)
     const text = (result as { content: Array<{ text: string }> }).content[0].text
 
@@ -1569,7 +1569,7 @@ describe("lore-decision action='list' synopsis rendering (DEFERRED-01)", () => {
     expect(synopsisLine).not.toContain("…")
   })
 })
-describe("lore-decision action='create' — Author attribution (DEFERRED-ATTRIBUTION)", () => {
+describe("kennen-decision action='create' — Author attribution (DEFERRED-ATTRIBUTION)", () => {
   function setUpCreateHarness(identityAuthor: string | null) {
     const mockServer = createMockServer()
     const created = makeDecision("dec-attrib", { projectIds: [] })
@@ -1593,7 +1593,7 @@ describe("lore-decision action='create' — Author attribution (DEFERRED-ATTRIBU
     }
     registerDecisionTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-decision", "create"),
+      handler: mockServer.getActionHandler("kennen-decision", "create"),
       create,
       resolveAuthor,
     }
@@ -1629,7 +1629,7 @@ describe("lore-decision action='create' — Author attribution (DEFERRED-ATTRIBU
 // decision rows in Notion; reject at the MCP boundary instead.
 // ---------------------------------------------------------------------------
 
-describe("lore-decision action='create' — nonblank decision/rationale (issue #467)", () => {
+describe("kennen-decision action='create' — nonblank decision/rationale (issue #467)", () => {
   function harness() {
     const mockServer = createMockServer()
     const create = vi.fn().mockResolvedValue(makeDecision("dec-1", { projectIds: [] }))
@@ -1651,7 +1651,7 @@ describe("lore-decision action='create' — nonblank decision/rationale (issue #
     }
     registerDecisionTools(mockServer.server, services as never)
     return {
-      handler: mockServer.getActionHandler("lore-decision", "create"),
+      handler: mockServer.getActionHandler("kennen-decision", "create"),
       create,
     }
   }
@@ -1747,13 +1747,13 @@ describe("lore-decision action='create' — nonblank decision/rationale (issue #
 
 // ===========================================================================
 // Issue #283 round-4 — Test C: scoped decision → decided_by facts inherit scope.
-// Pins the call-site contract at `lore-decision action='create'`'s
+// Pins the call-site contract at `kennen-decision action='create'`'s
 // `services.facts.create` invocation. Without this test, a future
 // contributor refactoring the decided_by emission path could silently
 // drop the `scope` argument and the leak vector would re-open.
 // ===========================================================================
 
-describe("lore-decision decided_by scope inheritance (issue #283 round-4 Test C)", () => {
+describe("kennen-decision decided_by scope inheritance (issue #283 round-4 Test C)", () => {
   it("scoped decision emits decided_by facts under the same scope", async () => {
     const { registerDecisionTools: register } = await import("./decisions.js")
     // Local mock-server harness (mirrors the one earlier in this
@@ -1814,7 +1814,7 @@ describe("lore-decision decided_by scope inheritance (issue #283 round-4 Test C)
     }
 
     register(mockServer.server as never, services as never)
-    const create = mockServer.getActionHandler("lore-decision", "create")
+    const create = mockServer.getActionHandler("kennen-decision", "create")
 
     await create({
       decision: "Adopt session-only auth",

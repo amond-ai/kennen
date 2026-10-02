@@ -1,7 +1,7 @@
 import type { Client, CreatePageParameters } from "@notionhq/client"
 import type { Memory, MemoryStatus } from "../types.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
-import { LoreError, errorCauseMessage } from "../errors.js"
+import { KennenError, errorCauseMessage } from "../errors.js"
 import { todayUtc } from "./task.js"
 
 type GetMemoryPropertiesById = (id: string) => Promise<Memory>
@@ -13,10 +13,10 @@ type GetMemoryPropertiesById = (id: string) => Promise<Memory>
  * already-accepted, rejected, or otherwise non-proposed row would
  * be a state error that masquerades as a no-op. Callers route
  * through this distinct subclass so the MCP / CLI surfaces can
- * render an actionable error pointing at `lore-memory
+ * render an actionable error pointing at `kennen-memory
  * action='update' status='<value>'` for direct status flips.
  */
-export class MemoryReviewStateError extends LoreError<"memory-review-state"> {
+export class MemoryReviewStateError extends KennenError<"memory-review-state"> {
   readonly memoryId: string
   readonly currentStatus: MemoryStatus
 
@@ -43,7 +43,7 @@ export class MemoryReviewStateError extends LoreError<"memory-review-state"> {
  * the row's `Status` has already moved off `"proposed"`. See
  * `recordReview`'s docstring for the full failure-mode rationale.
  */
-export class MemoryReviewAuditError extends LoreError<"memory-review-audit-failed"> {
+export class MemoryReviewAuditError extends KennenError<"memory-review-audit-failed"> {
   readonly memoryId: string
   readonly previousStatus: MemoryStatus
   readonly newStatus: MemoryStatus
@@ -99,7 +99,7 @@ export class MemoryReview {
     // pay for the body — the Status / Kind guards only inspect Notion
     // select properties, and the body is needed solely on the success
     // path for the audit-block append. Failing guards short-circuit
-    // before the body fetch fires. Mirrors the `lore inbox archive`
+    // before the body fetch fires. Mirrors the `kennen inbox archive`
     // status guard so both inbox-touching call sites share the
     // property-only-read posture.
     const memory = await this.getPropertiesById(input.memoryId)
@@ -108,7 +108,7 @@ export class MemoryReview {
         `Cannot ${input.verdict} memory ${input.memoryId}: ` +
           `current status is "${memory.status}", expected "proposed". ` +
           `The approve / reject actions are inbox-only — use ` +
-          `\`lore-memory action='update' status='<value>'\` to flip a ` +
+          `\`kennen-memory action='update' status='<value>'\` to flip a ` +
           `non-proposed row's status directly.`,
         {
           memoryId: input.memoryId,
@@ -122,15 +122,15 @@ export class MemoryReview {
     // the auto-extracted-learning inbox. Refusing here prevents an
     // operator or agent from running the memory-inbox approve / reject
     // path on a decision row and bypassing the decision surface that
-    // owns governance (`lore-decision action='accept'` / `'supersede'`
+    // owns governance (`kennen-decision action='accept'` / `'supersede'`
     // / `'review'`). Same `proposedMemoryFilter()` "single source of
     // truth" contract that the count and listing surfaces honor.
     if (memory.kind === "decision") {
       throw new MemoryReviewStateError(
         `Cannot ${input.verdict} memory ${input.memoryId}: ` +
           `Kind is "decision". Decisions have their own lifecycle — ` +
-          `use \`lore-decision action='supersede'\` to retire a ` +
-          `decision or \`lore-decision action='review'\` to clear ` +
+          `use \`kennen-decision action='supersede'\` to retire a ` +
+          `decision or \`kennen-decision action='review'\` to clear ` +
           `the proposed state. The memory-inbox approve / reject ` +
           `actions are limited to non-decision proposed memories.`,
         {
@@ -145,7 +145,7 @@ export class MemoryReview {
     if (trimmedReviewer.length === 0) {
       throw new Error(
         `MemoryService.recordReview: reviewer must be a non-empty string. ` +
-          `Resolve the engineer identity (LORE_USER_NAME env or ` +
+          `Resolve the engineer identity (KENNEN_USER_NAME env or ` +
           `services.identity.resolveAuthor()) before calling.`
       )
     }

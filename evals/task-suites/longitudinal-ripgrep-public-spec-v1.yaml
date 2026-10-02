@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-ripgrep-public-spec-v1
+name: kennen-longitudinal-ripgrep-public-spec-v1
 description: >-
   Public-spec ripgrep longitudinal suite. Scenarios are pinned immediately
   before real upstream fixes and verified through public CLI behavior using
@@ -9,8 +9,8 @@ description: >-
 seededCorpus: ../vault-seeds/ripgrep-public-spec-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: rg-global-ignore-absolute-cwd-v1
     difficulty: hard

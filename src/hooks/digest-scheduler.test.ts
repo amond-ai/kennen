@@ -33,10 +33,10 @@ import {
   recordBackgroundFailure,
 } from "./background-failure-marker.js"
 import { withClearedRuntimeEnv } from "./test-utils.js"
-import type { LoreServices } from "../services.js"
-import type { LoreConfig, Project } from "../types.js"
+import type { KennenServices } from "../services.js"
+import type { KennenConfig, Project } from "../types.js"
 
-const CONFIG: LoreConfig = {
+const CONFIG: KennenConfig = {
   vault: { pageId: "v" },
   projects: [
     { name: "Widget", path: "." },
@@ -58,7 +58,7 @@ function makeProject(name: string): Project {
   }
 }
 
-function makeServices(project: Project | null): LoreServices {
+function makeServices(project: Project | null): KennenServices {
   return {
     context: {
       project,
@@ -66,7 +66,7 @@ function makeServices(project: Project | null): LoreServices {
       vault: { pageId: "v" },
       isCatchAllFallback: false,
     },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 function baseDeps(overrides: Partial<DigestSchedulerDeps> = {}): {
@@ -123,17 +123,17 @@ function state(autoDigest = true): DigestSchedulerState {
 }
 
 async function withTempFailureState<T>(fn: () => Promise<T>): Promise<T> {
-  const originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
-  const stateDir = mkdtempSync(join(tmpdir(), "lore-digest-scheduler-"))
-  process.env["LORE_HOOK_STATE_DIR"] = stateDir
+  const originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+  const stateDir = mkdtempSync(join(tmpdir(), "kennen-digest-scheduler-"))
+  process.env["KENNEN_HOOK_STATE_DIR"] = stateDir
   try {
     return await fn()
   } finally {
     rmSync(stateDir, { recursive: true, force: true })
     if (originalStateDir) {
-      process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
     } else {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     }
   }
 }
@@ -439,9 +439,9 @@ describe("fireDigestIfStale", () => {
     const options = args[3] as { logLabel?: string; allowedTools?: string }
     expect(options.logLabel).toBe("digest")
     // After the 0.6.0 alias purge the digest allowlist contains only
-    // the polymorphic `lore-memory` — the synthesizer prompt teaches
-    // `lore-memory action='save'` and the legacy alias is gone.
-    expect(options.allowedTools).toBe("mcp__lore__lore-memory")
+    // the polymorphic `kennen-memory` — the synthesizer prompt teaches
+    // `kennen-memory action='save'` and the legacy alias is gone.
+    expect(options.allowedTools).toBe("mcp__kennen__kennen-memory")
   })
 
   it("passes a digest-prefixed lock key so global cap respects per-project debounce without colliding with real session ids", async () => {
@@ -527,7 +527,7 @@ describe("scheduleAutoDigestSpawn", () => {
     expect(helperPath!.endsWith("/hooks/helpers.js")).toBe(true)
   })
 
-  it("swallows spawn failures and writes a [lore] stderr line so the Stop hook stays fail-open", () => {
+  it("swallows spawn failures and writes a [kennen] stderr line so the Stop hook stays fail-open", () => {
     // The Stop hook contract requires `{}\n` to be emitted regardless of
     // what auto-digest scheduling does. A throw out of `child_process.spawn`
     // (no fork available, EAGAIN, etc.) must not propagate into the Stop
@@ -545,7 +545,9 @@ describe("scheduleAutoDigestSpawn", () => {
       })
 
     expect(() => scheduleAutoDigestSpawn("/proj")).not.toThrow()
-    expect(stderrChunks.join("")).toContain("[lore] auto-digest scheduler: spawn failed")
+    expect(stderrChunks.join("")).toContain(
+      "[kennen] auto-digest scheduler: spawn failed"
+    )
     expect(stderrChunks.join("")).toContain("EAGAIN")
 
     stderrSpy.mockRestore()
@@ -655,7 +657,7 @@ describe("scheduleAutoDigestSpawn", () => {
     const envGuard = withClearedRuntimeEnv([
       "NOTION_API_TOKEN",
       "NOTION_WORKSPACE_ID",
-      "LORE_NOTION_BASE_URL",
+      "KENNEN_NOTION_BASE_URL",
     ] as const)
 
     beforeEach(() => {
@@ -682,14 +684,14 @@ describe("scheduleAutoDigestSpawn", () => {
 
     it("under authSource=ntn-auth-json, preserves every other operator-controlled runtime knob", () => {
       // The helper child needs every other env var the foreground
-      // had — `LORE_HOOK_STATE_DIR` for the digest marker,
-      // `LORE_DEBUG` for the operator log line, `LORE_AUTO_DIGEST`
-      // for the kill switch, `LORE_AGENT_NAME` for `deriveAgentName`
+      // had — `KENNEN_HOOK_STATE_DIR` for the digest marker,
+      // `KENNEN_DEBUG` for the operator log line, `KENNEN_AUTO_DIGEST`
+      // for the kill switch, `KENNEN_AGENT_NAME` for `deriveAgentName`
       // inside the synthesizer, etc. The partition is surgical:
       // it removes ONLY the auth-token subset.
       process.env["NOTION_API_TOKEN"] = "secret_canonical"
       process.env["NOTION_WORKSPACE_ID"] = "ws_team_alpha"
-      process.env["LORE_NOTION_BASE_URL"] = "https://api-dev.notion.com"
+      process.env["KENNEN_NOTION_BASE_URL"] = "https://api-dev.notion.com"
       spawnMock.mockReset()
       spawnMock.mockReturnValue(fakeChild())
 
@@ -701,12 +703,12 @@ describe("scheduleAutoDigestSpawn", () => {
         }
         expect("NOTION_API_TOKEN" in options.env).toBe(false)
         expect(options.env["NOTION_WORKSPACE_ID"]).toBe("ws_team_alpha")
-        expect(options.env["LORE_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
+        expect(options.env["KENNEN_NOTION_BASE_URL"]).toBe("https://api-dev.notion.com")
         // PATH and HOME inherited via process.env spread.
         expect(options.env["PATH"]).toBe(process.env["PATH"])
       } finally {
         delete process.env["NOTION_WORKSPACE_ID"]
-        delete process.env["LORE_NOTION_BASE_URL"]
+        delete process.env["KENNEN_NOTION_BASE_URL"]
       }
     })
 
@@ -798,11 +800,11 @@ describe("scheduleAutoDigestSpawn", () => {
         // not leak into the parent. The shallow copy is what makes
         // this safe.
         const env = buildAutoDigestHelperEnv(undefined)
-        env["LORE_TEST_CHILD_ONLY_VAR"] = "child-only"
+        env["KENNEN_TEST_CHILD_ONLY_VAR"] = "child-only"
         try {
-          expect(process.env["LORE_TEST_CHILD_ONLY_VAR"]).toBeUndefined()
+          expect(process.env["KENNEN_TEST_CHILD_ONLY_VAR"]).toBeUndefined()
         } finally {
-          delete env["LORE_TEST_CHILD_ONLY_VAR"]
+          delete env["KENNEN_TEST_CHILD_ONLY_VAR"]
         }
       })
 

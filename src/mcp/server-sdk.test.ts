@@ -77,7 +77,7 @@ afterEach(() => {
 
 describe("diagnostic MCP SDK schema", () => {
   it("advertises passthrough diagnostic input and validates reflexive calls with extra arguments", async () => {
-    mocks.initServices.mockRejectedValue(new Error("No .lore.yaml found."))
+    mocks.initServices.mockRejectedValue(new Error("No .kennen.yaml found."))
     const stderr = vi.spyOn(console, "error").mockImplementation(() => undefined)
 
     try {
@@ -116,7 +116,7 @@ describe("diagnostic MCP SDK schema", () => {
           tools: Array<{ name: string; inputSchema: Record<string, unknown> }>
         }
       ).tools
-      const memoryTool = tools.find((tool) => tool.name === "lore-memory")
+      const memoryTool = tools.find((tool) => tool.name === "kennen-memory")
       expect(memoryTool).toBeDefined()
       expect(memoryTool!.inputSchema).toMatchObject({
         type: "object",
@@ -129,7 +129,7 @@ describe("diagnostic MCP SDK schema", () => {
         id: 3,
         method: "tools/call",
         params: {
-          name: "lore-memory",
+          name: "kennen-memory",
           arguments: {
             action: "save",
             title: "extra argument should not be rejected",
@@ -144,7 +144,7 @@ describe("diagnostic MCP SDK schema", () => {
       }
 
       expect(result.isError).toBe(true)
-      expect(result.content[0]?.text).toContain("Lore MCP Startup Diagnostic")
+      expect(result.content[0]?.text).toContain("Kennen MCP Startup Diagnostic")
     } finally {
       stderr.mockRestore()
     }
@@ -194,11 +194,11 @@ describe("MCP help resources", () => {
       }
     ).resources
     expect(resources).toContainEqual(
-      expect.objectContaining({ uri: "lore://help", mimeType: "text/markdown" })
+      expect.objectContaining({ uri: "kennen://help", mimeType: "text/markdown" })
     )
     expect(resources).toContainEqual(
       expect.objectContaining({
-        uri: "lore://help/lore-memory/save",
+        uri: "kennen://help/kennen-memory/save",
         mimeType: "text/markdown",
       })
     )
@@ -217,8 +217,8 @@ describe("MCP help resources", () => {
     ).resourceTemplates
     expect(templates).toContainEqual(
       expect.objectContaining({
-        name: "lore-help-action",
-        uriTemplate: "lore://help/{tool}/{action}",
+        name: "kennen-help-action",
+        uriTemplate: "kennen://help/{tool}/{action}",
       })
     )
 
@@ -226,7 +226,7 @@ describe("MCP help resources", () => {
       jsonrpc: "2.0",
       id: 4,
       method: "resources/read",
-      params: { uri: "lore://help/lore-query/search" },
+      params: { uri: "kennen://help/kennen-query/search" },
     })
     const readResponse = await expectJsonRpcResult(transport!.waitForResponse(4))
     const contents = (
@@ -235,10 +235,10 @@ describe("MCP help resources", () => {
       }
     ).contents
     expect(contents[0]).toMatchObject({
-      uri: "lore://help/lore-query/search",
+      uri: "kennen://help/kennen-query/search",
       mimeType: "text/markdown",
     })
-    expect(contents[0]?.text).toContain("# lore-query action='search'")
+    expect(contents[0]?.text).toContain("# kennen-query action='search'")
     expect(contents[0]?.text).toContain("```json")
   })
 })

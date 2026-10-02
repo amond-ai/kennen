@@ -102,7 +102,7 @@ function setupMocks(opts: {
   coverage?: WakeUpCoverageMetrics
 }): void {
   findConfigFileMock.mockResolvedValue({
-    path: "/tmp/.lore.yaml",
+    path: "/tmp/.kennen.yaml",
     root: "/tmp",
   })
   loadConfigMock.mockResolvedValue({
@@ -150,12 +150,12 @@ function setupMocks(opts: {
 describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
   let stdout: ReturnType<typeof vi.spyOn>
   let stateDir: string
-  const savedStateDir = process.env["LORE_HOOK_STATE_DIR"]
-  const savedDebug = process.env["LORE_DEBUG"]
+  const savedStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+  const savedDebug = process.env["KENNEN_DEBUG"]
 
   beforeEach(() => {
-    stateDir = mkdtempSync(join(tmpdir(), "lore-wakeup-test-"))
-    process.env["LORE_HOOK_STATE_DIR"] = stateDir
+    stateDir = mkdtempSync(join(tmpdir(), "kennen-wakeup-test-"))
+    process.env["KENNEN_HOOK_STATE_DIR"] = stateDir
     stdout = vi.spyOn(console, "log").mockImplementation(() => {})
   })
 
@@ -163,14 +163,14 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
     stdout.mockRestore()
     rmSync(stateDir, { recursive: true, force: true })
     if (savedStateDir === undefined) {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     } else {
-      process.env["LORE_HOOK_STATE_DIR"] = savedStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = savedStateDir
     }
     if (savedDebug === undefined) {
-      delete process.env["LORE_DEBUG"]
+      delete process.env["KENNEN_DEBUG"]
     } else {
-      process.env["LORE_DEBUG"] = savedDebug
+      process.env["KENNEN_DEBUG"] = savedDebug
     }
     vi.clearAllMocks()
   })
@@ -293,14 +293,14 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
     await wakeup()
 
     // With no project AND no other sections, wakeup() emits nothing —
-    // sections.length === 0 so the `# Lore Context` header is also
+    // sections.length === 0 so the `# Kennen Context` header is also
     // skipped. This pins the "no synthetic content for missing data"
     // contract.
     expect(stdout).not.toHaveBeenCalled()
   })
 
-  it("emits privacy-conscious coverage counters when LORE_DEBUG=1", async () => {
-    process.env["LORE_DEBUG"] = "1"
+  it("emits privacy-conscious coverage counters when KENNEN_DEBUG=1", async () => {
+    process.env["KENNEN_DEBUG"] = "1"
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     setupMocks({
@@ -339,7 +339,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
 
       const logLine = String(
         stderr.mock.calls.find((call) =>
-          String(call[0]).startsWith("[lore] wakeup:")
+          String(call[0]).startsWith("[kennen] wakeup:")
         )?.[0]
       )
       expect(logLine).toContain("mode=ranked")
@@ -361,7 +361,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
   })
 
   it("includes the default mode in unranked wake-up debug counters", async () => {
-    process.env["LORE_DEBUG"] = "1"
+    process.env["KENNEN_DEBUG"] = "1"
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     setupMocks({
@@ -387,7 +387,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
 
       const logLine = String(
         stderr.mock.calls.find((call) =>
-          String(call[0]).startsWith("[lore] wakeup:")
+          String(call[0]).startsWith("[kennen] wakeup:")
         )?.[0]
       )
       expect(logLine).toContain("mode=default")
@@ -399,7 +399,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
   })
 
   it("emits the cache-hit coverage variant through the shared formatter", async () => {
-    process.env["LORE_DEBUG"] = "1"
+    process.env["KENNEN_DEBUG"] = "1"
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     setupMocks({
@@ -426,7 +426,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
 
       const logLines = stderr.mock.calls
         .map((call) => String(call[0]))
-        .filter((line) => line.startsWith("[lore] wakeup:"))
+        .filter((line) => line.startsWith("[kennen] wakeup:"))
       expect(logLines).toContainEqual(
         expect.stringContaining("reason=already-ranked-for-session")
       )
@@ -440,7 +440,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
   })
 
   it("emits an error coverage variant when wake-up loading fails", async () => {
-    process.env["LORE_DEBUG"] = "1"
+    process.env["KENNEN_DEBUG"] = "1"
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     setupMocks({
       project: {
@@ -467,7 +467,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
 
       const logLines = stderr.mock.calls
         .map((call) => String(call[0]))
-        .filter((line) => line.startsWith("[lore] wakeup:"))
+        .filter((line) => line.startsWith("[kennen] wakeup:"))
       expect(logLines).toContainEqual(expect.stringContaining("mode=error"))
       expect(logLines).toContainEqual(expect.stringContaining("reason=load-failed"))
       expect(logLines).toContainEqual(expect.stringContaining("load failed"))
@@ -521,7 +521,7 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
   })
 
   it("does not crash when coverage is unexpectedly null under debug logging", async () => {
-    process.env["LORE_DEBUG"] = "1"
+    process.env["KENNEN_DEBUG"] = "1"
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
     setupMocks({
       project: {
@@ -561,15 +561,15 @@ describe("hooks/wakeup — project framing block (issue 0.6.0/18)", () => {
 
       const coverageLines = stderr.mock.calls
         .map((call) => String(call[0]))
-        .filter((line) => line.startsWith("[lore] wakeup: mode="))
+        .filter((line) => line.startsWith("[kennen] wakeup: mode="))
       expect(coverageLines).toEqual([])
     } finally {
       stderr.mockRestore()
     }
   })
 
-  it("does not emit wake-up coverage counters when LORE_DEBUG is unset", async () => {
-    delete process.env["LORE_DEBUG"]
+  it("does not emit wake-up coverage counters when KENNEN_DEBUG is unset", async () => {
+    delete process.env["KENNEN_DEBUG"]
     const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
 
     setupMocks({
@@ -968,11 +968,11 @@ function makeFact(overrides: Partial<Fact> & { id: string }): Fact {
 describe("hooks/wakeup — trust-boundary framing", () => {
   let stdout: ReturnType<typeof vi.spyOn>
   let stateDir: string
-  const savedStateDir = process.env["LORE_HOOK_STATE_DIR"]
+  const savedStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
 
   beforeEach(() => {
-    stateDir = mkdtempSync(join(tmpdir(), "lore-wakeup-untrusted-"))
-    process.env["LORE_HOOK_STATE_DIR"] = stateDir
+    stateDir = mkdtempSync(join(tmpdir(), "kennen-wakeup-untrusted-"))
+    process.env["KENNEN_HOOK_STATE_DIR"] = stateDir
     stdout = vi.spyOn(console, "log").mockImplementation(() => {})
   })
 
@@ -980,9 +980,9 @@ describe("hooks/wakeup — trust-boundary framing", () => {
     stdout.mockRestore()
     rmSync(stateDir, { recursive: true, force: true })
     if (savedStateDir === undefined) {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     } else {
-      process.env["LORE_HOOK_STATE_DIR"] = savedStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = savedStateDir
     }
     vi.clearAllMocks()
   })
@@ -996,7 +996,7 @@ describe("hooks/wakeup — trust-boundary framing", () => {
     taskMemories?: Memory[]
   }): void {
     findConfigFileMock.mockResolvedValue({
-      path: "/tmp/.lore.yaml",
+      path: "/tmp/.kennen.yaml",
       root: "/tmp",
     })
     loadConfigMock.mockResolvedValue({
@@ -1041,7 +1041,7 @@ describe("hooks/wakeup — trust-boundary framing", () => {
     })
   }
 
-  it("emits the trust-boundary preamble immediately under `# Lore Context`", async () => {
+  it("emits the trust-boundary preamble immediately under `# Kennen Context`", async () => {
     // The preamble must sit ABOVE the project-framing block: the project
     // description is itself a Notion-sourced field that an attacker with
     // edit rights on the project page could weaponize. Pinning the
@@ -1054,7 +1054,7 @@ describe("hooks/wakeup — trust-boundary framing", () => {
     await wakeup()
 
     const written = String(stdout.mock.calls[0][0])
-    const header = written.indexOf("# Lore Context")
+    const header = written.indexOf("# Kennen Context")
     const preamble = written.indexOf(UNTRUSTED_VAULT_PREAMBLE)
     const project = written.indexOf("Project: Widget")
     expect(header).toBe(0)
@@ -1173,9 +1173,9 @@ describe("hooks/wakeup — trust-boundary framing", () => {
   it("omits the preamble entirely when no project framing and no data sections render", async () => {
     // Section-less output stays section-less. A preamble with nothing
     // below it would be a noise line for the host LLM and would also
-    // make the `# Lore Context` header emit on every empty wake-up.
+    // make the `# Kennen Context` header emit on every empty wake-up.
     findConfigFileMock.mockResolvedValue({
-      path: "/tmp/.lore.yaml",
+      path: "/tmp/.kennen.yaml",
       root: "/tmp",
     })
     loadConfigMock.mockResolvedValue({
@@ -1239,7 +1239,7 @@ describe("hooks/wakeup — trust-boundary framing", () => {
     // top level. Pin the full block to the 4-space code-quoted region
     // so every line of the description stays inside the indented frame.
     findConfigFileMock.mockResolvedValue({
-      path: "/tmp/.lore.yaml",
+      path: "/tmp/.kennen.yaml",
       root: "/tmp",
     })
     loadConfigMock.mockResolvedValue({
@@ -1303,7 +1303,7 @@ describe("hooks/wakeup — trust-boundary framing", () => {
     // project name (the name is Notion-sourced rich_text) renders inside
     // the indented warning rather than as session-start markdown.
     findConfigFileMock.mockResolvedValue({
-      path: "/tmp/.lore.yaml",
+      path: "/tmp/.kennen.yaml",
       root: "/tmp",
     })
     loadConfigMock.mockResolvedValue({

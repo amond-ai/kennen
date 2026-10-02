@@ -669,11 +669,11 @@ describe("FactService.createBatchWithDedup — loud-enough auth fallback warning
     await service.createBatchWithDedup([mention(0), mention(1)])
 
     const calls = stderr.mock.calls.map((c) => String(c[0]))
-    const warning = calls.find((line) => line.includes("[lore] runtool batch_create:"))
+    const warning = calls.find((line) => line.includes("[kennen] runtool batch_create:"))
     expect(warning).toBeDefined()
     expect(warning!).toContain("403")
     expect(warning!).toContain("restricted_resource")
-    expect(warning!).toContain("LORE_USE_RUNTOOL_BATCH_CREATES=0")
+    expect(warning!).toContain("KENNEN_USE_RUNTOOL_BATCH_CREATES=0")
   })
 
   it("only emits the warning once per process", async () => {
@@ -705,7 +705,7 @@ describe("FactService.createBatchWithDedup — loud-enough auth fallback warning
 
     const warningLines = stderr.mock.calls
       .map((c) => String(c[0]))
-      .filter((line) => line.includes("[lore] runtool batch_create:"))
+      .filter((line) => line.includes("[kennen] runtool batch_create:"))
     expect(warningLines).toHaveLength(1)
     // All three batches still attempted RunTool (and all fell back).
     expect(mock.request).toHaveBeenCalledTimes(3)
@@ -728,7 +728,7 @@ describe("FactService.createBatchWithDedup — loud-enough auth fallback warning
 
     const warningLines = stderr.mock.calls
       .map((c) => String(c[0]))
-      .filter((line) => line.includes("[lore] runtool batch_create:"))
+      .filter((line) => line.includes("[kennen] runtool batch_create:"))
     expect(warningLines).toHaveLength(0)
   })
 })

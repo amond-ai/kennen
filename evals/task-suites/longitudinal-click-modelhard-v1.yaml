@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-click-modelhard-v1
+name: kennen-longitudinal-click-modelhard-v1
 description: >-
   Model-hard click longitudinal suite. One scenario pins click before a real
   upstream regression where `get_parameter_source()` returns `None` during
@@ -13,8 +13,8 @@ description: >-
 seededCorpus: ../vault-seeds/click-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: click-get-parameter-source-eager-callback-v1
     difficulty: hard
@@ -72,10 +72,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_click_param_source.py b/lore_eval_hidden_click_param_source.py
+          diff --git a/kennen_eval_hidden_click_param_source.py b/kennen_eval_hidden_click_param_source.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_click_param_source.py
+          +++ b/kennen_eval_hidden_click_param_source.py
           @@ -0,0 +1,86 @@
           +import click
           +from click.core import ParameterSource
@@ -188,7 +188,7 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_click_param_source.py
+          - kennen_eval_hidden_click_param_source.py
           - -q
         timeoutMs: 300000
 
@@ -216,7 +216,7 @@ scenarios:
     phaseB:
       promptId: click-callback-eval-order-v1-use
       prompt: >-
-        Implement a new module `lore_solution.py` at the repository root that
+        Implement a new module `kennen_solution.py` at the repository root that
         builds a deploy command whose layered settings are applied in a
         well-defined order. A `--profile` option loads a base configuration that
         the other settings build on, so its callback must run before any of the
@@ -239,7 +239,7 @@ scenarios:
         supplied them on the command line -- not the order the parameters are
         declared on the function. Do not reorder the recorded names yourself in
         Python after the fact; let click's own callback evaluation produce the
-        order. Do not edit files outside `lore_solution.py`.
+        order. Do not edit files outside `kennen_solution.py`.
     expectedContext:
       description: >-
         click evaluates parameter callbacks eager-first then in command-line
@@ -259,12 +259,12 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_click_order.py b/lore_eval_hidden_click_order.py
+          diff --git a/kennen_eval_hidden_click_order.py b/kennen_eval_hidden_click_order.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_click_order.py
+          +++ b/kennen_eval_hidden_click_order.py
           @@ -0,0 +1,38 @@
-          +from lore_solution import applied_order
+          +from kennen_solution import applied_order
           +
           +
           +def test_eager_profile_runs_first_regardless_of_position():
@@ -317,6 +317,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_click_order.py
+          - kennen_eval_hidden_click_order.py
           - -q
         timeoutMs: 300000

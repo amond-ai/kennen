@@ -32,14 +32,14 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 
 // Isolate from sibling test files that also touch the lock dir. Each test
-// file gets its own subtree under $TMPDIR via `LORE_HOOK_STATE_DIR`. The
+// file gets its own subtree under $TMPDIR via `KENNEN_HOOK_STATE_DIR`. The
 // assignment is in `vi.hoisted` because ES modules evaluate imports before
 // top-level statements; without hoisting, `./lock.js` would pin `STATE_DIR`
 // to the default before this override ran. `getStateDir()` re-reads
 // the env var on every call so function-side usage picks up the override.
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-helpers-state-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-helpers-state-${process.pid}-${Date.now()}`
 })
 
 // Hoisted mocks — `vi.spyOn` can't redefine native ESM exports, so the
@@ -145,7 +145,7 @@ import {
   listBackgroundFailures,
   recordBackgroundFailure,
 } from "./background-failure-marker.js"
-import type { LoreConfig } from "../types.js"
+import type { KennenConfig } from "../types.js"
 
 // Stand-in for a spawned `claude -p` process. Returning a live PID (this
 // process) means subsequent lock-aliveness checks see it as "still running",
@@ -241,7 +241,7 @@ function minimalExternalProfileFiles(
 }
 
 function failureContext(tmpDir: string): {
-  config: LoreConfig
+  config: KennenConfig
   configRoot: string
   cwd: string
 } {
@@ -273,7 +273,7 @@ describe("handleStop", () => {
       // Nothing to clean.
     }
 
-    tmpDir = mkdtempSync(join(tmpdir(), "lore-helpers-test-"))
+    tmpDir = mkdtempSync(join(tmpdir(), "kennen-helpers-test-"))
     transcriptPath = join(tmpDir, "transcript.jsonl")
 
     stdoutWrites = []
@@ -292,9 +292,9 @@ describe("handleStop", () => {
     scheduleAutoDigestSpawnMock.mockReset()
     buildBackgroundSavePromptMock.mockReset()
     buildBackgroundSavePromptMock.mockImplementation(
-      () => "[Lore autosave] mocked prompt body"
+      () => "[Kennen autosave] mocked prompt body"
     )
-    delete process.env["LORE_DISABLE_LEARNING_EXTRACTION"]
+    delete process.env["KENNEN_DISABLE_LEARNING_EXTRACTION"]
   })
 
   afterEach(() => {
@@ -307,7 +307,7 @@ describe("handleStop", () => {
     } catch {
       // Nothing to clean.
     }
-    delete process.env["LORE_DISABLE_LEARNING_EXTRACTION"]
+    delete process.env["KENNEN_DISABLE_LEARNING_EXTRACTION"]
   })
 
   it("never emits decision: block when the interval is reached", async () => {
@@ -342,29 +342,29 @@ describe("handleStop", () => {
     const [bin, args] = spawnMock.mock.calls[0] as [string, string[]]
     expect(typeof bin).toBe("string")
     expect(args).toContain("-p")
-    // Background saves allowlist the four polymorphic lore write tools
+    // Background saves allowlist the four polymorphic kennen write tools
     // — the legacy aliases were removed in the 0.6.0 deprecation purge.
     const allowedIdx = args.indexOf("--allowedTools")
     expect(allowedIdx).toBeGreaterThan(-1)
     const allowed = args[allowedIdx + 1]
-    expect(allowed).toContain("lore-memory")
-    expect(allowed).toContain("lore-fact")
-    expect(allowed).toContain("lore-decision")
-    expect(allowed).toContain("lore-task")
+    expect(allowed).toContain("kennen-memory")
+    expect(allowed).toContain("kennen-fact")
+    expect(allowed).toContain("kennen-decision")
+    expect(allowed).toContain("kennen-task")
     // 0.9.0/08: the atomic-learning extraction prompt asks the sub-agent
-    // to probe `lore-query action='search'` for dedup; the allowlist must
-    // include lore-query so that probe is callable. (action='ask' is
+    // to probe `kennen-query action='search'` for dedup; the allowlist must
+    // include kennen-query so that probe is callable. (action='ask' is
     // the wrong probe for memory dedup — entity-keyed graph walk vs.
     // the memory-shaped similarity surface — see prompts.ts.)
-    expect(allowed).toContain("lore-query")
-    // lore-journal is soft-deprecated and no longer invited from the prompt;
+    expect(allowed).toContain("kennen-query")
+    // kennen-journal is soft-deprecated and no longer invited from the prompt;
     // drop it from the allowlist too so implementation and prompt agree.
-    expect(allowed).not.toContain("lore-journal")
+    expect(allowed).not.toContain("kennen-journal")
     // Legacy single-purpose aliases should not appear after the purge.
-    expect(allowed).not.toContain("lore-remember")
-    expect(allowed).not.toContain("lore-learn")
-    expect(allowed).not.toContain("lore-decide")
-    expect(allowed).not.toContain("lore-task-create")
+    expect(allowed).not.toContain("kennen-remember")
+    expect(allowed).not.toContain("kennen-learn")
+    expect(allowed).not.toContain("kennen-decide")
+    expect(allowed).not.toContain("kennen-task-create")
   })
 
   it("issue #194 — codex-shaped backgroundAgent threads through to the spawn boundary", async () => {
@@ -372,7 +372,7 @@ describe("handleStop", () => {
     // `HookConfig.backgroundAgent` carrying codex's shape must reach
     // `child_process.spawn` with the codex binary AND codex args, NOT
     // Claude's flag dialect. The top half (mergeHookDefaults's
-    // command + preset resolution from `LORE_AGENT_NAME` / yaml / env)
+    // command + preset resolution from `KENNEN_AGENT_NAME` / yaml / env)
     // is exercised in `config.test.ts`; this test pins the
     // helpers.handleStop → spawnBackgroundSave → spawn stage so the
     // two halves can't drift independently.
@@ -404,7 +404,7 @@ describe("handleStop", () => {
   })
 
   it("issue #194 — threads a custom backgroundAgent into the spawn (binary + args + placeholder substitution)", async () => {
-    // End-to-end pin: a `.lore.yaml`-overridden backgroundAgent flows
+    // End-to-end pin: a `.kennen.yaml`-overridden backgroundAgent flows
     // from the resolved HookConfig through `handleStop` into
     // `spawnBackgroundSave` and lands at the `child_process.spawn`
     // boundary as the operator-configured binary + args. Without this,
@@ -440,7 +440,7 @@ describe("handleStop", () => {
     expect(args[0]).toBe("exec")
     expect(args[1]).toBe("--full-auto")
     expect(args[2]).toMatch(/^--tools=/)
-    expect(args[2]).toContain("lore-memory")
+    expect(args[2]).toContain("kennen-memory")
     // The historical `claude -p`-shaped flags are absent — proves the
     // operator's args fully replaced the defaults rather than appending.
     expect(args).not.toContain("--dangerously-skip-permissions")
@@ -448,13 +448,13 @@ describe("handleStop", () => {
     expect(args).not.toContain("-p")
   })
 
-  it("forwards LORE_USER_NAME into the spawned child's env when set (DEFERRED-ATTRIBUTION)", async () => {
+  it("forwards KENNEN_USER_NAME into the spawned child's env when set (DEFERRED-ATTRIBUTION)", async () => {
     // The detached `claude -p` runs the spawned MCP server which
     // lazily resolves identity on unattributed writes. Forwarding
-    // `LORE_USER_NAME` keeps that path synchronous and avoids a
+    // `KENNEN_USER_NAME` keeps that path synchronous and avoids a
     // `users.me` round-trip. Pin both the conditional forward (set →
     // forwarded) AND the absence of unrelated env leakage.
-    process.env["LORE_USER_NAME"] = "Test User"
+    process.env["KENNEN_USER_NAME"] = "Test User"
     try {
       writeTranscript(transcriptPath, 3)
       await handleStop(
@@ -472,20 +472,20 @@ describe("handleStop", () => {
         string[],
         { env: Record<string, string> },
       ]
-      expect(options.env["LORE_USER_NAME"]).toBe("Test User")
+      expect(options.env["KENNEN_USER_NAME"]).toBe("Test User")
     } finally {
-      delete process.env["LORE_USER_NAME"]
+      delete process.env["KENNEN_USER_NAME"]
     }
   })
 
-  it("does NOT include LORE_USER_NAME in the child env when unset (no empty-string injection)", async () => {
+  it("does NOT include KENNEN_USER_NAME in the child env when unset (no empty-string injection)", async () => {
     // The dominant case: ntn-resolved-identity engineer who hasn't set
-    // the override. `LORE_USER_NAME` must be absent from the child's
+    // the override. `KENNEN_USER_NAME` must be absent from the child's
     // env so the spawned MCP child's lazy resolver falls through
     // cleanly to `users.me`. An accidentally-injected empty
     // string would short-circuit the env-override branch with the
-    // "no LORE_USER_NAME, fall to users.me" path bypassed.
-    delete process.env["LORE_USER_NAME"]
+    // "no KENNEN_USER_NAME, fall to users.me" path bypassed.
+    delete process.env["KENNEN_USER_NAME"]
     writeTranscript(transcriptPath, 3)
     await handleStop(
       {
@@ -502,7 +502,7 @@ describe("handleStop", () => {
       string[],
       { env: Record<string, string> },
     ]
-    expect("LORE_USER_NAME" in options.env).toBe(false)
+    expect("KENNEN_USER_NAME" in options.env).toBe(false)
   })
 
   it("does not spawn when the interval has not been reached", async () => {
@@ -639,7 +639,7 @@ describe("handleStop", () => {
       },
       defaultConfig({
         backgroundAgent: {
-          command: "/definitely/missing/lore-background-agent",
+          command: "/definitely/missing/kennen-background-agent",
           args: [],
         },
       }),
@@ -1042,7 +1042,7 @@ describe("handleStop", () => {
     const context = failureContext(tmpDir)
     context.config.profile = "external-support@1.0.0"
     writeFiles(
-      join(tmpDir, ".lore", "profiles", "installed", "external-support", "1.0.0"),
+      join(tmpDir, ".kennen", "profiles", "installed", "external-support", "1.0.0"),
       minimalExternalProfileFiles("external-support")
     )
 
@@ -1116,11 +1116,11 @@ describe("handleStop", () => {
     expect(lastExtractLearnings()).toBe(false)
   })
 
-  it("does not reread ambient LORE_DISABLE_LEARNING_EXTRACTION after hook features are resolved", async () => {
+  it("does not reread ambient KENNEN_DISABLE_LEARNING_EXTRACTION after hook features are resolved", async () => {
     // The parser layer owns env interpretation. Once the hook config
     // carries `features.learningExtraction: true`, Stop processing
     // should not re-check process.env and change behavior mid-process.
-    process.env["LORE_DISABLE_LEARNING_EXTRACTION"] = "true"
+    process.env["KENNEN_DISABLE_LEARNING_EXTRACTION"] = "true"
 
     writeTranscript(transcriptPath, 3)
     await handleStop(
@@ -1185,16 +1185,16 @@ describe("handleSessionEnd compatibility shim", () => {
 
   it("resolves without spawning a save even when ambient env vars are populated", async () => {
     // Pre-0.6.0 Claude Code shells forwarded the event JSON to the helper
-    // via `LORE_SESSION_END_CONTENT`. A stale settings.json invocation
+    // via `KENNEN_SESSION_END_CONTENT`. A stale settings.json invocation
     // can still set that env var, so we explicitly assert the shim
     // ignores it — the compatibility handler is a strict no-op, not a
     // soft-deprecated path that re-activates when input is present.
-    process.env["LORE_SESSION_END_CONTENT"] = JSON.stringify({
+    process.env["KENNEN_SESSION_END_CONTENT"] = JSON.stringify({
       session_id: "sess-stale",
       transcript_path: "/nonexistent/transcript.jsonl",
       cwd: "/tmp",
     })
-    delete process.env["LORE_AUTOSAVE"]
+    delete process.env["KENNEN_AUTOSAVE"]
 
     await expect(handleSessionEnd()).resolves.toBeUndefined()
 
@@ -1224,7 +1224,7 @@ describe("handleAutoDigest", () => {
   const savedEnv = { ...process.env }
   const originalCwd = process.cwd()
 
-  // Minimal `.lore.yaml` so `loadHookState` returns a populated `config`
+  // Minimal `.kennen.yaml` so `loadHookState` returns a populated `config`
   // + `configRoot`. Without these fields the auto-digest helper short-
   // circuits before reaching `fireDigestIfStale`.
   const FIXTURE_YAML = `vault:
@@ -1237,8 +1237,8 @@ hooks:
 `
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "lore-auto-digest-"))
-    writeFileSync(join(tmpDir, ".lore.yaml"), FIXTURE_YAML)
+    tmpDir = mkdtempSync(join(tmpdir(), "kennen-auto-digest-"))
+    writeFileSync(join(tmpDir, ".kennen.yaml"), FIXTURE_YAML)
 
     stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true)
     stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
@@ -1255,7 +1255,7 @@ hooks:
     // value via `process.cwd()`.
     process.chdir(tmpDir)
 
-    delete process.env["LORE_AUTO_DIGEST"]
+    delete process.env["KENNEN_AUTO_DIGEST"]
   })
 
   afterEach(() => {
@@ -1287,8 +1287,8 @@ hooks:
     expect(stateArg.config.vault.pageId).toBe("vault-fixture-id")
   })
 
-  it("threads autoDigest=false through to the scheduler when LORE_AUTO_DIGEST=false", async () => {
-    process.env["LORE_AUTO_DIGEST"] = "false"
+  it("threads autoDigest=false through to the scheduler when KENNEN_AUTO_DIGEST=false", async () => {
+    process.env["KENNEN_AUTO_DIGEST"] = "false"
 
     await handleAutoDigest()
 
@@ -1299,9 +1299,9 @@ hooks:
     expect(stateArg.autoDigest).toBe(false)
   })
 
-  it("threads autoDigest=false when hooks.autoDigest is false in .lore.yaml", async () => {
+  it("threads autoDigest=false when hooks.autoDigest is false in .kennen.yaml", async () => {
     writeFileSync(
-      join(tmpDir, ".lore.yaml"),
+      join(tmpDir, ".kennen.yaml"),
       FIXTURE_YAML.replace("autoDigest: true", "autoDigest: false")
     )
 
@@ -1315,7 +1315,7 @@ hooks:
   })
 
   it("env override wins over `hooks.autoDigest: true` in config", async () => {
-    process.env["LORE_AUTO_DIGEST"] = "false"
+    process.env["KENNEN_AUTO_DIGEST"] = "false"
 
     await handleAutoDigest()
 
@@ -1335,8 +1335,8 @@ hooks:
     expect(fireDigestIfStaleMock).toHaveBeenCalledTimes(1)
   })
 
-  it("returns early without calling fireDigestIfStale when no .lore.yaml is found", async () => {
-    const noConfigDir = mkdtempSync(join(tmpdir(), "lore-no-config-auto-digest-"))
+  it("returns early without calling fireDigestIfStale when no .kennen.yaml is found", async () => {
+    const noConfigDir = mkdtempSync(join(tmpdir(), "kennen-no-config-auto-digest-"))
     try {
       process.chdir(noConfigDir)
 
@@ -1363,8 +1363,8 @@ hooks:
   let stderrSpy: { mockRestore: () => void }
 
   beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "lore-wakeup-mode-"))
-    writeFileSync(join(tmpDir, ".lore.yaml"), FIXTURE_YAML)
+    tmpDir = mkdtempSync(join(tmpdir(), "kennen-wakeup-mode-"))
+    writeFileSync(join(tmpDir, ".kennen.yaml"), FIXTURE_YAML)
     rmSync(getStateDir(), { recursive: true, force: true })
     initServicesFromConfigMock.mockReset()
     initServicesFromConfigMock.mockRejectedValue(new Error("mock init disabled"))
@@ -1399,7 +1399,7 @@ hooks:
 describe("parseUserQueryFromEvent", () => {
   // P3-05: the wake-up hook reads the JSON event Claude Code's
   // UserPromptSubmit emits on stdin (forwarded by wakeup.sh as
-  // LORE_WAKEUP_EVENT). The parser is the only place where event-shape
+  // KENNEN_WAKEUP_EVENT). The parser is the only place where event-shape
   // assumptions live; pinning them here keeps a future Claude Code
   // event-shape change from silently degrading wake-up to the unranked
   // fallback path without us noticing.
@@ -1464,7 +1464,7 @@ describe("parseUserQueryFromEvent", () => {
   it("returns undefined when the prompt field is missing", () => {
     // Future-proofing: if Claude Code renames `prompt` to `query` in a
     // later release, we want wake-up to fall back gracefully (and the
-    // log under LORE_DEBUG=1 to surface it) rather than ship task-
+    // log under KENNEN_DEBUG=1 to surface it) rather than ship task-
     // memories seeded by `undefined`.
     const raw = JSON.stringify({
       session_id: "abc",
@@ -1485,7 +1485,7 @@ describe("parseUserQueryFromEvent", () => {
   it.each([
     ["plain slash command", "/clear"],
     ["with whitespace", "  /compact  "],
-    ["with arguments", "/lore-wake-up --debug"],
+    ["with arguments", "/kennen-wake-up --debug"],
     ["another tool slash", "/help"],
   ])(
     "returns undefined for %s (slash commands are useless as search seeds)",
@@ -1594,7 +1594,7 @@ describe("deriveAgentName", () => {
   })
 
   function clearAgentInputs(): void {
-    delete process.env["LORE_AGENT_NAME"]
+    delete process.env["KENNEN_AGENT_NAME"]
     delete process.env["CLAUDECODE"]
     for (const key of Object.keys(process.env)) {
       if (key.startsWith("CLAUDE_CODE_")) delete process.env[key]
@@ -1607,12 +1607,12 @@ describe("deriveAgentName", () => {
     expect(deriveAgentName({})).toBe("Claude Code")
   })
 
-  it("canonicalizes a Claude variant set explicitly via LORE_AGENT_NAME", () => {
-    // A future Claude installer that sets `LORE_AGENT_NAME=claude-code-opus-4-7`
+  it("canonicalizes a Claude variant set explicitly via KENNEN_AGENT_NAME", () => {
+    // A future Claude installer that sets `KENNEN_AGENT_NAME=claude-code-opus-4-7`
     // by mistake must still resolve to the canonical bucket — the
     // override path is wrapped to keep the Agent column from re-fragmenting.
     clearAgentInputs()
-    process.env["LORE_AGENT_NAME"] = "claude-code-opus-4-7"
+    process.env["KENNEN_AGENT_NAME"] = "claude-code-opus-4-7"
     expect(deriveAgentName({})).toBe("Claude Code")
   })
 
@@ -1621,13 +1621,13 @@ describe("deriveAgentName", () => {
     // canonicalization is for messy default-detection variants, not for
     // explicitly-attributed third-party agents.
     clearAgentInputs()
-    process.env["LORE_AGENT_NAME"] = "Codex"
+    process.env["KENNEN_AGENT_NAME"] = "Codex"
     expect(deriveAgentName({})).toBe("Codex")
 
-    process.env["LORE_AGENT_NAME"] = "Cline"
+    process.env["KENNEN_AGENT_NAME"] = "Cline"
     expect(deriveAgentName({})).toBe("Cline")
 
-    process.env["LORE_AGENT_NAME"] = "Cursor"
+    process.env["KENNEN_AGENT_NAME"] = "Cursor"
     expect(deriveAgentName({})).toBe("Cursor")
   })
 
@@ -1636,10 +1636,10 @@ describe("deriveAgentName", () => {
     expect(deriveAgentName({})).toBeUndefined()
   })
 
-  it("explicit override beats inference (LORE_AGENT_NAME wins over CLAUDECODE)", () => {
+  it("explicit override beats inference (KENNEN_AGENT_NAME wins over CLAUDECODE)", () => {
     clearAgentInputs()
     process.env["CLAUDECODE"] = "1"
-    process.env["LORE_AGENT_NAME"] = "Codex"
+    process.env["KENNEN_AGENT_NAME"] = "Codex"
     expect(deriveAgentName({})).toBe("Codex")
   })
 })
@@ -1647,9 +1647,9 @@ describe("deriveAgentName", () => {
 describe("deriveAuthorName (DEFERRED-ATTRIBUTION)", () => {
   // Parallel to `deriveAgentName` but for the Memory `Author` column.
   // The hook helper has no Notion client at prompt-build time, so it
-  // resolves only the `LORE_USER_NAME` env override; the spawned MCP
+  // resolves only the `KENNEN_USER_NAME` env override; the spawned MCP
   // child does the `users.me` fallback independently. Pin the env-trim
-  // semantics so a `LORE_USER_NAME="   "` shell-rc misconfiguration
+  // semantics so a `KENNEN_USER_NAME="   "` shell-rc misconfiguration
   // doesn't stamp whitespace as the Author.
 
   const savedEnv = { ...process.env }
@@ -1657,30 +1657,30 @@ describe("deriveAuthorName (DEFERRED-ATTRIBUTION)", () => {
     process.env = { ...savedEnv }
   })
 
-  it("returns the explicit env override when LORE_USER_NAME is set", () => {
-    delete process.env["LORE_USER_NAME"]
-    process.env["LORE_USER_NAME"] = "Test User"
+  it("returns the explicit env override when KENNEN_USER_NAME is set", () => {
+    delete process.env["KENNEN_USER_NAME"]
+    process.env["KENNEN_USER_NAME"] = "Test User"
     expect(deriveAuthorName({})).toBe("Test User")
   })
 
   it("trims surrounding whitespace on the override", () => {
-    delete process.env["LORE_USER_NAME"]
-    process.env["LORE_USER_NAME"] = "  Test User  "
+    delete process.env["KENNEN_USER_NAME"]
+    process.env["KENNEN_USER_NAME"] = "  Test User  "
     expect(deriveAuthorName({})).toBe("Test User")
   })
 
-  it("returns undefined when LORE_USER_NAME is unset", () => {
-    delete process.env["LORE_USER_NAME"]
+  it("returns undefined when KENNEN_USER_NAME is unset", () => {
+    delete process.env["KENNEN_USER_NAME"]
     expect(deriveAuthorName({})).toBeUndefined()
   })
 
-  it("returns undefined when LORE_USER_NAME is whitespace-only (treated as unset)", () => {
-    // A `LORE_USER_NAME="   "` shell-rc misconfiguration must NOT stamp
+  it("returns undefined when KENNEN_USER_NAME is whitespace-only (treated as unset)", () => {
+    // A `KENNEN_USER_NAME="   "` shell-rc misconfiguration must NOT stamp
     // whitespace into the prompt's identity block — the spawned MCP
     // child's `users.me` fallback would then have to fight a confident-
     // but-empty override.
-    delete process.env["LORE_USER_NAME"]
-    process.env["LORE_USER_NAME"] = "   "
+    delete process.env["KENNEN_USER_NAME"]
+    process.env["KENNEN_USER_NAME"] = "   "
     expect(deriveAuthorName({})).toBeUndefined()
   })
 })

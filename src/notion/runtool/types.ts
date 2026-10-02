@@ -1,6 +1,6 @@
 /**
  * Pinned subset of `RunToolParams` request and response shapes for
- * Lore's RunTool wrapper.
+ * Kennen's RunTool wrapper.
  *
  * Schema source — vendored from the pinned upstream snapshot:
  *
@@ -42,7 +42,7 @@
 
 /**
  * Parent of a `create_pages` request. The wrapper narrows to the
- * data-source parent shape because every Lore caller writes to a
+ * data-source parent shape because every Kennen caller writes to a
  * specific data source, so this file's surface is narrowed to that
  * arm. The other parent shapes (`page_id`, `database_id`,
  * workspace-level standalone) exist on the raw `RunToolParams` schema
@@ -109,7 +109,7 @@ export interface RunToolCreatePagesParams {
 /**
  * One created page in the response. The pinned upstream resource
  * shape exposes more fields than `id`, but only `id` is structurally
- * load-bearing for Lore's batch-create caller — the wrapper hands the
+ * load-bearing for Kennen's batch-create caller — the wrapper hands the
  * id back so the caller can hydrate the row via `pages.retrieve` /
  * `pages.retrieveMarkdown` if it needs the post-write shape.
  */
@@ -305,7 +305,7 @@ export function dataSourceUrl(dataSourceId: string): string {
  * Server-side hard cap on `search.page_size` per the pinned
  * `SearchToolParams` schema. The REST `client.search` allows up to 100
  * per page; RunTool `search` allows up to 25 and exposes no cursor.
- * Lore's wrapper clamps to this ceiling and reports saturation as cap metadata.
+ * Kennen's wrapper clamps to this ceiling and reports saturation as cap metadata.
  */
 export const RUNTOOL_SEARCH_MAX_PAGE_SIZE = 25
 
@@ -315,7 +315,7 @@ export const RUNTOOL_SEARCH_MAX_PAGE_SIZE = 25
  * can be a bare page id or a Notion page URL for Notion-hosted
  * results; external connector results (Slack, Linear, Drive) carry
  * non-Notion URLs and are discarded by `MemoryService`'s consumer
- * because they are not Lore page candidates.
+ * because they are not Kennen page candidates.
  */
 export interface RunToolInternalSearchResult {
   id: string
@@ -333,7 +333,7 @@ export interface RunToolInternalSearchResult {
 /**
  * Bare response of `runTool("search", ...)` for `query_type:
  * "internal"`. The pinned `SearchResource.Value` is a discriminated
- * union of `InternalSearchResource | UserSearchResource`; Lore only
+ * union of `InternalSearchResource | UserSearchResource`; Kennen only
  * issues `internal` queries so this is the only arm the wrapper
  * narrows to. The wrapper rejects (programming error) any response
  * carrying the `user_search` discriminator.
@@ -349,7 +349,7 @@ export interface RunToolInternalSearchResponse {
  * outer discriminator.
  *
  * `query` is required and (server-side) must have `length >= 1`.
- * Lore's `MemoryService.fetchSemanticPages` accepts an empty composed
+ * Kennen's `MemoryService.fetchSemanticPages` accepts an empty composed
  * query for unscoped recall, so that caller uses a DS-scoped listing
  * instead of sending an invalid RunTool request.
  *
@@ -360,7 +360,7 @@ export interface RunToolInternalSearchResponse {
  *
  * `page_size <= 25` — bounded by `RUNTOOL_SEARCH_MAX_PAGE_SIZE`.
  *
- * `max_highlight_length: 0` is the wrapper's default — Lore never
+ * `max_highlight_length: 0` is the wrapper's default — Kennen never
  * surfaces RunTool's highlight string and the savings on response
  * size aren't worth a non-zero default.
  */

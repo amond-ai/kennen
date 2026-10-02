@@ -2,7 +2,7 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore inbox` is the operator-facing surface for proposed-memory review.
+`kennen inbox` is the operator-facing surface for proposed-memory review.
 
 Subcommands:
 
@@ -14,7 +14,7 @@ Subcommands:
 - `inbox archive <memoryId>` soft-deletes through `MemoryService.archive`.
 
 Reviewer identity resolves through `services.identity.resolveAuthor()`, using
-the same `LORE_USER_NAME -> users.me` chain as memory writes. An unresolvable
+the same `KENNEN_USER_NAME -> users.me` chain as memory writes. An unresolvable
 identity fails with exit 1 rather than writing an audit row attributed to an
 unknown reviewer.
 
@@ -23,5 +23,5 @@ Property-first / audit-second ordering means a partial audit append failure
 leaves the structural status flip in place. Shared error types let callers
 distinguish non-proposed rows from audit-write failures.
 
-The MCP parallel surface is `lore-memory action='approve'` and
-`lore-memory action='reject'`; keep the handler shape and service path aligned.
+The MCP parallel surface is `kennen-memory action='approve'` and
+`kennen-memory action='reject'`; keep the handler shape and service path aligned.

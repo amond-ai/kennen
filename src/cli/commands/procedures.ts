@@ -1,5 +1,5 @@
 import { Command } from "commander"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import {
   buildProposeProcedureInput,
   defaultProcedureTopicKey,
@@ -25,7 +25,7 @@ import {
 import { parsePositiveDecimalInteger } from "../parse.js"
 import type { MemoryStatus } from "../../types.js"
 
-const PROJECT_LIST_HINT = "run `lore status projects` to list configured projects"
+const PROJECT_LIST_HINT = "run `kennen status projects` to list configured projects"
 
 type CliParseOk<T> = { ok: true; value: T }
 type CliParseErr = { ok: false; message: string }
@@ -71,7 +71,7 @@ function parseScanCliOptions(raw: {
 }
 
 async function resolveProjectIdForScan(
-  services: LoreServices,
+  services: KennenServices,
   projectName: string | undefined
 ): Promise<string | undefined> {
   const explicit = validateExplicitProjectScopeName(projectName, "--project", {
@@ -100,9 +100,9 @@ function formatScanMarkdown(candidates: ProcedureCandidate[]): string {
       "",
       "Procedures are mined from repeated solved work — at least two",
       "supporting memories sharing an entity. Try:",
-      "- Closing more tasks (`lore tasks list`, then `lore tasks close <id>`).",
+      "- Closing more tasks (`kennen tasks list`, then `kennen tasks close <id>`).",
       "- Saving incident / postmortem / runbook memories with",
-      "  `lore-memory action='save'` so the scan has source material.",
+      "  `kennen-memory action='save'` so the scan has source material.",
       "",
     ].join("\n")
   }
@@ -119,7 +119,7 @@ function formatScanMarkdown(candidates: ProcedureCandidate[]): string {
     "via:",
     "",
     "```",
-    "lore procedures propose \\",
+    "kennen procedures propose \\",
     '  --title "<short procedure name>" \\',
     '  --entity "<activation entity>" \\',
     '  --activation "<condition 1>" --activation "<condition 2>" \\',
@@ -129,7 +129,7 @@ function formatScanMarkdown(candidates: ProcedureCandidate[]): string {
     "",
     "Promoted procedures land with `Status = proposed` and only become",
     "fleet-wide guidance after a human / authorized agent approves via",
-    "`lore inbox approve <id>`. Raw scans never auto-promote.",
+    "`kennen inbox approve <id>`. Raw scans never auto-promote.",
     "",
   ]
 
@@ -219,7 +219,7 @@ interface ProposeCliOptions {
 }
 
 /**
- * Length caps for `lore procedures propose` arguments. Without them an
+ * Length caps for `kennen procedures propose` arguments. Without them an
  * operator could paste a 1MB `--notes` or 1000+ `--step` entries; the
  * caps reject the input at the CLI boundary before any service call.
  * Values match the MCP propose schema's caps so a payload that fails
@@ -532,7 +532,7 @@ const proposeCommand = new Command("propose")
               "Topic key matched an existing in-flight proposed row; nothing was created."
             )
             console.log(
-              "Review and ship via `lore inbox approve <id>`, or update its body via `lore-memory action='update'`."
+              "Review and ship via `kennen inbox approve <id>`, or update its body via `kennen-memory action='update'`."
             )
             return
           }
@@ -601,10 +601,10 @@ const proposeCommand = new Command("propose")
         console.log(`  Topic key: ${memory.topicKey || "(none)"}`)
         console.log("")
         console.log("Review and approve via:")
-        console.log(`  lore inbox approve ${memory.id}`)
+        console.log(`  kennen inbox approve ${memory.id}`)
         console.log("")
         console.log("Or reject if it shouldn't ship:")
-        console.log(`  lore inbox reject ${memory.id}`)
+        console.log(`  kennen inbox reject ${memory.id}`)
         if (canonicalSupersedes.length > 0) {
           // Notion does NOT auto-deprecate the predecessor when
           // `Supersedes` is written. Without explicit operator
@@ -617,7 +617,7 @@ const proposeCommand = new Command("propose")
           )
           for (const id of canonicalSupersedes) {
             console.log(
-              `  lore procedures deprecate ${id} --reason "Superseded by ${memory.id}"`
+              `  kennen procedures deprecate ${id} --reason "Superseded by ${memory.id}"`
             )
           }
         }
@@ -677,7 +677,7 @@ const deprecateCommand = new Command("deprecate")
       // Idempotency: an already-deprecated row should not re-write
       // Notion (the status flip is a no-op and the optional reason
       // block would double-append on every CLI re-run). Mirrors the
-      // MCP `lore-procedure action='deprecate'` handler.
+      // MCP `kennen-procedure action='deprecate'` handler.
       if (existing.status === "deprecated") {
         console.log(`Procedure already deprecated: "${existing.title}" (${canonicalId})`)
         return
@@ -689,7 +689,7 @@ const deprecateCommand = new Command("deprecate")
       if (existing.status === "proposed") {
         console.error(
           `Procedure deprecate failed: ${canonicalId} is Status: proposed and must leave the inbox via review, not deprecate.\n` +
-            `Use \`lore inbox reject ${canonicalId}\` so the \`## Reviewed (YYYY-MM-DD)\` audit block lands with the reviewer identity.`
+            `Use \`kennen inbox reject ${canonicalId}\` so the \`## Reviewed (YYYY-MM-DD)\` audit block lands with the reviewer identity.`
         )
         process.exit(1)
         return

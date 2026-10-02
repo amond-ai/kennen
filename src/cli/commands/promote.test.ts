@@ -21,10 +21,10 @@ vi.mock("../../core/promote.js", async () => {
 import { preparePromotion, promoteMemory } from "../../core/promote.js"
 
 /**
- * CLI-only branches for `lore promote`:
+ * CLI-only branches for `kennen promote`:
  *   - the target lookup against `config.promotionTargets` (no-match
  *     surfaces a configured-list-aware error; empty list nudges
- *     toward `.lore.yaml`),
+ *     toward `.kennen.yaml`),
  *   - the promoter-identity fallback chain (explicit `--promoter`
  *     wins over `services.identity.resolveAuthor()`),
  *   - the success-line shape including the `(awaiting review)`
@@ -118,7 +118,7 @@ describe("promoteCommand", () => {
     expect(text).toContain('configured targets: "Team", "Org"')
   })
 
-  it("nudges toward .lore.yaml when no promotion targets are configured", async () => {
+  it("nudges toward .kennen.yaml when no promotion targets are configured", async () => {
     const { errorSpy, exitTrap } = makeHarness()
     vi.mocked(initServices).mockResolvedValue(makeServicesStub() as never)
 
@@ -130,7 +130,7 @@ describe("promoteCommand", () => {
     const text = errorSpy.mock.calls.flat().map(String).join("\n")
     expect(text).toContain("Promote failed:")
     expect(text).toContain("no promotion targets are configured")
-    expect(text).toContain(".lore.yaml")
+    expect(text).toContain(".kennen.yaml")
   })
 
   it("rejects when no promoter identity can be resolved", async () => {
@@ -149,7 +149,7 @@ describe("promoteCommand", () => {
     expect(errorSpy).toHaveBeenCalledTimes(1)
     const text = errorSpy.mock.calls.flat().map(String).join("\n")
     expect(text).toContain("Promote failed:")
-    expect(text).toContain("LORE_USER_NAME")
+    expect(text).toContain("KENNEN_USER_NAME")
     expect(text).toContain("--promoter")
   })
 

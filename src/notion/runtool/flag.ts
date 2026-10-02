@@ -1,22 +1,22 @@
 /**
  * Env-var resolution for the RunTool feature flags.
  *
- * `LORE_USE_RUNTOOL` is the parent kill-switch / opt-out. Sub-flags
+ * `KENNEN_USE_RUNTOOL` is the parent kill-switch / opt-out. Sub-flags
  * inherit from it unless the operator sets them explicitly:
  *
- * - `LORE_USE_RUNTOOL_BLOCK_EDIT` — gates anchored markdown
+ * - `KENNEN_USE_RUNTOOL_BLOCK_EDIT` — gates anchored markdown
  *   edits via `update_page` / `update_content`. Inherits from parent.
- * - `LORE_USE_RUNTOOL_FILTER_SQL` — gates `query_data_sources`
+ * - `KENNEN_USE_RUNTOOL_FILTER_SQL` — gates `query_data_sources`
  *   SQL filter helpers. Inherits from parent.
- * - `LORE_USE_RUNTOOL_SEARCH` — gates the semantic-lane
+ * - `KENNEN_USE_RUNTOOL_SEARCH` — gates the semantic-lane
  *   `search` consumer in `MemoryService.search` /
  *   `searchWithMeta` / `searchWithExplain`. Inherits from parent.
- * - `LORE_USE_RUNTOOL_AGGREGATE` — gates `query_data_sources`
+ * - `KENNEN_USE_RUNTOOL_AGGREGATE` — gates `query_data_sources`
  *   SQL-mode aggregate helpers (server-side `GROUP BY` / `COUNT(*)`).
  *   Inherits from parent.
  *
  * **Default state is ON** for the parent kill-switch and every
- * inheriting sub-flag. The `LORE_USE_RUNTOOL_BATCH_CREATES`
+ * inheriting sub-flag. The `KENNEN_USE_RUNTOOL_BATCH_CREATES`
  * sub-flag does NOT inherit and stays default-OFF — its file carries
  * the partial-commit security carve-out rationale.
  *
@@ -46,7 +46,7 @@
  *   RunTool `search` and surfaces capped candidate windows through
  *   metadata. Restricted resources, non-`ai_search` responses, and
  *   transport failures propagate instead of silently switching to
- *   REST; use `LORE_USE_RUNTOOL_SEARCH=0` or `LORE_USE_RUNTOOL=0`
+ *   REST; use `KENNEN_USE_RUNTOOL_SEARCH=0` or `KENNEN_USE_RUNTOOL=0`
  *   when an operator needs the REST search transport.
  *
  * 200-wrapped `{ object: "error" }` envelopes from the `tools/run`
@@ -57,7 +57,7 @@
  * hooks would never engage on gateway-shaped errors.
  *
  * The parser remains the backward-compatible env input layer. Runtime
- * services consume the resolved `LoreFeatureFlags` snapshot so config
+ * services consume the resolved `KennenFeatureFlags` snapshot so config
  * and env layering happens once at initialization.
  */
 
@@ -78,19 +78,19 @@ const warnedUnrecognizedValues = new Set<string>()
  * warning alone.
  *
  * Every flag in `RUNTOOL_FLAGS` (the test-side hermetic list)
- * defaults ON, EXCEPT `LORE_USE_RUNTOOL_BATCH_CREATES`
+ * defaults ON, EXCEPT `KENNEN_USE_RUNTOOL_BATCH_CREATES`
  * which carves out per the batch-creates security review.
  */
 function describeFlagDefault(name: string): string {
-  if (name === "LORE_USE_RUNTOOL_BATCH_CREATES") {
-    return "default OFF (security carve-out, does not inherit from LORE_USE_RUNTOOL)"
+  if (name === "KENNEN_USE_RUNTOOL_BATCH_CREATES") {
+    return "default OFF (security carve-out, does not inherit from KENNEN_USE_RUNTOOL)"
   }
   return "default ON post-#543; use =0 to disable"
 }
 
 function emitUnrecognizedValueWarning(name: string, raw: string): void {
-  // Per-process key so a typo'd LORE_USE_RUNTOOL=fasle and a
-  // typo'd LORE_USE_RUNTOOL_SEARCH=fasle each produce one line —
+  // Per-process key so a typo'd KENNEN_USE_RUNTOOL=fasle and a
+  // typo'd KENNEN_USE_RUNTOOL_SEARCH=fasle each produce one line —
   // they're different operator mistakes that warrant independent
   // surfacing.
   const key = `${name}=${raw}`
@@ -98,11 +98,11 @@ function emitUnrecognizedValueWarning(name: string, raw: string): void {
   warnedUnrecognizedValues.add(key)
   // The unrecognized-value resolution defaults to ON for the parent
   // and inheriting sub-flags. The warning fires on the first read so
-  // an incident-time rollback that types `LORE_USE_RUNTOOL=fasle`
+  // an incident-time rollback that types `KENNEN_USE_RUNTOOL=fasle`
   // doesn't quietly leave the operator on the default-on path.
   // Same once-per-process posture as the RunTool fallback warnings.
   process.stderr.write(
-    `[lore] notion-runtool warn: ignoring unrecognized ${name} value ` +
+    `[kennen] notion-runtool warn: ignoring unrecognized ${name} value ` +
       `${JSON.stringify(raw)}; falling through to ${describeFlagDefault(name)}. ` +
       `Use ${name}=0 or ${name}=1 to set explicitly.\n`
   )
@@ -128,18 +128,18 @@ function readFlag(env: NodeJS.ProcessEnv, name: string): boolean | null {
 }
 
 /**
- * True when `LORE_USE_RUNTOOL` is opted in. **Default ON.**
- * An explicit `LORE_USE_RUNTOOL=0` disables; an unrecognized value
+ * True when `KENNEN_USE_RUNTOOL` is opted in. **Default ON.**
+ * An explicit `KENNEN_USE_RUNTOOL=0` disables; an unrecognized value
  * (e.g. `"maybe"`) falls back to the default ON.
  */
 export function isRunToolEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return readFlag(env, "LORE_USE_RUNTOOL") !== false
+  return readFlag(env, "KENNEN_USE_RUNTOOL") !== false
 }
 
 /**
  * True when the block-edit sub-flag is on. An explicit
- * `LORE_USE_RUNTOOL_BLOCK_EDIT` setting wins; otherwise the value
- * inherits from `LORE_USE_RUNTOOL`. **On by default.**
+ * `KENNEN_USE_RUNTOOL_BLOCK_EDIT` setting wins; otherwise the value
+ * inherits from `KENNEN_USE_RUNTOOL`. **On by default.**
  *
  * The inheritance lets an operator opting out of RunTool flip the
  * parent once and disable every inheriting sub-flag, while leaving
@@ -147,32 +147,32 @@ export function isRunToolEnabled(env: NodeJS.ProcessEnv = process.env): boolean 
  * disable block edits but keep search and filter on).
  */
 export function isRunToolBlockEditEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  const explicit = readFlag(env, "LORE_USE_RUNTOOL_BLOCK_EDIT")
+  const explicit = readFlag(env, "KENNEN_USE_RUNTOOL_BLOCK_EDIT")
   if (explicit !== null) return explicit
   return isRunToolEnabled(env)
 }
 
 /**
  * True when the SQL filter sub-flag is on. An explicit
- * `LORE_USE_RUNTOOL_FILTER_SQL` setting wins; otherwise the value
- * inherits from `LORE_USE_RUNTOOL`. **On by default.**
+ * `KENNEN_USE_RUNTOOL_FILTER_SQL` setting wins; otherwise the value
+ * inherits from `KENNEN_USE_RUNTOOL`. **On by default.**
  *
  * Gates the `query_data_sources` SQL filter helpers in
  * `EntityService.findByName` / `findByAlias`,
  * `MemoryService.listForNearDuplicates`, and
- * `lore conflicts scan`'s already-judged pre-filter. Same
+ * `kennen conflicts scan`'s already-judged pre-filter. Same
  * inheritance posture as the block-edit sub-flag.
  */
 export function isRunToolFilterSqlEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  const explicit = readFlag(env, "LORE_USE_RUNTOOL_FILTER_SQL")
+  const explicit = readFlag(env, "KENNEN_USE_RUNTOOL_FILTER_SQL")
   if (explicit !== null) return explicit
   return isRunToolEnabled(env)
 }
 
 /**
  * True when the search sub-flag is on. An explicit
- * `LORE_USE_RUNTOOL_SEARCH` setting wins; otherwise the value
- * inherits from `LORE_USE_RUNTOOL`. **On by default.**
+ * `KENNEN_USE_RUNTOOL_SEARCH` setting wins; otherwise the value
+ * inherits from `KENNEN_USE_RUNTOOL`. **On by default.**
  *
  * Gates the RunTool `search` consumer in
  * `MemoryService.fetchSemanticPages`'s flag-on branch. Non-empty semantic
@@ -181,15 +181,15 @@ export function isRunToolFilterSqlEnabled(env: NodeJS.ProcessEnv = process.env):
  * parent-inherit posture as the block-edit and filter-sql sub-flags.
  */
 export function isRunToolSearchEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  const explicit = readFlag(env, "LORE_USE_RUNTOOL_SEARCH")
+  const explicit = readFlag(env, "KENNEN_USE_RUNTOOL_SEARCH")
   if (explicit !== null) return explicit
   return isRunToolEnabled(env)
 }
 
 /**
  * True when the SQL aggregate sub-flag is on. An explicit
- * `LORE_USE_RUNTOOL_AGGREGATE` setting wins; otherwise the value
- * inherits from `LORE_USE_RUNTOOL`. **On by default.**
+ * `KENNEN_USE_RUNTOOL_AGGREGATE` setting wins; otherwise the value
+ * inherits from `KENNEN_USE_RUNTOOL`. **On by default.**
  *
  * Gates the `query_data_sources` SQL aggregate helpers — currently
  * the build-entities orphan-rate metric (`querySubjectGroupCountsViaRunTool`).
@@ -206,7 +206,7 @@ export function isRunToolSearchEnabled(env: NodeJS.ProcessEnv = process.env): bo
  * verified on their target workspace tier.
  */
 export function isRunToolAggregateEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  const explicit = readFlag(env, "LORE_USE_RUNTOOL_AGGREGATE")
+  const explicit = readFlag(env, "KENNEN_USE_RUNTOOL_AGGREGATE")
   if (explicit !== null) return explicit
   return isRunToolEnabled(env)
 }

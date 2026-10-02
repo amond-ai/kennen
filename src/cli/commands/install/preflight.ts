@@ -9,7 +9,7 @@ import {
   type AuthSource,
   type ResolvedAuth,
 } from "../../../config.js"
-import type { LoreConfig } from "../../../types.js"
+import type { KennenConfig } from "../../../types.js"
 import {
   ntnEnvBaseUrl,
   ntnEnvFromBaseUrl,
@@ -31,7 +31,7 @@ import {
 import type { InstallContext } from "./types.js"
 import { detectYarnPnp, resolvePkgRoot } from "./env.js"
 import { displayHomePath, fileExists, readJsonSafe, readTextSafe } from "./utils.js"
-import { assertTomlSupportsLoreRewrite } from "./toml.js"
+import { assertTomlSupportsKennenRewrite } from "./toml.js"
 
 async function readWakeUpConfig(projectDir: string): Promise<boolean | null> {
   const found = await findConfigFile(projectDir)
@@ -42,8 +42,8 @@ async function readWakeUpConfig(projectDir: string): Promise<boolean | null> {
   } catch (err) {
     const displayPath = displayHomePath(found.path)
     process.stderr.write(
-      `[lore] Could not read hooks.wakeUp from ${displayPath}: ${err instanceof Error ? err.message : err}\n` +
-        `[lore] Installer status may not reflect hooks.wakeUp — fix the config and re-run 'lore install'.\n`
+      `[kennen] Could not read hooks.wakeUp from ${displayPath}: ${err instanceof Error ? err.message : err}\n` +
+        `[kennen] Installer status may not reflect hooks.wakeUp — fix the config and re-run 'kennen install'.\n`
     )
     return null
   }
@@ -138,7 +138,7 @@ export async function prepareInstallContext(opts: {
  *
  * No-op on the bin-dispatch default path (`context.legacyPaths === false`)
  * because the bin-dispatch shape doesn't depend on `hooks/*.sh` — the
- * `lore` bin owns the hook entry points directly. Only the
+ * `kennen` bin owns the hook entry points directly. Only the
  * legacy absolute-path mode opt-in path needs the .sh prerequisites verified.
  *
  * Cursor's runner does NOT call this — Cursor doesn't currently support
@@ -216,7 +216,7 @@ interface EnsurePrerequisitesOptions {
   /**
    * Explicit opt-in to the internal-engineer `ntn` path. When true,
    * `ensurePrerequisites` auto-installs `ntn` (if missing) and runs
-   * `ntn login`. When false (the default), Lore takes the
+   * `ntn login`. When false (the default), Kennen takes the
    * external-operator path: expect `NOTION_API_TOKEN` to be set
    * (PAT pasted from `notion.so/developers/tokens`) and skip `ntn`
    * entirely. Backed by the `--ntn` flag on the install command.
@@ -225,7 +225,7 @@ interface EnsurePrerequisitesOptions {
    * `ntn` is already installed, the install path treats that as
    * "looks like an internal engineer" and proceeds with the ntn
    * flow without auto-installing. This preserves backward
-   * compatibility for engineers who upgraded Lore without changing
+   * compatibility for engineers who upgraded Kennen without changing
    * their habits. The auto-install branch ONLY fires when `--ntn`
    * is explicitly set.
    */
@@ -246,11 +246,11 @@ interface NtnLoginRecovery {
    * Paste-ready shell command. The full prefix
    * (`NOTION_KEYRING=0`) is always present so the resulting token
    * lands in auth.json (file mode) rather than the macOS keychain
-   * — Lore can't read the keychain, so a recovery command without
-   * the env-var prefix would write to a place Lore can't see.
+   * — Kennen can't read the keychain, so a recovery command without
+   * the env-var prefix would write to a place Kennen can't see.
    *
    * `NOTION_ENV=<value>` is included when the env can be resolved
-   * (operator's shell or .lore.yaml's `auth.baseUrl` mapped to a
+   * (operator's shell or .kennen.yaml's `auth.baseUrl` mapped to a
    * canonical env). When the operator must pick the env themselves
    * (non-canonical baseUrl), the literal string `<env>` appears in
    * the command and `manualEnvNote` carries the explanation.
@@ -272,10 +272,10 @@ interface NtnLoginRecovery {
  *
  *   1. **Operator `NOTION_ENV` set** → use it verbatim. Explicit
  *      shell choice always wins.
- *   2. **.lore.yaml's `auth.baseUrl` is canonical** → infer env
+ *   2. **.kennen.yaml's `auth.baseUrl` is canonical** → infer env
  *      via `ntnEnvFromBaseUrl` and bake it into the command. The
  *      `manualEnvNote` records the inference source so the operator
- *      sees which signal Lore picked up.
+ *      sees which signal Kennen picked up.
  *   3. **`auth.baseUrl` is non-canonical** (corporate proxy, etc.)
  *      → emit `NOTION_ENV=<env>` literal placeholder and direct the
  *      operator to pick the right env for their workspace.
@@ -285,12 +285,12 @@ interface NtnLoginRecovery {
  *
  * The `NOTION_KEYRING=0` prefix is always emitted — without it the
  * resulting token lands in the macOS keychain (ntn's default on
- * darwin), which Lore can't read. Bare `ntn login` is the direct
- * cause of the "I logged in, why doesn't Lore see my token?"
+ * darwin), which Kennen can't read. Bare `ntn login` is the direct
+ * cause of the "I logged in, why doesn't Kennen see my token?"
  * footgun documented in the runbook.
  */
 export function ntnLoginRecovery(
-  config: LoreConfig | undefined,
+  config: KennenConfig | undefined,
   envSource: NodeJS.ProcessEnv = process.env
 ): NtnLoginRecovery {
   const operatorEnv = envSource["NOTION_ENV"]
@@ -305,12 +305,12 @@ export function ntnLoginRecovery(
     if (inferred) {
       return {
         command: `NOTION_KEYRING=0 NOTION_ENV=${inferred} ntn login`,
-        manualEnvNote: `(${inferred} env inferred from .lore.yaml auth.baseUrl)`,
+        manualEnvNote: `(${inferred} env inferred from .kennen.yaml auth.baseUrl)`,
       }
     }
     return {
       command: "NOTION_KEYRING=0 NOTION_ENV=<env> ntn login",
-      manualEnvNote: `(.lore.yaml auth.baseUrl=${baseUrl} doesn't match a canonical ntn env — substitute <env> with the right selector for your workspace)`,
+      manualEnvNote: `(.kennen.yaml auth.baseUrl=${baseUrl} doesn't match a canonical ntn env — substitute <env> with the right selector for your workspace)`,
     }
   }
   return { command: "NOTION_KEYRING=0 ntn login" }
@@ -322,16 +322,16 @@ export function ntnLoginRecovery(
  * resolved `ResolvedAuth` because that struct's `baseUrl` IS the
  * runtime source of truth — it's the value `createClient` consumes —
  * and `resolveAuth` intentionally branches by auth source so canonical
- * paths (`env-notion-api-token`, `ntn-auth-json`) ignore `.lore.yaml
- * auth.baseUrl` for security. .lore.yaml is local-only, but it's
+ * paths (`env-notion-api-token`, `ntn-auth-json`) ignore `.kennen.yaml
+ * auth.baseUrl` for security. .kennen.yaml is local-only, but it's
  * still persistent file state (backed up, synced, pasteable, one
  * `git add -f` away from history), so it's less trusted than
- * operator-controlled env vars — a malicious .lore.yaml carrying
+ * operator-controlled env vars — a malicious .kennen.yaml carrying
  * `auth.baseUrl: https://attacker.example` could otherwise redirect a
  * bearer token. `resolveAuth` carries the security contract.
  *
  * The annotation names where the resolved value came from so an
- * operator who forgot they had `LORE_NOTION_BASE_URL` set, or who has
+ * operator who forgot they had `KENNEN_NOTION_BASE_URL` set, or who has
  * a stale ntn config.json env, can see it at install time:
  *
  *   - shell env wins for all auth sources (operator-controlled).
@@ -343,7 +343,7 @@ export function ntnLoginRecovery(
  * benefit from "yes, this is targeting prod" being explicit even on
  * the silent-default case. The previous shell-env-only display
  * suppressed the line whenever no shell var was set, which silenced
- * exactly the `.lore.yaml auth.baseUrl` ↔ ntn-config.json mismatch
+ * exactly the `.kennen.yaml auth.baseUrl` ↔ ntn-config.json mismatch
  * footgun this surface exists to prevent.
  */
 function describeNtnEnvSelectors(
@@ -371,7 +371,7 @@ function describeBaseUrlSource(
   resolvedBaseUrl: string | undefined
 ): string {
   for (const key of [
-    "LORE_NOTION_BASE_URL",
+    "KENNEN_NOTION_BASE_URL",
     "NOTION_BASE_URL",
     "NOTION_API_BASE_URL",
   ] as const) {
@@ -400,7 +400,7 @@ function describeBaseUrlSource(
 }
 
 /**
- * Detect the silent footgun where `.lore.yaml auth.baseUrl` declares a
+ * Detect the silent footgun where `.kennen.yaml auth.baseUrl` declares a
  * Notion deployment that the resolved canonical auth source
  * intentionally ignores, and the declared target disagrees with the
  * runtime resolution. Returns a multi-line warning the caller surfaces
@@ -408,7 +408,7 @@ function describeBaseUrlSource(
  * mismatch.
  *
  * Concrete scenario: operator pins `auth.baseUrl: <dev URL>` in
- * .lore.yaml, runs `ntn login` with the prod default (no
+ * .kennen.yaml, runs `ntn login` with the prod default (no
  * `NOTION_ENV=dev`), the canonical security contract drops the repo
  * config (`resolveAuth` enforces the drop), and every Notion call
  * goes to prod with a confusing "vault not accessible" trail.
@@ -426,7 +426,7 @@ function describeBaseUrlSource(
  */
 function describeAuthBaseUrlConfigMismatch(
   auth: ResolvedAuth,
-  config: LoreConfig | undefined,
+  config: KennenConfig | undefined,
   envSource: NodeJS.ProcessEnv = process.env
 ): string | undefined {
   if (auth.source !== "ntn-auth-json" && auth.source !== "env-notion-api-token") {
@@ -435,7 +435,7 @@ function describeAuthBaseUrlConfigMismatch(
   const configBaseUrl = config?.auth?.baseUrl
   if (!configBaseUrl) return undefined
   if (
-    envSource["LORE_NOTION_BASE_URL"] ||
+    envSource["KENNEN_NOTION_BASE_URL"] ||
     envSource["NOTION_BASE_URL"] ||
     envSource["NOTION_API_BASE_URL"]
   ) {
@@ -459,7 +459,7 @@ function describeAuthBaseUrlConfigMismatch(
       ? "ntn's config.json"
       : "the NOTION_API_TOKEN environment"
   return [
-    `.lore.yaml declares auth.baseUrl=${declared} but resolved auth targets ${resolved}.`,
+    `.kennen.yaml declares auth.baseUrl=${declared} but resolved auth targets ${resolved}.`,
     `Repo-controlled auth.baseUrl is ignored on canonical sources for security; runtime`,
     `consults ${sourceHint}. To target ${declared}, set NOTION_ENV in your shell or run`,
     `\`ntn login\` against the right env.`,
@@ -476,16 +476,16 @@ function printPatIntegrationTokenPreflightHint(): void {
 }
 
 /**
- * Audit prerequisites for `lore install` and remediate when the
+ * Audit prerequisites for `kennen install` and remediate when the
  * operator opts in.
  *
  * Three probes:
  *   1. **ntn installed**: probes via `isNtnInstalled` (memoized
  *      `execFileSync ntn --version`). On miss, offers
- *      `installNtn()` (verified release archive with Lore-pinned
+ *      `installNtn()` (verified release archive with Kennen-pinned
  *      sha256); operator must confirm explicitly.
  *   2. **ntn version**: non-blocking warning when
- *      `checkNtnVersion()` returns `"too-old"`. Lore never
+ *      `checkNtnVersion()` returns `"too-old"`. Kennen never
  *      auto-upgrades — operators pin ntn versions for other tooling
  *      and we don't override that.
  *   3. **Auth source**: runs `resolveAuth(config, configRoot)` and
@@ -494,10 +494,10 @@ function printPatIntegrationTokenPreflightHint(): void {
  *      own spawn so auth.json lands in file mode); operator
  *      confirms.
  *
- * Post-resolution preflight: when auth resolves AND .lore.yaml
+ * Post-resolution preflight: when auth resolves AND .kennen.yaml
  * exists, runs `verifyVaultAccess` against the configured vault
  * page. A `not-found` flips `ready` to false so the install action
- * exits without writing MCP config — engineers running `lore
+ * exits without writing MCP config — engineers running `kennen
  * install` and seeing a success message followed by a working
  * assistant connection is the seamless-onboarding promise; a
  * preflight failure that lands MCP config anyway breaks that
@@ -511,7 +511,7 @@ function printPatIntegrationTokenPreflightHint(): void {
  * `runNtnLogin()` and `installNtn()` force
  * `NOTION_KEYRING=0` inside their own spawn env, so the operator
  * never has to set the env var themselves for the install path.
- * Operators who later run `ntn login` directly (outside Lore)
+ * Operators who later run `ntn login` directly (outside Kennen)
  * without the env var hit ntn's keychain default — the operator
  * runbook documents this gotcha.
  */
@@ -519,12 +519,12 @@ function printPatIntegrationTokenPreflightHint(): void {
  * Name the specific shell variable that conflicts with `--dev` so the
  * fail-fast error tells the operator exactly which one to unset.
  * Walks `resolveOperatorBaseUrl`'s priority chain — first match wins —
- * so the message matches the variable Lore would actually have used
+ * so the message matches the variable Kennen would actually have used
  * for auth resolution.
  */
 export function describeConflictingDevSignal(env: NodeJS.ProcessEnv): string {
-  if (env["LORE_NOTION_BASE_URL"]) {
-    return `LORE_NOTION_BASE_URL=${env["LORE_NOTION_BASE_URL"]}`
+  if (env["KENNEN_NOTION_BASE_URL"]) {
+    return `KENNEN_NOTION_BASE_URL=${env["KENNEN_NOTION_BASE_URL"]}`
   }
   if (env["NOTION_BASE_URL"]) {
     return `NOTION_BASE_URL=${env["NOTION_BASE_URL"]}`
@@ -546,7 +546,7 @@ export function describeConflictingDevSignal(env: NodeJS.ProcessEnv): string {
  * already verified the env var is set), surfaces the describe lines
  * the ntn path also emits, and runs `preflightAndReport`.
  *
- * On auth-resolution failure (for example, `.lore.yaml` carrying the
+ * On auth-resolution failure (for example, `.kennen.yaml` carrying the
  * removed `auth.token` field or a Zod validation error elsewhere in
  * the config), prints PAT-specific recovery guidance.
  *
@@ -558,7 +558,7 @@ async function resolveAndPreflight(
   opts: EnsurePrerequisitesOptions
 ): Promise<{ ready: boolean; authSource?: AuthSource }> {
   const found = await findConfigFile(context.projectDir)
-  let config: LoreConfig | undefined
+  let config: KennenConfig | undefined
   if (found) {
     config = await loadConfig(found.path)
   }
@@ -583,10 +583,12 @@ async function resolveAndPreflight(
       `    Auth resolution failed: ${err instanceof Error ? err.message : String(err)}`
     )
     console.error("")
-    console.error("    NOTION_API_TOKEN is set in your environment but Lore could not")
+    console.error("    NOTION_API_TOKEN is set in your environment but Kennen could not")
     console.error("    resolve it. The most common cause is an `auth.token` field in")
-    console.error("    .lore.yaml; Lore rejects every auth.token value. Remove it and")
-    console.error("    re-run `lore install`.")
+    console.error(
+      "    .kennen.yaml; Kennen rejects every auth.token value. Remove it and"
+    )
+    console.error("    re-run `kennen install`.")
     return { ready: false }
   }
 
@@ -608,7 +610,7 @@ async function resolveAndPreflight(
   // recognizes, but pasting a `secret_…` integration token from
   // `notion.so/profile/integrations` re-collapses the team into a
   // shared rate-limit bucket — exactly the failure mode the
-  // 2026-05-13 PAT announcement asks Lore to surface clearly. The
+  // 2026-05-13 PAT announcement asks Kennen to surface clearly. The
   // hint is informational, not blocking; `verifyVaultAccess` runs
   // either way.
   if (auth.token.startsWith("secret_")) {
@@ -619,7 +621,7 @@ async function resolveAndPreflight(
       "                          Integration tokens are integration-level rate-limited, which"
     )
     console.log(
-      "                          re-collapses Lore into one shared bucket. Rotate to a PAT"
+      "                          re-collapses Kennen into one shared bucket. Rotate to a PAT"
     )
     console.log("                          from https://www.notion.so/developers/tokens.")
   }
@@ -650,15 +652,15 @@ export async function ensurePrerequisites(
   // `runInstall` always writes a literal dev `NOTION_BASE_URL` into
   // MCP env when `--dev` is set, so preflight could verify prod
   // while the install lands dev MCP config. Worse, the
-  // `${LORE_NOTION_BASE_URL}` placeholder forwarded into MCP env
+  // `${KENNEN_NOTION_BASE_URL}` placeholder forwarded into MCP env
   // outranks the literal `NOTION_BASE_URL` in
   // `resolveOperatorBaseUrl`'s priority chain — so an operator with
-  // `LORE_NOTION_BASE_URL=prod` in their shell would silently keep
+  // `KENNEN_NOTION_BASE_URL=prod` in their shell would silently keep
   // hitting prod at MCP-spawn time despite the `--dev` install.
   //
-  // The fail-fast posture matches the principle Lore uses
+  // The fail-fast posture matches the principle Kennen uses
   // elsewhere: when explicit signals conflict, the operator picks
-  // which one is real, not Lore. Two clean recoveries: unset the
+  // which one is real, not Kennen. Two clean recoveries: unset the
   // shell signal, or drop `--dev`.
   if (opts.dev) {
     const operatorBaseUrl = resolveOperatorBaseUrl(process.env)
@@ -670,7 +672,7 @@ export async function ensurePrerequisites(
         `    --dev was passed but ${conflicting} routes auth to ${operatorBaseUrl}`
       )
       console.error(
-        "    (not the dev base URL). Lore cannot install a coherent --dev MCP"
+        "    (not the dev base URL). Kennen cannot install a coherent --dev MCP"
       )
       console.error(
         "    config while the shell carries a conflicting signal — preflight would"
@@ -679,14 +681,14 @@ export async function ensurePrerequisites(
       console.error("")
       console.error("    Recovery (pick one):")
       console.error(
-        "      1. Unset the conflicting shell variable, then re-run `lore install --dev`."
+        "      1. Unset the conflicting shell variable, then re-run `kennen install --dev`."
       )
-      console.error("      2. Drop --dev and re-run `lore install` to target prod.")
+      console.error("      2. Drop --dev and re-run `kennen install` to target prod.")
       return { ready: false }
     }
   }
 
-  // Persona routing. External operators are first-class: `lore install`
+  // Persona routing. External operators are first-class: `kennen install`
   // does not auto-install `ntn` by default. Three branches:
   //
   //   - `--ntn` explicitly set: internal-engineer path; auto-install
@@ -695,7 +697,7 @@ export async function ensurePrerequisites(
   //     entirely, resolve auth from env, verify and proceed.
   //   - Neither flag nor env: if `ntn` is already installed, fall
   //     through to the ntn path (backward compat for internal engineers
-  //     who upgraded Lore without changing their habits). If `ntn` is
+  //     who upgraded Kennen without changing their habits). If `ntn` is
   //     NOT installed, surface persona-aware guidance and bail.
   //
   // `--dev` overlays on either branch:
@@ -715,26 +717,26 @@ export async function ensurePrerequisites(
     console.log(`  ntn installed:        ✗`)
     console.log(`  NOTION_API_TOKEN:     ✗ not set`)
     console.log("")
-    console.log("    Lore needs a Notion bearer token. Two supported paths:")
+    console.log("    Kennen needs a Notion bearer token. Two supported paths:")
     console.log("")
     console.log("    Internal Notion engineer? Re-run with --ntn:")
-    console.log(`        lore install --ntn${opts.dev ? " --dev" : ""}`)
-    console.log("      Lore will install `ntn`, run `ntn login`, and write MCP config.")
+    console.log(`        kennen install --ntn${opts.dev ? " --dev" : ""}`)
+    console.log("      Kennen will install `ntn`, run `ntn login`, and write MCP config.")
     console.log("")
     console.log("    External operator? Create a Personal Access Token at")
     console.log("      https://www.notion.so/developers/tokens")
-    console.log("      then export it and re-run `lore install`:")
+    console.log("      then export it and re-run `kennen install`:")
     console.log("")
     console.log(
       `        export NOTION_API_TOKEN="${opts.dev ? "development_ntn_" : "ntn_"}..."`
     )
-    console.log(`        lore install${opts.dev ? " --dev" : ""}`)
+    console.log(`        kennen install${opts.dev ? " --dev" : ""}`)
     console.log("")
     console.log(
       "    Do NOT paste an integration token from notion.so/profile/integrations —"
     )
     console.log(
-      "    those are integration-level rate-limited and re-collapse Lore into one"
+      "    those are integration-level rate-limited and re-collapse Kennen into one"
     )
     console.log("    shared bucket. See docs/authentication.md for the full contract.")
     return { ready: false }
@@ -753,7 +755,7 @@ export async function ensurePrerequisites(
   // the ntn path AND `NOTION_API_TOKEN` is set in their shell, the
   // resolver chain (`NOTION_API_TOKEN > ntn`) means the spawned MCP
   // child will use the PAT — not the freshly-minted ntn token —
-  // for every Lore call after the install. Name the outcome
+  // for every Kennen call after the install. Name the outcome
   // concretely so the operator can spot the silent shadow without
   // reading the docs. Symmetric to `formatUnsetInstructions`'s
   // `notionApiTokenActive` reassurance footer.
@@ -773,7 +775,9 @@ export async function ensurePrerequisites(
     console.log(
       "    and remove the export from your shell rc. If NOTION_API_TOKEN is the"
     )
-    console.log("    PAT you want Lore to use, drop --ntn instead — `lore install` will")
+    console.log(
+      "    PAT you want Kennen to use, drop --ntn instead — `kennen install` will"
+    )
     console.log("    skip ntn entirely.")
     console.log("")
   }
@@ -787,7 +791,7 @@ export async function ensurePrerequisites(
   if (!ntnInstalled) {
     console.log("")
     console.log("    ntn is required for the --ntn install path.")
-    console.log("    Lore can install it using a verified release archive:")
+    console.log("    Kennen can install it using a verified release archive:")
     console.log(`      ${NTN_VERIFIED_INSTALL_DESCRIPTION}`)
     console.log("")
     const ok = opts.yes ?? (await confirmPrompt("    Install ntn now? [Y/n] "))
@@ -799,7 +803,7 @@ export async function ensurePrerequisites(
     const installResult = await installNtn()
     if (installResult.kind !== "success") {
       console.error("    ntn install failed.")
-      console.error("    Check your network and shell, then re-run `lore install`.")
+      console.error("    Check your network and shell, then re-run `kennen install`.")
       return { ready: false }
     }
     console.log("    ✓ ntn installed.")
@@ -812,7 +816,7 @@ export async function ensurePrerequisites(
     console.log(
       `  ntn version:          ! ${installedVersion ?? "unknown"} (below tested minimum ${MIN_NTN_VERSION})`
     )
-    console.log("    Lore will proceed, but consider running `ntn update` if you")
+    console.log("    Kennen will proceed, but consider running `ntn update` if you")
     console.log("    hit auth resolution issues.")
   } else if (versionStatus === "ok") {
     console.log(`  ntn version:          ✓ ${installedVersion ?? "unknown"}`)
@@ -821,14 +825,14 @@ export async function ensurePrerequisites(
   // 3. Auth resolution. Offer ntn login on no-source-resolved.
   //
   // The catch around `resolveAuth` is narrow on purpose: a malformed
-  // .lore.yaml is a different problem from "no auth token", and
+  // .kennen.yaml is a different problem from "no auth token", and
   // offering ntn login won't fix Zod validation errors. So
   // `loadConfig` runs OUTSIDE the catch — its errors bubble up to
   // the install action's outer catch, which renders them via
   // `Install failed:`. Only `resolveAuth`'s no-token-resolved throw
   // routes into the offer-login branch.
   const found = await findConfigFile(context.projectDir)
-  let config: LoreConfig | undefined
+  let config: KennenConfig | undefined
   if (found) {
     config = await loadConfig(found.path)
   }
@@ -845,7 +849,7 @@ export async function ensurePrerequisites(
     // see which deployment their install will land on. Driven by
     // `auth.baseUrl` because that's what the spawned MCP child will
     // actually use; canonical auth sources intentionally ignore
-    // `.lore.yaml auth.baseUrl` for security so deriving from config
+    // `.kennen.yaml auth.baseUrl` for security so deriving from config
     // would lie on exactly the configurations this surface most needs
     // to be honest about. The mismatch warning catches the silent
     // footgun where a project pins `auth.baseUrl: <dev URL>` but
@@ -862,12 +866,12 @@ export async function ensurePrerequisites(
   // No auth resolved — derive the ntn-login env target before
   // offering. Priority: explicit `--dev` flag wins; otherwise
   // operator's `NOTION_ENV` env var (if set in shell); otherwise
-  // infer from .lore.yaml's `auth.baseUrl`. A non-canonical
+  // infer from .kennen.yaml's `auth.baseUrl`. A non-canonical
   // `auth.baseUrl` (e.g., a corporate proxy) without `--dev` or an
   // explicit `NOTION_ENV` means we can't safely pick an ntn env —
   // refuse auto-login with a recovery message rather than mint a
   // prod token for what's almost certainly NOT a prod project.
-  // Without this gate, `lore install -y` against a project whose
+  // Without this gate, `kennen install -y` against a project whose
   // `auth.baseUrl: https://api-dev.notion.com` would mint a prod
   // token and fall into the generic vault-not-accessible path —
   // exactly the dev-onboarding footgun this gate exists to prevent.
@@ -878,7 +882,7 @@ export async function ensurePrerequisites(
     "default"
   if (opts.dev) {
     // `--dev` is the most explicit signal — wins over both env vars
-    // and .lore.yaml's `auth.baseUrl`. The operator typed it just
+    // and .kennen.yaml's `auth.baseUrl`. The operator typed it just
     // now, so honoring it preserves the principle that the most
     // recent explicit operator intent wins.
     resolvedNtnEnv = "dev"
@@ -886,7 +890,7 @@ export async function ensurePrerequisites(
   } else if (operatorEnv) {
     if (operatorEnvParsed === null) {
       // Operator's shell carries `NOTION_ENV=<garbage>`. Refuse to
-      // forward it to ntn — bare ntn would also reject, but Lore can
+      // forward it to ntn — bare ntn would also reject, but Kennen can
       // surface a clearer message at the install seam.
       console.log("  Auth source:          ✗ no token resolved")
       console.error("")
@@ -896,7 +900,7 @@ export async function ensurePrerequisites(
       console.error(
         "    Recovery: unset or correct NOTION_ENV in your shell, then re-run"
       )
-      console.error("    `lore install`.")
+      console.error("    `kennen install`.")
       return { ready: false }
     }
     resolvedNtnEnv = operatorEnvParsed
@@ -913,10 +917,10 @@ export async function ensurePrerequisites(
       console.log("  Auth source:          ✗ no token resolved")
       console.error("")
       console.error(
-        `    .lore.yaml carries auth.baseUrl=${config.auth.baseUrl}, which doesn't`
+        `    .kennen.yaml carries auth.baseUrl=${config.auth.baseUrl}, which doesn't`
       )
       console.error(
-        "    match a known ntn environment. Lore can't safely pick a `NOTION_ENV`"
+        "    match a known ntn environment. Kennen can't safely pick a `NOTION_ENV`"
       )
       console.error("    target for `ntn login` from this — minting a prod token for a")
       console.error(
@@ -926,7 +930,7 @@ export async function ensurePrerequisites(
       console.error("")
       console.error("    Recovery: run `NOTION_KEYRING=0 NOTION_ENV=<env> ntn login`")
       console.error("    directly with the right env")
-      console.error("    selector for your workspace, then re-run `lore install`.")
+      console.error("    selector for your workspace, then re-run `kennen install`.")
       return { ready: false }
     }
   }
@@ -935,13 +939,13 @@ export async function ensurePrerequisites(
   console.log("")
   if (resolvedNtnEnvSource === "cli-flag") {
     console.log(
-      `    --dev was passed — Lore will pass NOTION_ENV=${resolvedNtnEnv} to ntn login so the`
+      `    --dev was passed — Kennen will pass NOTION_ENV=${resolvedNtnEnv} to ntn login so the`
     )
     console.log("    resulting token authorizes against the dev deployment.")
     console.log("")
   } else if (resolvedNtnEnvSource === "config-baseurl") {
     console.log(
-      `    .lore.yaml's auth.baseUrl maps to ntn env "${resolvedNtnEnv}" — Lore will`
+      `    .kennen.yaml's auth.baseUrl maps to ntn env "${resolvedNtnEnv}" — Kennen will`
     )
     console.log(
       `    pass NOTION_ENV=${resolvedNtnEnv} to ntn login so the resulting token`
@@ -955,9 +959,11 @@ export async function ensurePrerequisites(
     console.log("    token for that environment.")
     console.log("")
   }
-  console.log("    Lore needs a Notion bearer token. Lore can run `ntn login` for you")
+  console.log(
+    "    Kennen needs a Notion bearer token. Kennen can run `ntn login` for you"
+  )
   console.log("    now (handles `NOTION_KEYRING=0` inside the spawn so the resulting")
-  console.log("    token lands in auth.json where Lore can read it).")
+  console.log("    token lands in auth.json where Kennen can read it).")
   console.log("")
   const promptLabel =
     resolvedNtnEnv && resolvedNtnEnvSource !== "operator-env"
@@ -965,7 +971,7 @@ export async function ensurePrerequisites(
       : "    Run `NOTION_KEYRING=0 ntn login` now? [Y/n] "
   const okLogin = opts.yes ?? (await confirmPrompt(promptLabel))
   if (!okLogin) {
-    // `lore auth --login` wraps this same flow with the version
+    // `kennen auth --login` wraps this same flow with the version
     // probe and post-login preflight; the manual ntn invocation below
     // is the fallback. The `NOTION_KEYRING=0` prefix is required so
     // the token lands in auth.json (file mode) instead of the macOS
@@ -975,9 +981,11 @@ export async function ensurePrerequisites(
       `    Skipping. Run \`NOTION_KEYRING=0 ${manualEnvPrefix}ntn login\` directly when you're`
     )
     console.log(
-      "    ready, then re-run `lore install`. The env var prefix is required so"
+      "    ready, then re-run `kennen install`. The env var prefix is required so"
     )
-    console.log("    the token lands in auth.json (where Lore reads from) instead of the")
+    console.log(
+      "    the token lands in auth.json (where Kennen reads from) instead of the"
+    )
     console.log("    macOS keychain.")
     return { ready: false }
   }
@@ -988,14 +996,14 @@ export async function ensurePrerequisites(
     if (loginResult.kind === "exit-non-zero") {
       console.error(`    ntn exited with code ${loginResult.code}`)
     }
-    console.error("    Re-run `lore install` to retry.")
+    console.error("    Re-run `kennen install` to retry.")
     return { ready: false }
   }
   console.log("    ✓ ntn login completed.")
   console.log("")
 
   // Re-resolve after login. The config file location is unchanged
-  // (ntn login doesn't move .lore.yaml), so reuse the `config`
+  // (ntn login doesn't move .kennen.yaml), so reuse the `config`
   // and `found` values from the pre-login lookup. Same narrow-catch
   // pattern as above — only `resolveAuth`'s no-token throw is
   // swallowed so we can fall through to the "still failed after
@@ -1011,12 +1019,12 @@ export async function ensurePrerequisites(
   }
 
   console.error("    Auth resolution still failed after ntn login.")
-  // `lore auth --status` is the diagnostic surface for the ntn-aware
+  // `kennen auth --status` is the diagnostic surface for the ntn-aware
   // path; the manual fallback is checking auth.json contents directly.
   console.error(
     "    Inspect `~/.config/notion/auth.json` to confirm a workspace token landed,"
   )
-  console.error("    or re-run with `LORE_DEBUG=1` for verbose resolveAuth tracing.")
+  console.error("    or re-run with `KENNEN_DEBUG=1` for verbose resolveAuth tracing.")
   return { ready: false }
 }
 
@@ -1039,17 +1047,17 @@ export async function ensurePrerequisites(
  *   blocking would force the operator to retry the install instead
  *   of letting the rate-limit window pass.
  * - `unknown-error` (5xx, network) → log and proceed. Genuine
- *   transients shouldn't block onboarding; the next `lore`
+ *   transients shouldn't block onboarding; the next `kennen`
  *   invocation will surface the issue clearly if it persists.
  *
- * Skips entirely when no .lore.yaml exists — auth resolved without
- * a vault config is unusual but acceptable (e.g., post-`lore install`
- * before `lore init`).
+ * Skips entirely when no .kennen.yaml exists — auth resolved without
+ * a vault config is unusual but acceptable (e.g., post-`kennen install`
+ * before `kennen init`).
  */
 async function preflightAndReport(
   auth: ResolvedAuth,
   found: { root: string; path: string } | null,
-  config: LoreConfig | undefined
+  config: KennenConfig | undefined
 ): Promise<{ ready: boolean; authSource?: AuthSource }> {
   if (!found || !config) {
     return { ready: true, authSource: auth.source }
@@ -1092,7 +1100,7 @@ async function preflightAndReport(
       console.error(
         `         in the workspace that contains ${config.vault.pageId}, then`
       )
-      console.error("         export it as NOTION_API_TOKEN and re-run `lore install`.")
+      console.error("         export it as NOTION_API_TOKEN and re-run `kennen install`.")
       console.error(
         "      2. The vault page isn't shared with the PAT's owning Notion identity."
       )
@@ -1106,7 +1114,7 @@ async function preflightAndReport(
       console.error("         workspace membership.")
     } else {
       // ntn-source: env-aware ntn-login recovery. A project whose
-      // .lore.yaml says dev (or whose operator has `NOTION_ENV=dev`
+      // .kennen.yaml says dev (or whose operator has `NOTION_ENV=dev`
       // exported) gets a paste-ready
       // `NOTION_KEYRING=0 NOTION_ENV=dev ntn login` command.
       const recovery = ntnLoginRecovery(config)
@@ -1141,7 +1149,7 @@ async function preflightAndReport(
     }
     console.error("")
     console.error(
-      "    Refusing to write MCP config — fix vault access and re-run `lore install`."
+      "    Refusing to write MCP config — fix vault access and re-run `kennen install`."
     )
     return { ready: false }
   }
@@ -1170,7 +1178,7 @@ async function preflightAndReport(
         "        identity; PATs cannot read pages you can't open in Notion's UI."
       )
       console.error(
-        "      - Export the new PAT as NOTION_API_TOKEN, then re-run `lore install`."
+        "      - Export the new PAT as NOTION_API_TOKEN, then re-run `kennen install`."
       )
     } else {
       // ntn-source: env-aware ntn-login recovery. 401/403 means the
@@ -1185,18 +1193,18 @@ async function preflightAndReport(
         console.error(`      ${recovery.manualEnvNote}`)
       }
       console.error("")
-      console.error("    then re-run `lore install`.")
+      console.error("    then re-run `kennen install`.")
     }
     console.error("")
     console.error(
-      "    Refusing to write MCP config — fix auth and re-run `lore install`."
+      "    Refusing to write MCP config — fix auth and re-run `kennen install`."
     )
     return { ready: false }
   }
 
   if (result.kind === "rate-limited") {
     console.warn(`  Vault page:           ? rate-limited (${config.vault.pageId})`)
-    console.warn("    Notion's API throttled the preflight check. Lore will install")
+    console.warn("    Notion's API throttled the preflight check. Kennen will install")
     console.warn("    anyway; if your first tool call also rate-limits, wait a minute")
     console.warn("    and retry.")
     return { ready: true, authSource: auth.source }
@@ -1207,7 +1215,7 @@ async function preflightAndReport(
     `  Vault page:           ? preflight returned an unexpected error (${config.vault.pageId})`
   )
   console.warn(
-    "    Lore will install anyway; if the issue persists, re-run `lore install`"
+    "    Kennen will install anyway; if the issue persists, re-run `kennen install`"
   )
   console.warn("    or check Notion's status page.")
   return { ready: true, authSource: auth.source }
@@ -1217,6 +1225,6 @@ export async function preflightCodexInstall(context: InstallContext): Promise<vo
   const codexConfigPath = join(context.projectDir, ".codex", "config.toml")
   const codexHooksPath = join(context.projectDir, ".codex", "hooks.json")
   const codexConfig = await readTextSafe(codexConfigPath)
-  assertTomlSupportsLoreRewrite(codexConfig, codexConfigPath)
+  assertTomlSupportsKennenRewrite(codexConfig, codexConfigPath)
   await readJsonSafe(codexHooksPath)
 }

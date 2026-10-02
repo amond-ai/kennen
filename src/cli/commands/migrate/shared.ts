@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import {
   PROJECT_SCOPE_MIGRATION_DOC,
   resolveProjectScopeName,
@@ -44,7 +44,7 @@ export function isProjectScopedMigrationRequested(opts: MigrationScopeIntent): b
 }
 
 export async function resolveMigrationProjectScope(
-  services: LoreServices,
+  services: KennenServices,
   opts: MigrationScopeIntent
 ): Promise<MigrationProjectScope> {
   if (!isProjectScopedMigrationRequested(opts)) {
@@ -55,7 +55,7 @@ export async function resolveMigrationProjectScope(
     opts.project,
     "--project",
     {
-      listHint: "run `lore status projects` to list configured projects",
+      listHint: "run `kennen status projects` to list configured projects",
       omittedScopeLabel: "vault-wide scope",
       includeArchivedHint:
         "If this is an archived project migration, pass --include-archived",
@@ -72,7 +72,7 @@ export async function resolveMigrationProjectScope(
     explicitProjectName,
     "--project",
     {
-      listHint: "run `lore status projects` to list configured projects",
+      listHint: "run `kennen status projects` to list configured projects",
       omittedScopeLabel: "vault-wide scope",
       includeArchivedHint:
         "If this is an archived project migration, pass --include-archived",
@@ -93,7 +93,7 @@ export async function resolveMigrationProjectScope(
  *
  * `label` is the noun phrase describing the rows being discovered
  * ("memories with empty Synopsis"). The helper appends a fixed
- * `LORE_DEBUG=1` pointer so every discovery surface points at the
+ * `KENNEN_DEBUG=1` pointer so every discovery surface points at the
  * same retry-trace switch — operators only have to remember the one
  * env var.
  *
@@ -102,6 +102,6 @@ export async function resolveMigrationProjectScope(
  */
 export function printDiscoveryBreadcrumb(label: string): void {
   process.stderr.write(
-    `Discovering ${label} (paginating Notion; set LORE_DEBUG=1 to trace retries)...\n`
+    `Discovering ${label} (paginating Notion; set KENNEN_DEBUG=1 to trace retries)...\n`
   )
 }

@@ -19,7 +19,7 @@ describe("skill-retrieval corpus fetch", () => {
   })
 
   it("downloads missing files and skips sha-matched files", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skillret-fetch-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skillret-fetch-"))
     const manifestPath = join(dir, "checksums.json")
     const payload = Buffer.from('{"ok":true}\n')
     await writeFile(
@@ -67,7 +67,7 @@ describe("skill-retrieval corpus fetch", () => {
   })
 
   it("rejects sha drift", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-skillret-fetch-bad-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-skillret-fetch-bad-"))
     const manifestPath = join(dir, "checksums.json")
     await writeFile(
       manifestPath,

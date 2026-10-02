@@ -35,7 +35,7 @@ import {
 } from "./hooks.js"
 import {
   appendTomlBlock,
-  assertTomlSupportsLoreRewrite,
+  assertTomlSupportsKennenRewrite,
   extractTomlKeyValue,
   extractTomlTableGroup,
   removeTomlTableGroup,
@@ -53,14 +53,14 @@ function formatTomlArray(values: readonly string[]): string {
 }
 
 /**
- * Build the bin-dispatch `[mcp_servers.lore]` block for
+ * Build the bin-dispatch `[mcp_servers.kennen]` block for
  * .codex/config.toml. Codex's MCP launcher resolves `command` against
  * the same PATH the legacy `bash -lc 'node ...'` wrapper relied on for
- * `node` resolution, so the bare form `command = "lore"` works as long
- * as `lore` is on PATH (npm / Yarn 1 consumers via
- * `node_modules/.bin/lore`). Yarn Berry PnP consumers don't populate
+ * `node` resolution, so the bare form `command = "kennen"` works as long
+ * as `kennen` is on PATH (npm / Yarn 1 consumers via
+ * `node_modules/.bin/kennen`). Yarn Berry PnP consumers don't populate
  * `node_modules/.bin`, so they need `shape: "yarn"` which emits
- * `command = "yarn"` / `args = ["lore", "mcp"]` and lets Yarn's
+ * `command = "yarn"` / `args = ["kennen", "mcp"]` and lets Yarn's
  * PnPAPI resolve the bin.
  */
 /**
@@ -104,7 +104,7 @@ export function shellQuoteSingle(value: string): string {
  * single argument, so the resulting expansion is one argv entry
  * pointing at the expanded absolute path under the operator's home.
  *
- * Paths that don't carry the `${HOME}` marker (e.g., a Lore install
+ * Paths that don't carry the `${HOME}` marker (e.g., a Kennen install
  * outside the operator's home) fall through to plain
  * `shellQuoteSingle` — there's no expansion to preserve.
  */
@@ -123,7 +123,7 @@ export function shellQuotePortablePath(path: string): string {
  * Compose a `bash -lc` launch command with the build's static
  * `KEY=value` pairs prepended. Codex's TOML shape (`env_vars =
  * [...]`) carries name-only references to runtime env, so static
- * values like `LORE_CONFIG_ROOT` cannot live there; they go on the
+ * values like `KENNEN_CONFIG_ROOT` cannot live there; they go on the
  * shell command line instead. Values are quoted with the same
  * home-aware helper used for legacy launch paths: normal absolute
  * values remain POSIX single-quoted so `$`, backticks, or `\` do
@@ -160,10 +160,10 @@ export function buildCodexMcpSection(
     authSource,
     notionBaseUrlLiteral,
   })
-  const baseCommand = shape === "yarn" ? "yarn run -T lore mcp" : "lore mcp"
+  const baseCommand = shape === "yarn" ? "yarn run -T kennen mcp" : "kennen mcp"
   const launchCommand = codexLaunchCommand(build.staticEnv, baseCommand)
   return [
-    "[mcp_servers.lore]",
+    "[mcp_servers.kennen]",
     'command = "bash"',
     `args = ["-lc", ${JSON.stringify(launchCommand)}]`,
     `env_vars = ${formatTomlArray(runtimeForwardedKeys(build))}`,
@@ -204,7 +204,7 @@ export function buildLegacyCodexMcpSection(
   )
 
   return [
-    "[mcp_servers.lore]",
+    "[mcp_servers.kennen]",
     'command = "bash"',
     `args = ["-lc", ${JSON.stringify(launchCommand)}]`,
     `env_vars = ${formatTomlArray(runtimeForwardedKeys(build))}`,
@@ -246,7 +246,7 @@ export async function runCodexInstall(
   const codexConfigPath = join(context.projectDir, ".codex", "config.toml")
   const codexHooksPath = join(context.projectDir, ".codex", "hooks.json")
   const codexConfig = await readTextSafe(codexConfigPath)
-  assertTomlSupportsLoreRewrite(codexConfig, codexConfigPath)
+  assertTomlSupportsKennenRewrite(codexConfig, codexConfigPath)
   const codexHooksJson = await readJsonSafe(codexHooksPath)
   const codexHooks = (codexHooksJson.hooks ?? {}) as Record<string, CodexHookEntry[]>
 
@@ -266,7 +266,7 @@ export async function runCodexInstall(
     context.notionBaseUrlLiteral
   )
   const desiredMcpSection = context.legacyPaths ? legacyMcpSection : binMcpSection
-  const existingMcpSection = extractTomlTableGroup(codexConfig, "mcp_servers.lore")
+  const existingMcpSection = extractTomlTableGroup(codexConfig, "mcp_servers.kennen")
   const hooksFeatureValue = extractTomlKeyValue(
     codexConfig,
     "features",
@@ -342,11 +342,11 @@ export async function runCodexInstall(
   // Stop hooks shell out to a background agent CLI for autosave /
   // digest synthesis. Default is `claude -p` for Claude Code
   // installs; Codex installs prefix every hook command with
-  // `LORE_AGENT_NAME=Codex` so the runtime resolver derives `command:
+  // `KENNEN_AGENT_NAME=Codex` so the runtime resolver derives `command:
   // codex` automatically (no per-project setup required). Pass `"Codex"`
   // explicitly to the resolver here so the install-time status block
   // matches what hook-fire time will produce, even when the operator's
-  // install-time shell doesn't have `LORE_AGENT_NAME` exported.
+  // install-time shell doesn't have `KENNEN_AGENT_NAME` exported.
   printBackgroundAgentSummary(
     await resolveBackgroundAgentForInstall(context, process.env, "Codex")
   )
@@ -369,14 +369,14 @@ export async function runCodexInstall(
   }
 
   console.log()
-  const proceed = await confirm(rl, "Install Lore Codex integration for this project?")
+  const proceed = await confirm(rl, "Install Kennen Codex integration for this project?")
   if (!proceed) {
     console.log("  Skipped.")
     return
   }
 
   let nextConfig = codexConfig
-  nextConfig = removeTomlTableGroup(nextConfig, "mcp_servers.lore")
+  nextConfig = removeTomlTableGroup(nextConfig, "mcp_servers.kennen")
   nextConfig = upsertTomlTableKey(nextConfig, "features", CODEX_HOOKS_FEATURE_KEY, "true")
   nextConfig = appendTomlBlock(nextConfig, desiredMcpSection)
 
@@ -391,7 +391,7 @@ export async function runCodexInstall(
     nextHookEvents["UserPromptSubmit"],
     desiredWakeupCommand,
     {
-      statusMessage: "Loading Lore context",
+      statusMessage: "Loading Kennen context",
     }
   )
   nextHookEvents["Stop"] = mergeCodexHookEntries(
@@ -400,7 +400,7 @@ export async function runCodexInstall(
     {
       // Codex hook timeouts are expressed in seconds.
       timeout: 30,
-      statusMessage: "Saving Lore context",
+      statusMessage: "Saving Kennen context",
     }
   )
 
@@ -425,11 +425,11 @@ export async function runCodexInstall(
   const portableMcpJsPath = toPortablePath(context.mcpJsPath)
   if (context.legacyPaths && !portableMcpJsPath.startsWith("${HOME}")) {
     console.warn()
-    console.warn("  Warning: lore is installed outside your home directory")
+    console.warn("  Warning: kennen is installed outside your home directory")
     console.warn(`    (${context.pkgRoot}).`)
     console.warn("  The generated .codex/config.toml uses an absolute path and is not")
     console.warn("  portable across machines - avoid committing it, or reinstall")
-    console.warn("  lore under ~/.lore so the path can use ${HOME}.")
+    console.warn("  kennen under ~/.kennen so the path can use ${HOME}.")
   }
 
   console.log()

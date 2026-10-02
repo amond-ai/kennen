@@ -1,5 +1,5 @@
 import type { PageObjectResponse, QueryDataSourceParameters } from "@notionhq/client"
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import {
   extractRichText,
   extractTitle,
@@ -34,7 +34,7 @@ function legacyAutosaveLearningFilter(
   return { and: filters } as QueryDataSourceParameters["filter"]
 }
 
-async function hasLegacyConfidenceColumn(services: LoreServices): Promise<boolean> {
+async function hasLegacyConfidenceColumn(services: KennenServices): Promise<boolean> {
   const response = await services.client.dataSources.retrieve({
     data_source_id: services.vault.databases.memories.dataSourceId,
   })
@@ -53,7 +53,7 @@ function rowFromPage(page: PageObjectResponse): LegacyAutosaveLearningRow {
 }
 
 export async function runBackfillAutosaveLearningSource(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     apply: boolean
     dryRun: boolean
@@ -115,10 +115,10 @@ export async function runBackfillAutosaveLearningSource(
       written++
     }
     console.log(
-      `\n[lore] backfill-autosave-learning-source: wrote ${written} row${written === 1 ? "" : "s"}.`
+      `\n[kennen] backfill-autosave-learning-source: wrote ${written} row${written === 1 ? "" : "s"}.`
     )
   } else if (candidates.length > 0) {
-    console.log("\n[lore] dry-run: no writes performed. Re-run with --yes to apply.")
+    console.log("\n[kennen] dry-run: no writes performed. Re-run with --yes to apply.")
   }
 
   return { scanned, candidates, written }

@@ -1,7 +1,7 @@
 # CI Contract
 
 This doc states the contract that `/.github/workflows/ci.yml` is required to
-keep. The contract exists because Lore is a public repository: every external
+keep. The contract exists because Kennen is a public repository: every external
 fork's pull request runs `ci.yml` against code the maintainers have not seen,
 under the fork's identity, with no access to repo secrets.
 
@@ -27,7 +27,7 @@ upstream guide is the fallback reference.
 > section first**. If your step legitimately needs internal state, move it to a
 > separate workflow that does **not** run on `pull_request` (see the
 > [Adding internal-state workflows](#adding-internal-state-workflows) section
-> for the safe shapes — a bare `github.repository == 'makenotion/lore'` check
+> for the safe shapes — a bare `github.repository == 'amond-ai/kennen'` check
 > is **not** fork-safe when the workflow runs on `pull_request`).
 
 ## Per-step contract (`ci.yml`)
@@ -43,14 +43,14 @@ why it stays inside the envelope.
 | Install zizmor       | `curl` the pinned `zizmor` Linux release archive, verify SHA-256, and add the binary to `PATH`     | No                          | Public GitHub release asset | No                      | Downloads a public, versioned static-analysis binary and verifies the archive checksum before execution.                                                                                                                                                                         |
 | Run zizmor           | `zizmor --min-severity medium --format github --no-progress .github/workflows`                     | No                          | No                          | No                      | Pure static analysis of committed workflow files; unsuppressed medium-or-higher findings fail the job.                                                                                                                                                                           |
 | Setup Node.js        | `actions/setup-node` (SHA-pinned, see rule #6)                                                     | No                          | Public npm mirror           | No                      | Standard action; pulls Node 20 binary.                                                                                                                                                                                                                                           |
-| Install dependencies | `npm ci`                                                                                           | No                          | Public npm registry         | No                      | No `.npmrc`, no `@makenotion`-scoped runtime deps. `prepare` script (`tools/install-git-hooks.mjs`) returns early when `CI=true`.                                                                                                                                                |
+| Install dependencies | `npm ci`                                                                                           | No                          | Public npm registry         | No                      | No `.npmrc`, no `@amond-ai`-scoped runtime deps. `prepare` script (`tools/install-git-hooks.mjs`) returns early when `CI=true`.                                                                                                                                                |
 | Format check         | `npm run format:check` (`prettier --check src/`)                                                   | No                          | No                          | No                      | Pure static formatting check.                                                                                                                                                                                                                                                    |
 | Version sync check   | `npm run version:check` (`node tools/check-version-sync.mjs`)                                      | No                          | No                          | No                      | Pure static consistency check that package, MCP handshake, CLI, and Notion `User-Agent` version literals match.                                                                                                                                                                  |
 | Lint                 | `npm run lint` (`eslint src/`)                                                                     | No                          | No                          | No                      | Pure static analysis.                                                                                                                                                                                                                                                            |
 | Typecheck            | `npm run typecheck` (`tsc --noEmit`)                                                               | No                          | No                          | No                      | Pure static analysis.                                                                                                                                                                                                                                                            |
 | Test                 | `npm test` (`vitest run`)                                                                          | No                          | No                          | No                      | Tests use fixture-backed services. `tests/setup-runtool-flag.ts` pins all RunTool flags to `0` so no test path can accidentally hit Notion.                                                                                                                                      |
 | Build                | `npm run build` (`tsup`)                                                                           | No                          | No                          | No                      | Local bundler.                                                                                                                                                                                                                                                                   |
-| Eval starter suite   | `node dist/cli.js eval run evals/suites/lore-core.yaml …`                                          | No                          | No                          | No (synthetic)          | Runs the **retrieval** runner (see below). Synthetic YAML fixtures, no Notion calls.                                                                                                                                                                                             |
+| Eval starter suite   | `node dist/cli.js eval run evals/suites/kennen-core.yaml …`                                          | No                          | No                          | No (synthetic)          | Runs the **retrieval** runner (see below). Synthetic YAML fixtures, no Notion calls.                                                                                                                                                                                             |
 | Upload eval artifact | `actions/upload-artifact` (SHA-pinned, see rule #6)                                                | Ambient `GITHUB_TOKEN` only | GitHub API                  | No                      | The ambient per-run `GITHUB_TOKEN` is **automatically scoped to this run**; on a fork PR it is read-only by default and lifetime-bound to the run. The workflow declares `permissions: contents: read` at top level so the token is least-privilege regardless of repo defaults. |
 
 The `concurrency` block keys on `github.ref` and cancels stale runs; that's
@@ -61,7 +61,7 @@ inherently per-PR; this workflow only fires on `push: main` and
 
 ## Why the eval step doesn't need a Notion token
 
-CI invokes the eval CLI with the `evals/suites/lore-core.yaml` suite, which
+CI invokes the eval CLI with the `evals/suites/kennen-core.yaml` suite, which
 declares `runner: retrieval` (see `src/eval/runner.ts` for the dispatch and
 `docs/evals.md` for the runner taxonomy). The retrieval runner is
 contractually hermetic:
@@ -74,7 +74,7 @@ contractually hermetic:
 - It calls a `fixtureWakeUpServices()` factory (`src/eval/runner.ts`) that
   returns an in-memory `WakeUpServices` mock. The real `initServices()` path
   — the only code path that reads `NOTION_API_TOKEN`, `auth.json`, or
-  `.lore.yaml` — is never invoked.
+  `.kennen.yaml` — is never invoked.
 - The baseline JSON is read with `readFile` and validated with Zod; no
   network access.
 
@@ -93,8 +93,8 @@ run the job. The job has only `contents: read` plus `id-token: write`; npm
 exchanges the GitHub Actions OIDC identity for a short-lived publish credential.
 
 Before an OIDC release, the package owner must configure
-`@notionhq/lore`'s Trusted Publisher for GitHub organization `makenotion`,
-repository `lore`, workflow filename `publish.yml`, and the `npm publish`
+`@amond-ai/kennen`'s Trusted Publisher for GitHub organization `amond-ai`,
+repository `kennen`, workflow filename `publish.yml`, and the `npm publish`
 action. npm requires the package to exist before configuring that relationship,
 so a new package needs one manual publication with interactive 2FA. The release
 workflow treats an already-published version as success, allowing that bootstrap
@@ -108,7 +108,7 @@ on every `npm ci` — including in CI. It guards against running in CI by
 returning early when `process.env.CI === "true"`:
 
 ```js
-if (env["CI"] === "true" || env["LORE_SKIP_GIT_HOOK_INSTALL"] === "1") {
+if (env["CI"] === "true" || env["KENNEN_SKIP_GIT_HOOK_INSTALL"] === "1") {
   return
 }
 ```
@@ -116,25 +116,25 @@ if (env["CI"] === "true" || env["LORE_SKIP_GIT_HOOK_INSTALL"] === "1") {
 GitHub Actions sets `CI=true` automatically, so the hooks installer is a
 no-op on every CI run, fork or otherwise.
 
-## How the `.lore.yaml` gitignore invariant is enforced
+## How the `.kennen.yaml` gitignore invariant is enforced
 
-`.lore.yaml` is local-only — each clone copies `.lore.example.yaml` to
-`.lore.yaml` and fills in values from team onboarding docs. The repo
+`.kennen.yaml` is local-only — each clone copies `.kennen.example.yaml` to
+`.kennen.yaml` and fills in values from team onboarding docs. The repo
 enforces this with two complementary layers. This invariant is the current
 policy even for credential-free shared vault config and supersedes older
 changelog notes that described intentionally committed config:
 
 - **Pre-commit guard.** `.githooks/pre-commit` invokes
-  `node tools/check-lore-config.mjs --staged`, which rejects any staged
-  `.lore.yaml` index entry regardless of content (keying off
+  `node tools/check-kennen-config.mjs --staged`, which rejects any staged
+  `.kennen.yaml` index entry regardless of content (keying off
   `git ls-files --cached --error-unmatch`). The hook is installed by
   `tools/install-git-hooks.mjs` during `npm install`. CI does not
   invoke it directly — pre-commit hooks run on the contributor's
-  machine, and `LORE_SKIP_GIT_HOOK_INSTALL=1` plus the `CI=true` guard
+  machine, and `KENNEN_SKIP_GIT_HOOK_INSTALL=1` plus the `CI=true` guard
   in the installer skip the install path on CI runners anyway.
 - **CI-side repo invariant.** The `src/config-guard.test.ts` invariant for
-  an untracked root `.lore.yaml` runs in the standard test suite and fails
-  the build if `.lore.yaml` is ever tracked at the repo root again,
+  an untracked root `.kennen.yaml` runs in the standard test suite and fails
+  the build if `.kennen.yaml` is ever tracked at the repo root again,
   regardless of how it slipped in (rebase, cherry-pick, manual sequencer).
   This is what catches a bypass that the pre-commit hook missed.
 
@@ -197,14 +197,14 @@ permissions:
 
 jobs:
   nightly-live-eval:
-    if: github.repository == 'makenotion/lore'
+    if: github.repository == 'amond-ai/kennen'
     ...
 ```
 
-`github.repository == 'makenotion/lore'` is **not** by itself a fork-safe
+`github.repository == 'amond-ai/kennen'` is **not** by itself a fork-safe
 gate when the workflow runs on `pull_request`. A fork PR opened against
 the base repo runs in the base repo's context: `github.repository` is
-still `makenotion/lore`, and the guard evaluates `true`. Use one of these
+still `amond-ai/kennen`, and the guard evaluates `true`. Use one of these
 two shapes when a workflow needs to stay on `pull_request` but still skip
 fork PRs:
 
@@ -219,14 +219,14 @@ on:
 ```yaml
 # Or: combine the canonical-repo check with a PR-head check.
 if: >
-  github.repository == 'makenotion/lore' &&
+  github.repository == 'amond-ai/kennen' &&
   (github.event_name != 'pull_request' ||
    github.event.pull_request.head.repo.full_name == github.repository)
 ```
 
 The combined guard handles the case where a fork PR runs in the base repo's
 context: `github.event.pull_request.head.repo.full_name` resolves to
-`<fork-owner>/lore`, which differs from `github.repository`, so the guard
+`<fork-owner>/kennen`, which differs from `github.repository`, so the guard
 short-circuits before any privileged step runs.
 
 ## Verifying fork-safety locally
@@ -257,10 +257,10 @@ env -u NOTION_API_TOKEN -u GITHUB_TOKEN \
     npm run typecheck
     npm test
     npm run build
-    node dist/cli.js eval run evals/suites/lore-core.yaml \
-      --out evals/results/lore-core-ci.json \
+    node dist/cli.js eval run evals/suites/kennen-core.yaml \
+      --out evals/results/kennen-core-ci.json \
       --min-lift 0.5 --max-harm 0.0 \
-      --baseline evals/baselines/lore-core.json
+      --baseline evals/baselines/kennen-core.json
   '
 ```
 
@@ -269,7 +269,7 @@ available, the step has regressed the fork-safety contract.
 
 ```bash
 # 2. Confirm the eval suite still declares the retrieval runner.
-grep '^runner:' evals/suites/lore-core.yaml
+grep '^runner:' evals/suites/kennen-core.yaml
 # Expected: runner: retrieval
 ```
 
@@ -300,7 +300,7 @@ external fork PR should confirm:
 
 **No internal-only workflow fired:**
 
-- No workflow gated on `github.repository == 'makenotion/lore'` ran.
+- No workflow gated on `github.repository == 'amond-ai/kennen'` ran.
 - No `workflow_run`-shaped workflow fired off the fork's `pull_request`
   completion. If a future workflow listens for `workflow_run` from `CI`,
   re-run this check — `workflow_run` runs in the base repo's context with

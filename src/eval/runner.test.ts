@@ -7,11 +7,11 @@ import { runEvalSuite, type EvalRunArtifact } from "./runner.js"
 
 describe("runEvalSuite", () => {
   it("runs the starter retrieval suite and writes a JSON artifact", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lore-eval-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-eval-"))
     const outPath = join(dir, "result.json")
 
     const { artifact, outPath: writtenPath } = await runEvalSuite(
-      "evals/suites/lore-core.yaml",
+      "evals/suites/kennen-core.yaml",
       {
         outPath,
         now: new Date("2026-05-03T12:00:00.000Z"),
@@ -27,9 +27,9 @@ describe("runEvalSuite", () => {
       failedResults: 0,
     })
     expect(artifact.summary.scenarios).toEqual([
-      "empty-lore",
+      "empty-kennen",
       "helpful-memory",
-      "no-lore",
+      "no-kennen",
       "noisy-memory",
       "stale-memory",
     ])
@@ -75,7 +75,7 @@ describe("runEvalSuite", () => {
 
   it("rejects trial overrides for deterministic retrieval mode", async () => {
     await expect(
-      runEvalSuite("evals/suites/lore-core.yaml", {
+      runEvalSuite("evals/suites/kennen-core.yaml", {
         trials: 3,
       })
     ).rejects.toThrow("requires trials to be 1")
@@ -84,8 +84,8 @@ describe("runEvalSuite", () => {
   it("flags missing expected memories and surfaced forbidden memories", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: decision/expected
@@ -103,8 +103,8 @@ tasks:
   - id: fails-when-expected-memory-is-missing
     prompt: Implement the billing token flow.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -130,8 +130,8 @@ tasks:
   it("reports zero lift when the noisy baseline also surfaces the expected memory", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "noisy.yaml": authDecisionScenario("noisy-memory"),
         "helpful.yaml": authDecisionScenario("helpful-memory"),
       },
@@ -142,8 +142,8 @@ tasks:
   - id: noisy-baseline-finds-same-memory
     prompt: Follow the auth model decision.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
@@ -161,8 +161,8 @@ tasks:
   it("reports harm when noisy memory surfaces forbidden guidance", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "noisy.yaml": `name: noisy-memory
 memories:
   - id: note/deprecated-auth
@@ -178,8 +178,8 @@ tasks:
   - id: noisy-memory-harms-task
     prompt: Follow the auth path decision.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
@@ -206,8 +206,8 @@ tasks:
   it("counts stale-memory in the harm aggregation when stale guidance surfaces", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "stale.yaml": `name: stale-memory
 memories:
   # Status is intentionally not 'superseded' here so the fixture runner's
@@ -227,8 +227,8 @@ tasks:
   - id: stale-memory-harms-task
     prompt: Follow the auth path decision.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       stale-memory: ../memory/stale.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
@@ -255,8 +255,8 @@ tasks:
   it("suppresses superseded rows from fixture retrieval", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "stale.yaml": `name: stale-memory
 memories:
   - id: decision/superseded-row
@@ -274,8 +274,8 @@ tasks:
   - id: status-filter-suppresses-superseded
     prompt: Follow the auth path decision.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       stale-memory: ../memory/stale.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
@@ -299,8 +299,8 @@ tasks:
   it("extracts surfaced ids from the wake-up.memories recents section", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: decision/recent-architecture
@@ -317,8 +317,8 @@ tasks:
     prompt: Catch up on recent architectural choices.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -342,8 +342,8 @@ tasks:
   it("extracts surfaced ids from the wake-up.relatedMemories surface", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: decision/payments-retry-policy
@@ -365,8 +365,8 @@ tasks:
       Pick up where the team left off on payments work.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -390,8 +390,8 @@ tasks:
   it("wake-up.relatedMemories enforces shouldNotSurface for distractors", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: decision/payments-retry-policy
@@ -414,8 +414,8 @@ tasks:
     prompt: Pick up payments work.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     retrieval:
       limit: 5
@@ -441,8 +441,8 @@ tasks:
   it("extracts task-only surfaced ids without full wake-up recents", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 description: Full wake-up recents include unrelated noise, task-only retrieval should not.
 memories:
@@ -464,8 +464,8 @@ tasks:
     prompt: Implement payment retry backoff in the validator.
     surface: wake-up.taskOnly
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -491,8 +491,8 @@ tasks:
   it("wake-up.context extracts rendered query-focused memory channels without governance rows", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: note/retry-handler-idempotency
@@ -516,8 +516,8 @@ tasks:
     prompt: Add retry handling to payments while preserving idempotency keys.
     surface: wake-up.context
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     retrieval:
       limit: 3
@@ -543,8 +543,8 @@ tasks:
   it("wake-up.memories enforces shouldNotSurface for distractors", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: decision/recent-architecture
@@ -561,8 +561,8 @@ tasks:
     prompt: Catch up on recent architectural choices.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     retrieval:
       limit: 5
@@ -654,8 +654,8 @@ tasks:
 
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: decision/live-vault-row
@@ -671,8 +671,8 @@ tasks:
   - id: live-vault-task
     prompt: Surface the live vault decision.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -725,8 +725,8 @@ tasks:
     }
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": authDecisionScenario("helpful-memory"),
       },
       suite: `version: 1
@@ -736,8 +736,8 @@ tasks:
   - id: t
     prompt: p
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -762,8 +762,8 @@ tasks:
   it("notion runner refuses to run without a notionServices factory", async () => {
     const { suitePath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": authDecisionScenario("helpful-memory"),
       },
       suite: `version: 1
@@ -773,8 +773,8 @@ tasks:
   - id: t
     prompt: p
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -790,8 +790,8 @@ tasks:
   it("extracts surfaced ids from the wake-up.pinnedContext surface", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: pinned/release-policy
@@ -811,8 +811,8 @@ tasks:
     prompt: Review release governance.
     surface: wake-up.pinnedContext
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -838,8 +838,8 @@ tasks:
   it("extracts surfaced ids from the wake-up.inheritedMemories surface", async () => {
     const { suitePath, outPath } = await writeTempEvalSuite({
       fixtures: {
-        "no-lore.yaml": emptyScenario("no-lore"),
-        "empty.yaml": emptyScenario("empty-lore"),
+        "no-kennen.yaml": emptyScenario("no-kennen"),
+        "empty.yaml": emptyScenario("empty-kennen"),
         "helpful.yaml": `name: helpful-memory
 memories:
   - id: upstream/platform-guidance
@@ -859,8 +859,8 @@ tasks:
     prompt: Review inherited platform guidance.
     surface: wake-up.inheritedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/helpful.yaml
     expectedRetrieval:
       helpful-memory:
@@ -888,7 +888,7 @@ async function writeTempEvalSuite(input: {
   suite: string
   fixtures: Record<string, string>
 }): Promise<{ suitePath: string; outPath: string }> {
-  const dir = await mkdtemp(join(tmpdir(), "lore-eval-"))
+  const dir = await mkdtemp(join(tmpdir(), "kennen-eval-"))
   const suitesDir = join(dir, "suites")
   const memoryDir = join(dir, "memory")
   await mkdir(suitesDir, { recursive: true })

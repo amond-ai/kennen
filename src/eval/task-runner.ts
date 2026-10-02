@@ -16,10 +16,10 @@ export type {
   LongitudinalCostMetrics,
   LongitudinalFailureReason,
   LongitudinalLiftSummary,
-  LongitudinalLoreAdapter,
-  LongitudinalLoreFormationResult,
-  LongitudinalLoreMetrics,
-  LongitudinalLoreRun,
+  LongitudinalKennenAdapter,
+  LongitudinalKennenFormationResult,
+  LongitudinalKennenMetrics,
+  LongitudinalKennenRun,
   LongitudinalPhaseResult,
   LongitudinalScenarioSampleRequest,
   LongitudinalScenarioSampleSelection,
@@ -49,11 +49,11 @@ export {
   longitudinalMiningAgentForScenario,
   selectExpectedContextIds,
   withTemporaryLongitudinalAgentConfig,
-} from "./task-runner/lore-adapter.js"
+} from "./task-runner/kennen-adapter.js"
 export type {
   LongitudinalAgentConfigServices,
   ProjectContextItem,
-} from "./task-runner/lore-adapter.js"
+} from "./task-runner/kennen-adapter.js"
 export {
   BENCH_AGENT_MODEL,
   BENCH_AGENT_MODEL_ENV,

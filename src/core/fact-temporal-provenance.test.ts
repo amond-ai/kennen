@@ -509,9 +509,9 @@ describe("FactService.createWithDedup — issue #284 seeds Observed At", () => {
 
   it("surgically drops Observed At on stale-schema vaults and lets the create land (issue #284 review item #7)", async () => {
     // Principal-review blocker: a vault that pulled the new code but
-    // hasn't run `lore migrate` yet rejects `pages.create` with a
+    // hasn't run `kennen migrate` yet rejects `pages.create` with a
     // `validation_error` because `Observed At` isn't in the schema.
-    // Pre-fix, every `lore-fact action='create'` failed until the
+    // Pre-fix, every `kennen-fact action='create'` failed until the
     // operator manually migrated. The surgical-drop retry parses the
     // failing property name, removes it from the payload, and
     // re-attempts — same shape `invalidate` uses on the partially-
@@ -576,7 +576,7 @@ describe("FactService.createWithDedup — issue #284 seeds Observed At", () => {
       // Operator-visible warning fired with the right hint.
       const stderrText = stderrSpy.mock.calls.map((c) => c[0]).join("")
       expect(stderrText).toContain("Observed At")
-      expect(stderrText).toContain("lore migrate")
+      expect(stderrText).toContain("kennen migrate")
     } finally {
       stderrSpy.mockRestore()
     }
@@ -586,7 +586,7 @@ describe("FactService.createWithDedup — issue #284 seeds Observed At", () => {
     // Same R3-A regression on the create-path retry: Pattern 2 with
     // a leading `property` token must strip to the bare name so the
     // surgical drop fires. Pre-fix, this propagated a raw 400 (no
-    // bare-fallback for create), blocking every `lore-fact
+    // bare-fallback for create), blocking every `kennen-fact
     // action='create'` write on a partially-migrated vault.
     __resetFactCreateMissingColumnWarningForTests()
     const stderrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
@@ -804,7 +804,7 @@ describe("FactService.queryByEntity — issue #284 asOf filter", () => {
 
     const args = querySpy.mock.calls[0]![0]
     const flat = JSON.stringify(args.filter)
-    // Observed At clause still fires — "what Lore knew at asOf".
+    // Observed At clause still fires — "what Kennen knew at asOf".
     expect(flat).toContain('"Observed At"')
     expect(flat).toContain("on_or_before")
     // Invalidated At clause and the Valid Until fallback are NOT

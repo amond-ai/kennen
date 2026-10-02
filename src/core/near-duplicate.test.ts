@@ -55,9 +55,9 @@ function makeLister(
 }
 
 describe("findNearDuplicates", () => {
-  it("short-circuits when LORE_DISABLE_NEAR_DUPLICATE_PROBE=1 (operator kill-switch)", async () => {
+  it("short-circuits when KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1 (operator kill-switch)", async () => {
     const listSpy = vi.fn()
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "1")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "1")
     try {
       const result = await findNearDuplicates(
         { list: listSpy },
@@ -75,9 +75,9 @@ describe("findNearDuplicates", () => {
     }
   })
 
-  it("runs normally when LORE_DISABLE_NEAR_DUPLICATE_PROBE is anything other than '1'", async () => {
+  it("runs normally when KENNEN_DISABLE_NEAR_DUPLICATE_PROBE is anything other than '1'", async () => {
     const listSpy = vi.fn().mockResolvedValue({ items: [] })
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "0")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "0")
     try {
       await findNearDuplicates(
         { list: listSpy },
@@ -214,7 +214,7 @@ describe("findNearDuplicates", () => {
   })
 
   it("filters by status whitelist client-side", async () => {
-    // `lore-decide` needs `accepted OR proposed` — Notion's query accepts
+    // `kennen-decide` needs `accepted OR proposed` — Notion's query accepts
     // one status clause, so the probe post-filters instead of issuing
     // two server queries for one probe.
     const lister = makeLister([
@@ -351,7 +351,7 @@ describe("findNearDuplicates", () => {
   it("excludes resurfaced cleanup-orphans tagged with the sentinel keyword (issue #477)", async () => {
     // Repro for issue #477. A `MemoryService.create` body-write failure
     // archives the orphan AND tags its `Keywords` column with
-    // `__lore-cleanup-orphan` in one atomic update. Notion's archive
+    // `__kennen-cleanup-orphan` in one atomic update. Notion's archive
     // is reversible — within ~30 days an operator can restore the row
     // from workspace trash. Once restored the row is "live" again and
     // `MemoryService.list`'s default filters surface it. The advisory
@@ -361,7 +361,7 @@ describe("findNearDuplicates", () => {
       makeMemory({
         id: "mem-orphan-resurfaced",
         title: "Decision: replace auth middleware",
-        keywords: "__lore-cleanup-orphan",
+        keywords: "__kennen-cleanup-orphan",
       }),
       makeMemory({
         id: "mem-real",
@@ -523,9 +523,9 @@ describe("findNearDuplicates — listForNearDuplicates branch (issue #535)", () 
 })
 
 describe("findAutosaveLearningDuplicate", () => {
-  it("short-circuits when LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP=1", async () => {
+  it("short-circuits when KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP=1", async () => {
     const listSpy = vi.fn()
-    vi.stubEnv("LORE_DISABLE_AUTOSAVE_LEARNING_DEDUP", "1")
+    vi.stubEnv("KENNEN_DISABLE_AUTOSAVE_LEARNING_DEDUP", "1")
     try {
       const result = await findAutosaveLearningDuplicate(
         { list: listSpy },
@@ -545,7 +545,7 @@ describe("findAutosaveLearningDuplicate", () => {
 
   it("honors the shared near-duplicate kill-switch too", async () => {
     const listSpy = vi.fn()
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "1")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "1")
     try {
       const result = await findAutosaveLearningDuplicate(
         { list: listSpy },
@@ -1126,7 +1126,7 @@ describe("findAutosaveLearningDuplicate", () => {
         source: "autosave_learning",
         kind: "note",
         session: "session-1",
-        keywords: "__lore-cleanup-orphan",
+        keywords: "__kennen-cleanup-orphan",
       }),
       makeMemory({
         id: "mem-real",
@@ -1162,7 +1162,7 @@ describe("findAutosaveLearningDuplicate", () => {
         source: "autosave_learning",
         kind: "note",
         session: "session-1",
-        keywords: "__lore-cleanup-orphan",
+        keywords: "__kennen-cleanup-orphan",
       }),
     ])
 
@@ -1226,9 +1226,9 @@ function makeTaskLister(
 }
 
 describe("findDuplicateActiveTasks", () => {
-  it("short-circuits when LORE_DISABLE_NEAR_DUPLICATE_PROBE=1 (operator kill-switch)", async () => {
+  it("short-circuits when KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1 (operator kill-switch)", async () => {
     const listSpy = vi.fn()
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "1")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "1")
     try {
       const result = await findDuplicateActiveTasks(
         { list: listSpy },
@@ -1241,9 +1241,9 @@ describe("findDuplicateActiveTasks", () => {
     }
   })
 
-  it("runs normally when LORE_DISABLE_NEAR_DUPLICATE_PROBE is anything other than '1'", async () => {
+  it("runs normally when KENNEN_DISABLE_NEAR_DUPLICATE_PROBE is anything other than '1'", async () => {
     const listSpy = vi.fn().mockResolvedValue({ items: [] })
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "0")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "0")
     try {
       await findDuplicateActiveTasks(
         { list: listSpy },
@@ -1395,7 +1395,7 @@ describe("findDuplicateActiveTasks", () => {
 })
 
 describe("findExactReuseTarget (issue #265 — assertive task reuse)", () => {
-  it("returns null when LORE_DISABLE_TASK_REUSE=1 (single-axis kill switch)", () => {
+  it("returns null when KENNEN_DISABLE_TASK_REUSE=1 (single-axis kill switch)", () => {
     const candidates = [
       makeTaskSummary({
         id: "task-1",
@@ -1403,7 +1403,7 @@ describe("findExactReuseTarget (issue #265 — assertive task reuse)", () => {
         entity: "PR-1234",
       }),
     ]
-    vi.stubEnv("LORE_DISABLE_TASK_REUSE", "1")
+    vi.stubEnv("KENNEN_DISABLE_TASK_REUSE", "1")
     try {
       expect(
         findExactReuseTarget(candidates, {
@@ -1417,7 +1417,7 @@ describe("findExactReuseTarget (issue #265 — assertive task reuse)", () => {
     }
   })
 
-  it("runs normally when LORE_DISABLE_TASK_REUSE is unset or anything other than '1'", () => {
+  it("runs normally when KENNEN_DISABLE_TASK_REUSE is unset or anything other than '1'", () => {
     const candidates = [
       makeTaskSummary({
         id: "task-1",
@@ -1425,7 +1425,7 @@ describe("findExactReuseTarget (issue #265 — assertive task reuse)", () => {
         entity: "PR-1234",
       }),
     ]
-    vi.stubEnv("LORE_DISABLE_TASK_REUSE", "0")
+    vi.stubEnv("KENNEN_DISABLE_TASK_REUSE", "0")
     try {
       const target = findExactReuseTarget(candidates, {
         subject: "Track PR-1234 review",
@@ -2052,9 +2052,9 @@ describe("extractEntityCandidates", () => {
 })
 
 describe("findRelatedActiveTasks", () => {
-  it("short-circuits when LORE_DISABLE_TASK_CROSSREF=1 (operator kill-switch)", async () => {
+  it("short-circuits when KENNEN_DISABLE_TASK_CROSSREF=1 (operator kill-switch)", async () => {
     const listSpy = vi.fn()
-    vi.stubEnv("LORE_DISABLE_TASK_CROSSREF", "1")
+    vi.stubEnv("KENNEN_DISABLE_TASK_CROSSREF", "1")
     try {
       const result = await findRelatedActiveTasks(
         { tasks: { list: listSpy } },
@@ -2067,9 +2067,9 @@ describe("findRelatedActiveTasks", () => {
     }
   })
 
-  it("runs normally when LORE_DISABLE_TASK_CROSSREF is unset / not '1'", async () => {
+  it("runs normally when KENNEN_DISABLE_TASK_CROSSREF is unset / not '1'", async () => {
     const listSpy = vi.fn().mockResolvedValue({ items: [] })
-    vi.stubEnv("LORE_DISABLE_TASK_CROSSREF", "0")
+    vi.stubEnv("KENNEN_DISABLE_TASK_CROSSREF", "0")
     try {
       await findRelatedActiveTasks(
         { tasks: { list: listSpy } },
@@ -2081,13 +2081,13 @@ describe("findRelatedActiveTasks", () => {
     }
   })
 
-  it("does NOT honor LORE_DISABLE_NEAR_DUPLICATE_PROBE (single-axis kill switches)", async () => {
+  it("does NOT honor KENNEN_DISABLE_NEAR_DUPLICATE_PROBE (single-axis kill switches)", async () => {
     // The two probes have different failure modes and an operator may
     // want one but not the other. Pinning this guarantees a future
     // contributor can't "consolidate" the kill switches without a
     // matching design decision.
     const listSpy = vi.fn().mockResolvedValue({ items: [] })
-    vi.stubEnv("LORE_DISABLE_NEAR_DUPLICATE_PROBE", "1")
+    vi.stubEnv("KENNEN_DISABLE_NEAR_DUPLICATE_PROBE", "1")
     try {
       await findRelatedActiveTasks(
         { tasks: { list: listSpy } },
@@ -2153,7 +2153,7 @@ describe("findRelatedActiveTasks", () => {
   it("works when synopsis is empty (the agent didn't supply one)", async () => {
     // Pre-#02 deploys are not a runtime concern (#11 hard-deps on #02),
     // but un-supplied synopsis values are: the field is optional on
-    // `lore-memory action='save'`. Probe falls back to title + keywords.
+    // `kennen-memory action='save'`. Probe falls back to title + keywords.
     const lister = makeTaskLister([
       makeTaskSummary({ id: "task-1", title: "Track PR #1234" }),
     ])

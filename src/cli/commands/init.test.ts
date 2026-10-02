@@ -1,5 +1,5 @@
 /**
- * Tests for `lore init`'s pure config-emit helper, the workspace-level
+ * Tests for `kennen init`'s pure config-emit helper, the workspace-level
  * page-create helper, and the two top-level orchestrators
  * (`runExplicitPageInit`, `runNoArgInit`). The orchestrator tests heavily
  * mock the auth + Notion + ntn boundaries — `runNoArgInit` chains
@@ -204,9 +204,9 @@ describe("buildInitConfigYaml", () => {
     // PR #567 round-2 concern #2: env kill switches are the natural
     // one-session opt-out and must be discoverable from the
     // disclosure copy itself.
-    expect(above).toContain("LORE_AUTOSAVE=false")
-    expect(above).toContain("LORE_AUTO_DIGEST=false")
-    expect(above).toContain("LORE_DISABLE_LEARNING_EXTRACTION=1")
+    expect(above).toContain("KENNEN_AUTOSAVE=false")
+    expect(above).toContain("KENNEN_AUTO_DIGEST=false")
+    expect(above).toContain("KENNEN_DISABLE_LEARNING_EXTRACTION=1")
     expect(above).toContain("docs/hooks.md")
   })
 
@@ -215,14 +215,14 @@ describe("buildInitConfigYaml", () => {
     // (round-2 nit #3): instead of asserting the broken
     // "Set any value below to `false`" string is absent, assert the
     // disable hint structurally — extract the sentence after
-    // "Disable in .lore.yaml" and confirm it lists each boolean knob
+    // "Disable in .kennen.yaml" and confirm it lists each boolean knob
     // exactly once and never names `saveInterval`. A future copy
     // edit that uses synonyms like "any of the values" or "the
     // settings below" still fails this test loudly.
     const text = buildInitConfigYaml("abc123")
     const hooksIdx = text.indexOf("hooks:")
     const above = text.slice(0, hooksIdx)
-    const match = above.match(/Disable in \.lore\.yaml with any of: ([^\n]+)/)
+    const match = above.match(/Disable in \.kennen\.yaml with any of: ([^\n]+)/)
     expect(match).not.toBeNull()
     if (!match) throw new Error("disable-hint sentence not found")
     const hintBody = match[1]
@@ -291,7 +291,7 @@ describe("buildInitConfigYaml", () => {
 })
 
 describe("buildHookDisclosureLines", () => {
-  // Issue #560 disclosure helper. `lore init` and `lore install
+  // Issue #560 disclosure helper. `kennen init` and `kennen install
   // --client {claude,codex}` all print the returned lines verbatim
   // (PR #567 round-2 review #2 added the install-time surface), so
   // the wording lives in `src/cli/hook-disclosure.ts` as the single
@@ -316,7 +316,7 @@ describe("buildHookDisclosureLines", () => {
     expect(joined).toContain("learningExtraction")
   })
 
-  it("names the exact .lore.yaml knobs an operator types to disable", () => {
+  it("names the exact .kennen.yaml knobs an operator types to disable", () => {
     // Discoverability is the whole point of the disclosure — print
     // the literal config keys, not paraphrases. A future edit that
     // says "in your config" instead of `hooks.autoSave: false` fails
@@ -330,13 +330,13 @@ describe("buildHookDisclosureLines", () => {
 
   it("names the per-session env-var overrides (PR #567 round-2 concern #2)", () => {
     // The env knobs are the natural answer to "I want autosave off
-    // for this one session without touching .lore.yaml." Operators
+    // for this one session without touching .kennen.yaml." Operators
     // never discover them if the disclosure copy itself doesn't
     // mention them.
     const joined = buildHookDisclosureLines().join("\n")
-    expect(joined).toContain("LORE_AUTOSAVE=false")
-    expect(joined).toContain("LORE_AUTO_DIGEST=false")
-    expect(joined).toContain("LORE_DISABLE_LEARNING_EXTRACTION=1")
+    expect(joined).toContain("KENNEN_AUTOSAVE=false")
+    expect(joined).toContain("KENNEN_AUTO_DIGEST=false")
+    expect(joined).toContain("KENNEN_DISABLE_LEARNING_EXTRACTION=1")
   })
 
   it("uses an accurate privacy framing (PR #567 round-2 concern #4)", () => {
@@ -372,7 +372,7 @@ describe("createWorkspaceLevelPage", () => {
     const client = { pages: { create } } as unknown as Parameters<
       typeof createWorkspaceLevelPage
     >[0]
-    const result = await createWorkspaceLevelPage(client, "Lore Vault — widget")
+    const result = await createWorkspaceLevelPage(client, "Kennen Vault — widget")
     expect(result).toEqual({ id: "page-1" })
     // Pin the runtime payload — Notion's REST docs explicitly support
     // `{ type: "workspace", workspace: true }` and the SDK type-cast in
@@ -384,7 +384,7 @@ describe("createWorkspaceLevelPage", () => {
       parent: { type: "workspace", workspace: true },
       properties: {
         title: {
-          title: [{ type: "text", text: { content: "Lore Vault — widget" } }],
+          title: [{ type: "text", text: { content: "Kennen Vault — widget" } }],
         },
       },
     })
@@ -393,16 +393,16 @@ describe("createWorkspaceLevelPage", () => {
 
 describe("defaultVaultTitle", () => {
   it("derives the page title from the cwd basename so multi-vault workspaces stay distinguishable", () => {
-    expect(defaultVaultTitle("/Users/me/Developer/widget")).toBe("Lore Vault — widget")
+    expect(defaultVaultTitle("/Users/me/Developer/widget")).toBe("Kennen Vault — widget")
     expect(defaultVaultTitle("/Users/me/Developer/my-cool-repo")).toBe(
-      "Lore Vault — my-cool-repo"
+      "Kennen Vault — my-cool-repo"
     )
   })
 
-  it("falls back to the bare 'Lore Vault' string when basename is empty (filesystem root)", () => {
+  it("falls back to the bare 'Kennen Vault' string when basename is empty (filesystem root)", () => {
     // basename("/") is "" on POSIX; defaultVaultTitle should not produce
-    // the malformed "Lore Vault — " (em-dash + trailing whitespace).
-    expect(defaultVaultTitle("/")).toBe("Lore Vault")
+    // the malformed "Kennen Vault — " (em-dash + trailing whitespace).
+    expect(defaultVaultTitle("/")).toBe("Kennen Vault")
   })
 })
 
@@ -428,7 +428,7 @@ describe("authBaseUrlMatchesEnv", () => {
     // Consolidation pin: `authBaseUrlMatchesEnv` delegates to
     // `oauth.ts:ntnEnvFromBaseUrl`, which recognizes both
     // `https://api.notion.so` and `https://api.notion.com` as prod.
-    // Without this, a `.lore.yaml` carrying the `.com` form would fail
+    // Without this, a `.kennen.yaml` carrying the `.com` form would fail
     // the env-mismatch gate even when the operator's intent matched.
     expect(authBaseUrlMatchesEnv("https://api.notion.com", "prod")).toBe(true)
     expect(authBaseUrlMatchesEnv("https://api.notion.com", "dev")).toBe(false)
@@ -448,7 +448,7 @@ describe("authBaseUrlMatchesEnv", () => {
   })
 
   it("treats unknown baseUrls as a mismatch against any specific env", () => {
-    // E.g., operator set LORE_NOTION_BASE_URL to a self-hosted proxy
+    // E.g., operator set KENNEN_NOTION_BASE_URL to a self-hosted proxy
     // or a typo'd URL — the gate refuses to claim a match it can't
     // structurally guarantee.
     expect(authBaseUrlMatchesEnv("https://attacker.example", "prod")).toBe(false)
@@ -461,7 +461,7 @@ describe("authBaseUrlMatchesEnv", () => {
 // runNoArgInit / runExplicitPageInit orchestrator tests
 // ---------------------------------------------------------------------------
 
-const SCRATCH = mkdtempSync(join(tmpdir(), "lore-init-test-"))
+const SCRATCH = mkdtempSync(join(tmpdir(), "kennen-init-test-"))
 
 afterAll(() => {
   rmSync(SCRATCH, { recursive: true, force: true })
@@ -497,7 +497,7 @@ class ProcessExitSentinel extends Error {
 
 /**
  * Each orchestrator test runs in an isolated tmpdir so a stale
- * `.lore.yaml` from one case doesn't poison the next, and so the
+ * `.kennen.yaml` from one case doesn't poison the next, and so the
  * "writes config" assertion can read the file back with a stable path.
  */
 function setupTestCwd(): string {
@@ -576,14 +576,14 @@ describe("runNoArgInit", () => {
     } as unknown as ReturnType<typeof createClient>)
     vi.mocked(verifyVaultAccess).mockResolvedValue({
       kind: "ok",
-      pageTitle: "Lore Vault",
+      pageTitle: "Kennen Vault",
     })
     mockVaultInitSuccess()
 
     await runNoArgInit({})
 
     // Workspace id flows into the generated config.
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     const parsed = yamlParse(yaml) as Record<string, unknown>
     expect(parsed).toMatchObject({
       vault: { pageId: "page-1" },
@@ -593,9 +593,9 @@ describe("runNoArgInit", () => {
     expect(verifyVaultAccess).toHaveBeenCalledWith(expect.anything(), "page-1")
     // The page title flows through pages.create as the cwd-derived default.
     // setupTestCwd() creates a tmpdir matching `cwd-XXXXXX`; the title
-    // is `Lore Vault — cwd-XXXXXX`. Pin the prefix to defend against the
+    // is `Kennen Vault — cwd-XXXXXX`. Pin the prefix to defend against the
     // multi-vault-per-workspace footgun (PR #177 review feedback): if a
-    // future refactor reverts the title to the bare "Lore Vault", every
+    // future refactor reverts the title to the bare "Kennen Vault", every
     // operator's private vault would collapse to indistinguishable pages.
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -604,7 +604,7 @@ describe("runNoArgInit", () => {
             title: [
               expect.objectContaining({
                 text: expect.objectContaining({
-                  content: expect.stringMatching(/^Lore Vault — cwd-/),
+                  content: expect.stringMatching(/^Kennen Vault — cwd-/),
                 }),
               }),
             ],
@@ -643,7 +643,7 @@ describe("runNoArgInit", () => {
 
     await runNoArgInit({ profile: "support@1.0.0" })
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     const parsed = yamlParse(yaml) as Record<string, unknown>
     expect(parsed.profile).toBe("support@1.0.0")
     expect(VaultManager).toHaveBeenCalledWith(
@@ -673,13 +673,13 @@ describe("runNoArgInit", () => {
     setupTestCwd()
     vi.mocked(resolveAuth).mockRejectedValue(
       new InvalidNotionBaseUrlError(
-        "LORE_NOTION_BASE_URL",
+        "KENNEN_NOTION_BASE_URL",
         "value is missing a URL protocol"
       )
     )
 
     await expect(runNoArgInit({ yes: true })).rejects.toThrow(
-      /Invalid Notion API base URL from LORE_NOTION_BASE_URL/
+      /Invalid Notion API base URL from KENNEN_NOTION_BASE_URL/
     )
 
     expect(isNtnInstalled).not.toHaveBeenCalled()
@@ -709,7 +709,7 @@ describe("runNoArgInit", () => {
 
   it("post-init output prints the issue #560 hook-disclosure block before Next steps", async () => {
     // The no-arg flow is the primary onboarding path for external
-    // users (`lore init` with no page id). The disclosure must
+    // users (`kennen init` with no page id). The disclosure must
     // appear here so a first-time user sees what the
     // default-enabled hooks do before they hit the README.
     setupTestCwd()
@@ -808,7 +808,7 @@ describe("runNoArgInit", () => {
             title: [
               expect.objectContaining({
                 text: expect.objectContaining({
-                  content: expect.stringMatching(/^Lore Vault — cwd-/),
+                  content: expect.stringMatching(/^Kennen Vault — cwd-/),
                 }),
               }),
             ],
@@ -833,21 +833,21 @@ describe("runNoArgInit", () => {
     } as unknown as ReturnType<typeof createClient>)
     vi.mocked(verifyVaultAccess).mockResolvedValue({
       kind: "ok",
-      pageTitle: "Lore Vault",
+      pageTitle: "Kennen Vault",
     })
     mockVaultInitSuccess()
 
     await runNoArgInit({})
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     const parsed = yamlParse(yaml) as Record<string, unknown>
     expect(parsed).toMatchObject({ vault: { pageId: "page-2" } })
     expect(parsed).not.toHaveProperty("auth")
   })
 
-  it("refuses to overwrite an existing .lore.yaml (exits 1)", async () => {
+  it("refuses to overwrite an existing .kennen.yaml (exits 1)", async () => {
     const cwd = setupTestCwd()
-    writeFileSync(join(cwd, ".lore.yaml"), "vault:\n  pageId: existing\n")
+    writeFileSync(join(cwd, ".kennen.yaml"), "vault:\n  pageId: existing\n")
     const exitTrap = trapProcessExit()
 
     await expect(runNoArgInit({})).rejects.toBeInstanceOf(ProcessExitSentinel)
@@ -857,7 +857,7 @@ describe("runNoArgInit", () => {
     expect(resolveAuth).not.toHaveBeenCalled()
     // Operator-facing copy points at the documented recovery (delete the file).
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
-    expect(stderr).toContain("A .lore.yaml already exists")
+    expect(stderr).toContain("A .kennen.yaml already exists")
     expect(stderr).toContain("delete it first")
   })
 
@@ -897,7 +897,7 @@ describe("runNoArgInit", () => {
     expect(runNtnLogin).toHaveBeenCalledWith({})
     // Auth got re-resolved post-login and the flow proceeded.
     expect(resolveAuth).toHaveBeenCalledTimes(2)
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: page-after-login")
   })
 
@@ -907,7 +907,7 @@ describe("runNoArgInit", () => {
       .mockRejectedValueOnce(new Error("No Notion auth configured."))
       .mockRejectedValueOnce(
         new InvalidNotionBaseUrlError(
-          "LORE_NOTION_BASE_URL",
+          "KENNEN_NOTION_BASE_URL",
           "value is missing a URL protocol"
         )
       )
@@ -916,7 +916,7 @@ describe("runNoArgInit", () => {
     vi.mocked(runNtnLogin).mockResolvedValue({ kind: "success" })
 
     await expect(runNoArgInit({ yes: true })).rejects.toThrow(
-      /Invalid Notion API base URL from LORE_NOTION_BASE_URL/
+      /Invalid Notion API base URL from KENNEN_NOTION_BASE_URL/
     )
 
     expect(resolveAuth).toHaveBeenCalledTimes(2)
@@ -925,7 +925,7 @@ describe("runNoArgInit", () => {
     expect(VaultManager).not.toHaveBeenCalled()
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).not.toContain(
-      "ntn login completed, but Lore could not resolve a token."
+      "ntn login completed, but Kennen could not resolve a token."
     )
   })
 
@@ -962,7 +962,7 @@ describe("runNoArgInit", () => {
 
   it("with --ntn-env dev: threads { env: 'dev' } into the runNtnLogin spawn so ntn writes config.json against dev", async () => {
     // The reviewer's round-4 finding: a dev operator should be able
-    // to complete `lore init` without first running an out-of-band
+    // to complete `kennen init` without first running an out-of-band
     // ntn command. The env selection must reach the spawn so ntn
     // writes `env: "dev"` into config.json — which the post-login
     // `tryResolveAuth(cwd)` reads via resolveNtnBaseUrl to surface
@@ -1030,7 +1030,7 @@ describe("runNoArgInit", () => {
 
   it("with --ntn-env prod: threads { env: 'prod' } through (explicit-prod-override case)", async () => {
     // An operator with shell-rc `NOTION_ENV=dev` who passes
-    // `--ntn-env prod` to a Lore command wants prod — the explicit
+    // `--ntn-env prod` to a Kennen command wants prod — the explicit
     // flag overrides the inherited shell value. `runNtnLogin`'s
     // implementation only writes NOTION_ENV when the caller passes
     // `env`; passing `{ env: "prod" }` is the right surface. Pin the
@@ -1151,15 +1151,15 @@ describe("runNoArgInit", () => {
     expect(stderr).toContain("ntn logout && NOTION_KEYRING=0 NOTION_ENV=dev ntn login")
   })
 
-  it("with --ntn-env dev + env-notion-api-token auth: exits 1 with LORE_NOTION_BASE_URL recovery copy", async () => {
+  it("with --ntn-env dev + env-notion-api-token auth: exits 1 with KENNEN_NOTION_BASE_URL recovery copy", async () => {
     // Different recovery for env-token sources: the operator pasted a
     // token into NOTION_API_TOKEN env. The right move is either
     // unsetting the env var to fall through to ntn-resolved auth, or
-    // setting LORE_NOTION_BASE_URL to point at the requested env.
+    // setting KENNEN_NOTION_BASE_URL to point at the requested env.
     setupTestCwd()
     vi.mocked(resolveAuth).mockResolvedValue({
       token: "tok-env-api",
-      baseUrl: undefined, // NOTION_API_TOKEN with no LORE_NOTION_BASE_URL → prod
+      baseUrl: undefined, // NOTION_API_TOKEN with no KENNEN_NOTION_BASE_URL → prod
       source: "env-notion-api-token",
     })
     const exitTrap = trapProcessExit()
@@ -1173,7 +1173,7 @@ describe("runNoArgInit", () => {
     expect(stderr).toContain("--ntn-env dev requested")
     expect(stderr).toContain("Auth source: env-notion-api-token")
     expect(stderr).toContain("Unset NOTION_API_TOKEN")
-    expect(stderr).toContain("LORE_NOTION_BASE_URL=https://api-dev.notion.com")
+    expect(stderr).toContain("KENNEN_NOTION_BASE_URL=https://api-dev.notion.com")
   })
 
   it("with --ntn-env prod + dev-baseUrl auth: exits 1 (mismatch in the other direction)", async () => {
@@ -1223,7 +1223,7 @@ describe("runNoArgInit", () => {
     await runNoArgInit({ yes: true, ntnEnv: "prod" })
 
     // Init proceeded — config exists.
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: page-prod-implicit")
   })
 
@@ -1249,7 +1249,7 @@ describe("runNoArgInit", () => {
 
     await runNoArgInit({ yes: true, ntnEnv: "prod" })
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: page-prod-explicit")
   })
 
@@ -1276,7 +1276,7 @@ describe("runNoArgInit", () => {
     // No `ntnEnv` passed — flow uses dev-resolved baseUrl directly.
     await runNoArgInit({ yes: true })
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: page-no-flag")
   })
 
@@ -1307,11 +1307,11 @@ describe("runNoArgInit", () => {
     expect(installNtn).not.toHaveBeenCalled()
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).toContain("ntn login did not complete successfully")
-    expect(stderr).toContain("Re-run `lore init`")
+    expect(stderr).toContain("Re-run `kennen init`")
     expect(stderr).toContain("ntn exited with code 130")
   })
 
-  it("with login succeeding but auth still not resolving post-login: exits 1, points at lore auth --status", async () => {
+  it("with login succeeding but auth still not resolving post-login: exits 1, points at kennen auth --status", async () => {
     setupTestCwd()
     vi.mocked(resolveAuth)
       .mockRejectedValueOnce(new Error("No Notion auth configured."))
@@ -1324,8 +1324,8 @@ describe("runNoArgInit", () => {
 
     expect(exitTrap.lastCode()).toBe(1)
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
-    expect(stderr).toContain("ntn login completed, but Lore could not resolve")
-    expect(stderr).toContain("lore auth --status")
+    expect(stderr).toContain("ntn login completed, but Kennen could not resolve")
+    expect(stderr).toContain("kennen auth --status")
   })
 
   it("with pages.create throwing permission error: prints documented fallback message, exits 1", async () => {
@@ -1354,14 +1354,14 @@ describe("runNoArgInit", () => {
     expect(stderr).toContain("Failed to create workspace-level page")
     expect(stderr).toContain("public connections")
     // Manual fallback recommends the explicit-page-id form.
-    expect(stderr).toContain("lore init <page-id-from-notion-url>")
+    expect(stderr).toContain("kennen init <page-id-from-notion-url>")
   })
 
   it("with vault.init() throwing 'already initialized' (fresh page): exits 1 with orphan page id", async () => {
     // Reviewer concern: in the no-arg flow we just created the page
     // seconds ago. If `verifyVaultDatabases` finds an existing
     // five-database structure on a freshly-created page that's a
-    // genuine anomaly (concurrent Lore process / Notion misbehavior /
+    // genuine anomaly (concurrent Kennen process / Notion misbehavior /
     // bug). Burying it under a friendly "already exists" notice would
     // silently land a config pointing at a vault we don't understand.
     // The legacy `runExplicitPageInit` path keeps the non-fatal
@@ -1393,9 +1393,9 @@ describe("runNoArgInit", () => {
 
   it("with verifyVaultAccess failing post-create: surfaces the orphan page id with retry/cleanup recovery", async () => {
     // Reviewer concern: the post-create preflight failure leaves an
-    // orphan page in the operator's Notion Private area. Lore has the
+    // orphan page in the operator's Notion Private area. Kennen has the
     // page id in scope; printing it lets the operator either retry via
-    // `lore init <id>` (re-runs preflight against the same page) or
+    // `kennen init <id>` (re-runs preflight against the same page) or
     // delete the orphan from Notion's UI.
     setupTestCwd()
     vi.mocked(resolveAuth).mockResolvedValue({
@@ -1423,7 +1423,7 @@ describe("runNoArgInit", () => {
     expect(stderr).toContain("Cannot read the page we just created")
     expect(stderr).toContain("Orphan page id: orphan-page-id")
     // Retry path uses the explicit-page-id form against the same id.
-    expect(stderr).toContain("lore init orphan-page-id")
+    expect(stderr).toContain("kennen init orphan-page-id")
   })
 
   it("on post-create preflight 'unknown-error': surfaces the underlying error message (review N3)", async () => {
@@ -1485,7 +1485,7 @@ describe("runNoArgInit", () => {
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).toContain("Failed to initialize vault")
     expect(stderr).toContain("Orphan page id: orphan-init-fail")
-    expect(stderr).toContain("lore init orphan-init-fail")
+    expect(stderr).toContain("kennen init orphan-init-fail")
   })
 
   it("Entities DB row appears in the success log (PF3-01: five DBs, not four)", async () => {
@@ -1548,18 +1548,18 @@ describe("runNoArgInit", () => {
     expect(stderr).toContain("Multiple workspaces in ntn auth.json")
     expect(stderr).toContain("ws-personal")
     expect(stderr).toContain("ws-team-widget")
-    expect(stderr).toContain("NOTION_WORKSPACE_ID=<id> lore init")
+    expect(stderr).toContain("NOTION_WORKSPACE_ID=<id> kennen init")
     // The hint deliberately does NOT recommend the auth.workspaceId
     // route — that path is bootstrap-impossible during init (no
-    // .lore.yaml exists yet). Listing it as a parallel option
+    // .kennen.yaml exists yet). Listing it as a parallel option
     // misleads operators skimming for a next step. Subsequent commands
     // pick up auth.workspaceId once the post-init config carries it.
-    expect(stderr).not.toContain("auth.workspaceId in .lore.yaml")
+    expect(stderr).not.toContain("auth.workspaceId in .kennen.yaml")
   })
 
   it("with multi-workspace ambiguity + --ntn-env dev: preserves --ntn-env in the recovery copy (round-6 review)", async () => {
     // Reviewer's round-6 blocker: pasting the bare recovery
-    // command after running `lore init --ntn-env dev` against a
+    // command after running `kennen init --ntn-env dev` against a
     // multi-workspace auth.json silently demotes the request. On
     // the second run, NOTION_WORKSPACE_ID resolves cleanly and the
     // env-mismatch gate doesn't fire (no `--ntn-env` to constrain
@@ -1581,7 +1581,7 @@ describe("runNoArgInit", () => {
     // The recovery command must carry the original env selection.
     // Pin the FULL command shape (not just the substring) so a
     // future refactor can't silently drop the flag mid-string.
-    expect(stderr).toContain("NOTION_WORKSPACE_ID=<id> lore init --ntn-env dev")
+    expect(stderr).toContain("NOTION_WORKSPACE_ID=<id> kennen init --ntn-env dev")
   })
 
   it("with multi-workspace ambiguity + --name and --ntn-env: preserves both flags in the recovery copy", async () => {
@@ -1608,7 +1608,7 @@ describe("runNoArgInit", () => {
     // `--name`'s value gets JSON.stringify'd so a value with spaces
     // / special characters survives the shell quote round-trip.
     expect(stderr).toContain(
-      'NOTION_WORKSPACE_ID=<id> lore init --ntn-env stg --name "Test Vault — STG"'
+      'NOTION_WORKSPACE_ID=<id> kennen init --ntn-env stg --name "Test Vault — STG"'
     )
   })
 
@@ -1636,7 +1636,7 @@ describe("runNoArgInit", () => {
       (c) =>
         typeof c[0] === "string" && (c[0] as string).includes("NOTION_WORKSPACE_ID=<id>")
     )
-    expect(recoveryLine?.[0]).toBe("  NOTION_WORKSPACE_ID=<id> lore init")
+    expect(recoveryLine?.[0]).toBe("  NOTION_WORKSPACE_ID=<id> kennen init")
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).not.toContain("--ntn-env")
     expect(stderr).not.toContain("--name")
@@ -1691,7 +1691,7 @@ describe("runNoArgInit", () => {
     expect(installNtn).not.toHaveBeenCalled()
     expect(runNtnLogin).not.toHaveBeenCalled()
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
-    expect(stderr).toContain("ntn is required for `lore init`")
+    expect(stderr).toContain("ntn is required for `kennen init`")
     expect(stderr).toContain("Install manually")
   })
 
@@ -1734,7 +1734,7 @@ describe("runExplicitPageInit", () => {
 
     await runExplicitPageInit("explicit-page", { token: "tok-explicit" })
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: explicit-page")
     // Preflight runs against the operator-supplied page id.
     expect(verifyVaultAccess).toHaveBeenCalledWith(expect.anything(), "explicit-page")
@@ -1750,7 +1750,7 @@ describe("runExplicitPageInit", () => {
       profile: "support@1.0.0",
     })
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     const parsed = yamlParse(yaml) as Record<string, unknown>
     expect(parsed.profile).toBe("support@1.0.0")
     expect(VaultManager).toHaveBeenCalledWith(
@@ -1766,8 +1766,8 @@ describe("runExplicitPageInit", () => {
     mockVaultInitThrow(
       new Error(
         "Vault at explicit-page is missing databases: Entities. " +
-          "Found existing Lore databases: Projects, Topics, Memories, Facts. " +
-          "This is a partial vault schema; do not run 'lore init' on this page."
+          "Found existing Kennen databases: Projects, Topics, Memories, Facts. " +
+          "This is a partial vault schema; do not run 'kennen init' on this page."
       )
     )
     const exitTrap = trapProcessExit()
@@ -1777,10 +1777,10 @@ describe("runExplicitPageInit", () => {
     ).rejects.toBeInstanceOf(ProcessExitSentinel)
 
     expect(exitTrap.lastCode()).toBe(1)
-    await expect(readFile(join(cwd, ".lore.yaml"), "utf-8")).rejects.toThrow()
+    await expect(readFile(join(cwd, ".kennen.yaml"), "utf-8")).rejects.toThrow()
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).toContain("partial vault schema")
-    expect(stderr).toContain("do not run 'lore init'")
+    expect(stderr).toContain("do not run 'kennen init'")
   })
 
   it("with invalid preflight (not-found): aborts before vault.init() with documented copy", async () => {
@@ -1831,7 +1831,7 @@ describe("runExplicitPageInit", () => {
 
   it("with --name combined with explicit page-id: prints stderr note and continues with init", async () => {
     // `runExplicitPageInit` accepts `--name` for option-shape symmetry
-    // (single source of truth on `InitOpts`) but ignores it — Lore
+    // (single source of truth on `InitOpts`) but ignores it — Kennen
     // doesn't rename existing pages. Mirror install.ts's
     // `--cursor-global ignored under --client claude` precedent: emit
     // the note instead of silently dropping so an operator who
@@ -1848,7 +1848,7 @@ describe("runExplicitPageInit", () => {
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).toContain("--name is ignored when a page id is provided")
     // Init still completed — the note is informational, not fatal.
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: page-explicit")
   })
 
@@ -1868,7 +1868,7 @@ describe("runExplicitPageInit", () => {
     const stderr = consoleErrorSpy.mock.calls.map((c) => c.join(" ")).join("\n")
     expect(stderr).toContain("--ntn-env is ignored when a page id is provided")
     // Init still completed — the note is informational, not fatal.
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     expect(yaml).toContain("pageId: page-with-env")
   })
 
@@ -1913,7 +1913,7 @@ describe("runExplicitPageInit", () => {
     // Pre-fix bug: `runExplicitPageInit` resolved auth (potentially
     // ntn-source with workspaceId) but called
     // `buildInitConfigYaml(pageId)` with one argument, dropping the
-    // workspaceId. Multi-workspace operators using `lore init <id>`
+    // workspaceId. Multi-workspace operators using `kennen init <id>`
     // got a config without `auth.workspaceId`, so subsequent commands
     // re-hit the same multi-workspace ambiguity that the no-arg path
     // now handles. Pin the workspaceId threading so a future
@@ -1933,7 +1933,7 @@ describe("runExplicitPageInit", () => {
     // record carrying workspaceId.
     await runExplicitPageInit("explicit-mw", {})
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     const parsed = yamlParse(yaml) as Record<string, unknown>
     expect(parsed).toMatchObject({
       vault: { pageId: "explicit-mw" },
@@ -1952,7 +1952,7 @@ describe("runExplicitPageInit", () => {
 
     await runExplicitPageInit("explicit-rawtoken", { token: "tok-explicit" })
 
-    const yaml = await readFile(join(cwd, ".lore.yaml"), "utf-8")
+    const yaml = await readFile(join(cwd, ".kennen.yaml"), "utf-8")
     const parsed = yamlParse(yaml) as Record<string, unknown>
     expect(parsed).toMatchObject({ vault: { pageId: "explicit-rawtoken" } })
     expect(parsed).not.toHaveProperty("auth")

@@ -105,7 +105,7 @@ describe("isUuid", () => {
 
   it("rejects plain strings and near-misses", () => {
     expect(isUuid("AuthService")).toBe(false)
-    expect(isUuid("lore-update")).toBe(false)
+    expect(isUuid("kennen-update")).toBe(false)
     expect(isUuid("349b35e6e67f8185bec0d3902135c5ba")).toBe(false) // no dashes
     expect(isUuid(`prefix ${DECISION_A}`)).toBe(false)
     expect(isUuid("")).toBe(false)
@@ -155,9 +155,9 @@ describe("resolveReferencedTitles — API call budget", () => {
 
     const facts = [
       makeFact("f1", { subject: "computeRelationConfigDiff", object: DECISION_A }),
-      makeFact("f2", { subject: "lore-update", object: DECISION_A }),
-      makeFact("f3", { subject: "lore-remember", object: DECISION_A }),
-      makeFact("f4", { subject: "lore-ask", object: DECISION_B }),
+      makeFact("f2", { subject: "kennen-update", object: DECISION_A }),
+      makeFact("f3", { subject: "kennen-remember", object: DECISION_A }),
+      makeFact("f4", { subject: "kennen-ask", object: DECISION_B }),
     ]
 
     const map = await resolveReferencedTitles(facts, resolvers)
@@ -240,14 +240,14 @@ describe("renderFact", () => {
 
     const line = renderFact(
       makeFact("f1", {
-        subject: "lore-update",
+        subject: "kennen-update",
         predicate: "decided_by",
         object: DECISION_A.toUpperCase(),
       }),
       { titleMap }
     )
 
-    expect(line).toBe("- **lore-update** decided by **Resolved title**")
+    expect(line).toBe("- **kennen-update** decided by **Resolved title**")
   })
 
   it("falls back to a truncated `(?)` hint when resolution misses", () => {
@@ -255,7 +255,7 @@ describe("renderFact", () => {
 
     const line = renderFact(
       makeFact("f1", {
-        subject: "lore-update",
+        subject: "kennen-update",
         predicate: "decided_by",
         object: DECISION_A,
       }),
@@ -263,7 +263,7 @@ describe("renderFact", () => {
     )
 
     // Only the last 8 hex chars survive — full UUIDs are visual noise.
-    expect(line).toBe(`- **lore-update** decided by **…${DECISION_A.slice(-8)} (?)**`)
+    expect(line).toBe(`- **kennen-update** decided by **…${DECISION_A.slice(-8)} (?)**`)
   })
 
   it("renders plain strings verbatim and appends the trailing segment", () => {
@@ -751,7 +751,7 @@ describe("formatTrustLabel (issue 0.8.0/09)", () => {
 
 describe("renderTrustLine (0.9.0/DEFERRED-07)", () => {
   // The shared cross-surface helper consumed by `formatMemoryListItem`,
-  // `lore-decision action='list' | 'context'`, `lore-task action='list'`,
+  // `kennen-decision action='list' | 'context'`, `kennen-task action='list'`,
   // wake-up Decisions Requiring Attention + Tasks subsections, and audit
   // Overdue Decisions. Pinning the gate + indent contract directly so a
   // future tuning of the threshold or italic-wrap shape lands in one
@@ -1061,7 +1061,7 @@ describe("defaultMemoryMetaBuilder — author segment (DEFERRED-ATTRIBUTION)", (
   it("preserves the author name verbatim — names with `|` characters render as-is and inherit the existing pipe-collision concern", () => {
     // Tags can carry arbitrary strings post-validation; the author
     // segment has the same constraint. A pathological
-    // `LORE_USER_NAME="x | y"` (or a Notion display name with literal
+    // `KENNEN_USER_NAME="x | y"` (or a Notion display name with literal
     // pipes — extremely rare) would split into a phantom segment. The
     // limitation is documented; the renderer does not escape. Pinning
     // the pass-through behavior here so a future "let's escape pipes"

@@ -1,26 +1,26 @@
-# Lore configuration
-# Copy this file to `.lore.yaml` in your clone and fill in the values
-# below. `.lore.yaml` is local-only — keep it out of version control so
+# Kennen configuration
+# Copy this file to `.kennen.yaml` in your clone and fill in the values
+# below. `.kennen.yaml` is local-only — keep it out of version control so
 # personal vault IDs and tokens never land in a public repo. Distribute
 # shared values (team `vault.pageId`, `auth.workspaceId`) via your team's
 # onboarding docs, not by committing this file.
 
 vault:
-  # Notion page ID where Lore databases live. Paste the shared team
-  # page ID from your team's onboarding docs, or run `lore init` to
+  # Notion page ID where Kennen databases live. Paste the shared team
+  # page ID from your team's onboarding docs, or run `kennen init` to
   # bootstrap a personal vault. Replace before first run — the
   # angle-bracket placeholder is rejected at config load.
   pageId: "<your-vault-page-id>"
 
 # Profile selector. Omit to use the runtime default in memory; new
-# `lore init` configs write this explicitly.
+# `kennen init` configs write this explicitly.
 profile: default@1.0.0
 
 # Phase 3 profile distribution settings (optional).
 #
 # `profiles.allowedInstallSources` is the closed allow-list that
-# authorizes `lore profile install --yes` to write under
-# `.lore/profiles/installed/`. The CLI stages the source, validates
+# authorizes `kennen profile install --yes` to write under
+# `.kennen/profiles/installed/`. The CLI stages the source, validates
 # the bundle, computes its manifest digest, and requires an exact
 # entry match before touching disk. Interactive installs (without
 # `--yes`) print the digest so an operator can pre-populate the list
@@ -34,21 +34,21 @@ profile: default@1.0.0
 # profiles:
 #   allowedInstallSources:
 #     - kind: git
-#       url: git@github.com:org/lore-sales-profile.git
+#       url: git@github.com:org/kennen-sales-profile.git
 #       commit: 0123456789abcdef0123456789abcdef01234567
 #       manifestDigest: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
 # Authentication (0.10.0+)
-# Lore resolves a Notion bearer token from the first available source in
+# Kennen resolves a Notion bearer token from the first available source in
 # this priority order:
 #   1. NOTION_API_TOKEN env. External operators put a Notion Personal
 #      Access Token here. PATs come from notion.so/developers/tokens and
 #      use the `ntn_` or `development_ntn_` prefix.
 #   2. ntn-resolved ~/.config/notion/auth.json. Internal operators can run
-#      `lore auth --login` to seed it.
+#      `kennen auth --login` to seed it.
 # Do not paste `secret_` integration tokens from notion.so/profile/integrations
 # into team setup; they share one rate-limit bucket across operators.
-# Do not place auth.token in `.lore.yaml`. Any auth.token value is rejected
+# Do not place auth.token in `.kennen.yaml`. Any auth.token value is rejected
 # at config load time.
 # auth:
 #   # Pin which workspace the ntn-token resolver picks from auth.json when
@@ -80,13 +80,13 @@ projects:
 # payloads.
 # costTracking:
 #   enabled: true
-#   ledgerPath: ~/.local/share/lore/cost-ledger.jsonl
+#   ledgerPath: ~/.local/share/kennen/cost-ledger.jsonl
 #   pricing:
 #     builtinTable: openai-2026-05
-#     overridesPath: ~/.config/lore/pricing.json
+#     overridesPath: ~/.config/kennen/pricing.json
 
 # Memory authoring policy (optional).
-# `lore-memory` synopses are scan hooks shown in wake-up, recall, and
+# `kennen-memory` synopses are scan hooks shown in wake-up, recall, and
 # downstream index mirrors. New saves/updates default to 150 chars so those
 # surfaces stay terse. Raise up to 500 if your vault intentionally carries
 # longer synopses.
@@ -95,10 +95,10 @@ projects:
 
 # AI assistant hook settings
 #
-# Lore wires four background hooks into your assistant by default. Writes
+# Kennen wires four background hooks into your assistant by default. Writes
 # land in your own Notion vault; transcript content is sent to your
 # configured background-agent LLM (Claude API by default; Codex if
-# LORE_AGENT_NAME=Codex). The canonical wording lives in
+# KENNEN_AGENT_NAME=Codex). The canonical wording lives in
 # `src/cli/hook-disclosure.ts` and is asserted against this block.
 #
 # - autoSave: on assistant Stop, a detached background sub-agent writes
@@ -118,11 +118,11 @@ projects:
 #   integer; setting it to `false` is invalid and will silently fall
 #   back to hook defaults (re-enabling autoSave/wakeUp).
 #
-# Disable in .lore.yaml with any of: hooks.autoSave: false /
+# Disable in .kennen.yaml with any of: hooks.autoSave: false /
 # hooks.wakeUp: false / hooks.autoDigest: false /
 # hooks.learningExtraction: false.
-# Per-session env overrides: LORE_AUTOSAVE=false / LORE_AUTO_DIGEST=false /
-# LORE_DISABLE_LEARNING_EXTRACTION=1. Full reference: docs/hooks.md.
+# Per-session env overrides: KENNEN_AUTOSAVE=false / KENNEN_AUTO_DIGEST=false /
+# KENNEN_DISABLE_LEARNING_EXTRACTION=1. Full reference: docs/hooks.md.
 hooks:
   autoSave: true
   wakeUp: true
@@ -131,7 +131,7 @@ hooks:
   # sub-agent identifies single-fact "atomic learnings" from the session and
   # saves each as its own `note` memory, alongside the session synopsis it
   # already writes. Set to false to reproduce the 0.8.x synopsis-only shape.
-  # Honors LORE_DISABLE_LEARNING_EXTRACTION=1 as well — either knob set to
+  # Honors KENNEN_DISABLE_LEARNING_EXTRACTION=1 as well — either knob set to
   # disabled wins.
   # learningExtraction: true
   # proposeAutosaveLearnings: false

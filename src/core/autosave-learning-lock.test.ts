@@ -40,8 +40,8 @@ describe("withAutosaveLearningLock", () => {
   let stateDir: string
 
   beforeEach(() => {
-    stateDir = mkdtempSync(join(tmpdir(), "lore-autosave-lock-"))
-    vi.stubEnv("LORE_HOOK_STATE_DIR", stateDir)
+    stateDir = mkdtempSync(join(tmpdir(), "kennen-autosave-lock-"))
+    vi.stubEnv("KENNEN_HOOK_STATE_DIR", stateDir)
   })
 
   afterEach(() => {

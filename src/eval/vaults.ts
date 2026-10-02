@@ -60,7 +60,7 @@ const evalVaultValidationSchema = z
     scenarios: z.number().int().positive(),
     conditionRuns: z.number().int().positive(),
     noMemory: validationCountSchema,
-    loreFullLoop: validationCountSchema,
+    kennenFullLoop: validationCountSchema,
     successRateDelta: z.number().min(-1).max(1),
     liftedScenarioIds: z.array(vaultIdSchema).default([]),
   })
@@ -150,7 +150,7 @@ export function findEvalVault(
   return registry.vaults.find((vault) => vault.id === id)
 }
 
-export function renderEvalVaultLoreConfig(vault: EvalVault): string {
+export function renderEvalVaultKennenConfig(vault: EvalVault): string {
   return (
     stringifyYaml({
       vault: {

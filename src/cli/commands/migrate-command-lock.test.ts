@@ -10,11 +10,11 @@ vi.mock("../../services.js", () => ({
   initServices: vi.fn(),
 }))
 
-const configRoot = "/tmp/lore-migrate-command-test"
+const configRoot = "/tmp/kennen-migrate-command-test"
 const vaultPageId = "vault-page-command-test"
 const lockStateDir = join(
   tmpdir(),
-  `lore-migrate-command-action-lock-test-${process.pid}`
+  `kennen-migrate-command-action-lock-test-${process.pid}`
 )
 
 function entityLockPath(): string {
@@ -63,8 +63,8 @@ describe("migrateCommand build-entities locking", () => {
   let errorSpy: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    originalStateDir = process.env["LORE_HOOK_STATE_DIR"]
-    process.env["LORE_HOOK_STATE_DIR"] = lockStateDir
+    originalStateDir = process.env["KENNEN_HOOK_STATE_DIR"]
+    process.env["KENNEN_HOOK_STATE_DIR"] = lockStateDir
     rmSync(lockStateDir, { recursive: true, force: true })
     vi.mocked(initServices).mockReset()
     vi.spyOn(process, "exit").mockImplementation((() => {
@@ -78,9 +78,9 @@ describe("migrateCommand build-entities locking", () => {
     vi.restoreAllMocks()
     rmSync(lockStateDir, { recursive: true, force: true })
     if (originalStateDir === undefined) {
-      delete process.env["LORE_HOOK_STATE_DIR"]
+      delete process.env["KENNEN_HOOK_STATE_DIR"]
     } else {
-      process.env["LORE_HOOK_STATE_DIR"] = originalStateDir
+      process.env["KENNEN_HOOK_STATE_DIR"] = originalStateDir
     }
   })
 
@@ -173,6 +173,6 @@ describe("migrateCommand build-entities locking", () => {
     expect(services.facts.setSource).not.toHaveBeenCalled()
     const output = logSpy.mock.calls.flat().join("\n")
     expect(output).toContain("Vault schema is up to date. Nothing to migrate.")
-    expect(output).toContain("[lore] audit-fact-confidence: scanned 0 live facts")
+    expect(output).toContain("[kennen] audit-fact-confidence: scanned 0 live facts")
   })
 })

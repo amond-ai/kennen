@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { fireTouchOnRead, toolError } from "../../helpers.js"
 import { debugLogPartialFailures } from "../../../observability/partial-failure.js"
 import { settleAll } from "../../../core/settle.js"
@@ -11,7 +11,7 @@ type ExpandTarget =
   | { ok: false; input: string; message: string }
 
 export async function handleExpand(
-  services: LoreServices,
+  services: KennenServices,
   args: { ids: string[] }
 ): Promise<ToolResult> {
   try {
@@ -34,7 +34,7 @@ export async function handleExpand(
     )
     if (failures.length > 0) {
       debugLogPartialFailures(
-        "lore-memory",
+        "kennen-memory",
         failures.map(({ key, error }) => ({ rootId: key, error }))
       )
     }
@@ -76,7 +76,7 @@ export async function handleExpand(
     // touching them would duplicate the failure mode without any
     // signal value.
     const fulfilledMemories = fulfilled.map(([, memory]) => memory)
-    await fireTouchOnRead(services.memories, fulfilledMemories, "lore-memory (expand)")
+    await fireTouchOnRead(services.memories, fulfilledMemories, "kennen-memory (expand)")
 
     return response
   } catch (err) {
@@ -84,7 +84,7 @@ export async function handleExpand(
   }
 }
 
-function resolveExpandTarget(services: LoreServices, input: string): ExpandTarget {
+function resolveExpandTarget(services: KennenServices, input: string): ExpandTarget {
   if (!isMemoryResultHandle(input)) return { ok: true, input, id: input }
 
   const store = services.memoryResultHandles
@@ -94,7 +94,7 @@ function resolveExpandTarget(services: LoreServices, input: string): ExpandTarge
       input,
       message:
         `Result handle ${input} is not available in this MCP process. ` +
-        "Run lore-query recall/search again and use a returned handle.",
+        "Run kennen-query recall/search again and use a returned handle.",
     }
   }
 
@@ -106,9 +106,9 @@ function resolveExpandTarget(services: LoreServices, input: string): ExpandTarge
 }
 
 /**
- * Render one hydrated memory for `lore-memory action='expand'` output.
- * Mirrors the meta-line shape used by `lore-query action='recall'` /
- * `lore-query action='search'` so agents scanning across
+ * Render one hydrated memory for `kennen-memory action='expand'` output.
+ * Mirrors the meta-line shape used by `kennen-query action='recall'` /
+ * `kennen-query action='search'` so agents scanning across
  * triage listings and expanded bodies see a uniform header line. Empty
  * `content` still renders the header (the memory exists; the body is just
  * blank) rather than collapsing the row.

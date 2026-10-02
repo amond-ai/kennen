@@ -11,40 +11,40 @@ import {
 import { createLimitedClient } from "./rate-limit.js"
 
 beforeEach(() => {
-  delete process.env["LORE_NOTION_BASE_URL"]
+  delete process.env["KENNEN_NOTION_BASE_URL"]
 })
 
 afterEach(() => {
-  delete process.env["LORE_NOTION_BASE_URL"]
+  delete process.env["KENNEN_NOTION_BASE_URL"]
 })
 
 describe("resolveSdkDebugOptions", () => {
-  it("returns null when LORE_DEBUG is unset so the SDK keeps its default LogLevel.WARN", () => {
+  it("returns null when KENNEN_DEBUG is unset so the SDK keeps its default LogLevel.WARN", () => {
     // Default-quiet is the contract operators rely on — adding INFO
     // to every CLI session would re-introduce stderr noise in normal
     // operation. The opt-in gate is the load-bearing rule.
     expect(resolveSdkDebugOptions({})).toBeNull()
   })
 
-  it("returns null for non-'1' LORE_DEBUG values (no truthy interpretation)", () => {
-    // We intentionally do NOT treat `LORE_DEBUG=true` /
-    // `LORE_DEBUG=yes` as opt-in — the codebase's existing
-    // `LORE_DEBUG=1` convention (memory.ts, near-duplicate probe) is
+  it("returns null for non-'1' KENNEN_DEBUG values (no truthy interpretation)", () => {
+    // We intentionally do NOT treat `KENNEN_DEBUG=true` /
+    // `KENNEN_DEBUG=yes` as opt-in — the codebase's existing
+    // `KENNEN_DEBUG=1` convention (memory.ts, near-duplicate probe) is
     // the single shape, and a parallel truthy ladder here would
     // silently diverge from it.
-    expect(resolveSdkDebugOptions({ LORE_DEBUG: "0" })).toBeNull()
-    expect(resolveSdkDebugOptions({ LORE_DEBUG: "true" })).toBeNull()
-    expect(resolveSdkDebugOptions({ LORE_DEBUG: "" })).toBeNull()
+    expect(resolveSdkDebugOptions({ KENNEN_DEBUG: "0" })).toBeNull()
+    expect(resolveSdkDebugOptions({ KENNEN_DEBUG: "true" })).toBeNull()
+    expect(resolveSdkDebugOptions({ KENNEN_DEBUG: "" })).toBeNull()
   })
 
-  it("returns LogLevel.INFO + the stderr logger when LORE_DEBUG=1", () => {
+  it("returns LogLevel.INFO + the stderr logger when KENNEN_DEBUG=1", () => {
     // INFO is the level at which the Notion SDK emits "retrying
     // request" with `{ method, path, attempt, delayMs }` — the
     // diagnostic that distinguishes a quiet `Retry-After`-induced
     // sleep from a genuine hang. DEBUG would also expose request
     // bodies, which can leak vault content into operator-shared
     // logs; INFO is the right tradeoff.
-    const opts = resolveSdkDebugOptions({ LORE_DEBUG: "1" })
+    const opts = resolveSdkDebugOptions({ KENNEN_DEBUG: "1" })
     expect(opts).not.toBeNull()
     expect(opts?.logLevel).toBe(LogLevel.INFO)
     expect(opts?.logger).toBe(stderrSdkLogger)
@@ -52,12 +52,12 @@ describe("resolveSdkDebugOptions", () => {
 })
 
 describe("stderrSdkLogger", () => {
-  it("writes to stderr with a [lore] prefix so log aggregation patterns keep working", () => {
+  it("writes to stderr with a [kennen] prefix so log aggregation patterns keep working", () => {
     // The SDK's default `makeConsoleLogger` routes INFO through
     // `console.info` → stdout in Node, which would silently
     // pollute the stdout of any CLI command piped into a parser.
-    // stderr is the right destination; the `[lore]` prefix matches
-    // the `[lore] partial-failure:` shape used elsewhere so a
+    // stderr is the right destination; the `[kennen]` prefix matches
+    // the `[kennen] partial-failure:` shape used elsewhere so a
     // single grep keeps surfacing both.
     const stderrChunks: string[] = []
     const stderrSpy = vi
@@ -82,7 +82,7 @@ describe("stderrSdkLogger", () => {
 
     expect(stderrChunks).toHaveLength(1)
     const line = stderrChunks[0]!
-    expect(line).toMatch(/^\[lore\] notion-sdk info: retrying request /)
+    expect(line).toMatch(/^\[kennen\] notion-sdk info: retrying request /)
     expect(line).toContain('"method":"POST"')
     expect(line).toContain('"delayMs":1000')
     expect(line.endsWith("\n")).toBe(true)
@@ -119,7 +119,7 @@ describe("stderrSdkLogger", () => {
     stderrSpy.mockRestore()
 
     expect(stderrChunks).toEqual([
-      '[lore] notion-sdk warn: circular extra {"self":"<circular>"}\n',
+      '[kennen] notion-sdk warn: circular extra {"self":"<circular>"}\n',
     ])
   })
 
@@ -153,14 +153,14 @@ describe("stderrSdkLogger", () => {
     stderrSpy.mockRestore()
 
     expect(stderrChunks).toEqual([
-      "[lore] notion-sdk warn: bigint extra [unserializable extraInfo]\n",
+      "[kennen] notion-sdk warn: bigint extra [unserializable extraInfo]\n",
     ])
   })
 
   it("redacts page-id substrings in SDK paths (issue #488 — primary leak vector)", () => {
     // The SDK's INFO-level "Retrying request" trace passes
     // `path: "/v1/pages/<32-hex>"` on every retry, which is the strictly
-    // worst page-id leak under LORE_DEBUG=1 — every retry attempt emits
+    // worst page-id leak under KENNEN_DEBUG=1 — every retry attempt emits
     // a structurally-guaranteed page id to stderr. Pin the redactor
     // routing so the leak can't regress without this test failing.
     const stderrChunks: string[] = []
@@ -314,7 +314,7 @@ describe("stderrSdkLogger", () => {
 
     stderrSpy.mockRestore()
 
-    expect(stderrChunks).toEqual(["[lore] notion-sdk warn: hello\n"])
+    expect(stderrChunks).toEqual(["[kennen] notion-sdk warn: hello\n"])
   })
 })
 
@@ -329,11 +329,11 @@ describe("createClient", () => {
     )
   })
 
-  it("rejects an invalid LORE_NOTION_BASE_URL fallback before the SDK sees it", () => {
-    process.env["LORE_NOTION_BASE_URL"] = "api.notion.so"
+  it("rejects an invalid KENNEN_NOTION_BASE_URL fallback before the SDK sees it", () => {
+    process.env["KENNEN_NOTION_BASE_URL"] = "api.notion.so"
 
     expect(() => createClient("token")).toThrow(
-      /Invalid Notion API base URL from LORE_NOTION_BASE_URL/
+      /Invalid Notion API base URL from KENNEN_NOTION_BASE_URL/
     )
   })
 })
@@ -535,7 +535,7 @@ describe("createAuthRefreshingClient", () => {
     expect(newRetrieve).toHaveBeenCalledTimes(1)
   })
 
-  it("emits refresh diagnostics by default and skip diagnostics only under LORE_DEBUG", async () => {
+  it("emits refresh diagnostics by default and skip diagnostics only under KENNEN_DEBUG", async () => {
     const stderrChunks: string[] = []
     const stderrSpy = vi
       .spyOn(process.stderr, "write")
@@ -569,7 +569,7 @@ describe("createAuthRefreshingClient", () => {
     )
     await refreshedClient.pages.retrieve({ page_id: "page" })
 
-    const priorDebug = process.env["LORE_DEBUG"]
+    const priorDebug = process.env["KENNEN_DEBUG"]
     const createUnauthorizedClient = () =>
       ({
         pages: {
@@ -580,7 +580,7 @@ describe("createAuthRefreshingClient", () => {
       }) as unknown as Client
 
     try {
-      delete process.env["LORE_DEBUG"]
+      delete process.env["KENNEN_DEBUG"]
       const quietUnchangedClient = createAuthRefreshingClient(
         { token: "same-token" },
         async () => ({ kind: "unchanged" as const }),
@@ -590,10 +590,10 @@ describe("createAuthRefreshingClient", () => {
         quietUnchangedClient.pages.retrieve({ page_id: "page" })
       ).rejects.toThrow("unauthorized")
       expect(stderrChunks).toEqual([
-        "[lore] auth: refreshed ntn token after 401 (source=ntn-auth-json)\n",
+        "[kennen] auth: refreshed ntn token after 401 (source=ntn-auth-json)\n",
       ])
 
-      process.env["LORE_DEBUG"] = "1"
+      process.env["KENNEN_DEBUG"] = "1"
       const unchangedClient = createAuthRefreshingClient(
         { token: "same-token" },
         async () => ({ kind: "unchanged" as const }),
@@ -615,24 +615,24 @@ describe("createAuthRefreshingClient", () => {
       )
     } finally {
       if (priorDebug === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = priorDebug
+        process.env["KENNEN_DEBUG"] = priorDebug
       }
       stderrSpy.mockRestore()
     }
 
     expect(stderrChunks).toEqual([
-      "[lore] auth: refreshed ntn token after 401 (source=ntn-auth-json)\n",
-      "[lore] auth: 401 refresh skipped (token unchanged)\n",
-      "[lore] auth: 401 refresh skipped (auth unavailable): auth resolver exploded\n",
+      "[kennen] auth: refreshed ntn token after 401 (source=ntn-auth-json)\n",
+      "[kennen] auth: 401 refresh skipped (token unchanged)\n",
+      "[kennen] auth: 401 refresh skipped (auth unavailable): auth resolver exploded\n",
     ])
   })
 
   it("routes 401 refresh-skipped suffix through redactDebugMessage (issue #488)", async () => {
     // The auth-resolver's failure surface (auth.json read errors,
     // users.me network blips) is the same SDK / network / config-walk
-    // path that produces the messages every other LORE_DEBUG emitter
+    // path that produces the messages every other KENNEN_DEBUG emitter
     // scrubs. Pin that the suffix routes through the shared redactor
     // so a resolver error carrying a page-id substring cannot bypass
     // the helper just because this emitter sits in src/notion/.
@@ -648,8 +648,8 @@ describe("createAuthRefreshingClient", () => {
         return true
       })
 
-    const priorDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    const priorDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     try {
       const client = createAuthRefreshingClient(
         { token: "same-token" },
@@ -672,9 +672,9 @@ describe("createAuthRefreshingClient", () => {
       )
     } finally {
       if (priorDebug === undefined) {
-        delete process.env["LORE_DEBUG"]
+        delete process.env["KENNEN_DEBUG"]
       } else {
-        process.env["LORE_DEBUG"] = priorDebug
+        process.env["KENNEN_DEBUG"] = priorDebug
       }
       stderrSpy.mockRestore()
     }

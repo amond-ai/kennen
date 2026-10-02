@@ -55,7 +55,7 @@ describe("logRunToolFallback", () => {
     })
     expect(stderrSpy).toHaveBeenCalledTimes(1)
     const line = (stderrSpy.mock.calls[0]![0] as string).trim()
-    expect(line).toContain("[lore] partial-failure:")
+    expect(line).toContain("[kennen] partial-failure:")
     expect(line).toContain("source=near-duplicate-candidates")
     expect(line).toContain("status=403")
     expect(line).toContain("code=restricted_resource")

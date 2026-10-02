@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { toolError } from "../../helpers.js"
 import type { ToolResult } from "./types.js"
 
@@ -15,7 +15,7 @@ export interface ReviewArgs {
 }
 
 export async function handleReview(
-  services: LoreServices,
+  services: KennenServices,
   args: ReviewArgs,
   verdict: "approve" | "reject"
 ): Promise<ToolResult> {
@@ -28,11 +28,11 @@ export async function handleReview(
     // to "(unknown)".
     // Trim BOTH the explicit `reviewer` arg and the resolver result.
     // Without the resolver-side trim, a `users.me` response with a
-    // whitespace-only `name` (or `LORE_USER_NAME="   "`) would
+    // whitespace-only `name` (or `KENNEN_USER_NAME="   "`) would
     // bypass this no-identity guard, forward into `recordReview`,
     // and surface as the bare service-layer "reviewer must be a
     // non-empty string" error instead of the friendly
-    // "set LORE_USER_NAME or pass `--reviewer`" guidance. Mirrors
+    // "set KENNEN_USER_NAME or pass `--reviewer`" guidance. Mirrors
     // the CLI's resolver-trim posture
     // for surface parity.
     const trimmedExplicit = args.reviewer?.trim()
@@ -45,7 +45,7 @@ export async function handleReview(
         new Error(
           `Cannot ${verdict} memory ${args.memoryId}: no reviewer identity ` +
             `available. Pass an explicit \`reviewer\` argument or set ` +
-            `\`LORE_USER_NAME\` so the audit trail can record who ` +
+            `\`KENNEN_USER_NAME\` so the audit trail can record who ` +
             `approved/rejected the row.`
         )
       )

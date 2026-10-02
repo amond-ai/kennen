@@ -11,7 +11,7 @@ scenario triple (`n = 1`).
 - Scenario: `httpx-cross-boundary-protocol-epic-v1`
 - OSS target: `encode/httpx@301b8fb03a81447c5b5ab1ca991202e10826fbda`
 - Difficulty (author-labeled): hard
-- Conditions: `no-memory`, `seeded-lore`, `lore-full-loop`
+- Conditions: `no-memory`, `seeded-kennen`, `kennen-full-loop`
 - Agent: codex, 30-minute phase timeout
 
 The scenario crosses four interacting subsystems and asserts behavior with five
@@ -36,35 +36,35 @@ files.
 
 - no-memory:
   `evals/results/longitudinal-httpx-public-spec-v1-no-memory-calibration-20260528T1413Z.json`
-- seeded-lore + lore-full-loop:
+- seeded-kennen + kennen-full-loop:
   `evals/results/longitudinal-httpx-public-spec-v1-cross-boundary-memory-20260528T1657Z.json`
 
 The memory-arms artifact predates the expected-context harness fix, so it still
-records the raw `expected-context` gate on the `lore-full-loop` row.
+records the raw `expected-context` gate on the `kennen-full-loop` row.
 
 ## Raw Result
 
 Verifier outcomes recorded by the harness, with primary-agent cost separated
-from Lore-owned background mining cost:
+from Kennen-owned background mining cost:
 
-| Condition        | Raw success | Hidden verifier | Primary-agent cost | Lore mining cost | Elapsed |
+| Condition        | Raw success | Hidden verifier | Primary-agent cost | Kennen mining cost | Elapsed |
 | ---------------- | ----------- | --------------- | -----------------: | ---------------: | ------: |
 | `no-memory`      | fail        | failed          |              $5.41 |                — |  12.1 m |
-| `seeded-lore`    | pass        | passed          |              $3.36 |                — |   7.5 m |
-| `lore-full-loop` | fail        | **passed**      |              $3.51 |            $2.97 |  20.3 m |
+| `seeded-kennen`    | pass        | passed          |              $3.36 |                — |   7.5 m |
+| `kennen-full-loop` | fail        | **passed**      |              $3.51 |            $2.97 |  20.3 m |
 
-For `lore-full-loop`, primary-agent cost is the Phase B (use) cost ($3.51); the
-$2.97 formation/mining cost is Lore-owned and the 20.3 m elapsed includes the
+For `kennen-full-loop`, primary-agent cost is the Phase B (use) cost ($3.51); the
+$2.97 formation/mining cost is Kennen-owned and the 20.3 m elapsed includes the
 8.1 m Phase A formation pass plus the 12.2 m Phase B use pass.
 
-The raw `lore-full-loop` failure is `failureReason: expected-context`: both
+The raw `kennen-full-loop` failure is `failureReason: expected-context`: both
 phases reported `success: true` and the hidden verifier passed, but the old
 harness gate failed the row because wake-up did not surface the statically
 declared expected-context IDs.
 
 ## Adjudication
 
-Under `docs/evals-adjudication-rules.md`, the `lore-full-loop` row converts from
+Under `docs/evals-adjudication-rules.md`, the `kennen-full-loop` row converts from
 raw fail to **adjudicated pass**:
 
 - Both phases (formation, use) succeeded and the hidden verifier passed.
@@ -88,8 +88,8 @@ expected-context gate.
 | Condition        | Adjudicated success |
 | ---------------- | ------------------- |
 | `no-memory`      | fail                |
-| `seeded-lore`    | pass                |
-| `lore-full-loop` | pass                |
+| `seeded-kennen`    | pass                |
+| `kennen-full-loop` | pass                |
 
 ## Independent Replay Verification
 
@@ -99,13 +99,13 @@ verifier in a clean checkout of the pinned SHA (2026-05-28):
 | Condition        | Replayed patch verifier result |
 | ---------------- | ------------------------------ |
 | `no-memory`      | fail (command-failed)          |
-| `seeded-lore`    | pass                           |
-| `lore-full-loop` | pass                           |
+| `seeded-kennen`    | pass                           |
+| `kennen-full-loop` | pass                           |
 
 Replay command shape:
 
 ```bash
-cache=~/.cache/lore/eval-workspaces/git/encode/httpx/301b8fb03a81447c5b5ab1ca991202e10826fbda/4f53cda18c2b
+cache=~/.cache/kennen/eval-workspaces/git/encode/httpx/301b8fb03a81447c5b5ab1ca991202e10826fbda/4f53cda18c2b
 work=/tmp/httpx-adj
 git clone --quiet "$cache" "$work"
 git -C "$work" apply --whitespace=nowarn /abs/path/to/<condition>-use.patch
@@ -123,7 +123,7 @@ The patch sidecars live under each artifact's `*-shards/` directory.
 Supported by this single scenario:
 
 - One validated directional-lift case: `no-memory` fails the hidden verifier
-  while both `seeded-lore` and (adjudicated) `lore-full-loop` pass it, confirmed
+  while both `seeded-kennen` and (adjudicated) `kennen-full-loop` pass it, confirmed
   by independent patch replay.
 - On this scenario both memory arms also reduced primary-agent cost versus
   `no-memory` ($3.36 seeded and $3.51 full-loop use-phase, versus $5.41

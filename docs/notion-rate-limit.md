@@ -39,7 +39,7 @@ Every governed call passes through three gates:
    endpoint means siblings on the same token are also in the throttling window.
    Calls already past `bucket.acquire()` are not affected; the pause governs
    the next dispatch, not in-flight calls. Backoff events emit a
-   `[lore] notion-sdk warn: 429 backoff <ms> (source=...)` stderr line by
+   `[kennen] notion-sdk warn: 429 backoff <ms> (source=...)` stderr line by
    default; consumers wanting telemetry replace `deps.onBackoff`.
 
 ## Recursive Proxy Contract
@@ -57,18 +57,18 @@ such as `search` and `request` match the bare method name.
 
 ## Configuration
 
-`initServicesFromConfig` and `lore init` both wrap the raw client before
+`initServicesFromConfig` and `kennen init` both wrap the raw client before
 handing it to services. `initServicesFromConfig` reads
 `config.notion.rateLimit`, including `concurrency`, `requestsPerSecond`,
-`burstSize`, and `endpointOverrides`. `lore init` runs before `.lore.yaml`
+`burstSize`, and `endpointOverrides`. `kennen init` runs before `.kennen.yaml`
 exists, so it uses defaults and picks up custom values on later commands.
 
-One-time setup flows share the same gate. `lore init`, `lore install`, and
-`lore auth --status` route through `createLimitedClient` with the same defaults
+One-time setup flows share the same gate. `kennen init`, `kennen install`, and
+`kennen auth --status` route through `createLimitedClient` with the same defaults
 as long-running processes. These flows run once per vault and are not on the
 hot path. Operators who measure their workload and want to loosen the global
 gate or scope a specific endpoint set `notion.rateLimit.requestsPerSecond` or
-`notion.rateLimit.endpointOverrides` in `.lore.yaml`.
+`notion.rateLimit.endpointOverrides` in `.kennen.yaml`.
 
 ## Endpoint override inheritance
 
@@ -115,7 +115,7 @@ Notion enforces rate limits per access token. Under the ntn-first deployment,
 every operator's ntn-issued token has its own server-side bucket sized to the
 per-token public-API contract.
 
-The `p-limit` gate in `rate-limit.ts` keeps a single Lore process under the
+The `p-limit` gate in `rate-limit.ts` keeps a single Kennen process under the
 wrapper's configured ceiling. Cross-process contention within one operator's
 token is bounded by `DEFAULT_NOTION_CONCURRENCY` times the number of concurrent
 processes and ultimately governed by the shared 429 backoff path when the union
@@ -125,7 +125,7 @@ operators would collapse the per-token isolation.
 ## SDK call-site checklist
 
 Tests that inject their own mock client remain unaffected because the wrap
-happens inside `initServicesFromConfig` and `lore init`, not at construction of
+happens inside `initServicesFromConfig` and `kennen init`, not at construction of
 `ProjectService`, `TopicService`, or the other domain services. A test that
 wants to observe limiter behavior with a mock should wrap the mock explicitly
 with `createLimitedClient`.

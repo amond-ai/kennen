@@ -177,7 +177,7 @@ export function estimateIngestionCostUsd(
 /**
  * Inputs to project the running cost forward after one more example.
  * The bench-runner calls this between examples to decide whether to
- * abort before the next one against `LORE_EVAL_BENCH_MAX_USD`.
+ * abort before the next one against `KENNEN_EVAL_BENCH_MAX_USD`.
  */
 export interface ProjectedCostInput {
   agentUsdSoFar: number

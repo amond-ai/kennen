@@ -25,7 +25,7 @@ import { hydrateRelationProperties } from "../notion/relation-properties.js"
 import { LruCache } from "./cache.js"
 import { normalizeTopicNameForLookup } from "./topic-normalize.js"
 import { trigramJaccard } from "./similarity.js"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 
 /** Max retries for the optimistic `getOrCreate` extend loop when a concurrent
  *  writer clobbers the relation mid-update. Two retries is enough to cover
@@ -71,7 +71,7 @@ export interface SimilarTopicCandidate {
  * `candidates` field lets the MCP tool layer render a copy-pasteable list
  * without re-parsing the message.
  */
-export class SimilarTopicError extends LoreError<"similar-topic"> {
+export class SimilarTopicError extends KennenError<"similar-topic"> {
   readonly attempted: string
   readonly candidates: SimilarTopicCandidate[]
 
@@ -184,7 +184,7 @@ export class TopicService {
 
   /**
    * Find a topic by name. Topic names are globally unique after migration;
-   * duplicates are resolved by `lore migrate --merge-duplicate-topics`.
+   * duplicates are resolved by `kennen migrate --merge-duplicate-topics`.
    *
    * - Without `projectId`: global lookup by name.
    * - With `projectId`: additionally require that id be present in the
@@ -229,7 +229,7 @@ export class TopicService {
         const ids = pages.map((p) => p.id).join(", ")
         throw new Error(
           `Multiple topics named "${decoded}" found (${ids}). ` +
-            `Run \`lore migrate --merge-duplicate-topics\` to merge them.`
+            `Run \`kennen migrate --merge-duplicate-topics\` to merge them.`
         )
       }
 
@@ -248,7 +248,7 @@ export class TopicService {
    *
    * 1. **Exact-name match** (via `findByName`) → extend the relation and
    *    return. Relies on `findByName`'s global-uniqueness invariant
-   *    established by `lore migrate --merge-duplicate-topics`.
+   *    established by `kennen migrate --merge-duplicate-topics`.
    * 2. **Normalized-equivalent match** in any of the resolved projects
    *    (via the slow-path probe) → silently extend that canonical row's
    *    relation. Closes the fan-out where agents drifted

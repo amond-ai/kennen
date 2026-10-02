@@ -68,9 +68,9 @@ describe("canonicalizeAgentName", () => {
     })
   })
 
-  describe("explicit LORE_AGENT_NAME overrides pass through unchanged (PF1-04 contract)", () => {
+  describe("explicit KENNEN_AGENT_NAME overrides pass through unchanged (PF1-04 contract)", () => {
     // The acceptance criterion calls these out by name — third-party
-    // integrators set them via `LORE_AGENT_NAME=Codex`/`Cline` and the
+    // integrators set them via `KENNEN_AGENT_NAME=Codex`/`Cline` and the
     // canonicalizer must not eat them. A regression that started rewriting
     // these would be the explicit-over-inferred contract violation PF1-04
     // shipped to fix.

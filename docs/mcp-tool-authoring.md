@@ -4,15 +4,15 @@ This guide holds the detailed MCP implementation patterns that are too large
 for the subsystem routing guide. Read [src/mcp/AGENTS.md](../src/mcp/AGENTS.md)
 first; it remains the precedence-bearing guide for MCP work.
 
-The current MCP surface is intentionally polymorphic: `lore-context`,
-`lore-memory`, `lore-pinned`, `lore-query`, `lore-fact`,
-`lore-decision`, `lore-project`, `lore-task`, and
-`lore-procedure`. User-facing behavior belongs in
+The current MCP surface is intentionally polymorphic: `kennen-context`,
+`kennen-memory`, `kennen-pinned`, `kennen-query`, `kennen-fact`,
+`kennen-decision`, `kennen-project`, `kennen-task`, and
+`kennen-procedure`. User-facing behavior belongs in
 [docs/mcp-tools.md](mcp-tools.md), not in this authoring guide.
 
 ## Polymorphic Dispatch Pattern
 
-The polymorphic `lore-*` tools above multiplex multiple actions behind one
+The polymorphic `kennen-*` tools above multiplex multiple actions behind one
 MCP registration to keep per-session prompt overhead low. Each tool follows
 the same shape:
 
@@ -39,8 +39,8 @@ the same shape:
 Skeleton:
 
 ```typescript
-async function handleSave(services: LoreServices, args: SaveArgs): Promise<ToolResult> { ... }
-async function handleArchive(services: LoreServices, args: ArchiveArgs): Promise<ToolResult> { ... }
+async function handleSave(services: KennenServices, args: SaveArgs): Promise<ToolResult> { ... }
+async function handleArchive(services: KennenServices, args: ArchiveArgs): Promise<ToolResult> { ... }
 
 const memoryDispatchSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("save"), title: z.string(), content: z.string(), ... }),
@@ -48,7 +48,7 @@ const memoryDispatchSchema = z.discriminatedUnion("action", [
   ...
 ])
 
-server.registerTool("lore-memory", {
+server.registerTool("kennen-memory", {
   title: "Memory operations",
   description: "Action-dispatched: save | archive | ...",
   inputSchema: z.object({
@@ -60,7 +60,7 @@ server.registerTool("lore-memory", {
 }, async (args) => {
   const parsed = memoryDispatchSchema.safeParse(args, { reportInput: true })
   if (!parsed.success) {
-    return toolError(new Error(formatDispatchError("lore-memory", parsed.error)))
+    return toolError(new Error(formatDispatchError("kennen-memory", parsed.error)))
   }
   switch (parsed.data.action) {
     case "save": return handleSave(services, parsed.data)
@@ -95,12 +95,12 @@ that calls `server.registerTool()` for each tool. The pattern:
 ```typescript
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import { toolError } from "../helpers.js"
 
-export function registerFooTools(server: McpServer, services: LoreServices): void {
+export function registerFooTools(server: McpServer, services: KennenServices): void {
   server.registerTool(
-    "lore-verb-noun",
+    "kennen-verb-noun",
     {
       title: "Human-readable title",
       description: "What this tool does. Include usage guidance for the AI.",
@@ -124,7 +124,7 @@ export function registerFooTools(server: McpServer, services: LoreServices): voi
 
 ### Mandatory conventions
 
-1. **Tool names**: Always `lore-<verb>` or `lore-<verb>-<noun>` in kebab-case.
+1. **Tool names**: Always `kennen-<verb>` or `kennen-<verb>-<noun>` in kebab-case.
 
 2. **try/catch**: Every tool callback must wrap its body in try/catch and return
    `toolError(err)` on failure. MCP protocol requires tools to report errors as
@@ -181,7 +181,7 @@ export function registerFooTools(server: McpServer, services: LoreServices): voi
    permissive so legacy or out-of-profile rows can still be found.
 
 9. **Interactive init failures stay MCP-visible.** If `initServices()` fails
-   during normal MCP startup, register diagnostic stubs for every `lore-*`
+   during normal MCP startup, register diagnostic stubs for every `kennen-*`
    dispatcher and connect stdio so the client gets recovery text. Do not
    call `process.exit(1)` for interactive init failures unless the diagnostic
    startup path is replaced by another MCP-visible recovery surface.

@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest"
 
-import { LoreError, errorCauseMessage, isLoreError, loreErrorExitCode } from "./errors.js"
+import {
+  KennenError,
+  errorCauseMessage,
+  isKennenError,
+  kennenErrorExitCode,
+} from "./errors.js"
 
-describe("LoreError", () => {
+describe("KennenError", () => {
   it("carries a stable kind, structured details, and Error cause", () => {
     const cause = new Error("notion 503")
-    const err = new LoreError(
+    const err = new KennenError(
       "memory-create-partial",
       "memory row landed but body write failed",
       {
@@ -17,7 +22,7 @@ describe("LoreError", () => {
     )
 
     expect(err).toBeInstanceOf(Error)
-    expect(isLoreError(err)).toBe(true)
+    expect(isKennenError(err)).toBe(true)
     expect(err.kind).toBe("memory-create-partial")
     expect(err.details).toEqual({
       pageId: "mem-1",
@@ -28,11 +33,11 @@ describe("LoreError", () => {
   })
 
   it("maps user-correctable and temporary kinds to distinct CLI exits", () => {
-    const userError = new LoreError("memory-read-only", "read-only", {
+    const userError = new KennenError("memory-read-only", "read-only", {
       memoryId: "mem-1",
       memoryTitle: "Pinned policy",
     })
-    const temporaryError = new LoreError(
+    const temporaryError = new KennenError(
       "transient-project-resolution",
       "project lookup failed",
       {
@@ -42,9 +47,9 @@ describe("LoreError", () => {
       }
     )
 
-    expect(loreErrorExitCode(userError)).toBe(2)
-    expect(loreErrorExitCode(temporaryError)).toBe(75)
-    expect(loreErrorExitCode(new Error("plain"), 9)).toBe(9)
+    expect(kennenErrorExitCode(userError)).toBe(2)
+    expect(kennenErrorExitCode(temporaryError)).toBe(75)
+    expect(kennenErrorExitCode(new Error("plain"), 9)).toBe(9)
   })
 })
 

@@ -6,7 +6,7 @@ type PackageJson = {
 }
 
 const ALWAYS_PACKED_FILES = ["LICENSE", "README.md", "package.json"]
-const INLINE_README_SUPPORT_FILES = [".lore.example.yaml"]
+const INLINE_README_SUPPORT_FILES = [".kennen.example.yaml"]
 
 function packageEntryCoversFile(entry: string, file: string): boolean {
   const normalizedEntry = entry.replace(/\/+$/, "")

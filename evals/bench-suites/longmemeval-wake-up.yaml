@@ -26,8 +26,8 @@ notes: |
   context" block. The agent answers from the injected context — no
   MCP tool calls required.
 
-  Mirrors how Lore's wake-up hook works in production: at session
-  start the hook calls `lore-context action='wake-up'
+  Mirrors how Kennen's wake-up hook works in production: at session
+  start the hook calls `kennen-context action='wake-up'
   userQuery=<task>` via the agent's MCP integration and the
   response is pasted into the agent's context window. For a
   one-shot bench question, the relevance-ranked taskMemories

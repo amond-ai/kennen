@@ -1,5 +1,5 @@
 {
-  "name": "lore-longitudinal-result-boundary",
+  "name": "kennen-longitudinal-result-boundary",
   "type": "module",
   "scripts": {
     "test": "node profile-service.check.mjs"

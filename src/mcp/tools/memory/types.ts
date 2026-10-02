@@ -22,9 +22,9 @@ export const KINDS = [
 ] as const
 
 /**
- * Full `MemoryKind` set accepted by `lore-memory action='suggest-topic-key'`.
+ * Full `MemoryKind` set accepted by `kennen-memory action='suggest-topic-key'`.
  * Includes `task` (which `KINDS` deliberately excludes — task memories are
- * written via `lore-task action='create'`, not `lore-memory`) because the
+ * written via `kennen-task action='create'`, not `kennen-memory`) because the
  * suggester returns a no-suggestion verdict for task / note kinds rather
  * than rejecting them, and an agent that has just received `kind: "task"`
  * from upstream should be able to ask for a key without first having to

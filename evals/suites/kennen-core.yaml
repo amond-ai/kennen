@@ -1,6 +1,6 @@
 version: 1
-name: lore-core
-description: Small synthetic suite that checks whether useful Lore memory surfaces for representative tasks.
+name: kennen-core
+description: Small synthetic suite that checks whether useful Kennen memory surfaces for representative tasks.
 trials: 1
 runner: retrieval
 
@@ -10,19 +10,19 @@ tasks:
       Add the requested browser feature while following the project's established auth decision.
       Avoid introducing the deprecated auth path.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy.yaml
       stale-memory: ../memory/stale-auth-decision.yaml
       helpful-memory: ../memory/auth-decision.yaml
     retrieval:
       limit: 3
     expectedRetrieval:
-      no-lore:
+      no-kennen:
         shouldSurface: []
         shouldNotSurface:
           - decision/auth-model
-      empty-lore:
+      empty-kennen:
         shouldSurface: []
         shouldNotSurface:
           - decision/auth-model
@@ -48,19 +48,19 @@ tasks:
       Add a unit test for the new payment validator using the project's current test runner.
       Do not adopt the superseded runner.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy-test-runner.yaml
       stale-memory: ../memory/stale-test-runner.yaml
       helpful-memory: ../memory/test-runner-decision.yaml
     retrieval:
       limit: 3
     expectedRetrieval:
-      no-lore:
+      no-kennen:
         shouldSurface: []
         shouldNotSurface:
           - decision/test-runner-vitest
-      empty-lore:
+      empty-kennen:
         shouldSurface: []
         shouldNotSurface:
           - decision/test-runner-vitest
@@ -84,19 +84,19 @@ tasks:
       Add a new service method that fetches the user profile and returns the project's standard
       error-handling shape. Do not adopt the superseded throw-based pattern.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy-error-handling.yaml
       stale-memory: ../memory/stale-error-handling.yaml
       helpful-memory: ../memory/error-handling-decision.yaml
     retrieval:
       limit: 3
     expectedRetrieval:
-      no-lore:
+      no-kennen:
         shouldSurface: []
         shouldNotSurface:
           - decision/error-handling-result-type
-      empty-lore:
+      empty-kennen:
         shouldSurface: []
         shouldNotSurface:
           - decision/error-handling-result-type
@@ -119,8 +119,8 @@ tasks:
     prompt: |
       A Redis primary appears stuck. Recover the cluster by following the project's runbook.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/incident-runbook-helpful.yaml
     retrieval:
       limit: 3
@@ -135,8 +135,8 @@ tasks:
     prompt: |
       Roll out the new orders service version using the project's current deployment pattern.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/deployment-pattern-helpful.yaml
     retrieval:
       limit: 3
@@ -151,8 +151,8 @@ tasks:
     prompt: |
       Add a customer-data feature that complies with the project's data retention policy.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/data-retention-helpful.yaml
     retrieval:
       limit: 3
@@ -168,8 +168,8 @@ tasks:
       Implement payment retry backoff in the validator without using fixed-interval retries.
     surface: wake-up.taskOnly
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/task-only-harmful-noise.yaml
     retrieval:
       limit: 1
@@ -185,8 +185,8 @@ tasks:
     prompt: |
       Add retry handling to the payments service while preserving idempotency keys.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy-pinned-context.yaml
       helpful-memory: ../memory/query-task-with-pinned-noise.yaml
     retrieval:
@@ -207,8 +207,8 @@ tasks:
     prompt: |
       Add webhook signature validation using the established replay window.
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy-upstream-inheritance.yaml
       helpful-memory: ../memory/query-task-with-upstream-noise.yaml
     retrieval:
@@ -230,8 +230,8 @@ tasks:
     prompt: Catch up on recent architectural decisions.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/recents-architecture.yaml
     retrieval:
       # limit: 1 picks the most-recent row only — wake-up.memories
@@ -252,8 +252,8 @@ tasks:
     prompt: Catch up on the most recent billing decisions.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/recents-billing.yaml
     retrieval:
       limit: 1
@@ -268,8 +268,8 @@ tasks:
     prompt: Catch up on the most recent monitoring decisions.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/recents-monitoring.yaml
     retrieval:
       limit: 1
@@ -284,8 +284,8 @@ tasks:
     prompt: Catch up on the most recent incident postmortems.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/recents-incident.yaml
     retrieval:
       limit: 1
@@ -300,8 +300,8 @@ tasks:
     prompt: Catch up on the most recent policy updates.
     surface: wake-up.memories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/recents-policy.yaml
     retrieval:
       limit: 1
@@ -318,8 +318,8 @@ tasks:
     prompt: Pick up where the team left off on payments work.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/related-payments.yaml
     retrieval:
       # limit: 5 lets shouldNotSurface assert "the distractor must
@@ -339,8 +339,8 @@ tasks:
     prompt: Continue the search relevance tuning thread from earlier this week.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/related-search.yaml
     retrieval:
       limit: 5
@@ -355,8 +355,8 @@ tasks:
     prompt: Continue the canary deployment dial-up.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/related-deployment.yaml
     retrieval:
       limit: 5
@@ -371,8 +371,8 @@ tasks:
     prompt: Continue tuning the alert burn-rate thresholds.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/related-monitoring.yaml
     retrieval:
       limit: 5
@@ -387,8 +387,8 @@ tasks:
     prompt: Continue investigating session refresh edge cases.
     surface: wake-up.relatedMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       helpful-memory: ../memory/related-auth.yaml
     retrieval:
       limit: 5

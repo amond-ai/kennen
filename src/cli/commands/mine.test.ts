@@ -7,18 +7,18 @@ import { MemoryCreatePartialFailureError } from "../../core/memory.js"
 import { INVALID_LIMIT_STRINGS, trapProcessExit } from "../test-helpers.js"
 
 const { mineStateDir } = vi.hoisted(() => {
-  const mineStateDir = `${process.env["TMPDIR"] ?? "/tmp"}/lore-mine-lock-test-${process.pid}-${Date.now()}`
-  process.env["LORE_HOOK_STATE_DIR"] = mineStateDir
-  process.env["LORE_MINE_POST_CREATE_STABILIZE_MS"] = "0"
-  process.env["LORE_MINE_LOCK_TIMEOUT_MS"] = "1000"
+  const mineStateDir = `${process.env["TMPDIR"] ?? "/tmp"}/kennen-mine-lock-test-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] = mineStateDir
+  process.env["KENNEN_MINE_POST_CREATE_STABILIZE_MS"] = "0"
+  process.env["KENNEN_MINE_LOCK_TIMEOUT_MS"] = "1000"
   return { mineStateDir }
 })
 
 afterEach(async () => {
   await rm(mineStateDir, { recursive: true, force: true })
-  process.env["LORE_MINE_POST_CREATE_STABILIZE_MS"] = "0"
-  process.env["LORE_MINE_LOCK_TIMEOUT_MS"] = "1000"
-  delete process.env["LORE_DEBUG"]
+  process.env["KENNEN_MINE_POST_CREATE_STABILIZE_MS"] = "0"
+  process.env["KENNEN_MINE_LOCK_TIMEOUT_MS"] = "1000"
+  delete process.env["KENNEN_DEBUG"]
 })
 
 import {
@@ -43,7 +43,7 @@ import {
   type MineCliOptions,
   type MineSummary,
 } from "./mine.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import type { Memory } from "../../types.js"
 
 vi.mock("../../services.js", () => ({
@@ -263,7 +263,7 @@ describe("globToRegExp / matchesGlob", () => {
     // `globToRegExp`, JS would compile `[a/b]` as a class that
     // matches `/` and break the matcher's "no token crosses path
     // boundaries" invariant. POSIX globs leave `/` in classes
-    // undefined; lore's strip is the operator-friendly reading.
+    // undefined; kennen's strip is the operator-friendly reading.
     expect(matchesGlob("a", "[a/b]")).toBe(true)
     expect(matchesGlob("b", "[a/b]")).toBe(true)
     expect(matchesGlob("/", "[a/b]")).toBe(false)
@@ -407,7 +407,7 @@ describe("selectMineFiles", () => {
 
 describe("discoverMineFiles", () => {
   async function withTempDir(test: (dir: string) => Promise<void>) {
-    const tmp = await mkdtemp(`${tmpdir()}/lore-mine-discover-test-`)
+    const tmp = await mkdtemp(`${tmpdir()}/kennen-mine-discover-test-`)
     try {
       await test(tmp)
     } finally {
@@ -433,7 +433,7 @@ describe("discoverMineFiles", () => {
     expect(isDefaultMineIgnoredPath(".cursor/mcp.json")).toBe(true)
     expect(isDefaultMineIgnoredPath("coverage/report.json")).toBe(true)
     expect(isDefaultMineIgnoredPath("artifacts/out.md")).toBe(true)
-    expect(isDefaultMineIgnoredPath(".lore-wt-child/private.ts")).toBe(true)
+    expect(isDefaultMineIgnoredPath(".kennen-wt-child/private.ts")).toBe(true)
     expect(isDefaultMineIgnoredPath("src/app.ts")).toBe(false)
   })
 
@@ -455,7 +455,7 @@ describe("discoverMineFiles", () => {
       await writeFixtureFile(dir, "artifacts/output.md", "# artifact\n")
       await writeFixtureFile(
         dir,
-        ".lore-wt-nested/private.ts",
+        ".kennen-wt-nested/private.ts",
         "export const worktree = true\n"
       )
 
@@ -479,7 +479,7 @@ describe("discoverMineFiles", () => {
 
   it("skips symlink candidates during filesystem discovery", async () => {
     await withTempDir(async (dir) => {
-      const outside = await mkdtemp(`${tmpdir()}/lore-mine-discover-outside-`)
+      const outside = await mkdtemp(`${tmpdir()}/kennen-mine-discover-outside-`)
       try {
         await writeFixtureFile(dir, "keep.ts", "export const keep = true\n")
         await writeFile(join(outside, "secret.ts"), "export const secret = true\n")
@@ -513,13 +513,13 @@ describe("resolveMineProject", () => {
       options?: { includeArchived?: boolean }
     ) => Promise<{ id: string; name: string; status?: string } | null>
     contextProject?: { id: string; name: string } | null
-  }): LoreServices {
+  }): KennenServices {
     return {
       projects: {
         findByName: opts.findByName ?? (async () => null),
       },
       context: { project: opts.contextProject ?? null },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
   }
 
   it("returns the project when --project resolves", async () => {
@@ -531,14 +531,14 @@ describe("resolveMineProject", () => {
     expect(result).toEqual({ id: "p-widget" })
   })
 
-  it("throws with a 'lore status projects' hint when --project is unknown", async () => {
+  it("throws with a 'kennen status projects' hint when --project is unknown", async () => {
     // Explicit-but-unresolved project names must fatal-fail before
     // any create / update work starts. Otherwise `--project Mial`
     // (typo) silently dispatches unscoped writes that can collide
     // with another project's existing rows.
     const services = makeServices({ findByName: async () => null })
     await expect(resolveMineProject(services, "Mial")).rejects.toThrow(
-      /Project "Mial" could not be resolved.*lore status projects/
+      /Project "Mial" could not be resolved.*kennen status projects/
     )
   })
 
@@ -609,11 +609,11 @@ describe("findExistingFileMemory", () => {
     }
   }
 
-  function makeServices(searchResults: Memory[]): LoreServices {
+  function makeServices(searchResults: Memory[]): KennenServices {
     const search = vi.fn(async () => searchResults)
     return {
       memories: { search },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
   }
 
   it("returns the matching id when project-set, source, and title all match", async () => {
@@ -688,7 +688,7 @@ describe("findExistingFileMemory", () => {
   })
 
   it("rejects unscoped (projectIds: []) rows when query has --project set", async () => {
-    // The flagged failure mode in PR review: `lore mine --project Foo`
+    // The flagged failure mode in PR review: `kennen mine --project Foo`
     // could match an unscoped mined memory (created without
     // --project) and rewrite it into Foo's scope, silently merging
     // two upsert lineages. The post-filter on project-set equality
@@ -780,7 +780,7 @@ describe("findExistingFileMemory", () => {
     const search = vi.fn(async () => [])
     const services = {
       memories: { search },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     await findExistingFileMemory(
       services,
       "mine.ts — src/cli/commands/mine.ts",
@@ -884,7 +884,7 @@ describe("formatOrphanSummary", () => {
     expect(lines[3]).toBe("  p-3")
     expect(lines[4]).toBe("  p-4")
     expect(lines[5]).toContain("Archive these manually")
-    expect(lines[5]).toContain("`lore mine`")
+    expect(lines[5]).toContain("`kennen mine`")
     expect(lines).toHaveLength(6)
   })
 
@@ -1025,7 +1025,7 @@ describe("runMineUpsert (orchestration)", () => {
       config: {
         notion: { rateLimit: { concurrency: opts.concurrency ?? 3 } },
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     return { services, updateCalls, createCalls, update, create }
   }
 
@@ -1036,7 +1036,7 @@ describe("runMineUpsert (orchestration)", () => {
     files: Record<string, string>,
     test: (dir: string) => Promise<void>
   ) {
-    const tmp = await mkdtemp(`${tmpdir()}/lore-mine-test-`)
+    const tmp = await mkdtemp(`${tmpdir()}/kennen-mine-test-`)
     try {
       for (const [name, content] of Object.entries(files)) {
         const idx = name.lastIndexOf("/")
@@ -1183,7 +1183,7 @@ describe("runMineUpsert (orchestration)", () => {
   })
 
   it("serializes concurrent runs for the same file so only one fresh row is created", async () => {
-    process.env["LORE_MINE_POST_CREATE_STABILIZE_MS"] = "40"
+    process.env["KENNEN_MINE_POST_CREATE_STABILIZE_MS"] = "40"
     await withFixture({ "a.ts": "// content" }, async (dir) => {
       const relPath = relative("/repo", `${dir}/a.ts`)
       const existing = new Map<string, string>()
@@ -1372,7 +1372,7 @@ describe("runMineUpsert (orchestration)", () => {
 
   it("skips symlink candidates without reading their targets", async () => {
     await withFixture({}, async (dir) => {
-      const outside = await mkdtemp(`${tmpdir()}/lore-mine-outside-`)
+      const outside = await mkdtemp(`${tmpdir()}/kennen-mine-outside-`)
       try {
         await writeFile(join(outside, "secret.ts"), "export const secret = true\n")
         await symlink(join(outside, "secret.ts"), join(dir, "linked.ts"))
@@ -1430,7 +1430,7 @@ describe("runMineUpsert (orchestration)", () => {
 
   it("skips root-escaping relative candidates before reading", async () => {
     await withFixture({}, async (dir) => {
-      const outside = await mkdtemp(`${tmpdir()}/lore-mine-outside-`)
+      const outside = await mkdtemp(`${tmpdir()}/kennen-mine-outside-`)
       try {
         await writeFile(join(outside, "secret.ts"), "export const secret = true\n")
         const escapePath = relative(dir, join(outside, "secret.ts"))
@@ -1528,7 +1528,7 @@ describe("runMineUpsert (orchestration)", () => {
           },
           configRoot: "/repo",
           config: { notion: { rateLimit: { concurrency: 2 } } },
-        } as unknown as LoreServices
+        } as unknown as KennenServices
         await runMineUpsert(
           services,
           dir,
@@ -1546,7 +1546,7 @@ describe("runMineUpsert (orchestration)", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Action-wrapper exit-path tests for the `lore mine` command.
+// Action-wrapper exit-path tests for the `kennen mine` command.
 //
 // `parseMineCliOptions`, `runMineUpsert`, `resolveMineProject` are exercised
 // as pure functions above; this block covers the two `process.exit(1)` call
@@ -1604,7 +1604,7 @@ describe("mineCommand exit paths", () => {
 
   it("exits 1 via the catch-all when initServices throws", async () => {
     // Pin the bare "Notion call inside the action body raised" branch.
-    // Operators rely on a non-zero exit code so `if ! lore mine; then`
+    // Operators rely on a non-zero exit code so `if ! kennen mine; then`
     // shell integrations fail fast rather than treat an outage as
     // "no indexable files."
     vi.mocked(initServices).mockRejectedValue(new Error("notion 503: gateway"))

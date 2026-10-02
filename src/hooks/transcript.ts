@@ -83,7 +83,7 @@ function parseCodexEvent(entry: Record<string, unknown>): TranscriptMessage | nu
 function parseCodexEvalRunStart(
   entry: Record<string, unknown>
 ): TranscriptMessage | null {
-  if (entry["type"] !== "lore.eval.agent_run.started") return null
+  if (entry["type"] !== "kennen.eval.agent_run.started") return null
   const prompt = entry["prompt"]
   if (typeof prompt !== "string" || prompt.length === 0) return null
   return {

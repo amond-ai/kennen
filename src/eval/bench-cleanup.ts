@@ -1,12 +1,12 @@
 /**
- * `lore eval bench cleanup-orphans` — archive stale bench sub-projects
+ * `kennen eval bench cleanup-orphans` — archive stale bench sub-projects
  * under the sandbox vault. Identifies orphans by name pattern
  * (`lme-<exampleId>-<ulid>`) AND parent-scope membership, then uses
  * the ULID-embedded timestamp to gate by age; no Notion
  * `created_time` round-trip.
  *
  * Idempotent: already-archived projects are skipped. Requires
- * `LORE_EVAL_BENCH_REAL=1` so a misconfigured CI job cannot archive
+ * `KENNEN_EVAL_BENCH_REAL=1` so a misconfigured CI job cannot archive
  * arbitrary projects.
  *
  * Scope-of-archive contract:
@@ -17,7 +17,7 @@
  *     a stale `lme-*-<ulid>` project that lives outside the
  *     configured sandbox (different environment, typo'd parent
  *     name, fixture using the same shape, etc.). The
- *     `LORE_EVAL_BENCH_REAL=1` gate bounds the blast; the
+ *     `KENNEN_EVAL_BENCH_REAL=1` gate bounds the blast; the
  *     parent-path filter bounds the *scope*.
  */
 
@@ -74,8 +74,8 @@ export function isInsideSandboxScope(
 export async function runBenchCleanupOrphans(
   options: CleanupOrphansOptions
 ): Promise<CleanupOrphansReport> {
-  if (process.env["LORE_EVAL_BENCH_REAL"] !== "1") {
-    throw new Error("LORE_EVAL_BENCH_REAL is not set; refusing to archive")
+  if (process.env["KENNEN_EVAL_BENCH_REAL"] !== "1") {
+    throw new Error("KENNEN_EVAL_BENCH_REAL is not set; refusing to archive")
   }
   if (!Number.isInteger(options.olderThanHours) || options.olderThanHours <= 0) {
     throw new Error(
@@ -130,10 +130,10 @@ export async function runBenchCleanupOrphans(
 async function buildDefaultAccessor(): Promise<
   NonNullable<CleanupOrphansOptions["services"]>
 > {
-  const sandboxName = process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"]
+  const sandboxName = process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"]
   if (!sandboxName) {
     throw new Error(
-      "LORE_BENCH_SANDBOX_PROJECT_NAME must be set when calling bench cleanup-orphans without --services override"
+      "KENNEN_BENCH_SANDBOX_PROJECT_NAME must be set when calling bench cleanup-orphans without --services override"
     )
   }
   const services = await initServices(undefined, { driftCheck: false })

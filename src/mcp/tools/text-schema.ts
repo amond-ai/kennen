@@ -12,8 +12,8 @@ import { z } from "zod"
  * - `nonBlankString` — `.trim().min(1)`. Use for short identifier-/title-
  *   shaped fields where leading/trailing whitespace is incidental and
  *   normalization helps downstream consumers. Matches the posture
- *   already established by `lore-query action='ask'`'s `entity` schema
- *   and the SubjectKey-suppression fix for `lore-fact action='create'`
+ *   already established by `kennen-query action='ask'`'s `entity` schema
+ *   and the SubjectKey-suppression fix for `kennen-fact action='create'`
  *   subject / object.
  *
  * - `nonBlankBody` — `.refine(value => value.trim().length > 0)`. Use for

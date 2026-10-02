@@ -79,7 +79,7 @@ export const searchCommand = new Command("search")
           parsed.value.projectName,
           "--project",
           {
-            listHint: "run `lore status projects` to list configured projects",
+            listHint: "run `kennen status projects` to list configured projects",
           }
         )
         const services = await initServices()
@@ -91,7 +91,7 @@ export const searchCommand = new Command("search")
             explicitProjectName,
             "--project",
             {
-              listHint: "run `lore status projects` to list configured projects",
+              listHint: "run `kennen status projects` to list configured projects",
             }
           )
           projectId = found.id

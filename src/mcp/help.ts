@@ -14,7 +14,7 @@ const GENERIC_CAUTION =
 
 export const HELP_RECIPES = [
   {
-    tool: "lore-context",
+    tool: "kennen-context",
     action: "status",
     summary: "Show vault topology, counts, active project, and operational health.",
     whenToUse:
@@ -24,15 +24,15 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-context",
+    tool: "kennen-context",
     action: "wake-up",
     summary:
       "Prime a session with the memories, facts, tasks, and decisions most likely to matter now.",
     whenToUse:
-      "Use this after /clear, after reconnecting, or after the user pivots topics. Pass userQuery with the current task so Lore can rank task-relevant memories above the normal recent-memory list; add mode='task-only' for narrow one-shot retrieval.",
+      "Use this after /clear, after reconnecting, or after the user pivots topics. Pass userQuery with the current task so Kennen can rank task-relevant memories above the normal recent-memory list; add mode='task-only' for narrow one-shot retrieval.",
     example: {
       action: "wake-up",
-      projectName: "Lore",
+      projectName: "Kennen",
       mode: "task-only",
       userQuery: "Implement MCP help resources for polymorphic tool actions",
       expand: false,
@@ -45,32 +45,32 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-context",
+    tool: "kennen-context",
     action: "digest",
     summary: "Gather raw recent activity for a digest memory.",
     whenToUse:
-      "Use this when preparing a daily or weekly summary, then synthesize the returned raw activity into lore-memory action='save' with source='digest'.",
+      "Use this when preparing a daily or weekly summary, then synthesize the returned raw activity into kennen-memory action='save' with source='digest'.",
     example: {
       action: "digest",
-      projectName: "Lore",
+      projectName: "Kennen",
       period: "day",
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "save",
     summary:
       "Create a memory page with body content, optional topic/project scope, and metadata.",
     whenToUse:
-      "Use this for durable learnings, implementation notes, runbooks, incidents, postmortems, or policies that should be discoverable later. For decisions use lore-decision action='create'; for tracked work use lore-task action='create'.",
+      "Use this for durable learnings, implementation notes, runbooks, incidents, postmortems, or policies that should be discoverable later. For decisions use kennen-decision action='create'; for tracked work use kennen-task action='create'.",
     example: {
       action: "save",
       title: "MCP help resources live outside tools/list",
       content:
-        "Lore exposes action-specific MCP help through resources so normal tool descriptions stay within prompt-budget limits.",
+        "Kennen exposes action-specific MCP help through resources so normal tool descriptions stay within prompt-budget limits.",
       kind: "runbook",
       source: "conversation",
-      projectName: "Lore",
+      projectName: "Kennen",
       topicName: "MCP help resources",
       keywords: "issue-669 mcp resources help-recipes",
       agent: "codex",
@@ -83,12 +83,12 @@ export const HELP_RECIPES = [
   },
 
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "search",
     summary:
       "Search memory titles and bodies with direct contains, semantic, or hybrid retrieval.",
     whenToUse:
-      "Use this when an MCP client needs a memory-only search action. Prefer lore-query action='search' for the broader vault read surface.",
+      "Use this when an MCP client needs a memory-only search action. Prefer kennen-query action='search' for the broader vault read surface.",
     example: {
       action: "search",
       query: "MCP persistence marker",
@@ -99,7 +99,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "update",
     summary: "Mutate an existing memory's metadata, body, title, topic, or relations.",
     whenToUse:
@@ -113,7 +113,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "archive",
     summary: "Soft-delete a memory by archiving the Notion page.",
     whenToUse:
@@ -127,11 +127,11 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "expand",
     summary: "Fetch full markdown bodies for a batch of memory IDs or result handles.",
     whenToUse:
-      "Use this after lore-query action='recall' or lore-query action='search' returns title-tier rows and you need the complete body for selected results. Prefer the returned rs_* handles immediately after a result list; use durable Notion page IDs for later citations or wake-up rows.",
+      "Use this after kennen-query action='recall' or kennen-query action='search' returns title-tier rows and you need the complete body for selected results. Prefer the returned rs_* handles immediately after a result list; use durable Notion page IDs for later citations or wake-up rows.",
     example: {
       action: "expand",
       ids: ["rs_0123456789abcdef:m1", "11111111-1111-1111-1111-111111111111"],
@@ -142,23 +142,23 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "history",
     summary: "Read the revision-chain body for a subject-canonical state memory.",
     whenToUse:
       "Use this after saving repeated current-state updates with subject + replace=true and you need the preserved history behind the single wake-up row.",
     example: {
       action: "history",
-      subject: "Lore auth",
-      projectName: "Lore",
+      subject: "Kennen auth",
+      projectName: "Kennen",
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "suggest-topic-key",
     summary: "Generate a kebab-case topic key from a title and durable memory kind.",
     whenToUse:
-      "Use this before saving a keyed durable memory when you want Lore to suggest a stable topicKey shape.",
+      "Use this before saving a keyed durable memory when you want Kennen to suggest a stable topicKey shape.",
     example: {
       action: "suggest-topic-key",
       title: "MCP help resources live outside tools list",
@@ -166,12 +166,12 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "compare",
     summary:
       "Record a conflict, supersession, scope, relation, compatibility, or non-conflict verdict for two memories.",
     whenToUse:
-      "Use this after reviewing two memories that appear related or contradictory. Set affectedMemoryId for asymmetric verdicts so Lore knows which row loses.",
+      "Use this after reviewing two memories that appear related or contradictory. Set affectedMemoryId for asymmetric verdicts so Kennen knows which row loses.",
     example: {
       action: "compare",
       memoryIdA: "11111111-1111-1111-1111-111111111111",
@@ -184,7 +184,7 @@ export const HELP_RECIPES = [
     cautions: ["For judgeConfidence below 0.7, ask the user before recording a verdict."],
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "approve",
     summary: "Approve a proposed memory from the inbox review flow.",
     whenToUse:
@@ -197,7 +197,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "reject",
     summary: "Reject a proposed memory from the inbox review flow.",
     whenToUse:
@@ -210,7 +210,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-memory",
+    tool: "kennen-memory",
     action: "promote",
     summary:
       "Copy a memory into a configured promotion target vault with an origin audit block.",
@@ -225,7 +225,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-pinned",
+    tool: "kennen-pinned",
     action: "pin",
     summary: "Turn an existing memory into an always-visible pinned context block.",
     whenToUse:
@@ -243,7 +243,7 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-pinned",
+    tool: "kennen-pinned",
     action: "unpin",
     summary: "Return a pinned context block to normal memory behavior.",
     whenToUse:
@@ -255,7 +255,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-pinned",
+    tool: "kennen-pinned",
     action: "update",
     summary: "Change pinned context priority, audience, or mutability.",
     whenToUse:
@@ -275,14 +275,14 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-pinned",
+    tool: "kennen-pinned",
     action: "list",
     summary: "List active pinned context blocks in the current project/audience scope.",
     whenToUse:
       "Use this to audit what renders before wake-up sections, or pass includeAllAudiences when reviewing pinned blocks across audience tokens.",
     example: {
       action: "list",
-      projectName: "Lore",
+      projectName: "Kennen",
       audience: "codex",
       includeAllAudiences: true,
       limit: 25,
@@ -292,14 +292,14 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-query",
+    tool: "kennen-query",
     action: "recall",
     summary: "List recent memories with optional filters and cursor pagination.",
     whenToUse:
       "Use this when recency, status, kind, source, topic, or review-date filters matter more than a semantic query.",
     example: {
       action: "recall",
-      projectName: "Lore",
+      projectName: "Kennen",
       kind: "runbook",
       status: "accepted",
       limit: 20,
@@ -307,7 +307,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-query",
+    tool: "kennen-query",
     action: "search",
     summary:
       "Search memory titles and bodies with contains, semantic, or hybrid retrieval.",
@@ -317,57 +317,57 @@ export const HELP_RECIPES = [
       action: "search",
       query: "MCP resource help recipes",
       intent: "Find implementation notes for issue 669",
-      projectName: "Lore",
+      projectName: "Kennen",
       mode: "semantic",
       limit: 8,
       includeSynopsis: true,
       explain: true,
     },
     cautions: [
-      "Use lore-query action='ask' instead when the question names an entity and you need structured facts or tasks.",
+      "Use kennen-query action='ask' instead when the question names an entity and you need structured facts or tasks.",
     ],
   },
   {
-    tool: "lore-query",
+    tool: "kennen-query",
     action: "ask",
     summary: "Query structured facts and tasks about a named entity.",
     whenToUse:
-      "Use this when the user asks what Lore knows about a system, person, file, API, project, or other entity. It returns governance, structure, and task buckets instead of free-form memories.",
+      "Use this when the user asks what Kennen knows about a system, person, file, API, project, or other entity. It returns governance, structure, and task buckets instead of free-form memories.",
     example: {
       action: "ask",
       entity: "MCP resources",
-      projectName: "Lore",
+      projectName: "Kennen",
       limit: 10,
       includeContext: true,
       includeHistory: false,
     },
     cautions: [
-      "Use lore-query action='search' instead when you need narrative memory bodies or broad semantic recall.",
+      "Use kennen-query action='search' instead when you need narrative memory bodies or broad semantic recall.",
     ],
   },
   {
-    tool: "lore-query",
+    tool: "kennen-query",
     action: "audit",
     summary: "List facts, decisions, and tasks past their review date.",
     whenToUse:
       "Use this for maintenance sweeps when stale knowledge, overdue decisions, or open tasks need review.",
     example: {
       action: "audit",
-      projectName: "Lore",
+      projectName: "Kennen",
     },
   },
   {
-    tool: "lore-fact",
+    tool: "kennen-fact",
     action: "create",
     summary: "Create or dedupe a structured Subject-predicate-Object fact.",
     whenToUse:
-      "Use this for durable relationships that should be answerable through lore-query action='ask'. The fact must be backed by a source memory, either directly through sourceMemoryId or by same-process agent/session auto-linking.",
+      "Use this for durable relationships that should be answerable through kennen-query action='ask'. The fact must be backed by a source memory, either directly through sourceMemoryId or by same-process agent/session auto-linking.",
     example: {
       action: "create",
-      subject: "Lore MCP server",
+      subject: "Kennen MCP server",
       predicate: "related_to",
       object: "MCP resources for action help recipes",
-      projectName: "Lore",
+      projectName: "Kennen",
       confidence: "certain",
       sourceMemoryId: "11111111-1111-1111-1111-111111111111",
       reviewBy: "2026-08-15",
@@ -378,7 +378,7 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-fact",
+    tool: "kennen-fact",
     action: "invalidate",
     summary: "Mark a fact as no longer true while preserving history.",
     whenToUse:
@@ -390,7 +390,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-fact",
+    tool: "kennen-fact",
     action: "extend",
     summary: "Set or clear a fact review-by date.",
     whenToUse:
@@ -402,44 +402,44 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-decision",
+    tool: "kennen-decision",
     action: "create",
     summary:
       "Record an architectural decision with rationale and optional structured effects.",
     whenToUse:
-      "Use this instead of lore-memory action='save' when the record is a decision. Include rationale, alternatives, consequences, affected entities, and superseded decision IDs when known.",
+      "Use this instead of kennen-memory action='save' when the record is a decision. Include rationale, alternatives, consequences, affected entities, and superseded decision IDs when known.",
     example: {
       action: "create",
       decision: "Expose polymorphic MCP action help as resources",
       rationale:
         "Resources keep action-specific examples discoverable without growing the normal tools/list prompt footprint.",
-      projectName: "Lore",
+      projectName: "Kennen",
       topicName: "MCP help resources",
       status: "accepted",
       decidedAt: "2026-05-15",
-      affects: ["Lore MCP server", "MCP clients"],
+      affects: ["Kennen MCP server", "MCP clients"],
       alternatives: "Add long descriptions to tools/list; add a help action.",
-      consequences: "Clients must read lore://help resources for action recipes.",
+      consequences: "Clients must read kennen://help resources for action recipes.",
       keywords: "issue-669 mcp resources",
       agent: "codex",
       session: "session-2026-05-15-help-recipes",
     },
   },
   {
-    tool: "lore-decision",
+    tool: "kennen-decision",
     action: "list",
     summary: "List decisions by project, status, review date, or cursor.",
     whenToUse: "Use this to scan decision state without fetching full rationale bodies.",
     example: {
       action: "list",
-      projectName: "Lore",
+      projectName: "Kennen",
       status: "accepted",
       reviewBefore: "2026-08-15",
       limit: 20,
     },
   },
   {
-    tool: "lore-decision",
+    tool: "kennen-decision",
     action: "get",
     summary: "Fetch one decision's full rationale and metadata.",
     whenToUse:
@@ -450,7 +450,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-decision",
+    tool: "kennen-decision",
     action: "context",
     summary: "Find active decisions governing an entity, following supersession chains.",
     whenToUse:
@@ -458,12 +458,12 @@ export const HELP_RECIPES = [
     example: {
       action: "context",
       entity: "MCP resources",
-      projectName: "Lore",
+      projectName: "Kennen",
       limit: 10,
     },
   },
   {
-    tool: "lore-decision",
+    tool: "kennen-decision",
     action: "supersede",
     summary:
       "Mark an old decision superseded by a new decision and create the supersession fact.",
@@ -479,7 +479,7 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-decision",
+    tool: "kennen-decision",
     action: "review",
     summary: "Mark a decision reviewed and set or clear its next review date.",
     whenToUse: "Use this when a scheduled decision review is complete.",
@@ -490,9 +490,9 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-project",
+    tool: "kennen-project",
     action: "list",
-    summary: "List configured Lore projects.",
+    summary: "List configured Kennen projects.",
     whenToUse:
       "Use this when you need the valid project names before passing projectName or projectNames to another action.",
     example: {
@@ -501,18 +501,18 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-project",
+    tool: "kennen-project",
     action: "get",
     summary: "Get details for one configured project by name.",
     whenToUse:
       "Use this when you need project metadata, topics, or recent activity for a specific project.",
     example: {
       action: "get",
-      name: "Lore",
+      name: "Kennen",
     },
   },
   {
-    tool: "lore-task",
+    tool: "kennen-task",
     action: "create",
     summary:
       "Create a tracked task memory for tangential or out-of-scope follow-up work.",
@@ -522,11 +522,11 @@ export const HELP_RECIPES = [
       action: "create",
       subject: "Audit older MCP clients for resource template support",
       description:
-        "Check whether deployed clients list lore://help resources and document any compatibility gaps.",
+        "Check whether deployed clients list kennen://help resources and document any compatibility gaps.",
       entity: "MCP clients",
       state: "open",
       dueDate: "2026-05-22",
-      projectName: "Lore",
+      projectName: "Kennen",
       keywords: "issue-669 follow-up",
       agent: "codex",
       session: "session-2026-05-15-help-recipes",
@@ -536,7 +536,7 @@ export const HELP_RECIPES = [
     ],
   },
   {
-    tool: "lore-task",
+    tool: "kennen-task",
     action: "update",
     summary:
       "Mutate an existing task's state, blocker, due date, subject, description, or metadata.",
@@ -552,7 +552,7 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-task",
+    tool: "kennen-task",
     action: "close",
     summary: "Mark a task done or cancelled.",
     whenToUse:
@@ -565,7 +565,7 @@ export const HELP_RECIPES = [
     cautions: ["Close completed tasks promptly; open tasks are treated as active work."],
   },
   {
-    tool: "lore-task",
+    tool: "kennen-task",
     action: "close-many",
     summary: "Close an explicit batch of task IDs.",
     whenToUse:
@@ -580,19 +580,19 @@ export const HELP_RECIPES = [
       reason: "The referenced work has shipped and validation passed.",
     },
     cautions: [
-      "Only pass task IDs you have explicitly reviewed; use lore-task action='list' or action='reconcile' first when you need candidates.",
+      "Only pass task IDs you have explicitly reviewed; use kennen-task action='list' or action='reconcile' first when you need candidates.",
       "Already-closed tasks are reported as no-ops, and the result is an error when any ID fails.",
     ],
   },
   {
-    tool: "lore-task",
+    tool: "kennen-task",
     action: "list",
     summary: "List active task memories with overdue and active sections.",
     whenToUse:
       "Use this to triage open, in-progress, or blocked work by project, entity, state, due date, or cursor.",
     example: {
       action: "list",
-      projectName: "Lore",
+      projectName: "Kennen",
       entity: "MCP resources",
       state: "open",
       dueBefore: "2026-05-31",
@@ -601,54 +601,54 @@ export const HELP_RECIPES = [
     },
   },
   {
-    tool: "lore-task",
+    tool: "kennen-task",
     action: "reconcile",
     summary: "Scan active tasks for resolution-shaped memories that may close them.",
     whenToUse:
       "Use this during maintenance to find likely stale active tasks that have already been resolved elsewhere.",
     example: {
       action: "reconcile",
-      projectName: "Lore",
+      projectName: "Kennen",
       minScore: 0.7,
       limit: 10,
     },
     cautions: [
-      "This is read-only; close candidates explicitly with lore-task action='close'.",
+      "This is read-only; close candidates explicitly with kennen-task action='close'.",
     ],
   },
   {
-    tool: "lore-procedure",
+    tool: "kennen-procedure",
     action: "scan-candidates",
     summary: "Find repeated resolved work that may deserve a reusable procedure memory.",
     whenToUse:
       "Use this to mine closed tasks, incidents, postmortems, and runbooks for repeated resolution patterns before proposing a procedure.",
     example: {
       action: "scan-candidates",
-      projectName: "Lore",
+      projectName: "Kennen",
       minScore: 0.6,
       limit: 10,
     },
   },
   {
-    tool: "lore-procedure",
+    tool: "kennen-procedure",
     action: "propose",
     summary:
       "Create a proposed procedure memory with activation conditions, steps, and supporting sources.",
     whenToUse:
-      "Use this after identifying a repeatable workflow backed by source memories. The result is proposed governance memory that must still be approved through lore-memory action='approve'.",
+      "Use this after identifying a repeatable workflow backed by source memories. The result is proposed governance memory that must still be approved through kennen-memory action='approve'.",
     example: {
       action: "propose",
-      projectName: "Lore",
+      projectName: "Kennen",
       title: "Add MCP resource help for a new tool action",
       entity: "MCP resources",
       activationConditions: [
-        "A polymorphic lore-* tool adds a new action",
+        "A polymorphic kennen-* tool adds a new action",
         "The action needs examples without growing tools/list descriptions",
       ],
       steps: [
         "Add a structured help recipe for the new action",
         "Verify the recipe set matches the registered action enum",
-        "Read lore://help/<tool>/<action> through the MCP resources API",
+        "Read kennen://help/<tool>/<action> through the MCP resources API",
       ],
       failureModes: ["Adding a new tool alias instead of a resource recipe"],
       notes: "Approval is handled by the proposed-memory inbox.",
@@ -660,12 +660,12 @@ export const HELP_RECIPES = [
       topicKey: "procedure/mcp-resource-help",
     },
     cautions: [
-      "Creates a proposed memory; approval still goes through lore-memory action='approve'.",
+      "Creates a proposed memory; approval still goes through kennen-memory action='approve'.",
       "Every sourceMemoryIds entry must resolve to a live source memory in scope.",
     ],
   },
   {
-    tool: "lore-procedure",
+    tool: "kennen-procedure",
     action: "deprecate",
     summary: "Mark an accepted procedure memory deprecated while preserving history.",
     whenToUse:
@@ -676,18 +676,18 @@ export const HELP_RECIPES = [
       reason: "Superseded by the approved MCP resource help procedure.",
     },
     cautions: [
-      "Proposed procedures leave through lore-memory action='reject', not deprecate.",
+      "Proposed procedures leave through kennen-memory action='reject', not deprecate.",
     ],
   },
 ] as const satisfies readonly HelpRecipe[]
 
 export function registerHelpResources(server: McpServer): void {
   server.registerResource(
-    "lore-help",
-    "lore://help",
+    "kennen-help",
+    "kennen://help",
     {
-      title: "Lore MCP help index",
-      description: "Index of action-specific Lore MCP payload examples.",
+      title: "Kennen MCP help index",
+      description: "Index of action-specific Kennen MCP payload examples.",
       mimeType: "text/markdown",
     },
     async (uri) => ({
@@ -702,8 +702,8 @@ export function registerHelpResources(server: McpServer): void {
   )
 
   server.registerResource(
-    "lore-help-action",
-    new ResourceTemplate("lore://help/{tool}/{action}", {
+    "kennen-help-action",
+    new ResourceTemplate("kennen://help/{tool}/{action}", {
       list: async () => ({
         resources: HELP_RECIPES.map((recipe) => ({
           uri: helpResourceUri(recipe),
@@ -715,8 +715,8 @@ export function registerHelpResources(server: McpServer): void {
       }),
     }),
     {
-      title: "Lore MCP action help",
-      description: "Action-specific Lore MCP payload examples.",
+      title: "Kennen MCP action help",
+      description: "Action-specific Kennen MCP payload examples.",
       mimeType: "text/markdown",
     },
     async (uri, variables) => {
@@ -724,7 +724,7 @@ export function registerHelpResources(server: McpServer): void {
       const action = String(variables["action"] ?? "")
       const recipe = findHelpRecipe(tool, action)
       if (!recipe) {
-        throw new Error(`No Lore MCP help recipe for ${tool} action='${action}'.`)
+        throw new Error(`No Kennen MCP help recipe for ${tool} action='${action}'.`)
       }
 
       return {
@@ -745,14 +745,14 @@ export function findHelpRecipe(tool: string, action: string): HelpRecipe | undef
 }
 
 export function helpResourceUri(recipe: Pick<HelpRecipe, "tool" | "action">): string {
-  return `lore://help/${recipe.tool}/${recipe.action}`
+  return `kennen://help/${recipe.tool}/${recipe.action}`
 }
 
 export function renderHelpIndex(): string {
   const lines = [
-    "# Lore MCP Help",
+    "# Kennen MCP Help",
     "",
-    "These resources provide action-specific example payloads for Lore's polymorphic MCP tools.",
+    "These resources provide action-specific example payloads for Kennen's polymorphic MCP tools.",
     "Examples are recipes, not a replacement for runtime validation; callers must still obey the tool schema and action-specific validation errors.",
     "",
   ]

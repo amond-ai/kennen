@@ -1,11 +1,11 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 
 export type SchemaMigrationResult = Awaited<
-  ReturnType<LoreServices["vault"]["migrate"]>
+  ReturnType<KennenServices["vault"]["migrate"]>
 > & { totalBlockedOptions: number }
 
 export async function runSchemaMigration(
-  services: LoreServices,
+  services: KennenServices,
   opts: {
     dryRun?: boolean
     mergeDuplicateTopics?: boolean
@@ -115,7 +115,7 @@ export async function runSchemaMigration(
       }
     }
     console.log(
-      "Prune options from the listed properties or reduce the active profile vocabulary, then rerun `lore migrate`."
+      "Prune options from the listed properties or reduce the active profile vocabulary, then rerun `kennen migrate`."
     )
   }
 

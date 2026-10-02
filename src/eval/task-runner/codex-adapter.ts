@@ -53,7 +53,7 @@ const CODEX_HOME_CONFIG_KEYS = new Set([
 export async function createIsolatedCodexHome(
   parentEnv: NodeJS.ProcessEnv = process.env
 ): Promise<string> {
-  const codexHome = await mkdtemp(join(tmpdir(), "lore-eval-codex-home-"))
+  const codexHome = await mkdtemp(join(tmpdir(), "kennen-eval-codex-home-"))
   try {
     await chmod(codexHome, 0o700)
     const sourceHome = resolveSourceCodexHome(parentEnv)
@@ -160,8 +160,8 @@ export function buildCodexChildEnv(
       out["PATH"] = stripMiseShimDirs(out["PATH"])
     }
     out["GOMODCACHE"] =
-      parentEnv["GOMODCACHE"] ?? join(tmpdir(), "lore-eval-go-mod-cache")
-    out["GOCACHE"] = parentEnv["GOCACHE"] ?? join(tmpdir(), "lore-eval-go-build-cache")
+      parentEnv["GOMODCACHE"] ?? join(tmpdir(), "kennen-eval-go-mod-cache")
+    out["GOCACHE"] = parentEnv["GOCACHE"] ?? join(tmpdir(), "kennen-eval-go-build-cache")
   }
   return out
 }
@@ -219,7 +219,7 @@ function isExecutableFile(path: string): boolean {
  * scrubbed env and an isolated Codex runtime home, in a detached
  * process group so timeout cancellation kills the whole tree.
  *
- * Gated behind `LORE_EVAL_TASK_REAL=1` because real Codex invocations
+ * Gated behind `KENNEN_EVAL_TASK_REAL=1` because real Codex invocations
  * incur model spend; without the env var the adapter exits cleanly with
  * a recognizable stderr line and a non-zero exit code so the runner
  * surfaces "we declined to actually run" rather than a misleading
@@ -243,7 +243,7 @@ function isExecutableFile(path: string): boolean {
  * directory listing surfaces it as a hidden config file rather than
  * blending with task fixtures.
  */
-export const BENCH_MODE_SENTINEL = ".lore-bench-mode"
+export const BENCH_MODE_SENTINEL = ".kennen-bench-mode"
 const TASK_TIMEOUT_KILL_GRACE_MS = 5_000
 
 /**
@@ -263,7 +263,7 @@ function isBenchWorkspace(workspace: string): boolean {
  * socket rather than a workspace-readable bearer.
  */
 export const BENCH_AGENT_MODEL = "gpt-4o-mini-2024-07-18"
-export const BENCH_AGENT_MODEL_ENV = "LORE_EVAL_BENCH_AGENT_MODEL"
+export const BENCH_AGENT_MODEL_ENV = "KENNEN_EVAL_BENCH_AGENT_MODEL"
 
 export function benchAgentModel(env: NodeJS.ProcessEnv = process.env): string {
   const model = env[BENCH_AGENT_MODEL_ENV]?.trim()
@@ -275,9 +275,9 @@ export function benchAgentModel(env: NodeJS.ProcessEnv = process.env): string {
  * Tool-driven runs keep these in the broker process; non-shim
  * workspaces may still thread them through Codex MCP config.
  */
-export const BENCH_RUNTIME_NOTION_TOKEN_ENV = "LORE_BENCH_NOTION_TOKEN"
-export const BENCH_RUNTIME_CONFIG_ROOT_ENV = "LORE_BENCH_CONFIG_ROOT"
-export const BENCH_RUNTIME_OPENAI_KEY_ENV = "LORE_BENCH_OPENAI_API_KEY"
+export const BENCH_RUNTIME_NOTION_TOKEN_ENV = "KENNEN_BENCH_NOTION_TOKEN"
+export const BENCH_RUNTIME_CONFIG_ROOT_ENV = "KENNEN_BENCH_CONFIG_ROOT"
+export const BENCH_RUNTIME_OPENAI_KEY_ENV = "KENNEN_BENCH_OPENAI_API_KEY"
 
 /**
  * Env keys cleared from the operator's parent env before the bench
@@ -297,15 +297,15 @@ export const BENCH_CHILD_CLEARED_ENV_KEYS = [
   "GITHUB_TOKEN",
 ] as const
 
-export const BENCH_TOOL_SHIM_DIR = ".lore-tools"
-export const BENCH_TOOL_TRACE_FILE = "lore-tool-trace.jsonl"
-export const BENCH_TOOL_CLI_JS_ENV = "LORE_BENCH_TOOL_CLI_JS"
-export const BENCH_TOOL_NODE_ENV = "LORE_BENCH_TOOL_NODE"
+export const BENCH_TOOL_SHIM_DIR = ".kennen-tools"
+export const BENCH_TOOL_TRACE_FILE = "kennen-tool-trace.jsonl"
+export const BENCH_TOOL_CLI_JS_ENV = "KENNEN_BENCH_TOOL_CLI_JS"
+export const BENCH_TOOL_NODE_ENV = "KENNEN_BENCH_TOOL_NODE"
 export const BENCH_SHELL_ENV_EXCLUDES = [
   "OPENAI_API_KEY",
-  "LORE_BENCH_OPENAI_API_KEY",
+  "KENNEN_BENCH_OPENAI_API_KEY",
   "NOTION_API_TOKEN",
-  "LORE_BENCH_NOTION_TOKEN",
+  "KENNEN_BENCH_NOTION_TOKEN",
   "NOTION_DEV_PAT",
   "GITHUB_TOKEN",
   "ANTHROPIC_API_KEY",
@@ -315,7 +315,7 @@ export const BENCH_SHELL_ENV_EXCLUDES = [
  * Build the bench-mode Codex child env. The allowlist below mirrors
  * `CODEX_FORWARDED_ENV_KEYS` minus secrets that must come from the
  * bench-runner's controlled env, plus the explicit
- * `LORE_BENCH_OPENAI_API_KEY → OPENAI_API_KEY` mapping.
+ * `KENNEN_BENCH_OPENAI_API_KEY → OPENAI_API_KEY` mapping.
  */
 export function buildBenchCodexChildEnv(
   parentEnv: NodeJS.ProcessEnv = process.env,
@@ -331,7 +331,7 @@ export function buildBenchCodexChildEnv(
     if (value !== undefined) out[key] = value
   }
   // Explicit child OPENAI_API_KEY comes ONLY from
-  // LORE_BENCH_OPENAI_API_KEY; the operator's day-to-day
+  // KENNEN_BENCH_OPENAI_API_KEY; the operator's day-to-day
   // OPENAI_API_KEY is in BENCH_CHILD_CLEARED_ENV_KEYS so it doesn't
   // reach the child via inheritance.
   const benchOpenAI = parentEnv[BENCH_RUNTIME_OPENAI_KEY_ENV]
@@ -456,7 +456,7 @@ async function openTranscriptWriter(input: {
   }
   writeString(
     `${JSON.stringify({
-      type: "lore.eval.agent_run.started",
+      type: "kennen.eval.agent_run.started",
       timestamp: new Date().toISOString(),
       agent: "codex",
       argv: ["codex", ...redactPromptArg(input.args)],
@@ -478,7 +478,7 @@ async function openTranscriptWriter(input: {
       if (!lastByteWasNewline) writeString("\n")
       writeString(
         `${JSON.stringify({
-          type: "lore.eval.agent_run.finished",
+          type: "kennen.eval.agent_run.finished",
           timestamp: new Date().toISOString(),
           ...event,
         })}\n`
@@ -623,13 +623,13 @@ export class CodexAgentAdapter implements AgentAdapter {
   }
 
   private async runBench(input: AgentRunInput): Promise<AgentRunResult> {
-    const allowReal = process.env["LORE_EVAL_BENCH_REAL"]
+    const allowReal = process.env["KENNEN_EVAL_BENCH_REAL"]
     if (allowReal !== "1" && allowReal !== "true") {
       return {
         exitCode: 1,
         stdout: "",
         stderr:
-          "[codex-adapter] real bench Codex invocation refused: set LORE_EVAL_BENCH_REAL=1 to opt in. " +
+          "[codex-adapter] real bench Codex invocation refused: set KENNEN_EVAL_BENCH_REAL=1 to opt in. " +
           "This guard prevents misconfigured CI from racking up unbounded model spend.",
         timedOut: false,
         refused: true,
@@ -699,13 +699,13 @@ export class CodexAgentAdapter implements AgentAdapter {
   }
 
   private async runTask(input: AgentRunInput): Promise<AgentRunResult> {
-    const allowReal = process.env["LORE_EVAL_TASK_REAL"]
+    const allowReal = process.env["KENNEN_EVAL_TASK_REAL"]
     if (allowReal !== "1" && allowReal !== "true") {
       return {
         exitCode: 1,
         stdout: "",
         stderr:
-          "[codex-adapter] real Codex invocation refused: set LORE_EVAL_TASK_REAL=1 to opt in. " +
+          "[codex-adapter] real Codex invocation refused: set KENNEN_EVAL_TASK_REAL=1 to opt in. " +
           "This guard prevents misconfigured CI from racking up unbounded model spend.",
         timedOut: false,
         refused: true,
@@ -865,7 +865,7 @@ export class CodexAgentAdapter implements AgentAdapter {
 }
 
 function taskTimeoutKillGraceMs(): number {
-  const raw = process.env["LORE_EVAL_TASK_TIMEOUT_KILL_GRACE_MS"]
+  const raw = process.env["KENNEN_EVAL_TASK_TIMEOUT_KILL_GRACE_MS"]
   if (raw) {
     const parsed = Number.parseInt(raw, 10)
     if (Number.isFinite(parsed) && parsed > 0) return parsed

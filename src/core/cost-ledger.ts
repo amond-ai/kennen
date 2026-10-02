@@ -1,5 +1,5 @@
 /**
- * Local advisory cost accounting for Lore-owned model and Notion usage.
+ * Local advisory cost accounting for Kennen-owned model and Notion usage.
  *
  * The ledger is not a crash-durable log. A successful append means the write
  * call completed and no append error was observed; it does not mean the event
@@ -14,11 +14,11 @@ import { createInterface } from "node:readline"
 import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path"
 import { homedir } from "node:os"
 import { z } from "zod"
-import type { CostTrackingConfig, LoreConfig } from "../types.js"
+import type { CostTrackingConfig, KennenConfig } from "../types.js"
 import { redactDebugError } from "../debug-redact.js"
 
 export const COST_LEDGER_SCHEMA_VERSION = 1
-export const DEFAULT_COST_LEDGER_PATH = "~/.local/share/lore/cost-ledger.jsonl"
+export const DEFAULT_COST_LEDGER_PATH = "~/.local/share/kennen/cost-ledger.jsonl"
 export const DEFAULT_COST_PRICING_TABLE = "openai-2026-05"
 export const COST_LEDGER_APPEND_ERROR_MARKER_VERSION = 1
 export const COST_LEDGER_APPEND_ERROR_MARKER_SUFFIX = ".append-error.json"
@@ -259,7 +259,7 @@ const BUILTIN_PRICING_TABLES: Record<string, PricingTable> = {
 let appendWarningEmitted = false
 
 export function resolveCostTracking(
-  config: Pick<LoreConfig, "costTracking">,
+  config: Pick<KennenConfig, "costTracking">,
   configRoot: string
 ): ResolvedCostTracking {
   const raw = config.costTracking
@@ -366,7 +366,7 @@ export async function appendCostEvent(
     if (!appendWarningEmitted) {
       appendWarningEmitted = true
       process.stderr.write(
-        `[lore] cost-tracking: failed to append ledger event: ${redactDebugError(err)}\n`
+        `[kennen] cost-tracking: failed to append ledger event: ${redactDebugError(err)}\n`
       )
     }
     try {
@@ -529,7 +529,7 @@ function validatePricingOverrideTable(value: unknown): Omit<PricingTable, "sourc
 
 function warnInvalidPricingOverride(path: string, err: unknown): void {
   process.stderr.write(
-    `[lore] cost-tracking: ignored invalid pricing overrides at ${displayPath(
+    `[kennen] cost-tracking: ignored invalid pricing overrides at ${displayPath(
       path
     )}: ${pricingOverrideWarningReason(err)}\n`
   )
@@ -1216,9 +1216,9 @@ export function formatUsd(value: number): string {
 
 export function formatCostSummary(summary: CostSummary): string {
   const lines = [
-    `Lore Costs (${summary.rangeLabel})`,
+    `Kennen Costs (${summary.rangeLabel})`,
     "-------------------------",
-    `Lore-owned model cost: ${formatUsd(summary.modelExactUsd)} exact agent usage, ~${formatUsd(summary.modelEstimatedUsd)} background prompt estimates, ${summary.modelUnknownEvents} background events with unknown cost`,
+    `Kennen-owned model cost: ${formatUsd(summary.modelExactUsd)} exact agent usage, ~${formatUsd(summary.modelEstimatedUsd)} background prompt estimates, ${summary.modelUnknownEvents} background events with unknown cost`,
     "Background prompt estimates may exclude completion tokens, cached-input billing, and provider-side rounding.",
     `Wake-up context: ${summary.wakeupEstimatedTokens.toLocaleString()} estimated tokens, cost unknown`,
     `MCP calls: ${summary.mcpTotal} total, ${summary.mcpSuccess} success, ${summary.mcpError} error`,

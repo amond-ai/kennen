@@ -508,13 +508,13 @@ queries:
     - q-03130
     - q-03755
 conditions:
-  - tool-driven-lore
+  - tool-driven-kennen
 requiredConditions:
-  - tool-driven-lore
+  - tool-driven-kennen
 agent:
   kind: codex
   timeoutMs: 600000
 scoring:
   k: [1, 5, 10]
-  requireLoreUse: true
+  requireKennenUse: true
   requireExpandedEvidence: true

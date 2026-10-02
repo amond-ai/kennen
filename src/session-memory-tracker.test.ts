@@ -61,7 +61,7 @@ describe("SessionMemoryTracker", () => {
   })
 
   it("preserves project scope on the recorded entry", () => {
-    // Project scope is what lore-learn uses to guard against cross-project
+    // Project scope is what kennen-learn uses to guard against cross-project
     // auto-links; the tracker must round-trip it verbatim.
     const tracker = new SessionMemoryTracker()
     tracker.record(

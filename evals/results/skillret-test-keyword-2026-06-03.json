@@ -1,6 +1,6 @@
 {
   "suite": "skillret-test",
-  "description": "SkillRet public test split for offline memory-as-skill retrieval ranking. Run `lore eval skill-retrieval fetch skillret` before running this suite.\n",
+  "description": "SkillRet public test split for offline memory-as-skill retrieval ranking. Run `kennen eval skill-retrieval fetch skillret` before running this suite.\n",
   "startedAt": "2026-06-03T18:24:19.619Z",
   "runner": {
     "mode": "skill-retrieval",

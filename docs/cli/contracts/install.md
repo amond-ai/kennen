@@ -2,12 +2,12 @@
 
 [Back to CLI command contracts](../../cli-command-contracts.md).
 
-`lore install` writes assistant integration configuration and performs auth and
+`kennen install` writes assistant integration configuration and performs auth and
 vault preflight checks before writing host files.
 
 Persona routing:
 
-- Default `lore install` is PAT-first. It expects `NOTION_API_TOKEN` to contain
+- Default `kennen install` is PAT-first. It expects `NOTION_API_TOKEN` to contain
   a Personal Access Token from `notion.so/developers/tokens` and skips `ntn`
   install and version probes.
 - `--ntn` opts into the internal-engineer path: auto-install `ntn` if missing
@@ -30,21 +30,21 @@ Auth and MCP environment:
 - MCP children resolve auth at startup through `resolveAuth`; installers should
   not statically forward resolved bearer tokens for ntn-source operators.
 - Static env entries from `buildMcpEnv()` include
-  `LORE_SUPPRESS_DEPRECATIONS=1` and `LORE_CONFIG_ROOT` only for host shapes
+  `KENNEN_SUPPRESS_DEPRECATIONS=1` and `KENNEN_CONFIG_ROOT` only for host shapes
   that may launch from an unpredictable cwd.
 - Runtime forwarded env names come from
   [`src/auth/forwarded-env.ts`](../../../src/auth/forwarded-env.ts). Static entries
   are assembled by `buildMcpEnv()` in
   [`src/cli/commands/install.ts`](../../../src/cli/commands/install.ts).
 - Project-scoped Yarn/PnP snippets for Claude, Codex, Cursor, OMP, and
-  `--print-config --yarn-pnp` intentionally omit `LORE_CONFIG_ROOT` and rely
+  `--print-config --yarn-pnp` intentionally omit `KENNEN_CONFIG_ROOT` and rely
   on launch from the workspace root.
 - Install refuses to write MCP config when vault access preflight returns
   not-found.
 
 Assistant targets:
 
-- Default `lore install` updates Claude Code, Codex, Cursor, and OMP for the
+- Default `kennen install` updates Claude Code, Codex, Cursor, and OMP for the
   current project.
 - `--client claude` updates only Claude Code hooks and `.mcp.json`.
 - `--client codex` updates only `.codex/config.toml` and `.codex/hooks.json`.
@@ -52,16 +52,16 @@ Assistant targets:
   `~/.cursor/mcp.json` with `--cursor-global`.
 - `--client omp` updates only the project `.omp/mcp.json`.
 - OMP's native `.omp/mcp.json` takes precedence over a root `.mcp.json` for
-  OMP discovery. OMP receives the Lore MCP tools only; it has no Lore
+  OMP discovery. OMP receives the Kennen MCP tools only; it has no Kennen
   lifecycle hooks.
 - Codex hooks require `features.hooks = true` and trusted projects.
 - Cursor receives only an MCP entry because its runtime does not support the
   Stop/session-end hooks used by Claude Code and Codex.
 - Under `--client all`, each assistant installer runs independently. The CLI
   exits non-zero with per-client failure summaries if any branch fails. Set
-  `LORE_INSTALL_DEBUG=1` for stack traces.
-- Default Claude and Codex installs use bin dispatch (`lore hooks ...`, or
-  `yarn run -T lore hooks ...` under Yarn PnP) and do not require checked-in
+  `KENNEN_INSTALL_DEBUG=1` for stack traces.
+- Default Claude and Codex installs use bin dispatch (`kennen hooks ...`, or
+  `yarn run -T kennen hooks ...` under Yarn PnP) and do not require checked-in
   shell wrappers.
 
 Cursor global precedence:
@@ -77,10 +77,10 @@ Print-config:
 - `--print-config json|toml` emits paste-ready MCP config to stdout and writes
   no files.
 - OMP is a supported native client, not a `--print-config` paste target; use
-  `lore install --client omp` to write `.omp/mcp.json`.
+  `kennen install --client omp` to write `.omp/mcp.json`.
 - `--client` is accepted as a no-op. `--project` selects the config root
-  embedded as `LORE_CONFIG_ROOT` for bare and legacy printed snippets.
-- `--yarn-pnp` printed snippets omit static `LORE_CONFIG_ROOT` and assume the
+  embedded as `KENNEN_CONFIG_ROOT` for bare and legacy printed snippets.
+- `--yarn-pnp` printed snippets omit static `KENNEN_CONFIG_ROOT` and assume the
   unsupported host launches from the workspace root.
 - JSON output reuses `buildClaudeMcpEntry`; TOML output reuses
   `buildCodexMcpSection`. For the same project and Yarn/PnP shape, printed
@@ -98,10 +98,10 @@ Agent identity:
 
 - Hook helpers derive the `Agent:` field through
   [`deriveAgentName`](../../../src/hooks/helpers.ts).
-- Codex hook commands are prefixed with `LORE_AGENT_NAME=Codex` because Codex
+- Codex hook commands are prefixed with `KENNEN_AGENT_NAME=Codex` because Codex
   has no built-in runtime marker equivalent to Claude Code's environment.
 - Third-party integrations should follow the same explicit
-  `LORE_AGENT_NAME=<Name>` convention. Explicit override wins over inferred
+  `KENNEN_AGENT_NAME=<Name>` convention. Explicit override wins over inferred
   detection.
 - Codex hook commands are POSIX shell strings. The reinstall detector recognizes
   uppercase env assignment prefixes followed by the script path:

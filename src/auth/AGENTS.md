@@ -4,9 +4,9 @@
 
 ## Purpose
 
-This directory implements Lore's authentication resolution. The auth
+This directory implements Kennen's authentication resolution. The auth
 model is **ntn-first** for internal Notion engineers: engineers
-authenticate via the `ntn` CLI (`ntn login`), and Lore reads the
+authenticate via the `ntn` CLI (`ntn login`), and Kennen reads the
 resulting bearer token. External operators use `NOTION_API_TOKEN`
 with a Notion Personal Access Token.
 
@@ -16,12 +16,12 @@ resolution-mode-specific helpers `resolveAuth` calls into.
 
 ## Files
 
-| File              | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `oauth.ts`        | `ntn` env ↔ Notion API URL mapping (`ntnEnvBaseUrl`, `ntnEnvFromBaseUrl`, `resolveOperatorBaseUrl`, `getBaseUrl`) plus `verifyVaultAccess` / `extractPageTitle` for post-auth-resolution vault preflight.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `token-prefix.ts` | `classifyTokenPrefix(token)` — discriminate `ntn_` (prod), `development_ntn_` (dev), `secret_` (integration), or `unknown`. `describeTokenPrefix(kind)` renders the label for the `lore auth --whoami` parenthetical. Display-only — does NOT change `AuthSource` in `src/config.ts` or alter on-wire behavior. Used to surface the "I pasted an integration token instead of a PAT" failure mode at `--whoami` time so operators can self-diagnose without reading the docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `ntn.ts`          | ntn integration module (#02). `loadNtnToken` reads `~/.config/notion/auth.json` for token resolution; `runNtnLogin` shells out to `ntn login` interactively; `installNtn` auto-installs a pinned ntn release archive with Lore-shipped sha256 verification; `getNtnVersion` / `checkNtnVersion` report the installed version. Exports `MIN_NTN_VERSION`, `NTN_INSTALL_VERSION`, and manual fallback install constants.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `identity.ts`     | Engineer-identity resolver for the per-user attribution path (DEFERRED-ATTRIBUTION). Service init wires a lazy `createAuthorIdentityResolver(client, getAuthSnapshot)`; write paths call it only when the caller omitted an explicit `author`. Resolution order is `LORE_USER_NAME` env override (synchronous, wins even across token rotation in a single process) → auth-scoped cached `users.me().bot.owner.user.name` fallback → `null`. Cache keys hash the active token and include the API base URL; never store or log raw tokens. The resolver keeps only the latest settled auth snapshot cached, keeps older in-flight snapshots long enough for same-snapshot concurrent callers to share one `users.me` request, does not re-key in-flight results when auth changes mid-call, and does not cache thrown `users.me` failures (next unattributed write retries). Recognized no-owner responses are cached as null. `LORE_DEBUG=1` emits stderr diagnostics for env/users.me resolution and fresh failures. Public surface is `createAuthorIdentityResolver`, `resolveAuthorIdentity` (uncached helper/tests), `resolveAuthorForWrite`, and `resetIdentityCache(resolver?)`; the JSON-shape walker is private (tests reach every failure-mode branch via mocked `client.users.me`). |
+| File              | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `oauth.ts`        | `ntn` env ↔ Notion API URL mapping (`ntnEnvBaseUrl`, `ntnEnvFromBaseUrl`, `resolveOperatorBaseUrl`, `getBaseUrl`) plus `verifyVaultAccess` / `extractPageTitle` for post-auth-resolution vault preflight.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `token-prefix.ts` | `classifyTokenPrefix(token)` — discriminate `ntn_` (prod), `development_ntn_` (dev), `secret_` (integration), or `unknown`. `describeTokenPrefix(kind)` renders the label for the `kennen auth --whoami` parenthetical. Display-only — does NOT change `AuthSource` in `src/config.ts` or alter on-wire behavior. Used to surface the "I pasted an integration token instead of a PAT" failure mode at `--whoami` time so operators can self-diagnose without reading the docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `ntn.ts`          | ntn integration module (#02). `loadNtnToken` reads `~/.config/notion/auth.json` for token resolution; `runNtnLogin` shells out to `ntn login` interactively; `installNtn` auto-installs a pinned ntn release archive with Kennen-shipped sha256 verification; `getNtnVersion` / `checkNtnVersion` report the installed version. Exports `MIN_NTN_VERSION`, `NTN_INSTALL_VERSION`, and manual fallback install constants.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `identity.ts`     | Engineer-identity resolver for the per-user attribution path (DEFERRED-ATTRIBUTION). Service init wires a lazy `createAuthorIdentityResolver(client, getAuthSnapshot)`; write paths call it only when the caller omitted an explicit `author`. Resolution order is `KENNEN_USER_NAME` env override (synchronous, wins even across token rotation in a single process) → auth-scoped cached `users.me().bot.owner.user.name` fallback → `null`. Cache keys hash the active token and include the API base URL; never store or log raw tokens. The resolver keeps only the latest settled auth snapshot cached, keeps older in-flight snapshots long enough for same-snapshot concurrent callers to share one `users.me` request, does not re-key in-flight results when auth changes mid-call, and does not cache thrown `users.me` failures (next unattributed write retries). Recognized no-owner responses are cached as null. `KENNEN_DEBUG=1` emits stderr diagnostics for env/users.me resolution and fresh failures. Public surface is `createAuthorIdentityResolver`, `resolveAuthorIdentity` (uncached helper/tests), `resolveAuthorForWrite`, and `resetIdentityCache(resolver?)`; the JSON-shape walker is private (tests reach every failure-mode branch via mocked `client.users.me`). |
 
 ## Identity resolution vs. `renderWhoamiIdentity` — deliberate divergence
 
@@ -34,7 +34,7 @@ walker) walks ONLY the first (`bot.owner.user.name`) and returns
 
 The divergence is intentional and load-bearing:
 
-- **`renderWhoamiIdentity`** drives `lore auth --whoami`, a CLI
+- **`renderWhoamiIdentity`** drives `kennen auth --whoami`, a CLI
   diagnostic where the operator wants _some_ identity string back —
   even the bot's workspace label is more useful than `<unknown>` in
   that surface. Falling back through the three layers is correct
@@ -46,7 +46,7 @@ The divergence is intentional and load-bearing:
   attribution to per-team granularity (the same workspace label
   every engineer in the team would resolve). Returning `null`
   preserves the empty-Author signal so an operator can fix the
-  resolution path (export `LORE_USER_NAME`) rather than discover
+  resolution path (export `KENNEN_USER_NAME`) rather than discover
   they've been writing UUIDs into a column meant for human bylines.
 
 A future engineer reconciling the two paths should NOT make them
@@ -56,8 +56,8 @@ match — the difference is the contract.
 
 Lazy author resolution is intentionally threaded through MCP write
 paths that create or replace authored Memory rows:
-`lore-memory action='save'` (including topic-key upsert),
-`lore-decision action='create'`, and `lore-task action='create'`.
+`kennen-memory action='save'` (including topic-key upsert),
+`kennen-decision action='create'`, and `kennen-task action='create'`.
 MCP update/archive/close/review/supersede paths do **not** resolve a
 new default Author; they preserve existing row authorship or write to
 surfaces without an Author column. If a future product decision wants
@@ -81,7 +81,7 @@ Operators who want to bypass the on-disk read entirely set
 the highest-priority source.
 
 The `auth.json` shape is undocumented but stable across the `ntn`
-versions Lore supports (`MIN_NTN_VERSION` onward). Auth.json read
+versions Kennen supports (`MIN_NTN_VERSION` onward). Auth.json read
 failure modes do not throw. The reader returns null for those paths,
 but emits a stderr hint only on recoverable mismatches the operator can
 act on: malformed JSON, unexpected root type, unknown requested
@@ -98,13 +98,13 @@ framing or wait on an export command that isn't coming.
 ## ntn version policy
 
 `MIN_NTN_VERSION` is the tested-against floor. The policy is
-intentionally reactive: Lore does not proactively chase ntn releases.
+intentionally reactive: Kennen does not proactively chase ntn releases.
 Bump only when a new ntn version ships an `auth.json` shape change
-Lore needs to handle (read-shape compatibility).
+Kennen needs to handle (read-shape compatibility).
 
-Lore prefers the operator's existing ntn install. The CLI never
+Kennen prefers the operator's existing ntn install. The CLI never
 auto-upgrades; `checkNtnVersion()` returns `"too-old"`
-informationally; consumers (`lore auth --login`, `lore install`)
+informationally; consumers (`kennen auth --login`, `kennen install`)
 print a non-blocking warning suggesting `ntn update` but proceed.
 Auto-install is offered only when ntn is missing entirely; the
 auto-install release is `NTN_INSTALL_VERSION`, downloaded from
@@ -120,14 +120,14 @@ Two helpers wrap interactive ntn invocations:
 
 - `runNtnLogin()` — spawns `ntn login` with inherited stdio and forces
   `NOTION_KEYRING=0` in the child env. The operator interacts with ntn's
-  prompts directly; Lore captures the exit code only. Engineers don't
-  need the env var in their shell rc for the Lore install path. Without
+  prompts directly; Kennen captures the exit code only. Engineers don't
+  need the env var in their shell rc for the Kennen install path. Without
   the forced env, ntn defaults to the macOS keychain on darwin and
   `auth.json` never gets written.
-- `installNtn()` — spawns `bash -c <Lore-shipped installer>` with
+- `installNtn()` — spawns `bash -c <Kennen-shipped installer>` with
   `stdio: "inherit"`, also setting `NOTION_KEYRING=0` for parity.
   The script downloads the pinned release archive, verifies its
-  sha256 against a value embedded in Lore, extracts the `ntn` binary,
+  sha256 against a value embedded in Kennen, extracts the `ntn` binary,
   and installs it. Operator must explicitly confirm before this is
   called via the consumer's prompt.
 
@@ -146,23 +146,23 @@ can't open the page in Notion's UI either.
 
 Returns a discriminated `VaultAccessResult` so the caller can route
 "valid token, wrong page" differently from "valid token, right
-page" differently from "transient 5xx." Used by `lore install`,
-`lore init`, `lore auth --status` (default-on; the diagnostic
+page" differently from "transient 5xx." Used by `kennen install`,
+`kennen init`, `kennen auth --status` (default-on; the diagnostic
 value of the round-trip outweighs the ~one-call cost since
 operators run `--status` rarely — a `--no-verify` opt-out is a
 plausible follow-up if telemetry surfaces friction).
 
 ## Things that don't live here
 
-- The CLI surface for `lore auth` lives in
+- The CLI surface for `kennen auth` lives in
   `src/cli/commands/auth.ts`.
 - The token resolver `resolveAuth` and `resolveToken` live in
   `src/config.ts` (the resolution point; this directory provides
   the per-source helpers it calls).
 - The hook-spawn auth handoff lives in
   `src/hooks/background.ts` (the spawned `claude -p` re-runs the
-  same `resolveAuth` from `event.cwd` and locates `.lore.yaml` via
-  upward search; no `LORE_CONFIG_ROOT` is forwarded — see
+  same `resolveAuth` from `event.cwd` and locates `.kennen.yaml` via
+  upward search; no `KENNEN_CONFIG_ROOT` is forwarded — see
   `src/hooks/AGENTS.md` for the env-passthrough details).
 - The OAuth + PKCE / broker work parked at
   `../../oauth-pkce-epic/` (in the issue tracker repo, not the
@@ -170,26 +170,26 @@ plausible follow-up if telemetry surfaces friction).
   now served by PATs (`notion.so/developers/tokens` →
   `NOTION_API_TOKEN`); the OAuth epic, if revived, is plausibly
   re-scoped to hosted multi-tenant only.
-- The operator-facing onboarding flow (per-engineer `lore install`,
-  per-team rollout, PAT setup, and direct-ntn-outside-Lore recovery)
+- The operator-facing onboarding flow (per-engineer `kennen install`,
+  per-team rollout, PAT setup, and direct-ntn-outside-Kennen recovery)
   lives in the
   [team-rollout runbook](../../docs/team-rollout.md).
   This file is for contributors working on the auth layer; the
-  runbook is for operators rolling Lore out to teams.
+  runbook is for operators rolling Kennen out to teams.
 
 ## Domain choice
 
-Lore uses `https://api.notion.so` as the default Notion API base
+Kennen uses `https://api.notion.so` as the default Notion API base
 (see `getBaseUrl` in `oauth.ts`). Notion is migrating public
 surfaces from `.so` to `.com`; both resolve. ntn's per-environment
 defaults are: prod = `api.notion.so`; dev = `api-dev.notion.com`.
-Operators on dev / staging set `LORE_NOTION_BASE_URL` per the
+Operators on dev / staging set `KENNEN_NOTION_BASE_URL` per the
 existing convention.
 
 ## ntn env ↔ URL mapping is centralized in `oauth.ts`
 
-`oauth.ts` exports the **single canonical pair** every Lore-managed
-ntn login surface (`lore auth --login`, `lore install`, `lore init`)
+`oauth.ts` exports the **single canonical pair** every Kennen-managed
+ntn login surface (`kennen auth --login`, `kennen install`, `kennen init`)
 consults for env ↔ URL conversion:
 
 - `ntnEnvBaseUrl(env)` — env (`prod` / `dev` / `stg`) → canonical URL.

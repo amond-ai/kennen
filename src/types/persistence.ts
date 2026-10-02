@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------
 
 export interface Vault {
-  /** Notion page ID that contains all Lore databases */
+  /** Notion page ID that contains all Kennen databases */
   pageId: string
   /** Database IDs created within the vault page */
   databases: VaultDatabases

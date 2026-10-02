@@ -1,15 +1,15 @@
-# Sample topic-alias merge plan for `lore migrate --merge-topics`.
+# Sample topic-alias merge plan for `kennen migrate --merge-topics`.
 #
 # Each entry names one canonical topic and the alias topic names that
 # should be consolidated onto it. Alias topic rows get archived and
 # every memory that referenced them is re-pointed onto the canonical.
 #
 # Usage:
-#   lore migrate --merge-topics docs/topic-merges.example.yaml --dry-run
-#   lore migrate --merge-topics docs/topic-merges.example.yaml --apply
+#   kennen migrate --merge-topics docs/topic-merges.example.yaml --dry-run
+#   kennen migrate --merge-topics docs/topic-merges.example.yaml --apply
 #
 # Tips:
-# - Run `lore migrate --fix-topic-encoding --merge-duplicate-topics` first
+# - Run `kennen migrate --fix-topic-encoding --merge-duplicate-topics` first
 #   so encoding-only duplicates collapse automatically. The alias merge
 #   below is the semantic pass that handles truly different names.
 # - Merges are idempotent: a second run is a no-op once applied.

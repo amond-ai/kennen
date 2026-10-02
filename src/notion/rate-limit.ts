@@ -1,6 +1,6 @@
 import { renameSync, writeFileSync } from "node:fs"
 import { dirname, basename } from "node:path"
-import { LoreError } from "../errors.js"
+import { KennenError } from "../errors.js"
 
 /**
  * Shared concurrency + request-rate governor for outbound Notion SDK calls.
@@ -45,7 +45,7 @@ import { LoreError } from "../errors.js"
  *    same token are also in the throttling window.
  *
  * Tests that inject their own mock client are unaffected: the limiter
- * only wraps the real client inside `initServicesFromConfig` and `lore
+ * only wraps the real client inside `initServicesFromConfig` and `kennen
  * init`. Tests that explicitly want to observe the gates wrap their
  * mock manually.
  */
@@ -73,14 +73,14 @@ export const DEFAULT_NOTION_CONCURRENCY = 3
  * {@link DEFAULT_NOTION_ENDPOINT_OVERRIDES} so a single fast endpoint
  * does not force every other endpoint over the published average.
  *
- * Per-process budget. Multiple Lore processes on one Notion token
+ * Per-process budget. Multiple Kennen processes on one Notion token
  * (MCP server + CLI + hooks running concurrently) compose additively
  * at the server-side bucket; the shared 429 backoff path inside this
  * wrapper (see {@link MAX_RATE_LIMIT_BACKOFF_MS}) is what self-
  * throttles when the union of process-local pacers exceeds the
  * per-token ceiling. Operators running heavy concurrent workloads on
  * one token can tighten further via `notion.rateLimit.requestsPerSecond`
- * in `.lore.yaml`.
+ * in `.kennen.yaml`.
  */
 export const DEFAULT_NOTION_REQUESTS_PER_SECOND = 3
 
@@ -123,7 +123,7 @@ export interface NotionRateLimitEndpointOverride {
  * is ~2× headroom below the cell at concurrency=10, the cell that
  * empirically dominates p50 throughput on the probed endpoints. The
  * margin absorbs (a) multi-process composition on one operator token
- * — two Lore processes at the override rate still sit at or below
+ * — two Kennen processes at the override rate still sit at or below
  * the measured ceiling — and (b) tighter per-workspace caps than the
  * probed reference vault.
  *
@@ -132,7 +132,7 @@ export interface NotionRateLimitEndpointOverride {
  * map, those effective global values cap this built-in table so existing
  * process-wide throttles remain conservative. Operators who want a probed
  * endpoint to exceed their global gate opt in with an explicit per-endpoint
- * entry in `.lore.yaml`.
+ * entry in `.kennen.yaml`.
  */
 export const DEFAULT_NOTION_ENDPOINT_OVERRIDES: Readonly<
   Record<string, NotionRateLimitEndpointOverride>
@@ -188,7 +188,7 @@ export const DEFAULT_RATE_LIMIT_BACKOFF_MS = 1000
  * The pause is **process-wide on this client** — every subsequent
  * Notion call routed through the same `createLimitedClient` waits out
  * the pause window. A malicious or buggy `Retry-After: 86400` would
- * otherwise stall the entire Lore process for 24 hours. Sixty seconds
+ * otherwise stall the entire Kennen process for 24 hours. Sixty seconds
  * matches the Notion v5 SDK's `DEFAULT_MAX_RETRY_DELAY_MS` so the
  * wrapper and the SDK agree on the longest individual backoff a
  * single 429 can induce.
@@ -283,9 +283,9 @@ export interface NotionRateLimitDeps {
    * Called when a 429 surfaces and the wrapper pauses the shared
    * bucket. `ms` is the actual pause duration (post-clamp); `source`
    * names where the value came from. Defaults to a stderr warning in
-   * the existing `[lore] notion-sdk ...` shape so an operator
-   * debugging "lore is slow today" sees the pause without enabling
-   * `LORE_DEBUG=1` — the bucket pause is otherwise silent (the
+   * the existing `[kennen] notion-sdk ...` shape so an operator
+   * debugging "kennen is slow today" sees the pause without enabling
+   * `KENNEN_DEBUG=1` — the bucket pause is otherwise silent (the
    * wrapper is the only place that knows it happened).
    */
   onBackoff?: (ms: number, source: BackoffSource) => void
@@ -427,18 +427,20 @@ function defaultSetTimer(callback: () => void, delayMs: number): void {
 
 /**
  * Default backoff emitter — writes a one-line warning to stderr in
- * the same `[lore] notion-sdk ...` shape `client.ts:stderrSdkLogger`
- * uses. Operators debugging "lore is slow today" or "did we just
+ * the same `[kennen] notion-sdk ...` shape `client.ts:stderrSdkLogger`
+ * uses. Operators debugging "kennen is slow today" or "did we just
  * blow the rps ceiling" see the pause source and duration without
- * enabling `LORE_DEBUG=1`. The wrapper is the only place that knows
+ * enabling `KENNEN_DEBUG=1`. The wrapper is the only place that knows
  * the bucket paused; emitting here closes the observability gap.
  *
  * Routes through `process.stderr.write` rather than `console.warn`
  * so the line shape matches the existing SDK-debug emitter and any
- * `[lore]`-prefixed log aggregation keeps working unchanged.
+ * `[kennen]`-prefixed log aggregation keeps working unchanged.
  */
 export function defaultOnBackoff(ms: number, source: BackoffSource): void {
-  process.stderr.write(`[lore] notion-sdk warn: 429 backoff ${ms}ms (source=${source})\n`)
+  process.stderr.write(
+    `[kennen] notion-sdk warn: 429 backoff ${ms}ms (source=${source})\n`
+  )
 }
 
 /**
@@ -709,7 +711,7 @@ export function createLimitedClient(
             // hammering the same throttled server-side bucket.
             for (const bucket of allBuckets) bucket.pauseFor(clamped)
             // Visibility is load-bearing — without it, a 429 storm
-            // surfaces only as "lore is slow today." See
+            // surfaces only as "kennen is slow today." See
             // `defaultOnBackoff` for the default stderr emitter.
             try {
               onBackoff(clamped, source)
@@ -880,7 +882,7 @@ export function classifyWriteBudget(
  * `WriteBudgetExceeded: tool=<name> limit=<N> count=<final>` text-error
  * envelope the mining child grep-matches to halt.
  */
-export class WriteBudgetExceededError extends LoreError<"write-budget-exceeded"> {
+export class WriteBudgetExceededError extends KennenError<"write-budget-exceeded"> {
   constructor(
     public readonly toolPath: string,
     public readonly limit: number,
@@ -1018,7 +1020,7 @@ export function wrapWithWriteBudget(
       writeStateFile(options.stateFilePath, body)
     } catch (err) {
       process.stderr.write(
-        `[lore] write-budget: failed to write state file ` +
+        `[kennen] write-budget: failed to write state file ` +
           `"${options.stateFilePath}" (${(err as Error).message ?? "unknown"})\n`
       )
     }

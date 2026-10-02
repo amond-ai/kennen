@@ -1,5 +1,5 @@
 You are answering questions about a long multi-turn conversation. The
-conversation has been stored in the Lore vault, and the bench-runner
+conversation has been stored in the Kennen vault, and the bench-runner
 has pre-fetched the memories most relevant to the question being
 asked. Those memories are provided as a "Retrieved context" block in
 the user message below — read them, then answer.

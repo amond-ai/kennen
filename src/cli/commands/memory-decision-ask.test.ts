@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Readable } from "node:stream"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import type { Decision, Fact, Memory, Project, TaskSummary } from "../../types.js"
 import { INVALID_LIMIT_STRINGS, trapProcessExit } from "../test-helpers.js"
 import { readTextSource } from "./common.js"
@@ -111,7 +111,7 @@ function makeFact(overrides: Partial<Fact> = {}): Fact {
   }
 }
 
-function makeServices(overrides: Partial<LoreServices> = {}): LoreServices {
+function makeServices(overrides: Partial<KennenServices> = {}): KennenServices {
   return {
     projects: {
       findByName: vi.fn(async (name: string) => (name === "Widget" ? project : null)),
@@ -164,7 +164,7 @@ function makeServices(overrides: Partial<LoreServices> = {}): LoreServices {
       },
     },
     ...overrides,
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("memory save CLI", () => {
@@ -198,7 +198,7 @@ describe("memory save CLI", () => {
         content: "Polling review state for PR #908.",
         kind: "operational",
         expiresAt: "2026-06-01",
-        expiresOn: "pr-closed:Iron-Ham/lore#908",
+        expiresOn: "pr-closed:Iron-Ham/kennen#908",
       },
       []
     )
@@ -207,7 +207,7 @@ describe("memory save CLI", () => {
     if (result.ok) {
       expect(result.value.kind).toBe("operational")
       expect(result.value.expiresAt).toBe("2026-06-01")
-      expect(result.value.expiresOn).toBe("pr-closed:Iron-Ham/lore#908")
+      expect(result.value.expiresOn).toBe("pr-closed:Iron-Ham/kennen#908")
     }
   })
 
@@ -269,7 +269,7 @@ describe("memory save CLI", () => {
         content: "Polling review state for PR #908.",
         kind: "operational",
         expiresAt: "2026-06-01",
-        expiresOn: "pr-closed:Iron-Ham/lore#908",
+        expiresOn: "pr-closed:Iron-Ham/kennen#908",
       },
       []
     )
@@ -282,7 +282,7 @@ describe("memory save CLI", () => {
       expect.objectContaining({
         kind: "operational",
         expiresAt: "2026-06-01",
-        expiresOn: "pr-closed:Iron-Ham/lore#908",
+        expiresOn: "pr-closed:Iron-Ham/kennen#908",
       })
     )
   })
@@ -292,7 +292,7 @@ describe("memory save CLI", () => {
     const parsed = parseMemoryUpdateCliOptions("m-1", {
       kind: "operational",
       expiresAt: "2026-06-01",
-      expiresOn: "pr-closed:Iron-Ham/lore#908",
+      expiresOn: "pr-closed:Iron-Ham/kennen#908",
     })
     expect(parsed.ok).toBe(true)
     if (!parsed.ok) return
@@ -302,7 +302,7 @@ describe("memory save CLI", () => {
     expect(services.memories.update).toHaveBeenCalledWith("m-1", {
       kind: "operational",
       expiresAt: "2026-06-01",
-      expiresOn: "pr-closed:Iron-Ham/lore#908",
+      expiresOn: "pr-closed:Iron-Ham/kennen#908",
     })
   })
 })
@@ -521,7 +521,7 @@ describe("command exit paths", () => {
   })
 
   async function tempFile(content: string): Promise<string> {
-    const dir = await mkdtemp(join(tmpdir(), "lore-cli-exit-"))
+    const dir = await mkdtemp(join(tmpdir(), "kennen-cli-exit-"))
     tempDirs.push(dir)
     const file = join(dir, "body.md")
     await writeFile(file, content)

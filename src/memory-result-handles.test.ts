@@ -39,7 +39,7 @@ describe("MemoryResultHandleStore", () => {
       ok: false,
       message:
         `Result handle ${resultSet.handles[0]} is not available in this MCP process. ` +
-        "Run lore-query recall/search again and use a returned handle.",
+        "Run kennen-query recall/search again and use a returned handle.",
     })
   })
 

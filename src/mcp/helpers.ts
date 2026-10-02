@@ -11,7 +11,7 @@ import type { WakeUpCache } from "../core/wakeup-cache.js"
 import { isRetryableError } from "../core/project-scope.js"
 import { WriteBudgetExceededError } from "../notion/rate-limit.js"
 import { redactDebugError, redactDebugMessage } from "../debug-redact.js"
-import { isLoreError } from "../errors.js"
+import { isKennenError } from "../errors.js"
 import type { CostOutputCounts } from "../core/cost-ledger.js"
 
 type ToolResult = {
@@ -21,9 +21,9 @@ type ToolResult = {
    * Opt-out marker for `withWakeUpCacheBump`. Set on
    * write-action handlers whose code path provably did NOT mutate
    * Notion — e.g. the assertive-reuse short-circuit in
-   * `lore-task action='create'` (returns an existing row without
+   * `kennen-task action='create'` (returns an existing row without
    * calling `services.tasks.create`) and the already-judged
-   * short-circuit in `lore-memory action='compare'` (returns when
+   * short-circuit in `kennen-memory action='compare'` (returns when
    * both sides already carry the audit entry). The MCP transport
    * strips arbitrary fields it doesn't recognize, so this never
    * leaks past the dispatcher seam where the wrapper consumes it.
@@ -68,12 +68,12 @@ type ToolResult = {
  * construction, a read action.
  *
  * `cache` is typed as optional because dozens of unit-test fixtures
- * across the MCP test suite construct partial `LoreServices` shapes
+ * across the MCP test suite construct partial `KennenServices` shapes
  * via `as never` casts and intentionally omit fields they don't
  * exercise. A required signature would force a coordinated update
  * across every fixture for no test-side benefit. Production callers
  * always supply the cache (`initServicesFromConfig` populates
- * `LoreServices.wakeupCache` unconditionally).
+ * `KennenServices.wakeupCache` unconditionally).
  */
 export async function withWakeUpCacheBump(
   cache: WakeUpCache | undefined,
@@ -113,7 +113,7 @@ export function toolError(err: unknown): ToolResult {
 
 function formatErrorMetadata(err: unknown): string {
   const metadata: Record<string, unknown> = {}
-  if (isLoreError(err)) {
+  if (isKennenError(err)) {
     metadata.kind = err.kind
     metadata.details = redactStructuredDetails(err.details)
   }
@@ -180,19 +180,19 @@ function oneLine(value: string): string {
 /**
  * Operator observability for the auto-`mentions` fact emission path.
  * The auto-emit branch fires per-entity `createWithDedup`
- * calls in parallel after `lore-memory action='save'`; a per-entity
+ * calls in parallel after `kennen-memory action='save'`; a per-entity
  * failure (transient 429, dedup probe race, schema drift on a vault
- * that hasn't run `lore migrate`) degrades to a no-op for THAT entity
+ * that hasn't run `kennen migrate`) degrades to a no-op for THAT entity
  * rather than failing the surrounding save. The save itself always
  * succeeds; auto-mentions are advisory.
  *
  * Without this helper, a partial-emit failure is invisible to the
  * operator — the save response shows the saved memory but quietly
- * drops the missing fact. Under `LORE_DEBUG=1`, one stderr line per
+ * drops the missing fact. Under `KENNEN_DEBUG=1`, one stderr line per
  * failing entity surfaces enough detail to distinguish a transient
  * blip from a pathological loop.
  *
- * Format: `[lore] auto-fact-failure: source=<save|update> kind=<create|invalidate> memoryId=<id> entity=<entity> error=<message>`
+ * Format: `[kennen] auto-fact-failure: source=<save|update> kind=<create|invalidate> memoryId=<id> entity=<entity> error=<message>`
  *
  * Same narrowing as the shared partial-failure logger: only `error.message`
  * is logged. ASCII control characters in `memoryId` / `entity` /
@@ -209,7 +209,7 @@ function oneLine(value: string): string {
  * defaults to `"create"` so existing save-time call sites stay
  * source-compatible (no parameter re-threading at the call boundary).
  * The key set is uniform across save-time creates, update-time creates,
- * and update-time invalidates so log parsers grepping `[lore]
+ * and update-time invalidates so log parsers grepping `[kennen]
  * auto-fact-failure:` see one contract, not three.
  */
 export function debugLogAutoFactFailure(
@@ -219,9 +219,9 @@ export function debugLogAutoFactFailure(
   error: unknown,
   kind: "create" | "invalidate" = "create"
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] auto-fact-failure: source=${source} kind=${kind} memoryId=${oneLine(memoryId)} entity=${oneLine(entity)} error=${oneLine(redactDebugError(error))}\n`
+    `[kennen] auto-fact-failure: source=${source} kind=${kind} memoryId=${oneLine(memoryId)} entity=${oneLine(entity)} error=${oneLine(redactDebugError(error))}\n`
   )
 }
 
@@ -231,16 +231,16 @@ export function debugLogAutoFactFailure(
  * one row must not break the surrounding response — so the wiring
  * passes an `onError(memoryId, error)` callback that flows here.
  *
- * Format: `[lore] touch-failure: memory=<id> error=<message> tool=<toolName>`
+ * Format: `[kennen] touch-failure: memory=<id> error=<message> tool=<toolName>`
  *
  * Sibling of the shared partial-failure logger and shares its operator-only
- * posture: emits only when `LORE_DEBUG=1`, scrubs ASCII control
+ * posture: emits only when `KENNEN_DEBUG=1`, scrubs ASCII control
  * characters out of interpolated fields, logs `error.message` not
  * `error.stack`. The diverging key is `memory=<id>` rather than
  * `root=<id>` — touch-on-read failures are always a single Notion
  * memory page, not the root id of a fan-out, so the column name
  * carries that scope. Downstream parsers should match on the
- * `[lore] touch-failure:` prefix and the `error=` field.
+ * `[kennen] touch-failure:` prefix and the `error=` field.
  *
  * **Per-row signature, not a batch.** Unlike the shared partial-failure
  * logger, touch failures
@@ -251,9 +251,9 @@ export function debugLogAutoFactFailure(
  * Per-row matches the data-layer contract; do not "normalize" to a
  * batch shape without revisiting `touchOnRead`'s `onError` signature.
  *
- * `tool` identifies which read path triggered the touch — `lore-query
- * (recall)` / `lore-query (search)` / `lore-query (ask)` / `lore-memory
- * (expand)` / `lore-context (wake-up)` — so a flood of 429s during one
+ * `tool` identifies which read path triggered the touch — `kennen-query
+ * (recall)` / `kennen-query (search)` / `kennen-query (ask)` / `kennen-memory
+ * (expand)` / `kennen-context (wake-up)` — so a flood of 429s during one
  * action's hot path is distinguishable from a steady drip across all
  * five.
  */
@@ -262,9 +262,9 @@ export function debugLogTouchFailure(
   memoryId: string,
   error: unknown
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] touch-failure: memory=${oneLine(memoryId)} error=${oneLine(redactDebugError(error))} tool=${tool}\n`
+    `[kennen] touch-failure: memory=${oneLine(memoryId)} error=${oneLine(redactDebugError(error))} tool=${tool}\n`
   )
 }
 
@@ -316,7 +316,7 @@ export async function fireTouchOnRead(
 
 /**
  * Fact-side mirror of `debugLogTouchFailure` (DEFERRED-02). Same posture:
- * gated on `LORE_DEBUG=1`, scrubs control characters, logs
+ * gated on `KENNEN_DEBUG=1`, scrubs control characters, logs
  * `error.message`. The key is `fact=<id>` so log parsers can
  * distinguish memory and fact touch failures without re-running the
  * tool dispatcher.
@@ -326,15 +326,15 @@ export function debugLogFactTouchFailure(
   factId: string,
   error: unknown
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] fact-touch-failure: fact=${oneLine(factId)} error=${oneLine(redactDebugError(error))} tool=${tool}\n`
+    `[kennen] fact-touch-failure: fact=${oneLine(factId)} error=${oneLine(redactDebugError(error))} tool=${tool}\n`
   )
 }
 
 /**
  * Fact-side mirror of `fireTouchOnRead` (DEFERRED-02). Used by
- * `lore-query action='ask'` and `lore-context action='wake-up'` to
+ * `kennen-query action='ask'` and `kennen-context action='wake-up'` to
  * bump fact `Confidence Score` + `Last Referenced At` on visible
  * citations. Same advisory contract — the per-row `onError` drains
  * data-layer failures, the outer `try/catch` suppresses synchronous
@@ -357,7 +357,7 @@ export async function fireFactTouchOnRead(
 
 /**
  * Render a Zod validation error as a single-line dispatch error message
- * for the polymorphic `lore-*` tools. Surfaces the first issue
+ * for the polymorphic `kennen-*` tools. Surfaces the first issue
  * with `field.path: message` so the calling agent can correct the call
  * without parsing a stack trace. Enum, literal, and discriminator
  * mismatches also echo the rejected primitive value so the agent sees

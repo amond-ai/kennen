@@ -34,7 +34,7 @@ hooks:
 They can also use the env override:
 
 ```bash
-export LORE_BACKGROUND_COMMAND=codex
+export KENNEN_BACKGROUND_COMMAND=codex
 ```
 
 Unsupported binaries must supply `args` explicitly:
@@ -50,16 +50,16 @@ Resolution order:
 
 | Field     | Precedence (highest first)                                                                                                                                   |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `command` | `LORE_BACKGROUND_COMMAND` env > `hooks.backgroundAgent.command` in `.lore.yaml` > derived from `LORE_AGENT_NAME` via `AGENT_BACKGROUND_COMMAND` > `"claude"` |
-| `args`    | `hooks.backgroundAgent.args` in `.lore.yaml` > preset for the resolved `command` through basename-aware `lookupCommandPreset` > `DEFAULT_BACKGROUND_ARGS`    |
+| `command` | `KENNEN_BACKGROUND_COMMAND` env > `hooks.backgroundAgent.command` in `.kennen.yaml` > derived from `KENNEN_AGENT_NAME` via `AGENT_BACKGROUND_COMMAND` > `"claude"` |
+| `args`    | `hooks.backgroundAgent.args` in `.kennen.yaml` > preset for the resolved `command` through basename-aware `lookupCommandPreset` > `DEFAULT_BACKGROUND_ARGS`    |
 
 The agent-context tier makes Codex installs work without per-project
-`.lore.yaml` setup. The Codex installer prefixes every hook command with
-`LORE_AGENT_NAME=Codex`, so `mergeHookDefaults` derives `command: codex`.
-Claude Code installs do not set `LORE_AGENT_NAME`, so they fall through to the
+`.kennen.yaml` setup. The Codex installer prefixes every hook command with
+`KENNEN_AGENT_NAME=Codex`, so `mergeHookDefaults` derives `command: codex`.
+Claude Code installs do not set `KENNEN_AGENT_NAME`, so they fall through to the
 historical `claude` default.
 
-Lore ships presets for `claude` and `codex` in `KNOWN_COMMAND_PRESETS` in
+Kennen ships presets for `claude` and `codex` in `KNOWN_COMMAND_PRESETS` in
 `src/hooks/config.ts`. Preset lookup is basename-aware, so absolute paths such
 as `/opt/homebrew/bin/codex` and bare `codex` both pick up the Codex preset.
 Adding a preset requires a one-line constant change plus a test in
@@ -71,7 +71,7 @@ the no-git-repo-check flag. Keep the preset and its tests aligned when changing
 those args.
 
 There is no env path for `args` because the value is structurally an array and
-env vars are scalar. Use `.lore.yaml` for args so quoting remains explicit.
+env vars are scalar. Use `.kennen.yaml` for args so quoting remains explicit.
 
 The `{{allowedTools}}` token (`ALLOWED_TOOLS_PLACEHOLDER` in `config.ts`) inside
 `args` is replaced at spawn time with the tool allowlist string:
@@ -81,13 +81,13 @@ The `{{allowedTools}}` token (`ALLOWED_TOOLS_PLACEHOLDER` in `config.ts`) inside
 
 Operators whose CLI does not accept an allowlist flag can omit the placeholder.
 The spawn primitive skips the handoff, and the agent's allowlist must be
-configured out-of-band. For Codex, that means `mcp_servers.lore.allowed_tools`
+configured out-of-band. For Codex, that means `mcp_servers.kennen.allowed_tools`
 in `.codex/config.toml`. The install-time path emits a `Note:` line when the
 resolved args lack the placeholder.
 
 The merged shape lives on `HookConfig.backgroundAgent` and is threaded through
 `helpers.handleStop`, `digest-scheduler.fireDigestIfStale`,
-`core/synopsis-backfill.backfillSynopses`, and the `lore digest` CLI through
+`core/synopsis-backfill.backfillSynopses`, and the `kennen digest` CLI through
 `mergeHookDefaults(services.config.hooks)`. Direct callers of
 `spawnBackgroundSave` that omit the `agent` option use the built-in defaults.
 
@@ -101,14 +101,14 @@ operators see install-time warnings for independent failure bands:
 - Allowlist handoff missing: the resolved args lack `{{allowedTools}}`, so the
   agent allowlist must be configured out-of-band.
 
-`LORE_BACKGROUND_COMMAND` is the canonical operator-scoped knob for redirecting
-the background agent. The matching `.lore.yaml` shape is also canonical.
+`KENNEN_BACKGROUND_COMMAND` is the canonical operator-scoped knob for redirecting
+the background agent. The matching `.kennen.yaml` shape is also canonical.
 
 ## Background Failure Markers
 
 `background-failure-marker.ts` owns the local health breadcrumbs that
-`lore status` renders under **Background hooks**. Files live in `getStateDir()`
-(`$LORE_HOOK_STATE_DIR` when set, otherwise `$TMPDIR/lore-hook-state/`) next to
+`kennen status` renders under **Background hooks**. Files live in `getStateDir()`
+(`$KENNEN_HOOK_STATE_DIR` when set, otherwise `$TMPDIR/kennen-hook-state/`) next to
 locks, logs, digest markers, and drift markers. Filenames are isolated with the
 `background-failure.` prefix, the config-root key, the failure kind, and a short
 hash of the operator-actionable scope.
@@ -128,7 +128,7 @@ that scope.
 Writers opportunistically prune stale files for the same config root. Readers
 prune malformed, unknown-version, unknown-kind, wrong-root, and stale files.
 Stale means older than 14 days, chosen as one missed weekly digest window plus
-slack for an operator to run `lore status`.
+slack for an operator to run `kennen status`.
 
 Current `BackgroundFailureKind` values:
 
@@ -141,15 +141,15 @@ Current `BackgroundFailureKind` values:
 
 The supervision boundary is narrow by design. Markers cover failures the
 foreground process or helper can directly observe at spawn, init, or gather
-time. Lore does not supervise detached background agents through final process
+time. Kennen does not supervise detached background agents through final process
 exit, so a child that spawns successfully and later crashes will not create a
 background-failure marker. User-facing status renderers should report the clean
 state as no observed failures, not healthy.
 
 Wake-up's per-session debounce marker is outside this subsystem. If its
 `getStateDir()` write fails with a non-`EEXIST` error, wake-up logs
-`[lore] wakeup: debounce mark failed` and fails open without creating a
-background-failure marker or `lore status` row.
+`[kennen] wakeup: debounce mark failed` and fails open without creating a
+background-failure marker or `kennen status` row.
 
 When adding a new kind, update the `BackgroundFailureKind` union,
 `BACKGROUND_FAILURE_KINDS`, `formatBackgroundFailureKind`, and
@@ -161,10 +161,10 @@ opened.
 ## Auto-Digest
 
 After every accepted `Stop` event, the hook spawns a separate detached Node child
-to run the `auto-digest` helper action. The child loads `.lore.yaml`, honors
-`hooks.autoDigest: false` and `LORE_AUTO_DIGEST=false`, and delegates to
+to run the `auto-digest` helper action. The child loads `.kennen.yaml`, honors
+`hooks.autoDigest: false` and `KENNEN_AUTO_DIGEST=false`, and delegates to
 `fireDigestIfStale`. The marker debounce in `digest-marker.ts` avoids repeated
-synthesizer spawns on one machine, while the `lore-memory action='save'` digest
+synthesizer spawns on one machine, while the `kennen-memory action='save'` digest
 path updates an existing `Digest — YYYY-MM-DD — <project>` row for the same
 project/date instead of creating another one.
 
@@ -173,7 +173,7 @@ The two-process split is load-bearing:
 - The parent Stop hook never gathers digest data and never initializes a Notion
   client. Stop's `{}` emission stays in the millisecond-scale hot path.
 - The child runs the heavy work asynchronously. Any failure inside the child is
-  logged to `[lore]` stderr and swallowed because the parent has already exited.
+  logged to `[kennen]` stderr and swallowed because the parent has already exited.
 
 The parent Stop path derives the foreground's resolved `AuthSource` once per
 fire via `deriveStopAuthSource` in `helpers.ts`, so autosave and auto-digest use
@@ -183,7 +183,7 @@ back to the legacy every-key forward on rejection, so the Stop path itself does
 not gain a new failure mode.
 
 Digest paths that already have initialized services, including
-`fireDigestIfStale` and `lore digest`, read the source from
+`fireDigestIfStale` and `kennen digest`, read the source from
 `services.authSource` instead of re-reading auth from disk.
 
 `scheduleAutoDigestSpawn` in `digest-scheduler.ts` is the parent-side fork
@@ -194,7 +194,7 @@ helper. `handleAutoDigest` in `helpers.ts` is the child-side handler.
 Two `Stop` hooks firing for the same session in quick succession would race on
 the same transcript and create duplicate memories. `lock.ts` prevents this:
 
-- One lock file per session: `$TMPDIR/lore-hook-state/<sessionId>.lock`
+- One lock file per session: `$TMPDIR/kennen-hook-state/<sessionId>.lock`
 - The file contains the PID of the owning detached background child
 - `tryAcquireSessionLock(sessionId, ownerPid)` uses `O_EXCL` (`wx`) for atomic
   create-if-absent
@@ -222,19 +222,19 @@ The detached background agent runs with:
 stdio: ["stdin", "ignore", logFd]
 ```
 
-`logFd` opens `$TMPDIR/lore-hook-state/<sessionId>.log` in truncate-write mode
+`logFd` opens `$TMPDIR/kennen-hook-state/<sessionId>.log` in truncate-write mode
 (`"w"`, mode `0o600`). Each save gets a clean postmortem. The file reflects only
 the most recent save attempt for that session, not an unbounded append.
 
 When a save crashes, inspect the file:
 
 ```bash
-tail -f $TMPDIR/lore-hook-state/<sessionId>.log
+tail -f $TMPDIR/kennen-hook-state/<sessionId>.log
 ```
 
 ## SessionEnd Compatibility
 
 The `session-end` action exists only as an exit-0 compatibility shim for stale
 installed settings. It performs no transcript parse, save spawn, or stderr
-output. `lore install --client claude` strips Lore-owned SessionEnd entries on
+output. `kennen install --client claude` strips Kennen-owned SessionEnd entries on
 reinstall.

@@ -2,7 +2,7 @@ import { Command } from "commander"
 
 /**
  * Read `process.stdin` to completion when stdin is piped (i.e., not a
- * TTY). On a TTY return the empty string immediately so `lore hooks
+ * TTY). On a TTY return the empty string immediately so `kennen hooks
  * wakeup` typed at an interactive prompt doesn't block forever waiting
  * on EOF — the same `[ ! -t 0 ]` guard the legacy `hooks/wakeup.sh`
  * uses.
@@ -22,20 +22,20 @@ async function readStdinToString(): Promise<string> {
 }
 
 /**
- * `lore hooks <event>` — bin-dispatch hook entry point.
+ * `kennen hooks <event>` — bin-dispatch hook entry point.
  *
  * Replaces the legacy `hooks/*.sh` shell wrappers that committed
  * absolute paths into consumer assistant config. Each subcommand reads
  * stdin directly and dispatches to the hook helpers via an
- * explicit `{ event }` parameter, skipping the `LORE_AUTOSAVE_CONTENT`
- * / `LORE_WAKEUP_EVENT` env-var indirection the shell wrappers needed
+ * explicit `{ event }` parameter, skipping the `KENNEN_AUTOSAVE_CONTENT`
+ * / `KENNEN_WAKEUP_EVENT` env-var indirection the shell wrappers needed
  * to bridge stdin into the Node process.
  *
- * Lazy-imports helpers.js so `lore --help` doesn't pay the helper's
+ * Lazy-imports helpers.js so `kennen --help` doesn't pay the helper's
  * eager Notion / Zod boot cost.
  */
 export const hooksCommand = new Command("hooks").description(
-  "Dispatch a Lore hook event (used by host assistants)"
+  "Dispatch a Kennen hook event (used by host assistants)"
 )
 
 hooksCommand
@@ -54,7 +54,7 @@ hooksCommand
     const stdin = await readStdinToString()
     // Mirror `hooks/autosave.sh`'s empty-input early-exit: a Stop event
     // with no transcript content has nothing to save and shouldn't
-    // emit the `LORE_AUTOSAVE_CONTENT not set` warning the helper
+    // emit the `KENNEN_AUTOSAVE_CONTENT not set` warning the helper
     // would otherwise log.
     if (!stdin) return
     const { runAutosave } = await import("../../hooks/helpers.js")
@@ -66,7 +66,7 @@ hooksCommand
   .description("Session-end shim (compatibility for pre-0.6.0 settings)")
   .action(() => {
     // Matches `hooks/session-end.sh` byte-for-byte: exit 0, no work,
-    // no output. Lore does not register a SessionEnd hook; this shim
+    // no output. Kennen does not register a SessionEnd hook; this shim
     // exists so stale Claude Code settings stop emitting "command
     // not found" until the operator reinstalls.
     process.exit(0)

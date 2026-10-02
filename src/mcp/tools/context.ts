@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/server"
 import { z } from "zod"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import { formatDispatchError, toolError } from "../helpers.js"
 import { handleDigest } from "./context/digest.js"
 import { contextDispatchSchema, contextInputSchema } from "./context/schema.js"
@@ -9,26 +9,26 @@ import { handleWakeUp, neutralizeLeadingBlockquote } from "./context/wake-up.js"
 
 export { neutralizeLeadingBlockquote }
 
-export function registerContextTools(server: McpServer, services: LoreServices): void {
+export function registerContextTools(server: McpServer, services: KennenServices): void {
   // -------------------------------------------------------------------------
-  // lore-context — polymorphic dispatcher
+  // kennen-context — polymorphic dispatcher
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-context",
+    "kennen-context",
     {
       title: "Vault context operations",
       description:
         "Vault status, session priming, and project digest in one polymorphic tool. Action-dispatched:\n\n" +
-        "- `action: 'status'` — vault page id, topology health when configured, database counts, active project, configured projects, background hook failures, a task summary line (active / overdue / stale / in-progress / blocked, plus a closure-rate line on vaults with the `Done At` column), and a proposed-memory inbox count line when proposed learnings exist (excludes proposed-state decisions, which surface via `lore-decision` instead).\n" +
+        "- `action: 'status'` — vault page id, topology health when configured, database counts, active project, configured projects, background hook failures, a task summary line (active / overdue / stale / in-progress / blocked, plus a closure-rate line on vaults with the `Done At` column), and a proposed-memory inbox count line when proposed learnings exist (excludes proposed-state decisions, which surface via `kennen-decision` instead).\n" +
         "- `action: 'wake-up'` — load digest + ranked memories when `userQuery` is set + recent memories + tasks + active facts + decisions requiring attention. Title-tier rows by default; `expand: true` for bodies. Pass `userQuery` after pivots; it suppresses pinned/upstream context unless `governanceContext: true`. Use `mode: 'task-only'` for one-shot retrieval. Pass `debug: true` for coverage counters.\n" +
-        "- `action: 'digest'` — gather raw activity data for synthesis into a digest memory. Save the synthesis via `lore-memory` action='save' with source='digest'.",
+        "- `action: 'digest'` — gather raw activity data for synthesis into a digest memory. Save the synthesis via `kennen-memory` action='save' with source='digest'.",
       inputSchema: z.object(contextInputSchema),
       annotations: { readOnlyHint: true },
     },
     async (args) => {
       const parsed = contextDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-context", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-context", parsed.error)))
       }
       switch (parsed.data.action) {
         case "status":

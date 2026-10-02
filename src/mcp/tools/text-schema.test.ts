@@ -13,7 +13,7 @@ describe("nonBlankString (trim variant — for identifier/title-shaped fields)",
   it("trims leading/trailing whitespace from accepted values", () => {
     // `.trim()` transforms the value before `.min(1)` runs; downstream
     // services receive the normalized string. Matches the posture of
-    // `lore-query action='ask'`'s `entity` schema.
+    // `kennen-query action='ask'`'s `entity` schema.
     const result = nonBlankString.safeParse("  hello  ")
     expect(result.success).toBe(true)
     if (result.success) {

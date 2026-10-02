@@ -1,6 +1,6 @@
 # CLI Authoring Guide
 
-This guide covers shared conventions for implementing Lore CLI commands. Read
+This guide covers shared conventions for implementing Kennen CLI commands. Read
 [`src/cli/AGENTS.md`](../src/cli/AGENTS.md) first for routing and
 [`cli-command-contracts.md`](cli-command-contracts.md) for per-command
 contracts.
@@ -44,7 +44,7 @@ Exceptions:
 - `auth` status/login paths construct narrower auth clients directly when they
   need token or vault preflight checks without the full service graph.
 - `init` creates its own client and `VaultManager` directly because it runs
-  before a `.lore.yaml` exists.
+  before a `.kennen.yaml` exists.
 - `install` loads config and verifies vault access through a narrow Notion
   client before writing host files; it does not use the full service graph.
 
@@ -159,11 +159,11 @@ doing a focused migration of those files.
 
 ## OSC 8 Hyperlinks
 
-Memory titles and project names rendered by `lore search` and `lore status`
+Memory titles and project names rendered by `kennen search` and `kennen status`
 flow through `terminalLink` in [`src/cli/output.ts`](../src/cli/output.ts),
 which wraps them in OSC 8 escape sequences pointing at the page's Notion URL.
 The helper falls back to plain text on non-TTY stdout, when `NO_COLOR` or
-`LORE_NO_HYPERLINKS` is set, or when the URL fails the Notion safelist. Page
+`KENNEN_NO_HYPERLINKS` is set, or when the URL fails the Notion safelist. Page
 IDs stay plain text because operators copy them into other tools.
 
 `maybeTerminalLink` is the pure helper with injected `{ isTTY, env }` values;
@@ -171,9 +171,9 @@ IDs stay plain text because operators copy them into other tools.
 process. Build link targets via `notionPageUrl(id)` rather than constructing a
 Notion URL inline so every call site routes through the same helper.
 
-Subcommand listings such as `lore status projects` and `lore status topics`
-stay plain to keep names selectable for copy-paste. Only top-level `lore
-status` and `lore search` wrap titles. `lore mine` has no title-shaped output
+Subcommand listings such as `kennen status projects` and `kennen status topics`
+stay plain to keep names selectable for copy-paste. Only top-level `kennen
+status` and `kennen search` wrap titles. `kennen mine` has no title-shaped output
 to link.
 
 ## Adding a New Command

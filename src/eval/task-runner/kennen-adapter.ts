@@ -16,7 +16,7 @@ import {
   mergeHookDefaults,
   type BackgroundAgentConfig,
 } from "../../hooks/config.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import type { Fact, Memory, Project } from "../../types.js"
 import {
   createIsolatedCodexHome,
@@ -24,23 +24,23 @@ import {
   removeIsolatedCodexHome,
 } from "./codex-adapter.js"
 import type {
-  LongitudinalLoreAdapter,
-  LongitudinalLoreFormationResult,
-  LongitudinalLoreRun,
+  LongitudinalKennenAdapter,
+  LongitudinalKennenFormationResult,
+  LongitudinalKennenRun,
   LongitudinalTaskEvalSuite,
   LongitudinalTaskScenario,
   LongitudinalWakeUpResult,
 } from "./schema.js"
 
-export function defaultLongitudinalLoreAdapter(): LongitudinalLoreAdapter {
-  const allowReal = process.env["LORE_EVAL_LONGITUDINAL_REAL"]
+export function defaultLongitudinalKennenAdapter(): LongitudinalKennenAdapter {
+  const allowReal = process.env["KENNEN_EVAL_LONGITUDINAL_REAL"]
   if (allowReal === "1" || allowReal === "true") {
-    return new LiveLongitudinalLoreAdapter()
+    return new LiveLongitudinalKennenAdapter()
   }
-  return new RefusingLongitudinalLoreAdapter(
-    "Real longitudinal Lore formation refused: set " +
-      "LORE_EVAL_LONGITUDINAL_REAL=1 and " +
-      "LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT to opt in."
+  return new RefusingLongitudinalKennenAdapter(
+    "Real longitudinal Kennen formation refused: set " +
+      "KENNEN_EVAL_LONGITUDINAL_REAL=1 and " +
+      "KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT to opt in."
   )
 }
 
@@ -51,15 +51,15 @@ export class LongitudinalAdapterRefusedError extends Error {
   }
 }
 
-class RefusingLongitudinalLoreAdapter implements LongitudinalLoreAdapter {
+class RefusingLongitudinalKennenAdapter implements LongitudinalKennenAdapter {
   constructor(private readonly message: string) {}
 
-  async createRun(): Promise<LongitudinalLoreRun> {
+  async createRun(): Promise<LongitudinalKennenRun> {
     const message = this.message
     return {
       projectId: null,
       projectName: null,
-      async formContext(): Promise<LongitudinalLoreFormationResult> {
+      async formContext(): Promise<LongitudinalKennenFormationResult> {
         throw new LongitudinalAdapterRefusedError(message)
       },
       async loadContext(): Promise<LongitudinalWakeUpResult> {
@@ -70,20 +70,20 @@ class RefusingLongitudinalLoreAdapter implements LongitudinalLoreAdapter {
   }
 }
 
-class LiveLongitudinalLoreAdapter implements LongitudinalLoreAdapter {
-  private servicesPromise: Promise<LoreServices> | null = null
+class LiveLongitudinalKennenAdapter implements LongitudinalKennenAdapter {
+  private servicesPromise: Promise<KennenServices> | null = null
 
   async createRun(input: {
     suite: LongitudinalTaskEvalSuite
     scenario: LongitudinalTaskScenario
     runId: string
     workspace: string
-  }): Promise<LongitudinalLoreRun> {
+  }): Promise<LongitudinalKennenRun> {
     const services = await this.services()
-    const sandboxProjectName = process.env["LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
+    const sandboxProjectName = process.env["KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT"]
     if (!sandboxProjectName) {
       throw new LongitudinalAdapterRefusedError(
-        "LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT is required for lore-full-loop runs."
+        "KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT is required for kennen-full-loop runs."
       )
     }
     assertLongitudinalSandboxProjectName(sandboxProjectName)
@@ -102,14 +102,14 @@ class LiveLongitudinalLoreAdapter implements LongitudinalLoreAdapter {
     })
     let configRoot: string | null = null
     try {
-      configRoot = await mkdtemp(join(tmpdir(), "lore-eval-longitudinal-config-"))
+      configRoot = await mkdtemp(join(tmpdir(), "kennen-eval-longitudinal-config-"))
       await chmod(configRoot, 0o700)
       await writeLongitudinalConfigRoot({
         configRoot,
         services,
         projectName: project.name,
       })
-      return new LiveLongitudinalLoreRun({
+      return new LiveLongitudinalKennenRun({
         services,
         project,
         configRoot,
@@ -124,16 +124,16 @@ class LiveLongitudinalLoreAdapter implements LongitudinalLoreAdapter {
     }
   }
 
-  private async services(): Promise<LoreServices> {
+  private async services(): Promise<KennenServices> {
     if (!this.servicesPromise) {
-      const configuredRoot = process.env["LORE_EVAL_LONGITUDINAL_CONFIG_ROOT"]
+      const configuredRoot = process.env["KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT"]
       if (configuredRoot) {
-        const prior = process.env["LORE_CONFIG_ROOT"]
-        process.env["LORE_CONFIG_ROOT"] = configuredRoot
+        const prior = process.env["KENNEN_CONFIG_ROOT"]
+        process.env["KENNEN_CONFIG_ROOT"] = configuredRoot
         this.servicesPromise = initServices(undefined, { driftCheck: false }).finally(
           () => {
-            if (prior === undefined) delete process.env["LORE_CONFIG_ROOT"]
-            else process.env["LORE_CONFIG_ROOT"] = prior
+            if (prior === undefined) delete process.env["KENNEN_CONFIG_ROOT"]
+            else process.env["KENNEN_CONFIG_ROOT"] = prior
           }
         )
       } else {
@@ -144,13 +144,13 @@ class LiveLongitudinalLoreAdapter implements LongitudinalLoreAdapter {
   }
 }
 
-class LiveLongitudinalLoreRun implements LongitudinalLoreRun {
+class LiveLongitudinalKennenRun implements LongitudinalKennenRun {
   readonly projectId: string
   readonly projectName: string
 
   constructor(
     private readonly input: {
-      services: LoreServices
+      services: KennenServices
       project: Project
       configRoot: string
       workspace: string
@@ -165,7 +165,7 @@ class LiveLongitudinalLoreRun implements LongitudinalLoreRun {
     transcript: string
     workspace: string
     sessionId: string
-  }): Promise<LongitudinalLoreFormationResult> {
+  }): Promise<LongitudinalKennenFormationResult> {
     const codexHome = await createIsolatedCodexHome()
     const before = await snapshotProjectContext(this.input.services, this.projectId)
     const backgroundAgent = await longitudinalMiningAgentForScenario(input.scenario, {
@@ -182,8 +182,8 @@ class LiveLongitudinalLoreRun implements LongitudinalLoreRun {
         () =>
           withTemporaryEnv(
             {
-              LORE_CONFIG_ROOT: this.input.configRoot,
-              LORE_AGENT_NAME: process.env["LORE_AGENT_NAME"] ?? "Codex",
+              KENNEN_CONFIG_ROOT: this.input.configRoot,
+              KENNEN_AGENT_NAME: process.env["KENNEN_AGENT_NAME"] ?? "Codex",
               CODEX_HOME: codexHome,
             },
             () =>
@@ -274,21 +274,24 @@ export async function longitudinalMiningAgentForScenario(
 const LONGITUDINAL_SANDBOX_NAME_MARKERS =
   /\b(?:sandbox|eval|test|scratch|staging|dev|playground)\b/i
 
-export type LongitudinalAgentConfigServices = Pick<LoreServices, "authSource" | "config">
+export type LongitudinalAgentConfigServices = Pick<
+  KennenServices,
+  "authSource" | "config"
+>
 
 function assertLongitudinalSandboxProjectName(projectName: string): void {
   if (LONGITUDINAL_SANDBOX_NAME_MARKERS.test(projectName)) return
-  const allowProd = process.env["LORE_EVAL_NOTION_ALLOW_PRODUCTION"]
+  const allowProd = process.env["KENNEN_EVAL_NOTION_ALLOW_PRODUCTION"]
   if (allowProd === "1" || allowProd === "true") return
   throw new Error(
     `Project "${projectName}" does not look like a sandbox (no word-bounded match for sandbox/eval/test/scratch/staging/dev/playground). ` +
-      `Set LORE_EVAL_NOTION_ALLOW_PRODUCTION=1 to confirm pointing longitudinal task evals at this project on purpose.`
+      `Set KENNEN_EVAL_NOTION_ALLOW_PRODUCTION=1 to confirm pointing longitudinal task evals at this project on purpose.`
   )
 }
 
 async function writeLongitudinalConfigRoot(input: {
   configRoot: string
-  services: LoreServices
+  services: KennenServices
   projectName: string
 }): Promise<void> {
   const auth =
@@ -320,7 +323,7 @@ async function writeLongitudinalConfigRoot(input: {
     projects: [{ name: input.projectName, path: "." }],
     hooks: input.services.config.hooks ?? {},
   }
-  await writeFile(join(input.configRoot, ".lore.yaml"), stringifyYaml(config), {
+  await writeFile(join(input.configRoot, ".kennen.yaml"), stringifyYaml(config), {
     mode: 0o600,
   })
 }
@@ -347,7 +350,7 @@ async function writeLongitudinalAgentConfig(input: {
     `${JSON.stringify(
       {
         mcpServers: {
-          lore: {
+          kennen: {
             command: mcpCommand.command,
             args: mcpCommand.args,
             env: mcpEnv,
@@ -390,7 +393,7 @@ async function resolveMcpCommand(): Promise<{ command: string; args: string[] }>
     await stat(distMcp)
     return { command: "node", args: [distMcp] }
   } catch {
-    return { command: "lore", args: ["mcp"] }
+    return { command: "kennen", args: ["mcp"] }
   }
 }
 
@@ -399,20 +402,20 @@ function buildLongitudinalMcpEnv(
   authSource: AuthSource
 ): Record<string, string> {
   const env: Record<string, string> = {
-    LORE_CONFIG_ROOT: configRoot,
-    LORE_SUPPRESS_DEPRECATIONS: "1",
-    LORE_BACKGROUND_AGENT: "true",
+    KENNEN_CONFIG_ROOT: configRoot,
+    KENNEN_SUPPRESS_DEPRECATIONS: "1",
+    KENNEN_BACKGROUND_AGENT: "true",
   }
   for (const key of [
     "PATH",
     "HOME",
     "NOTION_API_TOKEN",
-    "LORE_NOTION_BASE_URL",
+    "KENNEN_NOTION_BASE_URL",
     "NOTION_WORKSPACE_ID",
     "NOTION_ENV",
     "NOTION_BASE_URL",
     "NOTION_API_BASE_URL",
-    "LORE_USER_NAME",
+    "KENNEN_USER_NAME",
   ]) {
     if (authSource === "ntn-auth-json" && key === "NOTION_API_TOKEN") {
       continue
@@ -429,23 +432,23 @@ function renderCodexMcpConfig(input: {
   env: Record<string, string>
 }): string {
   const enabledTools = [
-    "lore-context",
-    "lore-query",
-    "lore-memory",
-    "lore-decision",
-    "lore-fact",
-    "lore-task",
-    "lore-project",
+    "kennen-context",
+    "kennen-query",
+    "kennen-memory",
+    "kennen-decision",
+    "kennen-fact",
+    "kennen-task",
+    "kennen-project",
   ]
   const lines = [
-    "[mcp_servers.lore]",
+    "[mcp_servers.kennen]",
     'transport = "stdio"',
     `command = "${tomlEscape(input.command)}"`,
     `args = [${input.args.map((arg) => `"${tomlEscape(arg)}"`).join(", ")}]`,
     'default_tools_approval_mode = "approve"',
     `enabled_tools = [${enabledTools.map((tool) => `"${tool}"`).join(", ")}]`,
     "",
-    "[mcp_servers.lore.env]",
+    "[mcp_servers.kennen.env]",
   ]
   for (const [key, value] of Object.entries(input.env).sort(([a], [b]) =>
     a.localeCompare(b)
@@ -496,7 +499,7 @@ export interface ProjectContextItem {
 }
 
 async function snapshotProjectContext(
-  services: LoreServices,
+  services: KennenServices,
   projectId: string
 ): Promise<ProjectContextSnapshot> {
   const memoryContexts: ProjectContextItem[] = []

@@ -1,7 +1,7 @@
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-requests-modelhard-v1
+name: kennen-longitudinal-requests-modelhard-v1
 description: >-
   Model-hard Requests longitudinal suite. Scenarios are pinned before real
   upstream fixes whose correct behavior is an obscure RFC detail almost no
@@ -10,8 +10,8 @@ description: >-
 seededCorpus: ../vault-seeds/requests-modelhard-v1.yaml
 conditions:
   - no-memory
-  - seeded-lore
-  - lore-full-loop
+  - seeded-kennen
+  - kennen-full-loop
 scenarios:
   - id: requests-redirect-fragment-retention-v1
     difficulty: hard
@@ -58,10 +58,10 @@ scenarios:
     verifiers:
       - type: patched-command
         patch: |
-          diff --git a/lore_eval_hidden_fragment.py b/lore_eval_hidden_fragment.py
+          diff --git a/kennen_eval_hidden_fragment.py b/kennen_eval_hidden_fragment.py
           new file mode 100644
           --- /dev/null
-          +++ b/lore_eval_hidden_fragment.py
+          +++ b/kennen_eval_hidden_fragment.py
           @@ -0,0 +1,73 @@
           +import io
           +
@@ -155,6 +155,6 @@ scenarios:
           - python
           - -m
           - pytest
-          - lore_eval_hidden_fragment.py
+          - kennen_eval_hidden_fragment.py
           - -q
         timeoutMs: 180000

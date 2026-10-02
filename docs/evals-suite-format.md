@@ -12,7 +12,7 @@ expectations:
 
 ```yaml
 version: 1
-name: lore-core
+name: kennen-core
 trials: 1
 runner: retrieval
 
@@ -21,8 +21,8 @@ tasks:
     prompt: Add the requested feature while following the auth decision.
     surface: wake-up.taskMemories # default; omit for taskMemories
     memoryScenarios:
-      no-lore: ../memory/no-lore.yaml
-      empty-lore: ../memory/empty.yaml
+      no-kennen: ../memory/no-kennen.yaml
+      empty-kennen: ../memory/empty.yaml
       noisy-memory: ../memory/noisy.yaml
       helpful-memory: ../memory/auth-decision.yaml
     expectedRetrieval:
@@ -51,7 +51,7 @@ exercises only the surface under test.
 | `wake-up.pinnedContext`          | Fixture memories with `isPinnedContext: true` populate the pinned-context channel.                                                            |
 | `wake-up.inheritedMemories`      | Fixture memories with `isInheritedMemory: true` populate one synthetic upstream inheritance channel.                                          |
 
-Every task must include the `no-lore`, `empty-lore`, and `helpful-memory`
+Every task must include the `no-kennen`, `empty-kennen`, and `helpful-memory`
 ablations. Additional scenarios such as `noisy-memory` and `stale-memory` are
 allowed as the suite grows.
 
@@ -84,8 +84,8 @@ Use one task for one memory-sensitive behavior. The prompt should describe the
 developer action the agent would take, and the `shouldSurface` IDs should be the
 minimum set of memories needed to do that action correctly.
 
-Use `helpful-memory` to prove useful memory can surface. Keep `no-lore` and
-`empty-lore` as mandatory baselines so the lift metric can tell the difference
+Use `helpful-memory` to prove useful memory can surface. Keep `no-kennen` and
+`empty-kennen` as mandatory baselines so the lift metric can tell the difference
 between "the memory helped" and "nothing was available." Add `noisy-memory`
 when plausible but irrelevant memory could crowd out the useful row, and add
 `stale-memory` when old or deprecated guidance must not influence the task.
@@ -105,9 +105,9 @@ rows you intentionally expect to surface.
   `shouldSurface` memories appear and all `shouldNotSurface` memories stay out
   of the surfaced set.
 - **Memory lift**: the helpful-memory recall minus the best baseline recall
-  from `no-lore`, `empty-lore`, or `noisy-memory` when present. Positive lift
+  from `no-kennen`, `empty-kennen`, or `noisy-memory` when present. Positive lift
   means useful memory changed what the agent would see.
-- **Memory harm**: the success-rate drop from `empty-lore` to `noisy-memory` or
+- **Memory harm**: the success-rate drop from `empty-kennen` to `noisy-memory` or
   `stale-memory`, when those scenarios exist. This stays `null` for suites that
   do not define harm scenarios.
 - **Retrieval recall**: the fraction of expected memory IDs that surfaced for a
@@ -128,13 +128,13 @@ baseline drift check, then uploads the JSON artifact for inspection.
 ## Baselines
 
 Baselines live under `evals/baselines/` as comparison-stable JSON snapshots
-captured from a known-good run. The committed `evals/baselines/lore-core.json`
+captured from a known-good run. The committed `evals/baselines/kennen-core.json`
 is the reference that CI diff-checks every PR against.
 
 ```bash
 # Capture a fresh baseline (operator command -- review the diff before commit)
-node dist/cli.js eval baseline evals/suites/lore-core.yaml \
-  --out evals/baselines/lore-core.json \
+node dist/cli.js eval baseline evals/suites/kennen-core.yaml \
+  --out evals/baselines/kennen-core.json \
   --notes "Why this baseline was refreshed"
 ```
 
@@ -142,20 +142,20 @@ The snapshot drops timing/order-sensitive fields (`startedAt`,
 `metrics.elapsedMs`) and pins per-result `success`, `recall`, and `precision`
 plus the aggregate retrieval summary.
 
-Baselines record their `runner` mode. `lore eval run --baseline <path>` refuses
+Baselines record their `runner` mode. `kennen eval run --baseline <path>` refuses
 to compare a baseline captured in one mode against an artifact from another
 (they key results on disjoint scenario spaces -- retrieval baselines on
 ablations, notion baselines on `live-vault`). Capture a runner-matched baseline
-with `lore eval baseline --runner <mode> ... <suite>` before comparing.
+with `kennen eval baseline --runner <mode> ... <suite>` before comparing.
 
 ### Drift Detection
 
-`lore eval run` accepts `--baseline <path>` to compare a fresh run against a
+`kennen eval run` accepts `--baseline <path>` to compare a fresh run against a
 committed snapshot:
 
 ```bash
-node dist/cli.js eval run evals/suites/lore-core.yaml \
-  --baseline evals/baselines/lore-core.json
+node dist/cli.js eval run evals/suites/kennen-core.yaml \
+  --baseline evals/baselines/kennen-core.json
 ```
 
 Regression triggers (any one flips the run to a non-zero exit):
@@ -178,7 +178,7 @@ contract so a future contributor cannot silently narrow the key back to the
 legacy 2-key `(taskId, scenario)` form (which would clobber siblings under the
 same `(taskId, scenario)` and silently drop coverage from the drift gate).
 
-Byte-stable `lore eval baseline` output is **retrieval-mode only**. The
+Byte-stable `kennen eval baseline` output is **retrieval-mode only**. The
 retrieval runner pins `DEFAULT_RETRIEVAL_NOW` so per-result rows and aggregate
 metrics reproduce across runs. The notion runner uses real wall-clock time and
 hits live Notion, so its baselines record real timestamps and may have
@@ -190,7 +190,7 @@ clock seam, update this section and the snapshot in lockstep.
 
 ### When To Refresh The Baseline
 
-Refresh the baseline (`lore eval baseline ... --out evals/baselines/<suite>.json`
+Refresh the baseline (`kennen eval baseline ... --out evals/baselines/<suite>.json`
 followed by an explicit commit) when:
 
 - A new task lands and adds rows the baseline didn't have. The drift report
@@ -269,7 +269,7 @@ search or `client.search`.
 Skill-retrieval suites live under `evals/skill-retrieval/` and use a
 SkillRet-shaped corpus. The `keyword` lane is offline and deterministic. The
 `notion-ai` lane requires a suite `notion` block, imports the corpus into a
-persistent Lore eval vault, and measures Notion AI search through Lore's
+persistent Kennen eval vault, and measures Notion AI search through Kennen's
 `MemoryService.searchWithExplain` path. Skill-retrieval suites do not run an
 agent; they measure ranked retrieval over memory-as-skill documents.
 
@@ -352,7 +352,7 @@ hash. The import path can repair older transforms, but the `notion-ai` run path
 requires the manifest to use the current transform before scoring. It is an
 operator-local artifact, not a committed fixture.
 When `expectedVaultPageId` is present, import and run fail before touching the
-corpus if the active `.lore.yaml` points at any other vault.
+corpus if the active `.kennen.yaml` points at any other vault.
 
 The artifact reports recall@k, precision@k, completeness@k, NDCG@k, MRR, MAP,
 average estimated context tokens, elapsed time per lane, capped-result counts,
@@ -360,12 +360,12 @@ and mechanism-failure counts. The committed `keyword` lane is a deterministic
 lexical baseline; `notion-ai` uses the same artifact shape so public ranker
 comparisons stay separate from agent task-lift and memory-formation results.
 Treat `notion-ai` as a candidate-recall diagnostic, not the representative
-Lore-as-agent measurement.
+Kennen-as-agent measurement.
 
 ## Skill-Agent Suites
 
 Skill-agent suites live under `evals/skill-agent/` and measure read-only
-seeded-vault Lore use on top of a SkillRet import. They link to a
+seeded-vault Kennen use on top of a SkillRet import. They link to a
 `skill-retrieval` suite so the agent runner can reuse the fixed SkillRet corpus,
 Notion vault binding, and local `skillId -> memoryId` import manifest.
 
@@ -378,40 +378,40 @@ queries:
   seed: skillret-readonly-agent-v1
   limit: 200
 conditions:
-  - no-lore
-  - tool-driven-lore
+  - no-kennen
+  - tool-driven-kennen
   - oracle-context
 requiredConditions:
-  - tool-driven-lore
+  - tool-driven-kennen
 agent:
   kind: codex
   timeoutMs: 300000
 scoring:
   k: [1, 5, 10]
-  requireLoreUse: true
+  requireKennenUse: true
   requireExpandedEvidence: true
 ```
 
-The read-only contract is enforced by the harness: `tool-driven-lore` exposes
-only read-oriented Lore commands (`lore-query search/recall` and
-`lore-memory expand`) through a brokered tool path. Unsupported write actions
+The read-only contract is enforced by the harness: `tool-driven-kennen` exposes
+only read-oriented Kennen commands (`kennen-query search/recall` and
+`kennen-memory expand`) through a brokered tool path. Unsupported write actions
 are rejected and counted as `writeAttemptsBlocked`. The agent also receives an
 `AGENTS.md` in the temporary workspace stating that the eval vault is read-only.
 
 Conditions:
 
-- `no-lore`: baseline prior. Lore tools are unavailable.
-- `tool-driven-lore`: headline condition. The agent must decide to search and
-  expand Lore before answering.
+- `no-kennen`: baseline prior. Kennen tools are unavailable.
+- `tool-driven-kennen`: headline condition. The agent must decide to search and
+  expand Kennen before answering.
 - `oracle-context`: diagnostic ceiling. The required procedure body is injected
-  directly; Lore tools are unavailable.
-- `noisy-lore`: reserved for fixed-vault runs with near-miss or stale SkillRet
+  directly; Kennen tools are unavailable.
+- `noisy-kennen`: reserved for fixed-vault runs with near-miss or stale SkillRet
   distractors.
 
 The final answer must be structured JSON with `answer`, `usedMemoryIds`,
 `usedSkillIds`, and `reason`. Artifacts score each trial in layers:
 
-- tool use: successful read-only Lore call.
+- tool use: successful read-only Kennen call.
 - retrieval: expected memory surfaced in tool results.
 - expansion: expected memory body expanded.
 - selection: final answer cited the expected memory id or SkillRet id.
@@ -420,7 +420,7 @@ The final answer must be structured JSON with `answer`, `usedMemoryIds`,
 - write attempts: blocked write-path calls.
 
 Do not mix `skill-agent` and `skill-retrieval` aggregates. The former measures
-an instructed agent using a fixed Lore vault; the latter measures candidate
+an instructed agent using a fixed Kennen vault; the latter measures candidate
 ranking before an agent sees or applies anything.
 
 ## Skill-Use Suites
@@ -511,22 +511,22 @@ retrieval surface. Each task names:
   tmp directory before the run so workspaces stay read-only on disk
 - An `agent` -- only `codex` is registered as a production agent today; tests
   inject mock adapters under arbitrary string ids via `RunTaskEvalOptions.adapters`
-- An optional `memoryConditions` matrix mapping condition (`no-lore` /
+- An optional `memoryConditions` matrix mapping condition (`no-kennen` /
   `helpful` / `noisy` / `stale`) to a fixture path; the runner runs the task
-  once per declared condition and seeds `.lore-memories.json` into the workspace
+  once per declared condition and seeds `.kennen-memories.json` into the workspace
   from the fixture
 - A list of `verifiers` that score the post-run workspace state
 
 ```yaml
 version: 1
-name: lore-task-starter
+name: kennen-task-starter
 tasks:
   - id: add-readme-mentioning-package
     prompt: Add a README that explains the greet function.
     agent: codex
     workspace: ../workspaces/add-readme
     memoryConditions:
-      no-lore: ../task-memory/no-lore.json
+      no-kennen: ../task-memory/no-kennen.json
       helpful: ../task-memory/helpful-add-readme.json
       noisy: ../task-memory/noisy-add-readme.json
       stale: ../task-memory/stale-add-readme.json
@@ -563,7 +563,7 @@ Verifier types ship today:
   command there. Use this for harness-owned regression tests that should not be
   visible to the agent and should not pollute patch evidence sidecars.
 
-Run with `lore eval run --runner task evals/task-suites/starter.yaml`. The
+Run with `kennen eval run --runner task evals/task-suites/starter.yaml`. The
 runner copies the workspace, optionally seeds the memory-condition fixture,
 shells out to `codex exec --json --output-last-message <sidecar> --cd
 <workspace> --sandbox workspace-write --skip-git-repo-check <prompt>`, writes
@@ -578,8 +578,8 @@ Longitudinal task suites are a phase-aware variant of `--runner task`:
 version: 1
 runner: task
 longitudinal: true
-name: lore-longitudinal-minimal
-conditions: [no-memory, lore-full-loop]
+name: kennen-longitudinal-minimal
+conditions: [no-memory, kennen-full-loop]
 scenarios:
   - id: decision-continuity-result-boundary
     workspace: ../longitudinal/workspaces/result-boundary
@@ -605,25 +605,25 @@ contains four smoke scenarios:
 
 Each scenario runs Phase A and Phase B in the same copied workspace, but each
 phase is a fresh agent process. Under `no-memory`, the runner does not write
-`.lore.yaml`, does not seed memory, does not run hook formation, and injects no
-wake-up context. Under `lore-full-loop`, the runner mines the Phase A
+`.kennen.yaml`, does not seed memory, does not run hook formation, and injects no
+wake-up context. Under `kennen-full-loop`, the runner mines the Phase A
 conversation through `runConversationMining` using the evaluated agent's
 background CLI shape (Codex scenarios mine with `codex exec`, not `claude -p`),
 then calls `loadWakeUpData({ projectId, userQuery: phaseBPrompt,
 includeMemoryContent: true })` before Phase B and injects the rendered wake-up
 bundle into the Phase B prompt.
 
-Longitudinal suites may also include `seeded-lore`. This condition runs Phase A
+Longitudinal suites may also include `seeded-kennen`. This condition runs Phase A
 without hook mining, then injects the scenario's source-controlled
 `seededContext` before Phase B. It is a pilot seam for known-corpus evals: it
 measures whether the agent can use known memory when it is available, while
-`lore-full-loop` measures the full formation + retrieval + use path. When a
-suite includes `seeded-lore`, every scenario must declare `seededContext` with
+`kennen-full-loop` measures the full formation + retrieval + use path. When a
+suite includes `seeded-kennen`, every scenario must declare `seededContext` with
 rendered context and stable context ids. Every listed `contextIds` or
 `harmfulContextIds` entry must appear in `renderedContext`; otherwise the suite
 would report context as surfaced even though the agent never saw it.
 
-Design `lore-full-loop` Phase A prompts around durable learnings that Lore is
+Design `kennen-full-loop` Phase A prompts around durable learnings that Kennen is
 expected to preserve: decisions, conventions, gotchas, failed attempts,
 workarounds, and explicit follow-up cues. Do not make `expectedContext.keywords`
 depend on arbitrary source-code facts or Phase B-only feature details unless
@@ -661,7 +661,7 @@ costKillSwitchUsd: 1500
 
 The serial runner checks observed priced cost between condition runs. Observed cost
 includes primary agent usage recorded on phase rows and, when the live
-longitudinal config root exposes enabled cost tracking, Lore-owned model cost
+longitudinal config root exposes enabled cost tracking, Kennen-owned model cost
 from the local cost ledger for the current run window. Because the ledger slice
 is time-window based, use a dedicated eval config root/ledger for overnight
 runs. Once observed cost reaches the threshold, the runner stops launching new
@@ -673,7 +673,7 @@ a temp-file rename after every condition run in serial mode and after every
 scenario shard in parallel mode.
 
 With `--parallel`, the runner launches whole scenario triples in child
-processes so each scenario's Phase A/Phase B and Lore-full-loop context remain
+processes so each scenario's Phase A/Phase B and Kennen-full-loop context remain
 coherent. The parent checks the cost guard before launching a shard and after a
 shard completes; it does not interrupt a shard before its subprocess emits
 usage. The final observed cost can therefore exceed the threshold by up to the
@@ -702,25 +702,25 @@ workspace:
 ```
 
 The runner fetches the full commit SHA before invoking the agent, caches the
-checkout outside the repo under `$LORE_EVAL_WORKSPACE_CACHE_DIR` or
-`$XDG_CACHE_HOME/lore/eval-workspaces`, then copies that cache into each
+checkout outside the repo under `$KENNEN_EVAL_WORKSPACE_CACHE_DIR` or
+`$XDG_CACHE_HOME/kennen/eval-workspaces`, then copies that cache into each
 trial's temporary workspace. The agent never clones from its prompt, and
 existing local fixture path guards still apply to string workspaces. `repo` is
 restricted to GitHub `owner/repo` form for v1. Tests may override the remote
-base with `LORE_EVAL_GIT_REMOTE_BASE_URL`.
+base with `KENNEN_EVAL_GIT_REMOTE_BASE_URL`.
 
 The JSON artifact records each condition run with `phases[]`, prompt ids,
-workspace source, verifier results, patch stats, elapsed time, Lore counts,
+workspace source, verifier results, patch stats, elapsed time, Kennen counts,
 expected context ids, surfaced context ids, harmful context ids, and cost fields
 when the adapter reports them. Phase-level `cost` is primary-agent spend from
 the evaluated Codex process only: it includes provider, model, prompt tokens,
 cached prompt tokens, output tokens, reasoning output tokens, and `totalUsd`
-when the model is known to the local pricing table. Lore-owned background work
+when the model is known to the local pricing table. Kennen-owned background work
 is intentionally separate and belongs in the opt-in cost ledger. The summary
 reports pass rate per condition and a
-primary memory-enabled success-rate delta against `no-memory` (`seeded-lore`
-when present, otherwise `lore-full-loop`), plus per-condition lift summaries and
-the scenario ids where Lore lifted or harmed the outcome. Positive lift is
+primary memory-enabled success-rate delta against `no-memory` (`seeded-kennen`
+when present, otherwise `kennen-full-loop`), plus per-condition lift summaries and
+the scenario ids where Kennen lifted or harmed the outcome. Positive lift is
 useful evidence, but it is not a validity gate: a no-lift or harmful result
 means the harness found outcome data to inspect, not that the harness failed.
 The CLI exits non-zero when the primary memory-enabled condition has failing
@@ -731,7 +731,7 @@ whole-scenario timeout. The runner applies it separately to Phase A and Phase B.
 Command verifiers have their own `timeoutMs`. For example, the GitHub CLI suites
 use a 30-minute agent timeout per phase and 5-minute Go-test verifier timeouts,
 so one condition trial can reasonably take about 60 minutes plus verifier and
-Lore overhead.
+Kennen overhead.
 
 Timeouts are wall-clock timers in the runner process. Laptop sleep can therefore
 produce artificial timeouts: timers do not make progress while the machine is
@@ -750,33 +750,33 @@ model spend:
 
 ```bash
 npm run build
-LORE_EVAL_TASK_REAL=1 \
+KENNEN_EVAL_TASK_REAL=1 \
 node dist/cli.js eval run --runner task evals/task-suites/longitudinal.yaml
 ```
 
-Run the live `lore-full-loop` condition only against a sandbox/eval/test
-project. The runner creates a per-run project, writes `.lore.yaml` only in a
+Run the live `kennen-full-loop` condition only against a sandbox/eval/test
+project. The runner creates a per-run project, writes `.kennen.yaml` only in a
 temporary config root, writes temporary agent MCP config inside the copied
 workspace, archives the per-run project in cleanup, and removes the temporary
 config root:
 
 ```bash
 npm run build
-LORE_EVAL_TASK_REAL=1 \
-LORE_EVAL_LONGITUDINAL_REAL=1 \
-LORE_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \
+KENNEN_EVAL_TASK_REAL=1 \
+KENNEN_EVAL_LONGITUDINAL_REAL=1 \
+KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \
 node dist/cli.js eval run --runner task evals/task-suites/longitudinal.yaml
 ```
 
-If the source checkout does not have a usable `.lore.yaml`, point
-`LORE_EVAL_LONGITUDINAL_CONFIG_ROOT` at a sandbox-vault config root. Sandbox
+If the source checkout does not have a usable `.kennen.yaml`, point
+`KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT` at a sandbox-vault config root. Sandbox
 names must contain a word-bounded `sandbox`, `eval`, `test`, `scratch`,
 `staging`, `dev`, or `playground` marker unless
-`LORE_EVAL_NOTION_ALLOW_PRODUCTION=1` is set.
+`KENNEN_EVAL_NOTION_ALLOW_PRODUCTION=1` is set.
 
 ### Production Safety Gates
 
-- **Cost guardrail.** Real Codex invocation requires `LORE_EVAL_TASK_REAL=1` in
+- **Cost guardrail.** Real Codex invocation requires `KENNEN_EVAL_TASK_REAL=1` in
   the environment. Without it, `CodexAgentAdapter.run` exits with a
   recognizable refusal stderr line and a non-zero exit code. The CLI failure
   summary surfaces the first stderr line so the operator sees the refusal
@@ -798,15 +798,15 @@ names must contain a word-bounded `sandbox`, `eval`, `test`, `scratch`,
   keep transcript and patch sidecars artifact-adjacent so Phase B can be
   rematerialized from the clean source workspace without copying Phase A
   evidence files into the next condition.
-- **Full-loop mining input.** Longitudinal `lore-full-loop` formation mines the
+- **Full-loop mining input.** Longitudinal `kennen-full-loop` formation mines the
   Phase A JSONL sidecar when it is available, including assistant messages and
   command-output evidence. Injected adapters that do not write a sidecar fall
   back to a minimal prompt/final-answer transcript.
 - **Cost split.** Longitudinal task-mode artifacts count primary Phase A/Phase B
-  Codex calls as agent cost. `lore-full-loop` post-session mining uses the
+  Codex calls as agent cost. `kennen-full-loop` post-session mining uses the
   evaluated agent's background CLI shape and, when cost tracking is enabled in
   the sandbox config root, writes `eval.mining.background_model` rows to the
-  Lore cost ledger. MCP tools and Notion operations from the mining child write
+  Kennen cost ledger. MCP tools and Notion operations from the mining child write
   `mcp.invocation` rows to the same ledger.
 - **Workspace cleanup.** Tmp workspaces are removed via `try/finally` after each
   trial. Pass `keepWorkspaces: true` programmatically (or `--keep-workspaces`

@@ -52,7 +52,7 @@ for (const file of files) {
   }
 }
 
-const CONDITIONS = ["no-memory", "seeded-lore", "lore-full-loop"]
+const CONDITIONS = ["no-memory", "seeded-kennen", "kennen-full-loop"]
 
 function binomCoeff(n, r) {
   let x = 1
@@ -201,12 +201,12 @@ function ceiling() {
   let triples = 0
   let allPass = 0
   for (const [, byCond] of latest) {
-    if (byCond["no-memory"] && byCond["seeded-lore"] && byCond["lore-full-loop"]) {
+    if (byCond["no-memory"] && byCond["seeded-kennen"] && byCond["kennen-full-loop"]) {
       triples++
       if (
         byCond["no-memory"].success &&
-        byCond["seeded-lore"].success &&
-        byCond["lore-full-loop"].success
+        byCond["seeded-kennen"].success &&
+        byCond["kennen-full-loop"].success
       )
         allPass++
     }
@@ -225,11 +225,11 @@ for (const [, byCond] of latest) {
   }
 }
 
-const seeded = paired("no-memory", "seeded-lore")
-const fullLoop = paired("no-memory", "lore-full-loop")
+const seeded = paired("no-memory", "seeded-kennen")
+const fullLoop = paired("no-memory", "kennen-full-loop")
 const ceil = ceiling()
-const seededNorm = normalized("seeded-lore")
-const fullLoopNorm = normalized("lore-full-loop")
+const seededNorm = normalized("seeded-kennen")
+const fullLoopNorm = normalized("kennen-full-loop")
 
 if (json) {
   console.log(
@@ -259,8 +259,8 @@ if (json) {
     console.log(`  ${cond.padEnd(15)} ${pass}/${total} (${pct}%)`)
   }
   for (const [label, r] of [
-    ["seeded-lore", seeded],
-    ["lore-full-loop", fullLoop],
+    ["seeded-kennen", seeded],
+    ["kennen-full-loop", fullLoop],
   ]) {
     const pct = ((100 * r.delta) / r.n).toFixed(1)
     console.log(`\nPaired no-memory vs ${label}  (n=${r.n}):`)

@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { toolError } from "../../helpers.js"
 import { defaultProfileSelector } from "../../../profile/index.js"
 import { formatTaskSummary, taskStats, todayUtc } from "../../../core/task.js"
@@ -21,7 +21,7 @@ import {
 import { formatWakeUpCoverageReport, loadWakeUpData } from "../../../core/wakeup.js"
 import type { ToolResult } from "./types.js"
 
-export async function handleStatus(services: LoreServices): Promise<ToolResult> {
+export async function handleStatus(services: KennenServices): Promise<ToolResult> {
   try {
     const stats = await services.vault.stats()
     const project = services.context.project
@@ -62,8 +62,8 @@ export async function handleStatus(services: LoreServices): Promise<ToolResult> 
       }),
       loadProposedInboxStatus(services, { projectId: project?.id }),
       // Surfaces expired/expiring/out-of-context scoped rows for
-      // cleanup. Mirrors the CLI `lore status` line so MCP callers
-      // (`lore-context action='status'`) get the same triage signal.
+      // cleanup. Mirrors the CLI `kennen status` line so MCP callers
+      // (`kennen-context action='status'`) get the same triage signal.
       loadExpiringScopedStatus(services, { projectId: project?.id }),
       loadWakeUpData(services, {
         projectId: project?.id,

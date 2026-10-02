@@ -3,8 +3,8 @@
  *
  * Production conversation-mining is fire-and-forget: `spawnBackgroundSave`
  * forks a detached agent CLI sub-agent from the Stop-hook autosave path
- * and exits immediately. The sub-agent calls `lore-memory` / `lore-fact`
- * / `lore-decision` / `lore-task` MCP tools to write structured context
+ * and exits immediately. The sub-agent calls `kennen-memory` / `kennen-fact`
+ * / `kennen-decision` / `kennen-task` MCP tools to write structured context
  * for the session.
  *
  * `runConversationMining` is the synchronous counterpart: it builds the
@@ -130,7 +130,7 @@ export interface RunConversationMiningOptions {
   /**
    * Tool allowlist string interpolated into the agent's
    * `{{allowedTools}}` arg slot. Defaults to `DEFAULT_SAVE_ALLOWLIST`
-   * (the four save tools plus `lore-query` for the autosave learning
+   * (the four save tools plus `kennen-query` for the autosave learning
    * probe).
    */
   allowedTools?: string
@@ -246,7 +246,7 @@ function openStderrSink(path: string): number | null {
     return openHookStateFileSync(path, "w")
   } catch (err) {
     process.stderr.write(
-      `[lore] conversation-mining: failed to open stderrSinkPath ` +
+      `[kennen] conversation-mining: failed to open stderrSinkPath ` +
         `"${path}" (${(err as Error).message ?? "unknown error"}); ` +
         `falling back to discard.\n`
     )
@@ -282,14 +282,14 @@ export function runConversationMining(
   const binary = findBackgroundBinary(agentConfig.command)
   if (!binary) {
     // Operator-facing stderr hint uses the same
-    // `[lore] background save: ...` shape as the hook spawn path
+    // `[kennen] background save: ...` shape as the hook spawn path
     // so engineers triaging a missing binary see one consistent
     // surface across paths.
     process.stderr.write(
-      `[lore] conversation-mining: background command ` +
+      `[kennen] conversation-mining: background command ` +
         `"${agentConfig.command}" not found on PATH. ` +
         `Install the binary or override hooks.backgroundAgent.command ` +
-        `in .lore.yaml (or set LORE_BACKGROUND_COMMAND).\n`
+        `in .kennen.yaml (or set KENNEN_BACKGROUND_COMMAND).\n`
     )
     return Promise.reject(
       new Error(

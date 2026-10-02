@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import { parse as parseYaml } from "yaml"
 import { z } from "zod"
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import type {
   TopicAliasMergePlan,
   TopicAliasMergeResult,
@@ -137,7 +137,7 @@ export function printAliasMergeResults(
  * archives the sibling rows. Idempotent.
  */
 export async function runSimilarTopicsMigration(
-  services: LoreServices,
+  services: KennenServices,
   options: { apply: boolean; dryRun?: boolean }
 ): Promise<void> {
   const planOnly = !options.apply || options.dryRun === true

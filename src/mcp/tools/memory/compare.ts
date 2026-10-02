@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../server.js"
+import type { KennenServices } from "../../server.js"
 import { toolError } from "../../helpers.js"
 import {
   appendCompareDispatchLedgerEntry,
@@ -66,7 +66,7 @@ function validateAffectedMemoryId(input: CompareArgs): void {
  *
  * Fields embedded in the message:
  * - `dispatchedFactId` — the fact that landed on the actionable path
- *   (the operator can `lore-fact action='invalidate'` it during
+ *   (the operator can `kennen-fact action='invalidate'` it during
  *   manual cleanup if needed).
  * - `affectedMemoryId` — the memory that received the actionable
  *   dispatch marker.
@@ -99,7 +99,7 @@ function inconsistentCompareStateMessage(args: {
     "audit-marker write (Compare Notes + Compared With on both sides, " +
     "issued via Promise.all) failed. " +
     "Possible states: NEITHER side received its updates; OR one side succeeded " +
-    "and the other failed. Retrying the same lore-memory action='compare' is " +
+    "and the other failed. Retrying the same kennen-memory action='compare' is " +
     "safe: the affected memory carries a compare_dispatch ledger marker when " +
     "the dispatch marker lands, and recordCompared skips any side whose " +
     "final audit entry is already present. If repeated retries fail, INSPECT " +
@@ -185,7 +185,7 @@ interface CompareResultInput {
 }
 
 /**
- * Render the tool response for `lore-memory action='compare'`. The
+ * Render the tool response for `kennen-memory action='compare'`. The
  * shape distinguishes the cases the agent needs to branch on:
  * idempotent skip (`alreadyJudged: true`), symmetric verdict
  * (compared-with updated only), actionable verdict with fact id,
@@ -273,7 +273,7 @@ function renderCompareResult(input: CompareResultInput): ToolResult {
 }
 
 export async function handleCompare(
-  services: LoreServices,
+  services: KennenServices,
   args: CompareArgs
 ): Promise<ToolResult> {
   try {
@@ -464,8 +464,8 @@ export async function handleCompare(
       throw new Error(
         "verdict='supersedes' requires the affected (superseded) " +
           "memory to have kind='decision'. For non-decision pairs, " +
-          "use 'compatible' + lore-memory action='update' to merge, " +
-          "or promote via lore-decision action='create' supersedesIds."
+          "use 'compatible' + kennen-memory action='update' to merge, " +
+          "or promote via kennen-decision action='create' supersedesIds."
       )
     }
 

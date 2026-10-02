@@ -19,7 +19,7 @@ import type {
   SearchPlanVariant,
   SearchQueryPlan,
 } from "../types.js"
-import type { LoreFeatureFlags } from "../feature-flags.js"
+import type { KennenFeatureFlags } from "../feature-flags.js"
 import { MEMORY_PROPS } from "../notion/schema.js"
 import { projectOrUnscopedFilter, withDefaultScopeFilter } from "../notion/filters.js"
 import { extractMissingPropertyName } from "../notion/errors.js"
@@ -100,8 +100,8 @@ function shouldUseSaturationCutoff(
  * Maximum number of `client.search()` pages `fetchSemanticPages` is
  * willing to fetch before yielding the post-filtered set, regardless of
  * whether the requested `limit` has been satisfied. Notion's `search`
- * endpoint returns workspace-wide hits ranked by relevance; Lore filters
- * those down to the Memories DS, so a workspace where many non-Lore
+ * endpoint returns workspace-wide hits ranked by relevance; Kennen filters
+ * those down to the Memories DS, so a workspace where many non-Kennen
  * pages match the query tokens (or where caller-provided property
  * filters reject most of the first raw page) can starve the result
  * set even when matching memories exist past the first 100 raw hits.
@@ -114,7 +114,7 @@ function shouldUseSaturationCutoff(
  * the cap:
  *
  * - **Scan window.** `5 × page_size: 100 = 500` raw rows. Clears the
- * post-filter-starvation case for every realistic Lore vault — an
+ * post-filter-starvation case for every realistic Kennen vault — an
  * internal vault audit had ~560 facts and ~1,300 memories total;
  * a 500-row scan covers most of either set in a single call.
  * - **Tail latency.** `5 × ~500ms` (typical Notion search round-trip
@@ -127,11 +127,11 @@ function shouldUseSaturationCutoff(
  * actual wall-clock floor. Saturation cuts this in the common case
  * — operators only pay the full cost on pathological queries.
  *
- * Loop exits early once enough filtered Lore rows are accumulated for
+ * Loop exits early once enough filtered Kennen rows are accumulated for
  * the requested `limit`, or once Notion signals `has_more: false`. The
  * cap fires only when neither saturation nor exhaustion has occurred
  * — i.e., when a real pathological query is in flight; under
- * `LORE_DEBUG=1` `debugLogSemanticSearchCapFired` surfaces a stderr
+ * `KENNEN_DEBUG=1` `debugLogSemanticSearchCapFired` surfaces a stderr
  * line so operators can distinguish that case from genuine no-matches.
  *
  * Exported for test-pinning and operator visibility. If real-query
@@ -169,7 +169,7 @@ function plannedFirstSetPreserveCount(limit: number): number {
  * `60` matches qmd's choice and the Cormack 2009 paper. A per-call
  * `rrfK` knob is rejected outright — this is operator-tuning, not
  * caller-tuning. If real-query ordering looks wrong post-rollout, an
- * env knob (`LORE_HYBRID_RRF_K`, mirroring `HYBRID_FALLBACK_THRESHOLD`'s
+ * env knob (`KENNEN_HYBRID_RRF_K`, mirroring `HYBRID_FALLBACK_THRESHOLD`'s
  * posture) is the future option, but it is intentionally NOT in scope
  * here; the constant is fine to start.
  */
@@ -291,7 +291,7 @@ function rejectionToLogLine(reason: unknown): string {
  * `null` / `undefined` rejection reasons (`Promise.reject()`) are
  * explicitly NOT abort errors — those are real bugs in a downstream
  * helper and should surface through the partial-failure log so an
- * operator under `LORE_DEBUG=1` sees them.
+ * operator under `KENNEN_DEBUG=1` sees them.
  */
 function isAbortRejection(reason: unknown): boolean {
   if (reason === null || reason === undefined) return false
@@ -338,27 +338,27 @@ function buildAbortError(signal: AbortSignal): Error {
 /**
  * Operator observability for **partial** hybrid-search failures (one
  * branch rejected, the other survived). The surviving branch's rows are
- * the response, so this signal is opt-in via `LORE_DEBUG=1` to avoid
+ * the response, so this signal is opt-in via `KENNEN_DEBUG=1` to avoid
  * noisy stderr on transient blips. The both-fail path uses
  * `logHybridBothFailure` instead — that one logs unconditionally because
  * there is no surviving response to mask noise on.
  *
- * Format: `[lore] partial-failure: branch=<contains|semantic> error=<message> source=hybrid-search`
+ * Format: `[kennen] partial-failure: branch=<contains|semantic> error=<message> source=hybrid-search`
  *
  * The format intentionally diverges from the shared partial-failure logger:
  * a hybrid branch isn't a Notion root id, and `tool=hybrid-search` would be
  * misleading because hybrid search is a core service path, not an MCP tool.
  * The shared contract is the
- * `[lore] partial-failure:` prefix and the `error=` field — downstream
+ * `[kennen] partial-failure:` prefix and the `error=` field — downstream
  * parsers should match on those.
  */
 function debugLogHybridBranchFailure(
   branch: "contains" | "semantic",
   reason: unknown
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] partial-failure: branch=${branch} error=${rejectionToLogLine(reason)} source=hybrid-search\n`
+    `[kennen] partial-failure: branch=${branch} error=${rejectionToLogLine(reason)} source=hybrid-search\n`
   )
 }
 
@@ -367,9 +367,9 @@ function debugLogPlannedVariantFailure(
   variant: SearchPlanVariant,
   reason: unknown
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] partial-failure: variant=${variantIndex} kind=${variant.kind} error=${rejectionToLogLine(reason)} source=planned-search\n`
+    `[kennen] partial-failure: variant=${variantIndex} kind=${variant.kind} error=${rejectionToLogLine(reason)} source=planned-search\n`
   )
 }
 
@@ -380,28 +380,28 @@ function debugLogPlannedVariantFailure(
  * reporting `has_more: false`. The cap is deliberately conservative
  * but it makes pathological-query results indistinguishable from
  * genuine no-matches in the success path. Operators triaging
- * "lore-query returned empty / short results" need a way to
+ * "kennen-query returned empty / short results" need a way to
  * disambiguate the two — this helper supplies the signal.
  *
- * Gated on `LORE_DEBUG=1` so the common (non-pathological) path stays
+ * Gated on `KENNEN_DEBUG=1` so the common (non-pathological) path stays
  * silent; same posture as `debugLogHybridBranchFailure`. Format mirrors
- * the established `[lore] <event>: <kv pairs> source=<surface>`
- * contract — `grep '[lore]'` aggregators see one event per occurrence.
+ * the established `[kennen] <event>: <kv pairs> source=<surface>`
+ * contract — `grep '[kennen]'` aggregators see one event per occurrence.
  */
 function debugLogSemanticSearchCapFired(
   pages: number,
   accumulated: number,
   limit: number
 ): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   process.stderr.write(
-    `[lore] semantic-search-cap-fired: pages=${pages} accumulated=${accumulated} limit=${limit} source=fetch-semantic-pages\n`
+    `[kennen] semantic-search-cap-fired: pages=${pages} accumulated=${accumulated} limit=${limit} source=fetch-semantic-pages\n`
   )
 }
 
 /**
  * Operator observability for the **both-fail** hybrid-search case. Logs
- * unconditionally — not gated on `LORE_DEBUG=1` — because both-fail is the
+ * unconditionally — not gated on `KENNEN_DEBUG=1` — because both-fail is the
  * worst-case scenario: there is no surviving response to mask diagnostic
  * noise on, the caller's `try/catch` only sees the chosen `throw`, and an
  * operator triaging a real outage needs every rejection reason on stderr
@@ -411,11 +411,11 @@ function debugLogSemanticSearchCapFired(
  * event per occurrence — same one-event-per-line invariant as the
  * partial-failure helper.
  *
- * Format: `[lore] both-failure: contains=<message> semantic=<message> source=hybrid-search`
+ * Format: `[kennen] both-failure: contains=<message> semantic=<message> source=hybrid-search`
  */
 function logHybridBothFailure(containsReason: unknown, semanticReason: unknown): void {
   process.stderr.write(
-    `[lore] both-failure: contains=${rejectionToLogLine(containsReason)} semantic=${rejectionToLogLine(semanticReason)} source=hybrid-search\n`
+    `[kennen] both-failure: contains=${rejectionToLogLine(containsReason)} semantic=${rejectionToLogLine(semanticReason)} source=hybrid-search\n`
   )
 }
 
@@ -423,7 +423,7 @@ export class MemorySearch {
   constructor(
     private client: Client,
     private db: DatabaseRef,
-    private features: LoreFeatureFlags,
+    private features: KennenFeatureFlags,
     private getScopeContext: () => MemoryScopeContext,
     private isScopeFilterEnabled: () => boolean,
     private materializeMemories: MaterializeMemories
@@ -467,9 +467,9 @@ export class MemorySearch {
    * candidates (potentially 100+) when only `limit` (default 10) will
    * be returned.
    *
-   * **Mode force.** `LORE_FORCE_SEMANTIC_SEARCH=1` overrides the
+   * **Mode force.** `KENNEN_FORCE_SEMANTIC_SEARCH=1` overrides the
    * caller's mode and forces every search through the semantic path. It does
-   * not disable RunTool search; `LORE_USE_RUNTOOL_SEARCH=0` is the RunTool
+   * not disable RunTool search; `KENNEN_USE_RUNTOOL_SEARCH=0` is the RunTool
    * transport rollback.
    */
   async search(input: SearchMemoriesInput): Promise<Memory[]> {
@@ -495,7 +495,7 @@ export class MemorySearch {
    * metadata and score traces independently.
    *
    * Branch-field semantics follow the spec in `SearchExplain`. The
-   * resolved mode (after `LORE_FORCE_SEMANTIC_SEARCH=1` is applied)
+   * resolved mode (after `KENNEN_FORCE_SEMANTIC_SEARCH=1` is applied)
    * drives the value: `"contains-only"`, `"semantic-only"`,
    * `"contains-saturated"`, or `"rrf"`. On the saturation branch
    * `semanticRank` is forced to `null` even when the semantic call
@@ -694,7 +694,7 @@ export class MemorySearch {
     // No filters AND empty query → `filter: undefined` returns every row in
     // the DS sorted by recency, capped at `limit`. Intentional, not a
     // degenerate-input bug: callers passing only `mode: "contains"` with
-    // no scope and no query get the equivalent of `lore-query action='recall'` minus
+    // no scope and no query get the equivalent of `kennen-query action='recall'` minus
     // cursor pagination. A future reader: do not add a guard here.
     const toBaseFilter = (
       activeFilters: Array<Record<string, unknown>>
@@ -815,9 +815,9 @@ export class MemorySearch {
    * **Paginates** up to `SEMANTIC_SEARCH_MAX_PAGES` raw pages of
    * `client.search` results before yielding. The post-filter to the
    * Memories DS plus caller-provided property filters can drop most of
-   * a single raw page in workspaces dominated by non-Lore pages or
+   * a single raw page in workspaces dominated by non-Kennen pages or
    * under narrow `projectId` / `kind` / `status` constraints; matching
-   * Lore memories that fall after the first 100 raw hits would
+   * Kennen memories that fall after the first 100 raw hits would
    * otherwise be invisible to the caller. Loop exits early once
    * accumulated filtered hits cover the requested `limit` OR Notion
    * signals `has_more: false`. See `SEMANTIC_SEARCH_MAX_PAGES` for the
@@ -1046,9 +1046,9 @@ export class MemorySearch {
     if (cappedOut) {
       // Loop exhausted SEMANTIC_SEARCH_MAX_PAGES without saturating or
       // hitting `has_more: false`. Surface a single stderr line under
-      // LORE_DEBUG=1 so an operator triaging "lore-query returned an
+      // KENNEN_DEBUG=1 so an operator triaging "kennen-query returned an
       // empty / short result" can distinguish the cap-fired pathological
-      // case from genuine no-matches. The `LORE_DEBUG` gate keeps the
+      // case from genuine no-matches. The `KENNEN_DEBUG` gate keeps the
       // common (non-pathological) path silent.
       debugLogSemanticSearchCapFired(SEMANTIC_SEARCH_MAX_PAGES, accumulated.length, limit)
     }
@@ -1091,7 +1091,7 @@ export class MemorySearch {
    * to build a divergent post-filter.
    *
    * **Hydration.** RunTool's `search` returns `{id, title, url, ...}`
-   * per hit — Lore's post-filter and `materializeMemories` need full
+   * per hit — Kennen's post-filter and `materializeMemories` need full
    * `PageObjectResponse` shapes (parent, properties, archived flag).
    * The wrapper hydrates each hit through `pages.retrieve`, which is
    * proxied by `createLimitedClient` so the per-token rate-limit
@@ -1483,8 +1483,8 @@ export class MemorySearch {
    * the surviving branch's rows are returned; both-branches-rejected still
    * surfaces an error so a fully broken search subsystem doesn't masquerade
    * as an empty-result silence. Branch failures are logged to stderr under
-   * `LORE_DEBUG=1` so operators can distinguish a one-off blip from a
-   * pathological loop. `LORE_FORCE_SEMANTIC_SEARCH=1` remains the manual
+   * `KENNEN_DEBUG=1` so operators can distinguish a one-off blip from a
+   * pathological loop. `KENNEN_FORCE_SEMANTIC_SEARCH=1` remains the manual
    * rollback to semantic-only mode; it does not disable the RunTool search
    * transport.
    *
@@ -1506,7 +1506,7 @@ export class MemorySearch {
    * an `AbortError`-shaped value which `isAbortRejection` filters
    * out of the partial-failure log path AND the both-failure
    * detector — a cooperative abort is not a real branch failure and
-   * must not pollute `LORE_DEBUG=1` stderr or trip the both-down
+   * must not pollute `KENNEN_DEBUG=1` stderr or trip the both-down
    * outage path. The Notion SDK v5 does not expose a per-call
    * `signal` parameter, so the in-flight HTTP request is NOT
    * cancelled at the network layer; the win is bounding the
@@ -1597,7 +1597,7 @@ export class MemorySearch {
     // both-failure detection.
     // 2. The partial-failure log below stays quiet on the abort path
     // — a cooperative discard isn't transient noise to surface
-    // under `LORE_DEBUG=1`.
+    // under `KENNEN_DEBUG=1`.
     const semanticEffective: PromiseSettledResult<SearchPagesResult> =
       semanticResult.status === "rejected" && isAbortRejection(semanticResult.reason)
         ? { status: "fulfilled", value: { pages: [], capped: false } }
@@ -1606,7 +1606,7 @@ export class MemorySearch {
     if (containsResult.status === "rejected" && semanticEffective.status === "rejected") {
       // Both legs failed — log both messages on one stderr line
       // unconditionally (operators triaging a real outage need both
-      // rejection reasons regardless of LORE_DEBUG), then surface one to
+      // rejection reasons regardless of KENNEN_DEBUG), then surface one to
       // the caller. We choose `containsResult.reason` so the caller's
       // existing `try/catch` sees a structured, DS-scoped error from
       // `dataSources.query` rather than a `client.search` workspace-wide
@@ -1713,9 +1713,9 @@ export class MemorySearch {
     // intent-augmented semantic lane stays at 1. This matches qmd's
     // "original query ×2" rule. The constant is empirical; if real-query
     // ordering shows contains drowning out useful semantic hits, lower
-    // it in a follow-up. An env knob (`LORE_HYBRID_CONTAINS_WEIGHT`) is
+    // it in a follow-up. An env knob (`KENNEN_HYBRID_CONTAINS_WEIGHT`) is
     // intentionally NOT scoped here — operator-tuning, not caller-tuning;
-    // same posture as `LORE_HYBRID_RRF_K`.
+    // same posture as `KENNEN_HYBRID_RRF_K`.
     const containsWeight = intent !== null ? 2 : 1
     accumulate(containsPages, "contains", containsWeight)
     accumulate(semanticPages, "semantic")

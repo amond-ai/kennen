@@ -263,9 +263,9 @@ export interface BenchRunArtifact {
  * sections renamed.
  */
 export const TEMPORAL_FIDELITY_CAVEAT =
-  "Lore's Memory schema has no caller-writable session-timestamp column, " +
+  "Kennen's Memory schema has no caller-writable session-timestamp column, " +
   "so the temporal-reasoning and knowledge-update scores measure " +
-  "agent-recovers-temporal-context-from-body-text, not Lore-ranks-by-event-time."
+  "agent-recovers-temporal-context-from-body-text, not Kennen-ranks-by-event-time."
 
 export const DIAGNOSTIC_COUNT_CAVEAT =
   "ingestion.memoriesCreated and ingestion.factsCreated are diagnostic counts " +

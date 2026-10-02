@@ -1,14 +1,14 @@
 {
   "mcpServers": {
-    "lore": {
-      "command": "lore",
+    "kennen": {
+      "command": "kennen",
       "args": [
         "mcp"
       ],
       "env": {
-        "LORE_NOTION_BASE_URL": "${LORE_NOTION_BASE_URL}",
-        "LORE_CONFIG_ROOT": "${HOME}/.lore",
-        "LORE_SUPPRESS_DEPRECATIONS": "1"
+        "KENNEN_NOTION_BASE_URL": "${KENNEN_NOTION_BASE_URL}",
+        "KENNEN_CONFIG_ROOT": "${HOME}/.kennen",
+        "KENNEN_SUPPRESS_DEPRECATIONS": "1"
       }
     }
   }

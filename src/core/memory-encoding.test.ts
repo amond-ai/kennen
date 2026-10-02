@@ -501,20 +501,20 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
   const ID = "11111111111111111111111111111111"
 
   afterEach(() => {
-    delete process.env.LORE_USE_RUNTOOL_BLOCK_EDIT
-    delete process.env.LORE_USE_RUNTOOL
+    delete process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT
+    delete process.env.KENNEN_USE_RUNTOOL
   })
 
   it("dispatches a 200KB body through update_content with sparse entity substitutions — wire payload is NOT the full body", async () => {
     // Acceptance criterion #5 pin: a 200KB fixture must be fixed via
-    // `update_content` without a Lore-side full-body replace. We
+    // `update_content` without a Kennen-side full-body replace. We
     // construct a body whose entities are sparse (a handful of `&amp;`
     // sprinkled across the body) and assert two facts:
     //   1. `pages.updateMarkdown` is NOT called for this row (no
     //      full-body REST rewrite).
     //   2. The `client.request` payload's substitution list is small
     //      (entities only) — concretely, much smaller than the body.
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const filler = "x".repeat(200 * 1024)
     const body = `${filler.slice(0, 50_000)} &amp; ${filler.slice(50_000, 150_000)} &amp; ${filler.slice(150_000)}`
     expect(Buffer.byteLength(body, "utf8")).toBeGreaterThan(BODY_SIZE_CAP_BYTES)
@@ -563,7 +563,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
   })
 
   it("falls back to canonical replace_content for non-oversized bodies on RunTool fall-back-able failure", async () => {
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const client = createMockClient({
       queryResponses: [{ results: [memoryPage({ id: ID, title: "clean title" })] }],
       markdownByPageId: { [ID]: "small body with &amp; one entity" },
@@ -611,7 +611,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
     // (it skips above the cap). The row remains unfixed and we
     // surface it in `oversizedSkipped` so the migration report tells
     // the operator the body wasn't repaired.
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const filler = "x".repeat(BODY_SIZE_CAP_BYTES + 1024)
     const body = `${filler} &amp; suffix`
     const client = createMockClient({
@@ -649,7 +649,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
     // single-pass-equivalence guard returns false on multi-pass
     // bodies so the canonical path takes over and preserves the
     // existing fixed-point behavior.
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const client = createMockClient({
       queryResponses: [{ results: [memoryPage({ id: ID, title: "clean title" })] }],
       markdownByPageId: { [ID]: "Body with &amp;amp; double-encoded" },
@@ -669,7 +669,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
   })
 
   it("rethrows non-fall-back-able RunTool errors (401, 429, 5xx) to preserve the auth-refresh / backoff gates", async () => {
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const client = createMockClient({
       queryResponses: [{ results: [memoryPage({ id: ID, title: "clean title" })] }],
       markdownByPageId: { [ID]: "small body with &amp;" },
@@ -706,7 +706,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
     const body = `${filler} &amp; tail`
 
     // Phase 1: flag ON — oversized must be fixed via anchored path.
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const onClient = createMockClient({
       queryResponses: [{ results: [memoryPage({ id: ID, title: "clean title" })] }],
       markdownByPageId: { [ID]: body },
@@ -720,8 +720,8 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
     // `client.request` must NOT be called. Issue #543 flipped the
     // default to ON, so flag-off must be set explicitly here rather
     // than relying on env-unset.
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "0"
-    process.env.LORE_USE_RUNTOOL = "0"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "0"
+    process.env.KENNEN_USE_RUNTOOL = "0"
     const offClient = createMockClient({
       queryResponses: [{ results: [memoryPage({ id: ID, title: "clean title" })] }],
       markdownByPageId: { [ID]: body },
@@ -735,7 +735,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
   })
 
   it("uses resolved feature flags instead of rereading ambient env during the scan", async () => {
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const filler = "x".repeat(BODY_SIZE_CAP_BYTES + 1024)
     const body = `${filler} &amp; tail`
     const client = createMockClient({
@@ -758,7 +758,7 @@ describe("fixMemoryEncoding — anchored RunTool path (issue #534 AC #5)", () =>
     // The anchored path's contract is identical to the canonical
     // path on this axis: after a successful fix, re-running the
     // migration sees the decoded body and walks past it.
-    process.env.LORE_USE_RUNTOOL_BLOCK_EDIT = "1"
+    process.env.KENNEN_USE_RUNTOOL_BLOCK_EDIT = "1"
     const filler = "x".repeat(BODY_SIZE_CAP_BYTES + 1024)
     const stateByPage: Record<string, string> = {
       [ID]: `${filler} &amp; tail`,

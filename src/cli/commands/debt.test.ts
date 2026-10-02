@@ -1,5 +1,5 @@
 /**
- * Tests for `lore debt scan` / `lore debt create-tasks` (issue #288).
+ * Tests for `kennen debt scan` / `kennen debt create-tasks` (issue #288).
  *
  * Three surfaces:
  *
@@ -14,7 +14,7 @@
  *     a refactor that drops a defensive `return` after `process.exit(1)`
  *     could let the action fall through to the outer try/catch and
  *     double-emit the exit/error, silently breaking shell-script
- *     callers (`if ! lore debt scan; then …`).
+ *     callers (`if ! kennen debt scan; then …`).
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -25,7 +25,7 @@ import {
   type DebtReport,
   type DebtStats,
 } from "../../core/memory-debt.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { trapProcessExit } from "../test-helpers.js"
 import type { Memory } from "../../types.js"
 
@@ -114,7 +114,7 @@ function makeMemory(
  * the empty string `""`) are typed via cast — the stub treats them as
  * Notion's empty-select shape.
  */
-function makeServices(opts: { searchResults?: Memory[] }): LoreServices {
+function makeServices(opts: { searchResults?: Memory[] }): KennenServices {
   return {
     memories: {
       search: vi.fn(async (input: { status?: string }) => {
@@ -128,19 +128,19 @@ function makeServices(opts: { searchResults?: Memory[] }): LoreServices {
         return all.filter((m) => m.status === input.status)
       }),
     },
-  } as unknown as LoreServices
+  } as unknown as KennenServices
 }
 
 describe("debtTaskMarker", () => {
   it("flattens :: separators so the marker is one search-friendly token", () => {
     expect(debtTaskMarker("orphan_fact::abc-123")).toBe(
-      "lore-debt-id-orphan_fact-abc-123"
+      "kennen-debt-id-orphan_fact-abc-123"
     )
     expect(debtTaskMarker("duplicate_cluster::aaa::bbb")).toBe(
-      "lore-debt-id-duplicate_cluster-aaa-bbb"
+      "kennen-debt-id-duplicate_cluster-aaa-bbb"
     )
     expect(debtTaskMarker("scope_anomaly::expired")).toBe(
-      "lore-debt-id-scope_anomaly-expired"
+      "kennen-debt-id-scope_anomaly-expired"
     )
   })
 
@@ -176,12 +176,12 @@ describe("findExistingDebtTask (idempotency probe)", () => {
 
   it("rejects a search match that lacks the marker substring (defense in depth)", async () => {
     const item = makeDebtItem({ id: "orphan_fact::abc-123" })
-    // A task whose title literally contains the word "lore-debt-id"
+    // A task whose title literally contains the word "kennen-debt-id"
     // but does NOT have the canonical marker in keywords. The contains
     // search might surface it; the post-filter must reject it.
     const decoy = makeMemory({
       id: "task-decoy",
-      title: "lore-debt-id documentation patterns",
+      title: "kennen-debt-id documentation patterns",
       keywords: "documentation",
     })
     const services = makeServices({ searchResults: [decoy] })
@@ -232,8 +232,8 @@ describe("findExistingDebtTask (idempotency probe)", () => {
 
   it("returns a marker-bearing task whose projectIds are empty when probed under --project", async () => {
     // Cross-scope reuse: task was created during a vault-wide
-    // `lore debt create-tasks` (no `--project`), so its `projectIds`
-    // is empty. A subsequent `lore debt create-tasks --project Mail`
+    // `kennen debt create-tasks` (no `--project`), so its `projectIds`
+    // is empty. A subsequent `kennen debt create-tasks --project Mail`
     // probes with `projectId: "proj-a"`. `MemoryService.search`
     // applies `projectOrUnscopedFilter` (`Project relation contains
     // proj-a OR Project is_empty`), so the unscoped task surfaces
@@ -377,7 +377,7 @@ describe("findExistingDebtTask (idempotency probe)", () => {
     const item = makeDebtItem({ id: "orphan_fact::abc-123" })
     const decoy = makeMemory({
       id: "task-decoy",
-      title: "lore-debt-id documentation patterns",
+      title: "kennen-debt-id documentation patterns",
       keywords: "no-marker-here",
       status: "informational",
     })
@@ -427,7 +427,7 @@ describe("findExistingDebtTask (idempotency probe)", () => {
       memories: {
         search: vi.fn(async () => [sharedRow]),
       },
-    } as unknown as LoreServices
+    } as unknown as KennenServices
     const result = await findExistingDebtTask(services, item, "proj-a")
     expect(result).toBeNull()
     // All three passes ran (no marker-bearing short-circuit).
@@ -888,7 +888,7 @@ describe("renderDebtMarkdown", () => {
     expect(markdown).not.toContain("The vault is clean.")
     expect(markdown).toContain("scope-anomaly probe degraded")
     expect(markdown).toContain("pre-#283 vault")
-    expect(markdown).toContain("lore migrate")
+    expect(markdown).toContain("kennen migrate")
   })
 
   it("surfaces BOTH the capped warning AND the degraded note when both fire", () => {
@@ -904,10 +904,10 @@ describe("renderDebtMarkdown", () => {
     expect(markdown).toContain("scope-anomaly probe degraded")
   })
 
-  it("does NOT recommend `lore migrate` when the scope-anomaly category was filtered out", () => {
+  it("does NOT recommend `kennen migrate` when the scope-anomaly category was filtered out", () => {
     // Issue #585 round-7 review blocker: a category-filtered empty
     // scan that excluded scope_anomaly is NOT a degraded probe; the
-    // renderer must not surface the `lore migrate` prompt.
+    // renderer must not surface the `kennen migrate` prompt.
     // `scopeAnomalies: null` paired with `scopeAnomalyProbeSkipped:
     // true` is the disambiguator — the renderer keys on the boolean,
     // not on `null` alone.
@@ -919,11 +919,11 @@ describe("renderDebtMarkdown", () => {
     })
     const markdown = renderDebtMarkdown(report)
     expect(markdown).toContain("The vault is clean.")
-    expect(markdown).not.toContain("lore migrate")
+    expect(markdown).not.toContain("kennen migrate")
     expect(markdown).not.toContain("pre-#283 vault")
   })
 
-  it("recommends `lore migrate` when scope-anomaly was selected AND probe degraded", () => {
+  it("recommends `kennen migrate` when scope-anomaly was selected AND probe degraded", () => {
     // Companion to the test above: scopeAnomalyProbeSkipped = false
     // + scopeAnomalies = null IS the load-bearing degraded-probe
     // signal. The renderer must surface it.
@@ -936,6 +936,6 @@ describe("renderDebtMarkdown", () => {
     const markdown = renderDebtMarkdown(report)
     expect(markdown).not.toContain("The vault is clean.")
     expect(markdown).toContain("scope-anomaly probe degraded")
-    expect(markdown).toContain("lore migrate")
+    expect(markdown).toContain("kennen migrate")
   })
 })

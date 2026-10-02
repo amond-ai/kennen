@@ -23,7 +23,7 @@ describe("resolveFeatureFlags", () => {
     })
   })
 
-  it("uses .lore.yaml features when env does not override them", () => {
+  it("uses .kennen.yaml features when env does not override them", () => {
     expect(
       resolveFeatureFlags(
         {},
@@ -58,10 +58,10 @@ describe("resolveFeatureFlags", () => {
   it("lets rollback kill-switch env vars force config-enabled env-backed features off", () => {
     const flags = resolveFeatureFlags(
       {
-        LORE_DISABLE_AUTO_MENTIONS: "1",
-        LORE_DISABLE_NEAR_DUPLICATE_PROBE: "1",
-        LORE_DISABLE_LEARNING_EXTRACTION: "1",
-        LORE_FORCE_SEMANTIC_SEARCH: "1",
+        KENNEN_DISABLE_AUTO_MENTIONS: "1",
+        KENNEN_DISABLE_NEAR_DUPLICATE_PROBE: "1",
+        KENNEN_DISABLE_LEARNING_EXTRACTION: "1",
+        KENNEN_FORCE_SEMANTIC_SEARCH: "1",
       },
       {
         features: {
@@ -86,7 +86,7 @@ describe("resolveFeatureFlags", () => {
     ).toBe(false)
     expect(
       resolveFeatureFlags(
-        { LORE_DISABLE_QUERY_PLANNING: "1" },
+        { KENNEN_DISABLE_QUERY_PLANNING: "1" },
         { features: { queryPlanning: true } }
       ).queryPlanning
     ).toBe(true)
@@ -95,9 +95,9 @@ describe("resolveFeatureFlags", () => {
   it("preserves RunTool parent inheritance and explicit sub-flag overrides", () => {
     const flags = resolveFeatureFlags(
       {
-        LORE_USE_RUNTOOL: "0",
-        LORE_USE_RUNTOOL_SEARCH: "1",
-        LORE_USE_RUNTOOL_AGGREGATE: "0",
+        KENNEN_USE_RUNTOOL: "0",
+        KENNEN_USE_RUNTOOL_SEARCH: "1",
+        KENNEN_USE_RUNTOOL_AGGREGATE: "0",
       },
       {
         features: {
@@ -122,7 +122,7 @@ describe("resolveFeatureFlags", () => {
   it("keeps RunTool batch creates strict for env while allowing config opt-in", () => {
     expect(
       resolveFeatureFlags(
-        { LORE_USE_RUNTOOL_BATCH_CREATES: "true" },
+        { KENNEN_USE_RUNTOOL_BATCH_CREATES: "true" },
         { features: { runTool: { batchCreates: true } } }
       ).runTool.batchCreates
     ).toBe(false)

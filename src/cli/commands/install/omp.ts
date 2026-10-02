@@ -28,7 +28,7 @@ export async function runOmpInstall(
 ): Promise<void> {
   const ompMcpJson = await readJsonSafe(ompMcpPath)
   const mcpServers = (ompMcpJson.mcpServers ?? {}) as Record<string, unknown>
-  const existingMcp = mcpServers["lore"] as Record<string, unknown> | undefined
+  const existingMcp = mcpServers["kennen"] as Record<string, unknown> | undefined
 
   const binShape: BinDispatchShape = context.yarnPnp ? "yarn" : "bare"
   const binMcpEntry = buildClaudeMcpEntry(
@@ -67,7 +67,7 @@ export async function runOmpInstall(
   }
 
   console.log()
-  const proceed = await confirm(rl, "Install Lore OMP integration for this project?")
+  const proceed = await confirm(rl, "Install Kennen OMP integration for this project?")
   if (!proceed) {
     console.log("  Skipped.")
     return
@@ -79,7 +79,7 @@ export async function runOmpInstall(
   }
   merged.mcpServers = {
     ...((ompMcpJson.mcpServers as Record<string, unknown>) ?? {}),
-    lore: desiredMcpEntry,
+    kennen: desiredMcpEntry,
   }
 
   console.log()
@@ -91,7 +91,7 @@ export async function runOmpInstall(
     `  MCP server:        ${postWriteLabel(mcpStatus, context.legacyPaths)} (${ompMcpDisplay})`
   )
   console.log(
-    "  This integration exposes Lore's MCP tools but installs no Lore lifecycle hooks."
+    "  This integration exposes Kennen's MCP tools but installs no Kennen lifecycle hooks."
   )
   console.log("  Restart OMP or run `/mcp reload` for changes to take effect.")
 }

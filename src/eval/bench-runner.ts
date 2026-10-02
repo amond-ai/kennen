@@ -4,8 +4,8 @@
  * Per-example flow:
  *  1. Project create — sub-project `lme-<exampleId>-<runId>` under the
  *     sandbox vault.
- *  2. Spawn a write-budget-capped Lore MCP server child via
- *     `lore mcp --write-budget <N> --budget-state-file <path>`.
+ *  2. Spawn a write-budget-capped Kennen MCP server child via
+ *     `kennen mcp --write-budget <N> --budget-state-file <path>`.
  *  3. Replay the haystack's sessions through `runConversationMining`.
  *  4. Invoke the bench-mode CodexAgentAdapter (sentinel-marked
  *     workspace) to answer the question against the seeded vault.
@@ -18,9 +18,9 @@
  * accuracy, failure breakdown, cost summary, cleanup-failure list,
  * and the temporalFidelity + diagnosticCount caveats verbatim.
  *
- * Safety gates: `LORE_EVAL_BENCH_REAL=1`, sandbox-name regex, required
- * env vars (`LORE_BENCH_NOTION_TOKEN` / `LORE_BENCH_OPENAI_API_KEY` /
- * `LORE_BENCH_CONFIG_ROOT` / `LORE_BENCH_SANDBOX_PROJECT_NAME`),
+ * Safety gates: `KENNEN_EVAL_BENCH_REAL=1`, sandbox-name regex, required
+ * env vars (`KENNEN_BENCH_NOTION_TOKEN` / `KENNEN_BENCH_OPENAI_API_KEY` /
+ * `KENNEN_BENCH_CONFIG_ROOT` / `KENNEN_BENCH_SANDBOX_PROJECT_NAME`),
  * per-example + per-suite write caps, cost cap.
  */
 
@@ -129,20 +129,20 @@ const PRODUCTION_NAME_REGEX = /\bproduction\b|\bprod\b/i
  * defense-in-depth for accidental bearer-shaped output.
  *
  * Operators should ALSO use a per-run, easily-revoked bench token
- * (the `LORE_BENCH_NOTION_TOKEN` env name is deliberately distinct
+ * (the `KENNEN_BENCH_NOTION_TOKEN` env name is deliberately distinct
  * from `NOTION_API_TOKEN` for that reason); this filter is a second
  * layer.
  */
 const TOOL_DRIVEN_SHELL_SHIM_INSTRUCTIONS = [
-  "## Lore tool access",
+  "## Kennen tool access",
   "",
-  "For this bench run, Lore read tools are available as executable commands in PATH.",
+  "For this bench run, Kennen read tools are available as executable commands in PATH.",
   "Use key=value arguments:",
   "",
-  '- `lore-query action=search query="<keywords>" limit=10 mode=hybrid`',
-  "- `lore-query action=recall limit=10`",
-  "- `lore-memory action=expand ids=latest`",
-  "- `lore-memory action=expand ids=m1,m2,m3`",
+  '- `kennen-query action=search query="<keywords>" limit=10 mode=hybrid`',
+  "- `kennen-query action=recall limit=10`",
+  "- `kennen-memory action=expand ids=latest`",
+  "- `kennen-memory action=expand ids=m1,m2,m3`",
   "",
   "Search and recall output lists stable handles such as m1 and m2; after a search or recall, expand the latest result set or relevant handles before answering.",
   "Do not abbreviate memory IDs; prefer ids=latest or listed handles.",
@@ -156,7 +156,7 @@ const TOOL_DRIVEN_SHELL_SHIM_INSTRUCTIONS = [
 const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 /**
  * Regex character class matching the Crockford base32 alphabet
- * Lore's ULIDs use. Single source of truth so the `CROCKFORD` lookup
+ * Kennen's ULIDs use. Single source of truth so the `CROCKFORD` lookup
  * table, the standalone-ULID matcher, and the sub-project-name
  * regex don't drift independently.
  */
@@ -216,7 +216,7 @@ export interface BenchSandbox {
    */
   readonly authSource: import("../config.js").AuthSource
   /**
-   * Profile selector resolved by the sandbox's live Lore services.
+   * Profile selector resolved by the sandbox's live Kennen services.
    * Profile-declared bench suites must match this before they write.
    */
   readonly activeProfileSelector: string
@@ -258,7 +258,7 @@ export interface BenchSandbox {
    * the bench-runner calls this BEFORE invoking the agent and injects
    * the rendered output as a system-prompt addendum so the agent
    * answers from pre-retrieved context, no MCP tool calls required.
-   * Mirrors how Lore's wake-up hook works at session start.
+   * Mirrors how Kennen's wake-up hook works at session start.
    *
    * Production impl calls `loadWakeUpData({ mode: "task-only",
    * projectId, userQuery, includeMemoryContent: true })` against the
@@ -328,10 +328,10 @@ export interface RunBenchResult {
 }
 
 /**
- * Snapshot of the operator's `NOTION_API_TOKEN` / `LORE_CONFIG_ROOT`
+ * Snapshot of the operator's `NOTION_API_TOKEN` / `KENNEN_CONFIG_ROOT`
  * env state captured at bench entry. The bench is authoritative for
  * the duration of the run — `assertBenchEnvReady` overwrites both
- * keys with their `LORE_BENCH_*` counterparts, and the caller
+ * keys with their `KENNEN_BENCH_*` counterparts, and the caller
  * (`runBenchSuite`) restores this snapshot in a `finally` so a local
  * operator's day-to-day token does NOT participate in the run AND
  * does NOT survive past it. Without this, the in-process services
@@ -341,12 +341,12 @@ export interface RunBenchResult {
  */
 export interface BenchEnvRestore {
   notionApiToken: string | undefined
-  loreConfigRoot: string | undefined
+  kennenConfigRoot: string | undefined
 }
 
 /**
  * Read and validate the required bench env vars at entry, then
- * authoritatively overwrite `NOTION_API_TOKEN` and `LORE_CONFIG_ROOT`
+ * authoritatively overwrite `NOTION_API_TOKEN` and `KENNEN_CONFIG_ROOT`
  * with the bench-scoped values. Returns the captured pre-bench state
  * so `runBenchSuite` can restore on exit.
  *
@@ -364,25 +364,25 @@ export function assertBenchEnvReady(): BenchEnvRestore {
   // expected to call `restoreBenchEnv(snapshot)` in a `finally`.
   const snapshot: BenchEnvRestore = {
     notionApiToken: process.env["NOTION_API_TOKEN"],
-    loreConfigRoot: process.env["LORE_CONFIG_ROOT"],
+    kennenConfigRoot: process.env["KENNEN_CONFIG_ROOT"],
   }
-  if (process.env["LORE_EVAL_BENCH_REAL"] !== "1") {
+  if (process.env["KENNEN_EVAL_BENCH_REAL"] !== "1") {
     throw new Error(
-      "LORE_EVAL_BENCH_REAL=1 is required to run the bench against real APIs. " +
+      "KENNEN_EVAL_BENCH_REAL=1 is required to run the bench against real APIs. " +
         "Set it explicitly when invoking the runner — never default it on."
     )
   }
   const required = [
-    "LORE_BENCH_NOTION_TOKEN",
-    "LORE_BENCH_OPENAI_API_KEY",
-    "LORE_BENCH_CONFIG_ROOT",
-    "LORE_BENCH_SANDBOX_PROJECT_NAME",
+    "KENNEN_BENCH_NOTION_TOKEN",
+    "KENNEN_BENCH_OPENAI_API_KEY",
+    "KENNEN_BENCH_CONFIG_ROOT",
+    "KENNEN_BENCH_SANDBOX_PROJECT_NAME",
   ]
   const missing = required.filter((key) => !process.env[key])
   if (missing.length > 0) {
     throw new Error(
       `Bench missing required env: ${missing.join(", ")}. Set every ` +
-        `LORE_BENCH_* secret before running the bench.`
+        `KENNEN_BENCH_* secret before running the bench.`
     )
   }
   // Bench mode is authoritative — overwrite regardless of whether
@@ -401,8 +401,8 @@ export function assertBenchEnvReady(): BenchEnvRestore {
   // retrieval path runs under the bench token — split-brain auth on
   // a single artifact, potentially targeting the wrong vault for
   // sandbox create / archive.
-  process.env["NOTION_API_TOKEN"] = process.env["LORE_BENCH_NOTION_TOKEN"]
-  process.env["LORE_CONFIG_ROOT"] = process.env["LORE_BENCH_CONFIG_ROOT"]
+  process.env["NOTION_API_TOKEN"] = process.env["KENNEN_BENCH_NOTION_TOKEN"]
+  process.env["KENNEN_CONFIG_ROOT"] = process.env["KENNEN_BENCH_CONFIG_ROOT"]
   return snapshot
 }
 
@@ -417,10 +417,10 @@ export function restoreBenchEnv(snapshot: BenchEnvRestore): void {
   } else {
     process.env["NOTION_API_TOKEN"] = snapshot.notionApiToken
   }
-  if (snapshot.loreConfigRoot === undefined) {
-    delete process.env["LORE_CONFIG_ROOT"]
+  if (snapshot.kennenConfigRoot === undefined) {
+    delete process.env["KENNEN_CONFIG_ROOT"]
   } else {
-    process.env["LORE_CONFIG_ROOT"] = snapshot.loreConfigRoot
+    process.env["KENNEN_CONFIG_ROOT"] = snapshot.kennenConfigRoot
   }
 }
 
@@ -477,7 +477,7 @@ export function assertBenchSandboxProfileMatchesSuite(input: {
  *   server-side.
  *
  * `--write-budget` and `--budget-state-file` flow through the MCP
- * server's CLI flags inside `mcp_servers.lore.args` so the spawned
+ * server's CLI flags inside `mcp_servers.kennen.args` so the spawned
  * MCP child installs `wrapWithWriteBudget` between the rate-limit
  * proxy and the Notion SDK. Without this, the 500-per-example safety
  * gate is inert: the proxy would never fire and `writeBudgetExceeded`
@@ -493,11 +493,11 @@ export async function buildBenchWorkspace(input: {
 }): Promise<void> {
   const workspace = input.workspace
   const token = process.env["NOTION_API_TOKEN"]
-  const configRoot = process.env["LORE_CONFIG_ROOT"]
+  const configRoot = process.env["KENNEN_CONFIG_ROOT"]
   if (!token || token.length === 0 || !configRoot || configRoot.length === 0) {
     throw new Error(
-      "buildBenchWorkspace: NOTION_API_TOKEN and LORE_CONFIG_ROOT must be set " +
-        "in process.env (assertBenchEnvReady writes both from the LORE_BENCH_* sources). " +
+      "buildBenchWorkspace: NOTION_API_TOKEN and KENNEN_CONFIG_ROOT must be set " +
+        "in process.env (assertBenchEnvReady writes both from the KENNEN_BENCH_* sources). " +
         "Refusing to build a bench workspace without auth."
     )
   }
@@ -513,7 +513,7 @@ export async function buildBenchWorkspace(input: {
   await mkdir(join(workspace, ".codex"), { mode: 0o700, recursive: true })
   // Non-shim workspaces keep the MCP config on disk because
   // `transport = "stdio"` is required as of Codex 0.128.0, and
-  // `-c mcp_servers.lore.*` overrides collapse partial tables in
+  // `-c mcp_servers.kennen.*` overrides collapse partial tables in
   // that release line. Tool-shim workspaces deliberately omit the
   // MCP table so the readable workspace never contains the Notion
   // bearer when the evaluated agent has shell access.
@@ -536,14 +536,14 @@ export async function buildBenchWorkspace(input: {
       ? [
           `model = "${BENCH_AGENT_MODEL}"`,
           ``,
-          `[mcp_servers.lore]`,
+          `[mcp_servers.kennen]`,
           `transport = "stdio"`,
-          `command = "lore"`,
+          `command = "kennen"`,
           `args = ["mcp", "--write-budget", "${input.perExampleWrites}", "--budget-state-file", "${tomlEscape(input.budgetStateFile)}"]`,
           ``,
-          `[mcp_servers.lore.env]`,
+          `[mcp_servers.kennen.env]`,
           `NOTION_API_TOKEN = "${tomlEscape(token)}"`,
-          `LORE_CONFIG_ROOT = "${tomlEscape(configRoot)}"`,
+          `KENNEN_CONFIG_ROOT = "${tomlEscape(configRoot)}"`,
           ...renderBenchNotionSelectorEnv(tomlEscape),
           ``,
         ].join("\n")
@@ -558,12 +558,12 @@ export async function buildBenchWorkspace(input: {
 
 function renderBenchNotionSelectorEnv(tomlEscape: (value: string) => string): string[] {
   const keys = [
-    "LORE_NOTION_BASE_URL",
+    "KENNEN_NOTION_BASE_URL",
     "NOTION_WORKSPACE_ID",
     "NOTION_ENV",
     "NOTION_BASE_URL",
     "NOTION_API_BASE_URL",
-    "LORE_USER_NAME",
+    "KENNEN_USER_NAME",
   ] as const
   return keys.flatMap((key) => {
     const value = process.env[key]
@@ -574,7 +574,7 @@ function renderBenchNotionSelectorEnv(tomlEscape: (value: string) => string): st
 async function writeBenchToolShims(workspace: string): Promise<void> {
   const dir = join(workspace, BENCH_TOOL_SHIM_DIR)
   await mkdir(dir, { recursive: true, mode: 0o700 })
-  for (const tool of ["lore-query", "lore-memory"]) {
+  for (const tool of ["kennen-query", "kennen-memory"]) {
     const path = join(dir, tool)
     await writeFile(path, renderBenchToolShim(tool), { mode: 0o700 })
     await chmod(path, 0o700).catch(() => undefined)
@@ -585,10 +585,10 @@ function renderBenchToolShim(tool: string): string {
   return [
     "#!/bin/sh",
     "set -eu",
-    `if [ -n "\${LORE_BENCH_TOOL_CLI_JS:-}" ]; then`,
-    `  exec "\${LORE_BENCH_TOOL_NODE:-node}" "$LORE_BENCH_TOOL_CLI_JS" eval bench tool ${tool} "$@"`,
+    `if [ -n "\${KENNEN_BENCH_TOOL_CLI_JS:-}" ]; then`,
+    `  exec "\${KENNEN_BENCH_TOOL_NODE:-node}" "$KENNEN_BENCH_TOOL_CLI_JS" eval bench tool ${tool} "$@"`,
     "fi",
-    `exec lore eval bench tool ${tool} "$@"`,
+    `exec kennen eval bench tool ${tool} "$@"`,
     "",
   ].join("\n")
 }
@@ -865,8 +865,8 @@ export async function runBenchExample(input: {
    */
   perExampleWrites: number
   /**
-   * `lore-mine` (V1 default) routes through `runConversationMining`
-   * — claude-p spawn → Lore MCP → autosave's durable-knowledge
+   * `kennen-mine` (V1 default) routes through `runConversationMining`
+   * — claude-p spawn → Kennen MCP → autosave's durable-knowledge
    * filter. `raw-transcript` writes one verbatim memory per session
    * directly via the sandbox's `createMemoryInProject`, bypassing
    * the autosave filter to preserve full transcript fidelity.
@@ -879,7 +879,7 @@ export async function runBenchExample(input: {
   extractionMaxTokens?: number
   tagVocabulary?: readonly string[]
   /**
-   * `tool-driven` (V1 default): agent receives live Lore command
+   * `tool-driven` (V1 default): agent receives live Kennen command
    * shims and decides when to call them during the answer attempt.
    * `wake-up-prefetch`: bench-runner calls
    * `sandbox.getWakeUpForQuery` before the agent runs and injects
@@ -897,7 +897,7 @@ export async function runBenchExample(input: {
   // Sub-project names (`lme-<exampleId>-<ulid>`) do not carry a
   // sandbox marker themselves — the safety boundary is the *parent*
   // project, which `runBenchSuite` validates once at the top of the
-  // run via `LORE_BENCH_SANDBOX_PROJECT_NAME`.
+  // run via `KENNEN_BENCH_SANDBOX_PROJECT_NAME`.
   const projectName = makeSubProjectName(input.example.question_id, input.runId)
   let projectId: string
   try {
@@ -944,14 +944,14 @@ export async function runBenchExample(input: {
   // consumer running in the same Node process after the bench loop
   // (an artifact-validation pass, a future test importing
   // `runBenchExample`, an embedded `initServices()` call) would
-  // inherit `LORE_MCP_WRITE_BUDGET` / `LORE_MCP_BUDGET_STATE_FILE`
+  // inherit `KENNEN_MCP_WRITE_BUDGET` / `KENNEN_MCP_BUDGET_STATE_FILE`
   // and silently install `wrapWithWriteBudget` against production
   // traffic.
-  const priorBudgetEnv = process.env["LORE_MCP_WRITE_BUDGET"]
-  const priorBudgetStateEnv = process.env["LORE_MCP_BUDGET_STATE_FILE"]
+  const priorBudgetEnv = process.env["KENNEN_MCP_WRITE_BUDGET"]
+  const priorBudgetStateEnv = process.env["KENNEN_MCP_BUDGET_STATE_FILE"]
   try {
-    workspace = await mkdtemp(join(tmpdir(), "lore-bench-"))
-    traceDir = await mkdtemp(join(tmpdir(), "lore-bench-trace-"))
+    workspace = await mkdtemp(join(tmpdir(), "kennen-bench-"))
+    traceDir = await mkdtemp(join(tmpdir(), "kennen-bench-trace-"))
     // Compute the budget-state file path BEFORE writing
     // .codex/config.toml so the same path is baked into the MCP
     // child's argv AND read back by the mining seam / bench-runner.
@@ -959,12 +959,12 @@ export async function runBenchExample(input: {
     const toolTraceFile = join(traceDir, BENCH_TOOL_TRACE_FILE)
     // Export the write-budget pair into this process's env so the
     // mining child's `buildSafeEnv` forwards them through `claude -p`
-    // → spawned `lore mcp`. Without this the MCP server the mining
+    // → spawned `kennen mcp`. Without this the MCP server the mining
     // child uses never installs the proxy and the cap is inert for
     // the ingest phase (the Codex agent gets the cap via its own
     // `.codex/config.toml` argv).
-    process.env["LORE_MCP_WRITE_BUDGET"] = String(input.perExampleWrites)
-    process.env["LORE_MCP_BUDGET_STATE_FILE"] = budgetStateFile
+    process.env["KENNEN_MCP_WRITE_BUDGET"] = String(input.perExampleWrites)
+    process.env["KENNEN_MCP_BUDGET_STATE_FILE"] = budgetStateFile
     await buildBenchWorkspace({
       workspace,
       budgetStateFile,
@@ -972,11 +972,11 @@ export async function runBenchExample(input: {
       enableToolShims: input.agentRetrieval === "tool-driven",
     })
 
-    // Mining children cwd into LORE_BENCH_CONFIG_ROOT so their
-    // upward `.lore.yaml` walk hits the bench config. `buildSafeEnv`
-    // does not forward `LORE_CONFIG_ROOT`, so the cwd is the only
+    // Mining children cwd into KENNEN_BENCH_CONFIG_ROOT so their
+    // upward `.kennen.yaml` walk hits the bench config. `buildSafeEnv`
+    // does not forward `KENNEN_CONFIG_ROOT`, so the cwd is the only
     // discovery channel for the mining child.
-    const miningCwd = process.env["LORE_BENCH_CONFIG_ROOT"] ?? workspace
+    const miningCwd = process.env["KENNEN_BENCH_CONFIG_ROOT"] ?? workspace
     let ingest: BenchIngestResult
     if (input.ingestionStrategy === "raw-transcript") {
       ingest = await runBenchRawTranscriptIngest({
@@ -1127,7 +1127,7 @@ export async function runBenchExample(input: {
       const toolBroker =
         input.agentRetrieval === "tool-driven"
           ? await startBenchToolBroker({
-              socketPath: join(workspace, "lore-tool-broker.sock"),
+              socketPath: join(workspace, "kennen-tool-broker.sock"),
               traceFile: toolTraceFile,
               projectId,
               projectName,
@@ -1247,16 +1247,16 @@ export async function runBenchExample(input: {
     }
   } finally {
     // Restore the operator's pre-example env for the
-    // LORE_MCP_WRITE_BUDGET / LORE_MCP_BUDGET_STATE_FILE pair so a
+    // KENNEN_MCP_WRITE_BUDGET / KENNEN_MCP_BUDGET_STATE_FILE pair so a
     // non-bench consumer running later in the same Node process
     // doesn't inherit them. The pair was intentionally mutated for
     // the mining child's `buildSafeEnv` forward; this restore puts
     // it back exactly.
-    if (priorBudgetEnv === undefined) delete process.env["LORE_MCP_WRITE_BUDGET"]
-    else process.env["LORE_MCP_WRITE_BUDGET"] = priorBudgetEnv
+    if (priorBudgetEnv === undefined) delete process.env["KENNEN_MCP_WRITE_BUDGET"]
+    else process.env["KENNEN_MCP_WRITE_BUDGET"] = priorBudgetEnv
     if (priorBudgetStateEnv === undefined)
-      delete process.env["LORE_MCP_BUDGET_STATE_FILE"]
-    else process.env["LORE_MCP_BUDGET_STATE_FILE"] = priorBudgetStateEnv
+      delete process.env["KENNEN_MCP_BUDGET_STATE_FILE"]
+    else process.env["KENNEN_MCP_BUDGET_STATE_FILE"] = priorBudgetStateEnv
     // BOTH workspace cleanup AND project archive belong in this
     // finally so a synchronous throw inside the work (e.g. a fault
     // between `createSubProject` and the `result` assignment) cannot
@@ -1334,7 +1334,7 @@ async function runBenchSuiteUnderBenchEnv(
   // Validate the parent sandbox project name once before any
   // per-example work. Sub-projects inherit the safety guarantee from
   // being created under this parent.
-  assertSandboxProjectName(process.env["LORE_BENCH_SANDBOX_PROJECT_NAME"] ?? "")
+  assertSandboxProjectName(process.env["KENNEN_BENCH_SANDBOX_PROJECT_NAME"] ?? "")
   const loadedSuite = await loadBenchSuite(options.suitePath)
   const suite = loadedSuite.suite
   const profile = suite.profile
@@ -1359,7 +1359,7 @@ async function runBenchSuiteUnderBenchEnv(
   const pricing =
     options.pricing ??
     (await loadBenchPricing(
-      process.env["LORE_BENCH_PRICING_PATH"] ?? resolveAsset("evals/bench/pricing.json")
+      process.env["KENNEN_BENCH_PRICING_PATH"] ?? resolveAsset("evals/bench/pricing.json")
     ))
   const judgePrompts =
     options.judgePrompts ??
@@ -1390,10 +1390,10 @@ async function runBenchSuiteUnderBenchEnv(
   const extractionPromptSha256 = extractionPrompt ? sha256Hex(extractionPrompt) : null
   const judgeClient =
     options.judgeClient ??
-    new FetchOpenAIChatClient(process.env["LORE_BENCH_OPENAI_API_KEY"] ?? "")
+    new FetchOpenAIChatClient(process.env["KENNEN_BENCH_OPENAI_API_KEY"] ?? "")
   const extractionClient =
     options.extractionClient ??
-    new FetchBenchExtractionClient(process.env["LORE_BENCH_OPENAI_API_KEY"] ?? "")
+    new FetchBenchExtractionClient(process.env["KENNEN_BENCH_OPENAI_API_KEY"] ?? "")
   const agentAdapter = options.agentAdapter ?? new CodexAgentAdapter()
   const now = options.now ?? (() => new Date())
   const startedAt = now().toISOString()
@@ -1505,7 +1505,7 @@ async function runBenchSuiteUnderBenchEnv(
       const finishedAt = now().toISOString()
       const abortReason =
         `tool-driven retrieval skipped for adapter "${agentAdapter.id}": ` +
-        (support.reason ?? "live Lore tools are unsupported")
+        (support.reason ?? "live Kennen tools are unsupported")
       log.warn(abortReason)
       const summary: BenchSummary = {
         configHash,
@@ -1577,20 +1577,20 @@ async function runBenchSuiteUnderBenchEnv(
 
   const agentPricing = getModelPricing(pricing, BENCH_AGENT_MODEL)
   const judgePricing = getModelPricing(pricing, JUDGE_MODEL)
-  const costCapRaw = process.env["LORE_EVAL_BENCH_MAX_USD"] ?? "75"
+  const costCapRaw = process.env["KENNEN_EVAL_BENCH_MAX_USD"] ?? "75"
   // Strict decimal-number parse. `Number.parseFloat` admits trailing
   // junk (`75oops` → `75`); the bench's cost gate must reject any
   // input that isn't entirely numeric so a typo doesn't silently
   // disable the cap.
   if (!/^\d+(\.\d+)?$/.test(costCapRaw)) {
     throw new Error(
-      `LORE_EVAL_BENCH_MAX_USD must be a positive decimal number, got "${costCapRaw}"`
+      `KENNEN_EVAL_BENCH_MAX_USD must be a positive decimal number, got "${costCapRaw}"`
     )
   }
   const costCapUsd = Number.parseFloat(costCapRaw)
   if (!Number.isFinite(costCapUsd) || costCapUsd <= 0) {
     throw new Error(
-      `LORE_EVAL_BENCH_MAX_USD must be a positive finite number, got "${costCapRaw}"`
+      `KENNEN_EVAL_BENCH_MAX_USD must be a positive finite number, got "${costCapRaw}"`
     )
   }
 
@@ -1793,9 +1793,9 @@ function round2(n: number): number {
 }
 
 /**
- * Walk upward from the suite path looking for the Lore repo root.
+ * Walk upward from the suite path looking for the Kennen repo root.
  * Found when the directory contains a `package.json` whose `name` is
- * `@notionhq/lore`. Falls back to `process.cwd()` so a suite YAML
+ * `@amond-ai/kennen`. Falls back to `process.cwd()` so a suite YAML
  * authored outside the repo (smoke runs, ad-hoc operator runs) still
  * resolves its asset paths against the cwd if the cwd is the repo
  * root.
@@ -1809,7 +1809,7 @@ async function findRepoRoot(suitePath: string): Promise<string> {
     try {
       const text = await readFile(pkgPath, "utf-8")
       const parsed = JSON.parse(text) as { name?: unknown }
-      if (parsed.name === "@notionhq/lore") return dir
+      if (parsed.name === "@amond-ai/kennen") return dir
     } catch {
       // keep walking
     }
@@ -1856,7 +1856,7 @@ export function extractUlidFromSubProjectName(name: string): string | null {
 /**
  * Filter a list of (name, id) sub-projects to those whose embedded
  * ULID timestamp is older than `cutoffMs`. Used by the
- * `lore eval bench cleanup-orphans` CLI.
+ * `kennen eval bench cleanup-orphans` CLI.
  */
 export function filterOrphanSubProjects(
   projects: Array<{ name: string; id: string }>,

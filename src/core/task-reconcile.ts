@@ -42,7 +42,7 @@ export const RECONCILE_PER_TASK_LIMIT = 5
  * the eligible set still has headroom when the top hits are dominated
  * by task / decision rows (which the post-filter drops). Capped at 20
  * to bound search-response payload. Mirrors the same posture used by
- * `lore-task action='list'` and the wake-up data loader's bucket
+ * `kennen-task action='list'` and the wake-up data loader's bucket
  * over-fetch.
  */
 export const RECONCILE_INDEX_OVERFETCH = 4
@@ -70,7 +70,7 @@ export const DEFAULT_RECONCILE_MIN_SCORE = 0.5
 /**
  * Default cap on candidate closures surfaced per reconcile call.
  * Capped at `MAX_RECONCILE_LIMIT` (100) — the spec ceiling matches the
- * `lore-task action='list'` per-section cap so an operator who's
+ * `kennen-task action='list'` per-section cap so an operator who's
  * tuned their triage rhythm to one surface ports it directly to the
  * other.
  */
@@ -81,7 +81,7 @@ export const MAX_RECONCILE_LIMIT = 100
  * Resolution-shaped cues. Hard cues land 1.0 on the cueMatch axis;
  * soft cues land 0.5. Hard-coded list, fixture-pinned. Project-specific
  * verbs ("rolled out", "promoted", "GA'd") are not in the default cue
- * list and a future operator-tuning knob (.lore.yaml
+ * list and a future operator-tuning knob (.kennen.yaml
  * `reconcile.cues`) is the next step if real-vault feedback warrants
  * it. Out of scope for the initial reconcile surface.
  */
@@ -142,7 +142,7 @@ export interface ReconcileOptions {
 
 /**
  * Service surface the reconcile pass needs from
- * `LoreServices.tasks` / `LoreServices.memories`. Narrowed to the exact
+ * `KennenServices.tasks` / `KennenServices.memories`. Narrowed to the exact
  * methods consumed so test fixtures can supply plain stubs without
  * constructing the full services. Mirrors the `MemoryLister` / `TaskLister`
  * shape.
@@ -542,7 +542,7 @@ export function formatReconcileOutput(
     if (c.cueSnippet) {
       lines.push(`Cue: "${c.cueSnippet}"`)
     }
-    lines.push(`Close: lore-task({ action: 'close', taskId: '${c.task.id}' })`)
+    lines.push(`Close: kennen-task({ action: 'close', taskId: '${c.task.id}' })`)
     lines.push("")
   })
   // Drop the trailing blank line so the rendered output ends crisply.

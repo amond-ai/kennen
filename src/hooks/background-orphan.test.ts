@@ -12,8 +12,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.hoisted(() => {
-  process.env["LORE_HOOK_STATE_DIR"] =
-    `${process.env["TMPDIR"] ?? "/tmp"}/lore-bg-state-${process.pid}-${Date.now()}`
+  process.env["KENNEN_HOOK_STATE_DIR"] =
+    `${process.env["TMPDIR"] ?? "/tmp"}/kennen-bg-state-${process.pid}-${Date.now()}`
 })
 
 const { spawnMock, execFileSyncMock, tryAcquireMock, killMock } = vi.hoisted(() => ({
@@ -165,8 +165,8 @@ describe("spawnBackgroundSave LockPathTooLongError mapping (#485)", () => {
 
   it("emits a logLabel-aware stderr warning (default 'background save' label)", () => {
     // Pre-#485 the warning lived inside lock.ts and was hardcoded to
-    // `[lore] autosave: ...`. The digest path uses the same lock layer
-    // but is rendered as `[lore] digest: ...` everywhere else; emitting
+    // `[kennen] autosave: ...`. The digest path uses the same lock layer
+    // but is rendered as `[kennen] digest: ...` everywhere else; emitting
     // an "autosave" label on a digest spawn was the load-bearing bug
     // the reviewer flagged.
     const child = fakeChild()
@@ -182,10 +182,10 @@ describe("spawnBackgroundSave LockPathTooLongError mapping (#485)", () => {
       .filter((msg): msg is string => typeof msg === "string")
     const warning = calls.find((msg) => msg.includes("lock path too long"))
     expect(warning).toBeDefined()
-    expect(warning).toContain("[lore] background save:")
+    expect(warning).toContain("[kennen] background save:")
     expect(warning).toContain("ENAMETOOLONG")
     // Action knob must be the one operators can change.
-    expect(warning).toContain("LORE_HOOK_STATE_DIR")
+    expect(warning).toContain("KENNEN_HOOK_STATE_DIR")
   })
 
   it("emits a logLabel-aware stderr warning under a custom logLabel (digest)", () => {
@@ -202,7 +202,7 @@ describe("spawnBackgroundSave LockPathTooLongError mapping (#485)", () => {
       .filter((msg): msg is string => typeof msg === "string")
     const warning = calls.find((msg) => msg.includes("lock path too long"))
     expect(warning).toBeDefined()
-    expect(warning).toContain("[lore] digest:")
+    expect(warning).toContain("[kennen] digest:")
     // The lockKey echoes through so an operator can distinguish digest
     // from autosave warnings even without the prefix.
     expect(warning).toContain("digest-Widget")
@@ -236,7 +236,7 @@ describe("spawnBackgroundSave LockPathTooLongError mapping (#485)", () => {
   it("propagates the ENOENT code variant through the SpawnResult", () => {
     // The darwin ENOENT-via-segment variant is reclassified by the lock
     // layer with `code: "ENOENT"`. The caller must see that distinction
-    // so a future operator-facing surface (e.g. `lore status`) can
+    // so a future operator-facing surface (e.g. `kennen status`) can
     // disambiguate the platform path.
     const child = fakeChild()
     spawnMock.mockReturnValueOnce(child)

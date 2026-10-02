@@ -47,7 +47,7 @@ describe("suggestTopicKey — example table (issue 0.9.0/07)", () => {
       expected: "policy/code-review-min-reviewers",
     },
     {
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       kind: "state",
       expected: null,
     },
@@ -95,7 +95,7 @@ describe("suggestTopicKey — acceptance criteria (issue 0.9.0/07)", () => {
 
   it("returns null with a state-specific reason for kind='state'", () => {
     const result = suggestTopicKey({
-      title: "Lore auth current state",
+      title: "Kennen auth current state",
       kind: "state",
     })
     expect(result.key).toBeNull()

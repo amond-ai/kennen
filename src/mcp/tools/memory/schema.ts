@@ -113,7 +113,7 @@ export function createMemoryDispatchSchema(
       affectsIds: z.array(notionPageIdSchema).optional(),
       alternatives: richTextPropertySchema("alternatives").optional(),
       consequences: richTextPropertySchema("consequences").optional(),
-      // Same kebab-case regex as `lore-memory action='save'`'s
+      // Same kebab-case regex as `kennen-memory action='save'`'s
       // (forthcoming) topic-key parameter — the format contract is
       // identical across save and update.
       topicKey: z.string().regex(TOPIC_KEY_REGEX).optional(),

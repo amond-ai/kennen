@@ -3,7 +3,7 @@
  * production callers (`commands/init.ts` and `commands/install.ts`)
  * each have their own end-to-end coverage; this file pins the module's
  * own invariants — fragment coverage, structural drift guards against
- * `mergeHookDefaults`, and the `.lore.example.yaml` cross-check that
+ * `mergeHookDefaults`, and the `.kennen.example.yaml` cross-check that
  * keeps the static file in sync with the runtime strings.
  */
 import { readFile } from "node:fs/promises"
@@ -42,16 +42,16 @@ describe("HOOK_DISCLOSURE_ROWS", () => {
 
   it("supplies env overrides for autoSave / autoDigest / learningExtraction", () => {
     // `wakeUp` is intentionally missing — there's no env knob for
-    // it; the .lore.yaml flag is the only off-switch. The other
+    // it; the .kennen.yaml flag is the only off-switch. The other
     // three have widely-used env overrides (autosave runs use
-    // `LORE_AUTOSAVE=false`; auto-digest spawns honor
-    // `LORE_AUTO_DIGEST=false`; learning extraction has
-    // `LORE_DISABLE_LEARNING_EXTRACTION=1`).
+    // `KENNEN_AUTOSAVE=false`; auto-digest spawns honor
+    // `KENNEN_AUTO_DIGEST=false`; learning extraction has
+    // `KENNEN_DISABLE_LEARNING_EXTRACTION=1`).
     const byKnob = Object.fromEntries(HOOK_DISCLOSURE_ROWS.map((r) => [r.knob, r]))
-    expect(byKnob["autoSave"]?.envOverride).toBe("LORE_AUTOSAVE=false")
-    expect(byKnob["autoDigest"]?.envOverride).toBe("LORE_AUTO_DIGEST=false")
+    expect(byKnob["autoSave"]?.envOverride).toBe("KENNEN_AUTOSAVE=false")
+    expect(byKnob["autoDigest"]?.envOverride).toBe("KENNEN_AUTO_DIGEST=false")
     expect(byKnob["learningExtraction"]?.envOverride).toBe(
-      "LORE_DISABLE_LEARNING_EXTRACTION=1"
+      "KENNEN_DISABLE_LEARNING_EXTRACTION=1"
     )
     expect(byKnob["wakeUp"]?.envOverride).toBeUndefined()
   })
@@ -61,7 +61,7 @@ describe("buildOptOutHint", () => {
   it("returns two lines: the in-config knobs and the per-session env knobs", () => {
     const lines = buildOptOutHint()
     expect(lines).toHaveLength(2)
-    expect(lines[0]).toMatch(/^Disable in \.lore\.yaml with any of:/)
+    expect(lines[0]).toMatch(/^Disable in \.kennen\.yaml with any of:/)
     expect(lines[1]).toMatch(/^Per-session env overrides:/)
   })
 
@@ -143,24 +143,24 @@ describe("buildHookYamlCommentBefore (yaml-lib commentBefore shape)", () => {
   })
 })
 
-describe(".lore.example.yaml mirrors the shared module (cross-file drift guard)", () => {
+describe(".kennen.example.yaml mirrors the shared module (cross-file drift guard)", () => {
   it("includes every default-true hook description by knob name", async () => {
     // The static example file can't import the runtime module, so
     // this test enforces lockstep: every knob from the canonical
     // table must surface in the example yaml. A future copy edit
     // that drops `autoDigest` from the example fails this test
     // loudly.
-    const examplePath = join(REPO_ROOT, ".lore.example.yaml")
+    const examplePath = join(REPO_ROOT, ".kennen.example.yaml")
     const example = await readFile(examplePath, "utf-8")
     for (const row of HOOK_DISCLOSURE_ROWS) {
-      expect(example, `expected .lore.example.yaml to name ${row.knob}`).toContain(
+      expect(example, `expected .kennen.example.yaml to name ${row.knob}`).toContain(
         `- ${row.knob}:`
       )
     }
   })
 
   it("includes every env-override knob and the docs reference", async () => {
-    const examplePath = join(REPO_ROOT, ".lore.example.yaml")
+    const examplePath = join(REPO_ROOT, ".kennen.example.yaml")
     const example = await readFile(examplePath, "utf-8")
     for (const row of HOOK_DISCLOSURE_ROWS) {
       if (row.envOverride) {

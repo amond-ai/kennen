@@ -1,15 +1,15 @@
 import { access, appendFile, readFile, unlink } from "node:fs/promises"
 import { createConnection, createServer, type Server, type Socket } from "node:net"
 import { dirname, join, resolve } from "node:path"
-import { initServices, type LoreServices } from "../services.js"
+import { initServices, type KennenServices } from "../services.js"
 import type { Memory, SearchMode, SearchQueryPlan, SearchStrategy } from "../types.js"
 import type { BenchRetrievalCall } from "./bench-runner-types.js"
 import { redactBearerTokens } from "./bench-redaction.js"
 
-export const BENCH_TOOL_TRACE_ENV = "LORE_BENCH_TOOL_TRACE_FILE"
-export const BENCH_TOOL_PROJECT_ID_ENV = "LORE_BENCH_TOOL_PROJECT_ID"
-export const BENCH_TOOL_PROJECT_NAME_ENV = "LORE_BENCH_TOOL_PROJECT_NAME"
-export const BENCH_TOOL_SOCKET_ENV = "LORE_BENCH_TOOL_SOCKET"
+export const BENCH_TOOL_TRACE_ENV = "KENNEN_BENCH_TOOL_TRACE_FILE"
+export const BENCH_TOOL_PROJECT_ID_ENV = "KENNEN_BENCH_TOOL_PROJECT_ID"
+export const BENCH_TOOL_PROJECT_NAME_ENV = "KENNEN_BENCH_TOOL_PROJECT_NAME"
+export const BENCH_TOOL_SOCKET_ENV = "KENNEN_BENCH_TOOL_SOCKET"
 
 interface ParsedBenchToolArgs {
   action: string | null
@@ -84,7 +84,7 @@ export async function startBenchToolBroker(input: {
         `${JSON.stringify({
           exitCode: 1,
           stdout: "",
-          stderr: `lore bench tool broker failed: ${redactBearerTokens(
+          stderr: `kennen bench tool broker failed: ${redactBearerTokens(
             err instanceof Error ? err.message : String(err)
           )}\n`,
         } satisfies BenchToolExecutionResult)}\n`
@@ -351,22 +351,22 @@ async function closeServer(server: Server): Promise<void> {
 }
 
 async function dispatchBenchTool(
-  services: LoreServices,
+  services: KennenServices,
   tool: string,
   parsed: ParsedBenchToolArgs,
   env: NodeJS.ProcessEnv
 ): Promise<BenchToolRunResult> {
-  if (tool === "lore-query") {
+  if (tool === "kennen-query") {
     return dispatchBenchQuery(services, parsed, env)
   }
-  if (tool === "lore-memory") {
+  if (tool === "kennen-memory") {
     return dispatchBenchMemory(services, parsed, env)
   }
   throw new Error(`unsupported bench tool "${tool}"`)
 }
 
 async function dispatchBenchQuery(
-  services: LoreServices,
+  services: KennenServices,
   parsed: ParsedBenchToolArgs,
   env: NodeJS.ProcessEnv
 ): Promise<BenchToolRunResult> {
@@ -432,24 +432,24 @@ async function dispatchBenchQuery(
     }
     default:
       throw new Error(
-        `unsupported lore-query action "${parsed.action ?? ""}"; supported actions: search, recall`
+        `unsupported kennen-query action "${parsed.action ?? ""}"; supported actions: search, recall`
       )
   }
 }
 
 async function dispatchBenchMemory(
-  services: LoreServices,
+  services: KennenServices,
   parsed: ParsedBenchToolArgs,
   env: NodeJS.ProcessEnv
 ): Promise<BenchToolRunResult> {
   if (parsed.action !== "expand") {
     throw new Error(
-      `unsupported lore-memory action "${parsed.action ?? ""}"; supported actions: expand`
+      `unsupported kennen-memory action "${parsed.action ?? ""}"; supported actions: expand`
     )
   }
   const ids = await resolveBenchMemoryIds(memoryIdsFromArgs(parsed), env)
   if (ids.length === 0) {
-    throw new Error("lore-memory action=expand requires ids=<id1,id2>")
+    throw new Error("kennen-memory action=expand requires ids=<id1,id2>")
   }
   const projectId = requiredBenchProjectId(env)
   const memories = await Promise.all(ids.map((id) => services.memories.getById(id)))
@@ -538,7 +538,7 @@ async function resolveBenchMemoryIds(
       const latestSurface = await readLatestBenchMemorySurface(env)
       if (!latestSurface || latestSurface.length === 0) {
         throw new Error(
-          `memory set ${id} is not available; run lore-query search or recall first`
+          `memory set ${id} is not available; run kennen-query search or recall first`
         )
       }
       resolved.push(...latestSurface)
@@ -557,7 +557,7 @@ async function resolveBenchMemoryIds(
     handles ??= await readBenchMemoryHandleMap(env)
     if (handles.size === 0) {
       throw new Error(
-        `memory handle ${id} is not available; run lore-query search or recall first`
+        `memory handle ${id} is not available; run kennen-query search or recall first`
       )
     }
     const handle = `m${handleIndex + 1}`
@@ -623,7 +623,7 @@ async function readBenchMemoryHandleMap(
     try {
       const call = JSON.parse(line) as Partial<BenchRetrievalCall>
       if (
-        call.tool === "lore-query" &&
+        call.tool === "kennen-query" &&
         call.status === "success" &&
         Array.isArray(call.surfacedMemoryIds) &&
         call.surfacedMemoryIds.every((id) => typeof id === "string")
@@ -659,7 +659,7 @@ async function readLatestBenchMemorySurface(
     try {
       const call = JSON.parse(lines[index]!) as Partial<BenchRetrievalCall>
       if (
-        call.tool === "lore-query" &&
+        call.tool === "kennen-query" &&
         call.status === "success" &&
         Array.isArray(call.surfacedMemoryIds) &&
         call.surfacedMemoryIds.every((id) => typeof id === "string")
@@ -766,7 +766,7 @@ function benchMemoryExpansionHint(context?: BenchToolRenderContext): string {
   if (context?.skillRet) {
     return "\nBodies omitted. Compare rank, Skill Name, Short Summary, category, and tags. Expand plausible top-ranked candidates before issuing another search. `latest` is replaced by every search; use listed handles such as `ids=m1` to expand earlier candidates."
   }
-  return "\nBodies omitted. Run `lore-memory action=expand ids=latest` for the latest result set, `ids=m1` for a listed handle, or pass complete IDs copied exactly."
+  return "\nBodies omitted. Run `kennen-memory action=expand ids=latest` for the latest result set, `ids=m1` for a listed handle, or pass complete IDs copied exactly."
 }
 
 function renderBenchMemoryListItem(
@@ -818,7 +818,7 @@ function renderBenchSkillRetMemoryListItem(
     `### Skill Candidate: ${memory.title}`,
     `*${meta}*`,
     index !== undefined ? `Rank: ${index + 1}` : "",
-    handle ? `Expand Candidate: lore-memory action=expand ids=${handle}` : "",
+    handle ? `Expand Candidate: kennen-memory action=expand ids=${handle}` : "",
     "Cite IDs from expanded output only.",
     `Skill Name: ${memory.title}`,
     `Short Summary: ${memory.synopsis.trim() || "No short summary available."}`,
@@ -907,7 +907,7 @@ function renderBenchExpandedMemory(memory: Memory): string {
 function renderBenchExpandedSkillRetMemory(memory: Memory): string {
   const skillRetId = extractSkillRetId(memory.content)
   const meta = [
-    `Lore Memory ID: ${memory.id}`,
+    `Kennen Memory ID: ${memory.id}`,
     skillRetId ? `SkillRet ID: ${skillRetId}` : null,
     memory.source,
     memory.kind !== "procedure" ? memory.kind : null,
@@ -917,9 +917,9 @@ function renderBenchExpandedSkillRetMemory(memory: Memory): string {
     .filter((part): part is string => part !== null)
     .join(" | ")
   const usage = [
-    `Use in usedMemoryIds and lore-memory expand: ${memory.id}`,
+    `Use in usedMemoryIds and kennen-memory expand: ${memory.id}`,
     skillRetId ? `Use in usedSkillIds only: ${skillRetId}` : null,
-    skillRetId ? "Do not pass SkillRet IDs to lore-memory expand." : null,
+    skillRetId ? "Do not pass SkillRet IDs to kennen-memory expand." : null,
   ]
     .filter((part): part is string => part !== null)
     .join("\n")
@@ -945,9 +945,9 @@ async function prepareBenchToolRuntimeEnv(
   env: NodeJS.ProcessEnv
 ): Promise<NodeJS.ProcessEnv> {
   const out: NodeJS.ProcessEnv = { ...env }
-  delete out["LORE_MCP_WRITE_BUDGET"]
-  delete out["LORE_MCP_BUDGET_STATE_FILE"]
-  if (out["NOTION_API_TOKEN"]?.trim() && out["LORE_CONFIG_ROOT"]?.trim()) return out
+  delete out["KENNEN_MCP_WRITE_BUDGET"]
+  delete out["KENNEN_MCP_BUDGET_STATE_FILE"]
+  if (out["NOTION_API_TOKEN"]?.trim() && out["KENNEN_CONFIG_ROOT"]?.trim()) return out
   const configPath = await findBenchCodexConfigPath(out)
   if (!configPath) return out
   const parsed = parseBenchCodexMcpEnv(await readFile(configPath, "utf-8"))
@@ -989,7 +989,7 @@ function parseBenchCodexMcpEnv(toml: string): Record<string, string> {
     if (trimmed.length === 0 || trimmed.startsWith("#")) continue
     const section = /^\[([^\]]+)\]$/u.exec(trimmed)
     if (section) {
-      inEnv = section[1] === "mcp_servers.lore.env"
+      inEnv = section[1] === "mcp_servers.kennen.env"
       continue
     }
     if (!inEnv) continue
@@ -1038,17 +1038,17 @@ async function withBenchToolProcessEnv<T>(
 
 const BENCH_TOOL_RUNTIME_ENV_KEYS = [
   "NOTION_API_TOKEN",
-  "LORE_CONFIG_ROOT",
-  "LORE_NOTION_BASE_URL",
+  "KENNEN_CONFIG_ROOT",
+  "KENNEN_NOTION_BASE_URL",
   "NOTION_WORKSPACE_ID",
   "NOTION_ENV",
   "NOTION_BASE_URL",
   "NOTION_API_BASE_URL",
-  "LORE_USER_NAME",
+  "KENNEN_USER_NAME",
 ] as const
 
 const BENCH_TOOL_PROCESS_ENV_KEYS = [
   ...BENCH_TOOL_RUNTIME_ENV_KEYS,
-  "LORE_MCP_WRITE_BUDGET",
-  "LORE_MCP_BUDGET_STATE_FILE",
+  "KENNEN_MCP_WRITE_BUDGET",
+  "KENNEN_MCP_BUDGET_STATE_FILE",
 ] as const

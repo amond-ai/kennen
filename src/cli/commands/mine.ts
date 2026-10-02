@@ -22,7 +22,7 @@ import {
   resolveProjectScopeName,
   validateExplicitProjectScopeName,
 } from "../../core/project-scope.js"
-import { initServices, type LoreServices } from "../../services.js"
+import { initServices, type KennenServices } from "../../services.js"
 import { DEFAULT_NOTION_CONCURRENCY } from "../../notion/rate-limit.js"
 import type { Memory } from "../../types.js"
 import { parsePositiveDecimalInteger } from "../parse.js"
@@ -133,7 +133,7 @@ const IGNORED_DIRS = new Set([
 ])
 
 const IGNORED_FILES = new Set([
-  ".lore.yaml",
+  ".kennen.yaml",
   "package-lock.json",
   "yarn.lock",
   "pnpm-lock.yaml",
@@ -147,7 +147,7 @@ function isHiddenWorktreeDirName(name: string): boolean {
   return (
     name === ".worktree" ||
     name === ".worktrees" ||
-    /^\.lore-wt-[A-Za-z0-9_-]+$/.test(name)
+    /^\.kennen-wt-[A-Za-z0-9_-]+$/.test(name)
   )
 }
 
@@ -222,11 +222,11 @@ export function formatOrphanSummary(orphanedPageIds: ReadonlyArray<string>): str
     "",
     `Orphan pages from cleanup-archive failures (${orphanedPageIds.length}):`,
     ...orphanedPageIds.map((id) => `  ${id}`),
-    "Archive these manually before re-running `lore mine` to avoid duplicate rows.",
+    "Archive these manually before re-running `kennen mine` to avoid duplicate rows.",
   ]
 }
 
-/** Parsed and validated `lore mine` flags. */
+/** Parsed and validated `kennen mine` flags. */
 export interface MineCliOptions {
   project: string | undefined
   topic: string | undefined
@@ -236,7 +236,7 @@ export interface MineCliOptions {
 }
 
 /**
- * Validate `lore mine`'s raw flag inputs. Mirrors the strict-integer
+ * Validate `kennen mine`'s raw flag inputs. Mirrors the strict-integer
  * posture in `parseScanCliOptions`: reject
  * fractional, exponent-notation, leading-sign, and trailing-alpha
  * limits via a digit-only regex BEFORE any numeric coercion.
@@ -297,7 +297,7 @@ export function parseMineCliOptions(raw: {
  *   `/` inside the class body is stripped — without that strip,
  *   `[a/b]` would compile to a JS regex that matches the literal
  *   `/`, breaking the matcher's "no token crosses path boundaries"
- *   invariant. POSIX globs leave `/` in classes undefined; lore's
+ *   invariant. POSIX globs leave `/` in classes undefined; kennen's
  *   strip is the operator-friendly reading.
  * - All other regex metacharacters are escaped.
  *
@@ -374,7 +374,7 @@ export function globToRegExp(pattern: string): RegExp {
         // separator. Without this, `[a/b]` would compile to a JS
         // class containing `/` and match across path boundaries,
         // breaking the matcher's segment invariant. POSIX leaves
-        // `/` in classes undefined; lore's strip is the
+        // `/` in classes undefined; kennen's strip is the
         // operator-friendly reading.
         body = body.replaceAll("/", "")
         if (body === "" || body === "^") {
@@ -456,21 +456,21 @@ export function selectMineFiles(
  *   like `--project Mial` would otherwise fall through to "no
  *   project" and silently dispatch unscoped writes — which can
  *   collide with another project's existing mined memories. Other
- *   CLI surfaces (`lore conflicts scan`, `lore tasks reconcile`)
+ *   CLI surfaces (`kennen conflicts scan`, `kennen tasks reconcile`)
  *   treat unknown project names as fatal; mine matches.
  * - **No `--project`**: defers to `services.context.project` (the
- *   .lore.yaml-resolved current project, possibly the catch-all),
+ *   .kennen.yaml-resolved current project, possibly the catch-all),
  *   or `null` if cwd resolves to no project at all.
  */
 export async function resolveMineProject(
-  services: LoreServices,
+  services: KennenServices,
   explicitName: string | undefined
 ): Promise<{ id: string } | null> {
   const explicitProjectName = validateExplicitProjectScopeName(
     explicitName,
     "--project",
     {
-      listHint: "run `lore status projects` to list configured projects",
+      listHint: "run `kennen status projects` to list configured projects",
     }
   )
   if (explicitProjectName !== undefined) {
@@ -479,7 +479,7 @@ export async function resolveMineProject(
       explicitProjectName,
       "--project",
       {
-        listHint: "run `lore status projects` to list configured projects",
+        listHint: "run `kennen status projects` to list configured projects",
       }
     )
     return { id: found.id }
@@ -516,16 +516,16 @@ const MINE_LOCK_OWNER_FILE = "owner.json"
 const MINE_LOCK_REAPER_FILE = "reaper"
 
 function debugMineLockError(source: string, err: unknown): void {
-  if (process.env["LORE_DEBUG"] !== "1") return
+  if (process.env["KENNEN_DEBUG"] !== "1") return
   // Filesystem-error messages here (EACCES, ENOENT, ENAMETOOLONG, custom
   // stack-laden errors) don't carry SDK-shape detail, but the
   // `redactDebugMessage` length bound is the load-bearing defense for
   // this caller — a long ENAMETOOLONG path or a stack-laden custom error
   // shouldn't spill the per-line invariant log aggregators rely on.
   // Routing through the shared helper also keeps the helper as the
-  // single chokepoint for every LORE_DEBUG-gated emitter.
+  // single chokepoint for every KENNEN_DEBUG-gated emitter.
   process.stderr.write(
-    `[lore] mine-lock-${source}: error=${redactDebugError(err)} source=mine-${source}\n`
+    `[kennen] mine-lock-${source}: error=${redactDebugError(err)} source=mine-${source}\n`
   )
 }
 
@@ -539,25 +539,25 @@ function parseNonNegativeIntegerEnv(name: string, fallback: number): number {
 
 function mineLockWaitTimeoutMs(): number {
   return parseNonNegativeIntegerEnv(
-    "LORE_MINE_LOCK_TIMEOUT_MS",
+    "KENNEN_MINE_LOCK_TIMEOUT_MS",
     DEFAULT_MINE_LOCK_WAIT_TIMEOUT_MS
   )
 }
 
 function minePostCreateStabilizeMs(): number {
   return parseNonNegativeIntegerEnv(
-    "LORE_MINE_POST_CREATE_STABILIZE_MS",
+    "KENNEN_MINE_POST_CREATE_STABILIZE_MS",
     DEFAULT_MINE_POST_CREATE_STABILIZE_MS
   )
 }
 
 function getMineLockDir(): string {
   // Resolve on every call so tests and hook-hosted invocations can
-  // override LORE_HOOK_STATE_DIR at runtime, matching the hook-layer
+  // override KENNEN_HOOK_STATE_DIR at runtime, matching the hook-layer
   // session-lock helper's posture.
-  const stateRoot = process.env["LORE_HOOK_STATE_DIR"]
-    ? join(process.env["LORE_HOOK_STATE_DIR"])
-    : join(tmpdir(), "lore-hook-state")
+  const stateRoot = process.env["KENNEN_HOOK_STATE_DIR"]
+    ? join(process.env["KENNEN_HOOK_STATE_DIR"])
+    : join(tmpdir(), "kennen-hook-state")
   return join(stateRoot, "mine-locks")
 }
 
@@ -762,7 +762,7 @@ async function logMineLockWait(
     // The lock may vanish between polls; the next loop will retry acquisition.
   }
   log(
-    `[lore] mine: waiting on lock for ${relPath}${holder}; ` +
+    `[kennen] mine: waiting on lock for ${relPath}${holder}; ` +
       `will retry up to ${Math.ceil(timeoutMs / 1000)}s`
   )
 }
@@ -823,7 +823,7 @@ async function releaseMineFileLock(lock: MineFileLock): Promise<void> {
 }
 
 async function withMineFileLock<T>(
-  services: LoreServices,
+  services: KennenServices,
   relPath: string,
   projectId: string | undefined,
   heldLockPaths: Set<string> | undefined,
@@ -874,14 +874,14 @@ async function withMineFileLock<T>(
  *   substring of the queried one (a source-file path may
  *   substring-match a backup-suffix variant of the same path).
  * - `projectIdsEqual` rejects rows whose project-set differs from
- *   the intended scope. Without this, `lore mine --project Foo`
+ *   the intended scope. Without this, `kennen mine --project Foo`
  *   could match an unscoped or differently-scoped row and rewrite
  *   it into Foo's project — silently merging two upsert lineages
  *   that should stay separate. Mirrors `MemoryService.upsertByTopicKey`'s
  *   `(Topic Key, Project-set)` equality contract.
  */
 export async function findExistingFileMemory(
-  services: LoreServices,
+  services: KennenServices,
   expectedTitle: string,
   relPath: string,
   projectId: string | undefined
@@ -932,7 +932,7 @@ export interface MineSummary {
  * create. Catches every failure and returns a `failed` outcome — the
  * parallel batch above must never reject on a single-file error. */
 async function processOneFile(
-  services: LoreServices,
+  services: KennenServices,
   dir: string,
   file: string,
   projectId: string | undefined,
@@ -1013,7 +1013,7 @@ async function processOneFile(
           // leaves the existing Topic relation in place. Same contract
           // `MemoryService.upsertByTopicKey` follows: Status and Topic
           // preserve silently on upsert. An operator who wants to retire
-          // a stale topic explicitly should call `lore-memory action='update'`
+          // a stale topic explicitly should call `kennen-memory action='update'`
           // — not the mine path, which is content-replication, not
           // metadata-curation.
           await services.memories.update(existingId, {
@@ -1069,7 +1069,7 @@ async function processOneFile(
  * still use the configured bounded concurrency.
  */
 export async function runMineUpsert(
-  services: LoreServices,
+  services: KennenServices,
   dir: string,
   files: readonly string[],
   projectId: string | undefined,
@@ -1315,7 +1315,7 @@ export const mineCommand = new Command("mine")
         } else if (opts.topic && !projectId) {
           console.warn(
             `Warning: --topic "${opts.topic}" ignored: no project resolved ` +
-              "(pass --project <name> or run from a directory mapped in .lore.yaml)."
+              "(pass --project <name> or run from a directory mapped in .kennen.yaml)."
           )
         }
 

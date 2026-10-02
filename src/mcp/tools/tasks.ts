@@ -2,9 +2,9 @@
  * Task tools.
  *
  * Tasks are the canonical surface for tracked work. The polymorphic
- * `lore-task` dispatcher is action-routed across
+ * `kennen-task` dispatcher is action-routed across
  * `create` / `update` / `close` / `list` — matching the rest of the
- * polymorphic family (`lore-memory`, `lore-decision`, etc.).
+ * polymorphic family (`kennen-memory`, `kennen-decision`, etc.).
  *
  * Each handler is a thin orchestration layer over `services.tasks`
  * (`TaskService`) plus project-name resolution; the heavy lifting —
@@ -13,7 +13,7 @@
 
 import { z } from "zod"
 import type { McpServer } from "@modelcontextprotocol/server"
-import type { LoreServices } from "../server.js"
+import type { KennenServices } from "../server.js"
 import {
   formatDispatchError,
   paginationFooter,
@@ -66,7 +66,7 @@ const TASK_STATES = ["open", "in-progress", "blocked", "done", "cancelled"] as c
 const CLOSE_STATES = ["done", "cancelled"] as const
 
 /**
- * Default cap for `lore-task action='list'` listings. Per-section,
+ * Default cap for `kennen-task action='list'` listings. Per-section,
  * not total — Overdue and Active render independently so a vault with
  * many overdue tasks still surfaces some active ones above the cap.
  */
@@ -156,7 +156,7 @@ function formatTaskRow(
 }
 
 // ---------------------------------------------------------------------------
-// Handlers — one per `lore-task` action (create | update | close | list).
+// Handlers — one per `kennen-task` action (create | update | close | list).
 // Routed by the polymorphic dispatcher's discriminated union.
 // ---------------------------------------------------------------------------
 
@@ -215,7 +215,7 @@ function collectIgnoredReuseFields(args: CreateArgs): string[] {
 }
 
 async function handleCreate(
-  services: LoreServices,
+  services: KennenServices,
   args: CreateArgs
 ): Promise<ToolResult> {
   try {
@@ -286,16 +286,18 @@ async function handleCreate(
       projectId: resolved.ids[0],
       features,
       onError: (err) =>
-        debugLogPartialFailures("lore-task", [{ rootId: "duplicate-probe", error: err }]),
+        debugLogPartialFailures("kennen-task", [
+          { rootId: "duplicate-probe", error: err },
+        ]),
     })
 
     // Assertive reuse: an exact structural duplicate (same normalized
     // entity, subject, and project-set) returns the existing task
     // without creating. Topic creation is deferred until after this
     // gate so a reuse hit does not leak an orphan Topic — same
-    // discipline `lore-memory action='save'` follows for the autosave
-    // learning duplicate gate. `LORE_DISABLE_TASK_REUSE=1` (or the
-    // broader `LORE_DISABLE_NEAR_DUPLICATE_PROBE=1`) restores
+    // discipline `kennen-memory action='save'` follows for the autosave
+    // learning duplicate gate. `KENNEN_DISABLE_TASK_REUSE=1` (or the
+    // broader `KENNEN_DISABLE_NEAR_DUPLICATE_PROBE=1`) restores
     // advisory-only behavior.
     const reuseTarget = findExactReuseTarget(duplicates, {
       subject: args.subject,
@@ -305,7 +307,7 @@ async function handleCreate(
     })
 
     if (reuseTarget !== null) {
-      // Record for `lore-fact action='create'` session auto-link,
+      // Record for `kennen-fact action='create'` session auto-link,
       // mirroring the create branch — a fact emitted later in the
       // session should still resolve to this task as its source even
       // when the row was reused rather than freshly created.
@@ -344,7 +346,7 @@ async function handleCreate(
       // other field on the create payload is structurally ignored, which
       // can blindside an agent calling create to land a state transition,
       // due-date bump, or description update against an existing task.
-      // The audit-trail discipline matches Lore's other write-side
+      // The audit-trail discipline matches Kennen's other write-side
       // surfaces (e.g. `MemoryService.upsertByTopicKey`'s promotion
       // advisory, `FactService.createWithDedup`'s `enriched` field):
       // assertive idempotency must name what it ignored.
@@ -352,7 +354,7 @@ async function handleCreate(
       if (ignoredFields.length > 0) {
         reuseLines.push(
           `Ignored on reuse: ${ignoredFields.join(", ")} — use ` +
-            `lore-task({ action: 'update', taskId: '${reuseTarget.id}', ... }) ` +
+            `kennen-task({ action: 'update', taskId: '${reuseTarget.id}', ... }) ` +
             `to change them.`
         )
       }
@@ -361,9 +363,9 @@ async function handleCreate(
         "",
         "Subject and entity match an existing active task; nothing was created.",
         `Update the existing row if needed: ` +
-          `lore-task({ action: 'update', taskId: '${reuseTarget.id}', ... })`,
+          `kennen-task({ action: 'update', taskId: '${reuseTarget.id}', ... })`,
         `Close it when the work is done: ` +
-          `lore-task({ action: 'close', taskId: '${reuseTarget.id}' })`
+          `kennen-task({ action: 'close', taskId: '${reuseTarget.id}' })`
       )
 
       return {
@@ -422,9 +424,9 @@ async function handleCreate(
     // renders `duplicates` directly.
     const filteredDuplicates = duplicates
 
-    // Record for `lore-fact action='create'` session auto-link,
-    // mirroring how `lore-memory` action='save' and
-    // `lore-decision` action='create' plant a session pointer so a
+    // Record for `kennen-fact action='create'` session auto-link,
+    // mirroring how `kennen-memory` action='save' and
+    // `kennen-decision` action='create' plant a session pointer so a
     // later fact can auto-link this task as its source.
     services.sessionMemories.record(
       { agent: args.agent, session: args.session },
@@ -474,14 +476,14 @@ async function handleCreate(
         const stateLabel = dup.taskState ?? "open"
         lines.push(
           `  - "${dup.title}" [${stateLabel}] — ` +
-            `lore-task({ action: 'close', taskId: '${dup.id}' })`
+            `kennen-task({ action: 'close', taskId: '${dup.id}' })`
         )
       }
     }
 
     lines.push(
       `\nClose this task when the work is done: ` +
-        `lore-task({ action: 'close', taskId: '${task.id}' })`
+        `kennen-task({ action: 'close', taskId: '${task.id}' })`
     )
 
     return {
@@ -508,7 +510,7 @@ interface UpdateArgs {
 }
 
 async function handleUpdate(
-  services: LoreServices,
+  services: KennenServices,
   args: UpdateArgs
 ): Promise<ToolResult> {
   try {
@@ -568,7 +570,7 @@ async function handleUpdate(
     if (updatedState !== "done" && updatedState !== "cancelled") {
       lines.push(
         `\nClose this task when the work is done: ` +
-          `lore-task({ action: 'close', taskId: '${updated.id}' })`
+          `kennen-task({ action: 'close', taskId: '${updated.id}' })`
       )
     }
 
@@ -587,7 +589,10 @@ interface CloseArgs {
   reason?: string
 }
 
-async function handleClose(services: LoreServices, args: CloseArgs): Promise<ToolResult> {
+async function handleClose(
+  services: KennenServices,
+  args: CloseArgs
+): Promise<ToolResult> {
   try {
     const closingState: "done" | "cancelled" = args.state ?? "done"
     const closeResult =
@@ -641,7 +646,7 @@ interface CloseManyArgs {
 }
 
 async function handleCloseMany(
-  services: LoreServices,
+  services: KennenServices,
   args: CloseManyArgs
 ): Promise<ToolResult> {
   try {
@@ -680,7 +685,7 @@ interface ListArgs {
   includeSynopsis?: boolean
 }
 
-async function handleList(services: LoreServices, args: ListArgs): Promise<ToolResult> {
+async function handleList(services: KennenServices, args: ListArgs): Promise<ToolResult> {
   try {
     const { projectId } = await resolveReadProjectScope(services, args.projectName)
 
@@ -703,13 +708,13 @@ async function handleList(services: LoreServices, args: ListArgs): Promise<ToolR
       : ACTIVE_TASK_STATES
 
     // `TaskService.list` consumes a multi-variant `entities` filter so
-    // alias-aware callers (`lore-query action='ask'`) can OR over
-    // canonical + aliases server-side. `lore-task action='list'`
+    // alias-aware callers (`kennen-query action='ask'`) can OR over
+    // canonical + aliases server-side. `kennen-task action='list'`
     // deliberately keeps a singular user-facing `entity` input — the
     // agent typed one string, the tool surfaces tasks containing
     // exactly that string. Canonicalization here would change the
     // user's filter shape without their knowledge; canonical-aware
-    // recall is `lore-query action='ask'`'s job.
+    // recall is `kennen-query action='ask'`'s job.
     const listOpts = {
       projectId,
       entities: args.entity ? [args.entity] : undefined,
@@ -861,7 +866,7 @@ interface ReconcileArgs {
 }
 
 async function handleReconcile(
-  services: LoreServices,
+  services: KennenServices,
   args: ReconcileArgs
 ): Promise<ToolResult> {
   try {
@@ -886,7 +891,7 @@ async function handleReconcile(
 }
 
 /**
- * Discriminated union for runtime validation of `lore-task` dispatch.
+ * Discriminated union for runtime validation of `kennen-task` dispatch.
  * The MCP-level `inputSchema` is declared flat (every action's params
  * optional) so agents see one parameter table rather than a JSON
  * Schema `oneOf`. We re-validate against this union inside the
@@ -999,15 +1004,15 @@ function createTaskDispatchSchema(tagsSchema: ReturnType<typeof createTagsSchema
   ])
 }
 
-export function registerTaskTools(server: McpServer, services: LoreServices): void {
+export function registerTaskTools(server: McpServer, services: KennenServices): void {
   const tagsSchema = createTagsSchema(services.profile?.taxonomy.tags)
   const taskDispatchSchema = createTaskDispatchSchema(tagsSchema)
 
   // -------------------------------------------------------------------------
-  // lore-task — polymorphic dispatcher (PF3-06)
+  // kennen-task — polymorphic dispatcher (PF3-06)
   // -------------------------------------------------------------------------
   server.registerTool(
-    "lore-task",
+    "kennen-task",
     {
       title: "Task operations",
       description:
@@ -1022,14 +1027,14 @@ export function registerTaskTools(server: McpServer, services: LoreServices): vo
         "out-of-scope** work — side-effect discoveries, deferred follow-ups, " +
         "blocked items the session noticed but did not pick up. Never file " +
         "your current in-flight objective: the conversation and plan already " +
-        "track it, so a Lore task adds noise and an immediate close burden, " +
+        "track it, so a Kennen task adds noise and an immediate close burden, " +
         "not signal.\n\n" +
         "Action-dispatched:\n\n" +
         "- `action: 'create'` — open a new task for tangential or " +
         "out-of-scope work; do NOT file your current objective. Idempotent " +
         "on exact `(subject, entity, projectIds)` match. Use `entity` when " +
         "the task is about a specific subject other facts/decisions " +
-        "also reference; `lore-query` action='ask' surfaces it in " +
+        "also reference; `kennen-query` action='ask' surfaces it in " +
         "the Tasks bucket.\n" +
         "- `action: 'update'` — change state, blocker, due date, subject, " +
         "description, or scoping. Any field omitted is left untouched. Pass " +
@@ -1167,7 +1172,7 @@ export function registerTaskTools(server: McpServer, services: LoreServices): vo
           .string()
           .optional()
           .describe(
-            "(action='create') Engineer display name. Defaults to LORE_USER_NAME env or `users.me`."
+            "(action='create') Engineer display name. Defaults to KENNEN_USER_NAME env or `users.me`."
           ),
         agent: z
           .string()
@@ -1233,7 +1238,7 @@ export function registerTaskTools(server: McpServer, services: LoreServices): vo
     async (args) => {
       const parsed = taskDispatchSchema.safeParse(args, { reportInput: true })
       if (!parsed.success) {
-        return toolError(new Error(formatDispatchError("lore-task", parsed.error)))
+        return toolError(new Error(formatDispatchError("kennen-task", parsed.error)))
       }
       const data = parsed.data
       switch (data.action) {

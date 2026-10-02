@@ -1,4 +1,4 @@
-import type { LoreServices } from "../../../services.js"
+import type { KennenServices } from "../../../services.js"
 import {
   runBuildFactConfidenceScoresMigration,
   type BuildFactConfidenceScoresPlan,
@@ -19,7 +19,7 @@ import { printDiscoveryBreadcrumb, resolveMigrationProjectScope } from "./shared
  * Plan-only by default; `--yes` flips to apply mode.
  */
 export async function runBuildFactConfidenceScores(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     apply: boolean
     dryRun: boolean
@@ -53,7 +53,7 @@ export async function runBuildFactConfidenceScores(
   const { plan, written } = result
 
   console.log(
-    `\n[lore] build-fact-confidence-scores: scanned ${plan.totalFactsScanned} ` +
+    `\n[kennen] build-fact-confidence-scores: scanned ${plan.totalFactsScanned} ` +
       `fact${plan.totalFactsScanned === 1 ? "" : "s"}`
   )
   console.log(
@@ -92,10 +92,10 @@ export async function runBuildFactConfidenceScores(
   }
 
   if (planOnly) {
-    console.log("\n[lore] dry-run: no writes performed. Re-run with --yes to apply.")
+    console.log("\n[kennen] dry-run: no writes performed. Re-run with --yes to apply.")
   } else {
     console.log(
-      `\n[lore] build-fact-confidence-scores: wrote ${written} row${written === 1 ? "" : "s"}.`
+      `\n[kennen] build-fact-confidence-scores: wrote ${written} row${written === 1 ? "" : "s"}.`
     )
   }
   return result
@@ -130,7 +130,7 @@ export function summarizeFactConfidenceScorePlan(plan: BuildFactConfidenceScores
 }
 
 export async function runAuditFactConfidence(
-  services: LoreServices,
+  services: KennenServices,
   options: {
     projectName?: string
     projectId?: string
@@ -161,7 +161,7 @@ export async function runAuditFactConfidence(
 
 export function printFactConfidenceAudit(report: FactConfidenceAuditReport): void {
   console.log(
-    `\n[lore] audit-fact-confidence: scanned ${report.totalFactsScanned} ` +
+    `\n[kennen] audit-fact-confidence: scanned ${report.totalFactsScanned} ` +
       `live fact${report.totalFactsScanned === 1 ? "" : "s"}`
   )
   console.log(
@@ -233,8 +233,8 @@ export function printFactConfidenceAudit(report: FactConfidenceAuditReport): voi
     }
   }
   console.log(
-    "\n       Conflict adjudication: `lore conflicts scan` only proposes memory pairs; " +
-      "`lore-memory action='compare'` uses the caller's `affectedMemoryId` " +
+    "\n       Conflict adjudication: `kennen conflicts scan` only proposes memory pairs; " +
+      "`kennen-memory action='compare'` uses the caller's `affectedMemoryId` " +
       "as the loser for asymmetric verdicts. Judge confidence labels emitted " +
       "conflict facts, but existing fact confidence is not an automatic winner selector."
   )

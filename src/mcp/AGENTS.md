@@ -6,11 +6,11 @@
 
 ## Purpose
 
-This directory implements Lore's MCP (Model Context Protocol) server. It is the
+This directory implements Kennen's MCP (Model Context Protocol) server. It is the
 primary interface for AI assistants. The server runs as a stdio process and
-exposes nine polymorphic tools: `lore-context`, `lore-memory`,
-`lore-pinned`, `lore-query`, `lore-fact`, `lore-decision`,
-`lore-project`, `lore-task`, and `lore-procedure`.
+exposes nine polymorphic tools: `kennen-context`, `kennen-memory`,
+`kennen-pinned`, `kennen-query`, `kennen-fact`, `kennen-decision`,
+`kennen-project`, `kennen-task`, and `kennen-procedure`.
 
 Current user-facing tool behavior belongs in
 [docs/mcp-tools.md](../../docs/mcp-tools.md). Historical alias removals,
@@ -20,23 +20,23 @@ Do not duplicate the full tool reference in this file.
 
 ## Files
 
-| File                   | Responsibility                                                                                                                                                                                                             |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `server.ts`            | Server entry point: init services, register tools, start stdio transport                                                                                                                                                   |
-| `help.ts`              | `lore://help` and `lore://help/<tool>/<action>` resource recipes for polymorphic tool payload examples                                                                                                                     |
-| `helpers.ts`           | `toolError()`, `paginationFooter()`, `formatDispatchError()`, MCP-specific debug log helpers                                                                                                                               |
-| `tools/context.ts`     | `lore-context` polymorphic dispatcher (`status` / `wake-up` / `digest`)                                                                                                                                                    |
-| `tools/memory.ts`      | `lore-memory` polymorphic dispatcher registration and compatibility exports for `handleRecall` / `handleSearch` used by `lore-query`                                                                                       |
-| `tools/memory/`        | Action-specific `lore-memory` handlers (`save` / `update` / `archive` / `expand` / `suggest-topic-key` / `compare` / `approve` / `reject` / `promote`), dispatch schema, and shared memory tool constants                  |
-| `tools/pinned.ts`      | `lore-pinned` polymorphic dispatcher (`pin` / `unpin` / `update` / `list`) for pinned context blocks (issue #282); hosts the audit-line append helper and `PinnedAuditError` partial-state error type                      |
-| `tools/query.ts`       | `lore-query` polymorphic (read-path dispatcher; reuses handlers from memory.ts and knowledge.ts)                                                                                                                           |
-| `tools/project.ts`     | `lore-project` polymorphic dispatcher (`list` / `get`)                                                                                                                                                                     |
-| `tools/knowledge.ts`   | `lore-fact` polymorphic dispatcher (`create` / `invalidate` / `extend`); read-side `ask` / `audit` handlers exported for `lore-query`                                                                                      |
-| `tools/decisions.ts`   | `lore-decision` polymorphic dispatcher (`create` / `list` / `get` / `context` / `supersede` / `review`)                                                                                                                    |
-| `tools/tasks.ts`       | `lore-task` polymorphic dispatcher (`create` / `update` / `close` / `close-many` / `list` / `reconcile`)                                                                                                                   |
-| `tools/procedures.ts`  | `lore-procedure` polymorphic dispatcher (`scan-candidates` / `propose` / `deprecate`) — procedural memory promotion. Approval routes through `lore-memory action='approve'` so the audit contract stays on one entrypoint. |
-| `tools/date-schema.ts` | Shared `YYYY-MM-DD` and clearable date Zod schemas for MCP tool boundaries                                                                                                                                                 |
-| `tools/text-schema.ts` | Shared `nonBlankString` Zod schema for create-required user-facing text fields (rejects empty / whitespace-only)                                                                                                           |
+| File                   | Responsibility                                                                                                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `server.ts`            | Server entry point: init services, register tools, start stdio transport                                                                                                                                                       |
+| `help.ts`              | `kennen://help` and `kennen://help/<tool>/<action>` resource recipes for polymorphic tool payload examples                                                                                                                     |
+| `helpers.ts`           | `toolError()`, `paginationFooter()`, `formatDispatchError()`, MCP-specific debug log helpers                                                                                                                                   |
+| `tools/context.ts`     | `kennen-context` polymorphic dispatcher (`status` / `wake-up` / `digest`)                                                                                                                                                      |
+| `tools/memory.ts`      | `kennen-memory` polymorphic dispatcher registration and compatibility exports for `handleRecall` / `handleSearch` used by `kennen-query`                                                                                       |
+| `tools/memory/`        | Action-specific `kennen-memory` handlers (`save` / `update` / `archive` / `expand` / `suggest-topic-key` / `compare` / `approve` / `reject` / `promote`), dispatch schema, and shared memory tool constants                    |
+| `tools/pinned.ts`      | `kennen-pinned` polymorphic dispatcher (`pin` / `unpin` / `update` / `list`) for pinned context blocks (issue #282); hosts the audit-line append helper and `PinnedAuditError` partial-state error type                        |
+| `tools/query.ts`       | `kennen-query` polymorphic (read-path dispatcher; reuses handlers from memory.ts and knowledge.ts)                                                                                                                             |
+| `tools/project.ts`     | `kennen-project` polymorphic dispatcher (`list` / `get`)                                                                                                                                                                       |
+| `tools/knowledge.ts`   | `kennen-fact` polymorphic dispatcher (`create` / `invalidate` / `extend`); read-side `ask` / `audit` handlers exported for `kennen-query`                                                                                      |
+| `tools/decisions.ts`   | `kennen-decision` polymorphic dispatcher (`create` / `list` / `get` / `context` / `supersede` / `review`)                                                                                                                      |
+| `tools/tasks.ts`       | `kennen-task` polymorphic dispatcher (`create` / `update` / `close` / `close-many` / `list` / `reconcile`)                                                                                                                     |
+| `tools/procedures.ts`  | `kennen-procedure` polymorphic dispatcher (`scan-candidates` / `propose` / `deprecate`) — procedural memory promotion. Approval routes through `kennen-memory action='approve'` so the audit contract stays on one entrypoint. |
+| `tools/date-schema.ts` | Shared `YYYY-MM-DD` and clearable date Zod schemas for MCP tool boundaries                                                                                                                                                     |
+| `tools/text-schema.ts` | Shared `nonBlankString` Zod schema for create-required user-facing text fields (rejects empty / whitespace-only)                                                                                                               |
 
 ## Documentation Map
 
@@ -51,7 +51,7 @@ Do not duplicate the full tool reference in this file.
 ## Contribution Rules
 
 - Keep the MCP surface polymorphic. Prefer a new action on an existing
-  `lore-*` dispatcher; add a new tool family only when the behavior does not
+  `kennen-*` dispatcher; add a new tool family only when the behavior does not
   fit any existing family.
 - Keep MCP-level schemas flat: one top-level `action` enum plus optional
   per-action fields. Use module-local discriminated unions for runtime
@@ -77,7 +77,7 @@ Do not duplicate the full tool reference in this file.
 - Return MCP content as `{ content: [{ type: "text", text: "..." }] }` and
   use readable markdown for multi-item responses.
 - Interactive service-init failures must stay MCP-visible: `server.ts` should
-  register diagnostic stubs for every `lore-*` dispatcher and connect stdio
+  register diagnostic stubs for every `kennen-*` dispatcher and connect stdio
   instead of exiting.
 
 ## Adding Or Changing Tools
@@ -113,7 +113,7 @@ Do not interpolate `err.message` directly into MCP content, even for validation
 or dispatch errors. Wrap thrown and string errors in `toolError()` and let the
 helper handle redaction and retryable metadata consistently.
 
-Errors that extend `LoreError` append a fenced JSON metadata block containing
+Errors that extend `KennenError` append a fenced JSON metadata block containing
 `kind` and redacted `details`. Retryable errors append `code` and
 `retryable: true` in the same block. Treat this block as the machine-readable
 contract; the leading prose message remains for operators.
@@ -160,16 +160,16 @@ release evidence stays out of this routing guide.
 
 If `initServices()` fails (no config, bad token, etc.), interactive MCP hosts
 still get a stdio server with diagnostic stubs for every registered
-`lore-*` dispatcher. Any action or arguments return the initialization error and
+`kennen-*` dispatcher. Any action or arguments return the initialization error and
 recovery steps, so agents that reflexively call `wake-up`, `digest`, `save`, or
 another dispatcher still see actionable setup guidance instead of a schema or
 method-not-found error. Non-init failures such as tool registration or
 transport connection errors remain fatal.
 
-Hook-spawned background agents set `LORE_BACKGROUND_AGENT=true`; MCP children in
+Hook-spawned background agents set `KENNEN_BACKGROUND_AGENT=true`; MCP children in
 that environment fail fast on init errors rather than staying alive as a
 diagnostic server, so the hook lock/liveness path can recover on the next Stop.
-They also set `LORE_AUTOSAVE=false` to prevent recursive autosaves, but that
+They also set `KENNEN_AUTOSAVE=false` to prevent recursive autosaves, but that
 public autosave opt-out is not the diagnostic-mode bypass.
 
 ### ntn-issued tokens may expire mid-session
@@ -182,4 +182,4 @@ Notion client wrapper re-runs `resolveAuth` for initial
 now carries different auth inputs, and retries the failed request once.
 Static `NOTION_API_TOKEN` auth does not install this refresh hook, and an
 unchanged or still-rejected ntn token surfaces the original tool-call error
-so the operator can run `lore auth --login` and reconnect if needed.
+so the operator can run `kennen auth --login` and reconnect if needed.

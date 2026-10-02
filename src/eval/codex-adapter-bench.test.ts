@@ -20,11 +20,11 @@ import { BENCH_MODE_SENTINEL, CodexAgentAdapter } from "./task-runner.js"
 let tempDirs: string[] = []
 const savedEnv: Record<string, string | undefined> = {}
 const envKeys = [
-  "LORE_EVAL_BENCH_REAL",
-  "LORE_EVAL_BENCH_AGENT_MODEL",
-  "LORE_EVAL_TASK_REAL",
-  "LORE_EVAL_TASK_TIMEOUT_KILL_GRACE_MS",
-  "LORE_BENCH_OPENAI_API_KEY",
+  "KENNEN_EVAL_BENCH_REAL",
+  "KENNEN_EVAL_BENCH_AGENT_MODEL",
+  "KENNEN_EVAL_TASK_REAL",
+  "KENNEN_EVAL_TASK_TIMEOUT_KILL_GRACE_MS",
+  "KENNEN_BENCH_OPENAI_API_KEY",
   "CODEX_HOME",
   "HOME",
   "PATH",
@@ -39,11 +39,11 @@ afterEach(async () => {
     if (value === undefined) delete process.env[key]
     else process.env[key] = value
   }
-  savedEnv["LORE_EVAL_BENCH_REAL"] = undefined
-  savedEnv["LORE_EVAL_BENCH_AGENT_MODEL"] = undefined
-  savedEnv["LORE_EVAL_TASK_REAL"] = undefined
-  savedEnv["LORE_EVAL_TASK_TIMEOUT_KILL_GRACE_MS"] = undefined
-  savedEnv["LORE_BENCH_OPENAI_API_KEY"] = undefined
+  savedEnv["KENNEN_EVAL_BENCH_REAL"] = undefined
+  savedEnv["KENNEN_EVAL_BENCH_AGENT_MODEL"] = undefined
+  savedEnv["KENNEN_EVAL_TASK_REAL"] = undefined
+  savedEnv["KENNEN_EVAL_TASK_TIMEOUT_KILL_GRACE_MS"] = undefined
+  savedEnv["KENNEN_BENCH_OPENAI_API_KEY"] = undefined
   savedEnv["CODEX_HOME"] = undefined
   savedEnv["HOME"] = undefined
   for (const dir of tempDirs) {
@@ -65,7 +65,7 @@ describe("CodexAgentAdapter bench isolation", () => {
 
     const result = await new CodexAgentAdapter().run({
       workspace,
-      prompt: "Answer from Lore.",
+      prompt: "Answer from Kennen.",
       timeoutMs: 1_000,
     })
 
@@ -91,7 +91,7 @@ describe("CodexAgentAdapter bench isolation", () => {
 
     const result = await new CodexAgentAdapter().run({
       workspace,
-      prompt: "Answer from Lore.",
+      prompt: "Answer from Kennen.",
       timeoutMs: 1_000,
     })
 
@@ -102,7 +102,7 @@ describe("CodexAgentAdapter bench isolation", () => {
   it("uses the bench agent model override when spawning Codex", async () => {
     const { workspace } = await setupBenchRunEnv()
     const child = fakeChild()
-    process.env["LORE_EVAL_BENCH_AGENT_MODEL"] = "gpt-5.5"
+    process.env["KENNEN_EVAL_BENCH_AGENT_MODEL"] = "gpt-5.5"
     let spawnedArgs: string[] = []
     spawnMock.mockImplementation((_cmd, args) => {
       spawnedArgs = args as string[]
@@ -112,7 +112,7 @@ describe("CodexAgentAdapter bench isolation", () => {
 
     const result = await new CodexAgentAdapter().run({
       workspace,
-      prompt: "Answer from Lore.",
+      prompt: "Answer from Kennen.",
       timeoutMs: 1_000,
     })
 
@@ -133,7 +133,7 @@ describe("CodexAgentAdapter bench isolation", () => {
 
     const result = await new CodexAgentAdapter().run({
       workspace,
-      prompt: "Answer from Lore.",
+      prompt: "Answer from Kennen.",
       timeoutMs: 1_000,
     })
 
@@ -155,7 +155,7 @@ describe("CodexAgentAdapter bench isolation", () => {
 
     const result = await new CodexAgentAdapter().run({
       workspace,
-      prompt: "Answer from Lore.",
+      prompt: "Answer from Kennen.",
       timeoutMs: 1,
     })
 
@@ -193,13 +193,13 @@ async function setupBenchRunEnv(): Promise<{ workspace: string }> {
   for (const key of envKeys) {
     savedEnv[key] = process.env[key]
   }
-  const sourceCodexHome = await mkdtemp(join(tmpdir(), "lore-codex-source-home-"))
-  const workspace = await mkdtemp(join(tmpdir(), "lore-bench-adapter-test-"))
+  const sourceCodexHome = await mkdtemp(join(tmpdir(), "kennen-codex-source-home-"))
+  const workspace = await mkdtemp(join(tmpdir(), "kennen-bench-adapter-test-"))
   tempDirs.push(sourceCodexHome, workspace)
   await writeFile(join(workspace, BENCH_MODE_SENTINEL), "")
   await stageCodexOnPath()
-  process.env["LORE_EVAL_BENCH_REAL"] = "1"
-  process.env["LORE_BENCH_OPENAI_API_KEY"] = "sk-bench-only"
+  process.env["KENNEN_EVAL_BENCH_REAL"] = "1"
+  process.env["KENNEN_BENCH_OPENAI_API_KEY"] = "sk-bench-only"
   process.env["CODEX_HOME"] = sourceCodexHome
   process.env["HOME"] = sourceCodexHome
   return { workspace }
@@ -209,12 +209,12 @@ async function setupTaskRunEnv(): Promise<{ workspace: string }> {
   for (const key of envKeys) {
     savedEnv[key] = process.env[key]
   }
-  const sourceCodexHome = await mkdtemp(join(tmpdir(), "lore-codex-source-home-"))
-  const workspace = await mkdtemp(join(tmpdir(), "lore-task-adapter-test-"))
+  const sourceCodexHome = await mkdtemp(join(tmpdir(), "kennen-codex-source-home-"))
+  const workspace = await mkdtemp(join(tmpdir(), "kennen-task-adapter-test-"))
   tempDirs.push(sourceCodexHome, workspace)
   await stageCodexOnPath()
-  process.env["LORE_EVAL_TASK_REAL"] = "1"
-  process.env["LORE_EVAL_TASK_TIMEOUT_KILL_GRACE_MS"] = "1"
+  process.env["KENNEN_EVAL_TASK_REAL"] = "1"
+  process.env["KENNEN_EVAL_TASK_TIMEOUT_KILL_GRACE_MS"] = "1"
   process.env["CODEX_HOME"] = sourceCodexHome
   process.env["HOME"] = sourceCodexHome
   return { workspace }
@@ -225,7 +225,7 @@ async function setupTaskRunEnv(): Promise<{ workspace: string }> {
 // CI runner) actually has codex installed. spawn itself is mocked, so this file
 // is never executed — it only needs to be discoverable and executable.
 async function stageCodexOnPath(): Promise<void> {
-  const binDir = await mkdtemp(join(tmpdir(), "lore-codex-bin-"))
+  const binDir = await mkdtemp(join(tmpdir(), "kennen-codex-bin-"))
   tempDirs.push(binDir)
   const codexPath = join(binDir, "codex")
   await writeFile(codexPath, "#!/bin/sh\nexit 0\n", { mode: 0o755 })

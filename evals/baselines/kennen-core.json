@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "suite": "lore-core",
+  "suite": "kennen-core",
   "runner": "retrieval",
   "capturedAt": "2026-05-03T12:00:00.000Z",
   "notes": "Add task-only and query-focused context governance coverage",
@@ -19,7 +19,7 @@
   "results": [
     {
       "taskId": "follows-incident-runbook",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -35,7 +35,7 @@
     },
     {
       "taskId": "follows-incident-runbook",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -43,7 +43,7 @@
     },
     {
       "taskId": "prefers-current-test-runner",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -59,7 +59,7 @@
     },
     {
       "taskId": "prefers-current-test-runner",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -83,7 +83,7 @@
     },
     {
       "taskId": "query-focus-ignores-pinned-noise",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.context",
       "success": true,
       "recall": null,
@@ -99,7 +99,7 @@
     },
     {
       "taskId": "query-focus-ignores-pinned-noise",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.context",
       "success": true,
       "recall": null,
@@ -115,7 +115,7 @@
     },
     {
       "taskId": "query-focus-ignores-upstream-noise",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.context",
       "success": true,
       "recall": null,
@@ -131,7 +131,7 @@
     },
     {
       "taskId": "query-focus-ignores-upstream-noise",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.context",
       "success": true,
       "recall": null,
@@ -147,7 +147,7 @@
     },
     {
       "taskId": "relates-alert-tuning-task-to-budget-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -163,7 +163,7 @@
     },
     {
       "taskId": "relates-alert-tuning-task-to-budget-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -171,7 +171,7 @@
     },
     {
       "taskId": "relates-canary-task-to-canary-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -187,7 +187,7 @@
     },
     {
       "taskId": "relates-canary-task-to-canary-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -195,7 +195,7 @@
     },
     {
       "taskId": "relates-payments-task-to-retry-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -211,7 +211,7 @@
     },
     {
       "taskId": "relates-payments-task-to-retry-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -219,7 +219,7 @@
     },
     {
       "taskId": "relates-search-tuning-task-to-rrf-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -235,7 +235,7 @@
     },
     {
       "taskId": "relates-search-tuning-task-to-rrf-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -243,7 +243,7 @@
     },
     {
       "taskId": "relates-session-task-to-rotation-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -259,7 +259,7 @@
     },
     {
       "taskId": "relates-session-task-to-rotation-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.relatedMemories",
       "success": true,
       "recall": null,
@@ -267,7 +267,7 @@
     },
     {
       "taskId": "respects-data-retention-policy",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -283,7 +283,7 @@
     },
     {
       "taskId": "respects-data-retention-policy",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -291,7 +291,7 @@
     },
     {
       "taskId": "respects-governing-auth-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -307,7 +307,7 @@
     },
     {
       "taskId": "respects-governing-auth-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -331,7 +331,7 @@
     },
     {
       "taskId": "returns-result-from-service-boundary",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -347,7 +347,7 @@
     },
     {
       "taskId": "returns-result-from-service-boundary",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -371,7 +371,7 @@
     },
     {
       "taskId": "surfaces-recent-architecture-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -387,7 +387,7 @@
     },
     {
       "taskId": "surfaces-recent-architecture-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -395,7 +395,7 @@
     },
     {
       "taskId": "surfaces-recent-billing-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -411,7 +411,7 @@
     },
     {
       "taskId": "surfaces-recent-billing-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -419,7 +419,7 @@
     },
     {
       "taskId": "surfaces-recent-incident-postmortem",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -435,7 +435,7 @@
     },
     {
       "taskId": "surfaces-recent-incident-postmortem",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -443,7 +443,7 @@
     },
     {
       "taskId": "surfaces-recent-monitoring-decision",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -459,7 +459,7 @@
     },
     {
       "taskId": "surfaces-recent-monitoring-decision",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -467,7 +467,7 @@
     },
     {
       "taskId": "surfaces-recent-policy-update",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -483,7 +483,7 @@
     },
     {
       "taskId": "surfaces-recent-policy-update",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.memories",
       "success": true,
       "recall": null,
@@ -491,7 +491,7 @@
     },
     {
       "taskId": "task-only-avoids-harmful-wakeup-noise",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskOnly",
       "success": true,
       "recall": null,
@@ -507,7 +507,7 @@
     },
     {
       "taskId": "task-only-avoids-harmful-wakeup-noise",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskOnly",
       "success": true,
       "recall": null,
@@ -515,7 +515,7 @@
     },
     {
       "taskId": "uses-current-deployment-pattern",
-      "scenario": "empty-lore",
+      "scenario": "empty-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,
@@ -531,7 +531,7 @@
     },
     {
       "taskId": "uses-current-deployment-pattern",
-      "scenario": "no-lore",
+      "scenario": "no-kennen",
       "surface": "wake-up.taskMemories",
       "success": true,
       "recall": null,

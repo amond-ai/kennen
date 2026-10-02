@@ -22,7 +22,7 @@ function createMockServer() {
   }
 }
 
-describe("Lore MCP help resources", () => {
+describe("Kennen MCP help resources", () => {
   it("registers the static index and templated action resources", async () => {
     const server = createMockServer()
     registerHelpResources(server)
@@ -30,47 +30,47 @@ describe("Lore MCP help resources", () => {
     expect(server.registerResource).toHaveBeenCalledTimes(2)
 
     const indexCall = server.registerResource.mock.calls[0]
-    expect(indexCall[0]).toBe("lore-help")
-    expect(indexCall[1]).toBe("lore://help")
+    expect(indexCall[0]).toBe("kennen-help")
+    expect(indexCall[1]).toBe("kennen://help")
     expect(indexCall[2]).toMatchObject({ mimeType: "text/markdown" })
     const indexResult = (await indexCall[3](
-      new URL("lore://help"),
+      new URL("kennen://help"),
       {}
     )) as ResourceReadResult
     expect(indexResult.contents[0]).toMatchObject({
-      uri: "lore://help",
+      uri: "kennen://help",
       mimeType: "text/markdown",
     })
-    expect(indexResult.contents[0]?.text).toContain("lore://help/lore-memory/save")
+    expect(indexResult.contents[0]?.text).toContain("kennen://help/kennen-memory/save")
     expect(indexResult.contents[0]?.text).toContain(
       "not a replacement for runtime validation"
     )
 
     const actionCall = server.registerResource.mock.calls[1]
-    expect(actionCall[0]).toBe("lore-help-action")
+    expect(actionCall[0]).toBe("kennen-help-action")
     expect(actionCall[1]).toBeInstanceOf(ResourceTemplate)
-    expect(actionCall[1].uriTemplate.toString()).toBe("lore://help/{tool}/{action}")
+    expect(actionCall[1].uriTemplate.toString()).toBe("kennen://help/{tool}/{action}")
     expect(actionCall[2]).toMatchObject({ mimeType: "text/markdown" })
 
     const listed = await actionCall[1].listCallback({})
     expect(listed.resources).toHaveLength(HELP_RECIPES.length)
     expect(listed.resources).toContainEqual(
       expect.objectContaining({
-        uri: "lore://help/lore-query/search",
+        uri: "kennen://help/kennen-query/search",
         mimeType: "text/markdown",
       })
     )
 
     const recipeResult = (await actionCall[3](
-      new URL("lore://help/lore-query/search"),
-      { tool: "lore-query", action: "search" },
+      new URL("kennen://help/kennen-query/search"),
+      { tool: "kennen-query", action: "search" },
       {}
     )) as ResourceReadResult
     expect(recipeResult.contents[0]).toMatchObject({
-      uri: "lore://help/lore-query/search",
+      uri: "kennen://help/kennen-query/search",
       mimeType: "text/markdown",
     })
-    expect(recipeResult.contents[0]?.text).toContain("# lore-query action='search'")
+    expect(recipeResult.contents[0]?.text).toContain("# kennen-query action='search'")
     expect(recipeResult.contents[0]?.text).toContain("```json")
   })
 
@@ -85,31 +85,31 @@ describe("Lore MCP help resources", () => {
   })
 
   it("renders required safety guidance in the relevant recipes", () => {
-    expect(rendered("lore-fact", "create")).toContain(
+    expect(rendered("kennen-fact", "create")).toContain(
       "Requires provenance via sourceMemoryId"
     )
-    expect(rendered("lore-task", "create")).toContain(
+    expect(rendered("kennen-task", "create")).toContain(
       "tangential or out-of-scope follow-up work"
     )
-    expect(rendered("lore-procedure", "propose")).toContain(
-      "approval still goes through lore-memory action='approve'"
+    expect(rendered("kennen-procedure", "propose")).toContain(
+      "approval still goes through kennen-memory action='approve'"
     )
-    expect(rendered("lore-pinned", "pin")).toContain(
+    expect(rendered("kennen-pinned", "pin")).toContain(
       "Audience and mutability are rendering and audit metadata"
     )
-    expect(rendered("lore-pinned", "list")).toContain(
+    expect(rendered("kennen-pinned", "list")).toContain(
       "Audience is rendering and audit metadata"
     )
   })
 
   it("renders search and ask as distinct retrieval recipes", () => {
-    const search = rendered("lore-query", "search")
-    const ask = rendered("lore-query", "ask")
+    const search = rendered("kennen-query", "search")
+    const ask = rendered("kennen-query", "ask")
 
     expect(search).toContain("mode")
-    expect(search).toContain("Use lore-query action='ask' instead")
+    expect(search).toContain("Use kennen-query action='ask' instead")
     expect(ask).toContain("structured facts and tasks")
-    expect(ask).toContain("Use lore-query action='search' instead")
+    expect(ask).toContain("Use kennen-query action='search' instead")
   })
 
   it("renders every recipe with markdown text and fenced JSON", () => {

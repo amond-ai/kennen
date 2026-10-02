@@ -2,7 +2,7 @@
  * Shared project resolution for MCP tools.
  */
 
-import type { LoreServices } from "../services.js"
+import type { KennenServices } from "../services.js"
 import { formatCatchAllScopeSummary, subProjectNames } from "../core/context.js"
 import {
   resolveProjectScopeName,
@@ -36,13 +36,13 @@ export interface ResolvedReadProjectScope {
  * trigger the catch-all warning — if the agent picked, we trust the pick.
  */
 export async function resolveProjectIds(
-  services: LoreServices,
+  services: KennenServices,
   projectName?: string,
   projectNames?: string[]
 ): Promise<ResolvedProjects> {
   // Plural takes precedence over singular
   const scopeErrorOptions = {
-    listHint: "call `lore-project action='list'` to see configured projects",
+    listHint: "call `kennen-project action='list'` to see configured projects",
   }
   const names: readonly string[] =
     projectNames !== undefined
@@ -95,7 +95,7 @@ export async function resolveProjectIds(
 }
 
 export async function resolveReadProjectScope(
-  services: LoreServices,
+  services: KennenServices,
   projectName?: string
 ): Promise<ResolvedReadProjectScope> {
   // Deliberately singular today: read tools only expose `projectName`.
@@ -106,7 +106,7 @@ export async function resolveReadProjectScope(
     projectName,
     "projectName",
     {
-      listHint: "call `lore-project action='list'` to see configured projects",
+      listHint: "call `kennen-project action='list'` to see configured projects",
     }
   )
   if (explicitProjectName !== undefined) {
@@ -115,7 +115,7 @@ export async function resolveReadProjectScope(
       explicitProjectName,
       "projectName",
       {
-        listHint: "call `lore-project action='list'` to see configured projects",
+        listHint: "call `kennen-project action='list'` to see configured projects",
       }
     )
     return {

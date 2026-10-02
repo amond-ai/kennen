@@ -309,8 +309,8 @@ describe("MemoryList.listForNearDuplicates", () => {
   let stderrSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    savedDebug = process.env["LORE_DEBUG"]
-    process.env["LORE_DEBUG"] = "1"
+    savedDebug = process.env["KENNEN_DEBUG"]
+    process.env["KENNEN_DEBUG"] = "1"
     stderrSpy = vi
       .spyOn(process.stderr, "write")
       .mockImplementation(() => true) as unknown as typeof stderrSpy
@@ -318,8 +318,8 @@ describe("MemoryList.listForNearDuplicates", () => {
 
   afterEach(() => {
     stderrSpy.mockRestore()
-    if (savedDebug === undefined) delete process.env["LORE_DEBUG"]
-    else process.env["LORE_DEBUG"] = savedDebug
+    if (savedDebug === undefined) delete process.env["KENNEN_DEBUG"]
+    else process.env["KENNEN_DEBUG"] = savedDebug
   })
 
   it("drops 404 object_not_found hydration failures and keeps remaining candidates", async () => {
@@ -347,7 +347,7 @@ describe("MemoryList.listForNearDuplicates", () => {
 
     expect(stderrSpy).toHaveBeenCalledTimes(1)
     const line = String(stderrSpy.mock.calls[0]![0])
-    expect(line).toContain("[lore] partial-failure:")
+    expect(line).toContain("[kennen] partial-failure:")
     expect(line).toContain("source=near-duplicate-hydrate")
     expect(line).toContain("pageId=gone-id")
     expect(line).toContain("error=not found")
@@ -375,7 +375,7 @@ describe("MemoryList.listForNearDuplicates", () => {
 
     expect(stderrSpy).toHaveBeenCalledTimes(1)
     const line = String(stderrSpy.mock.calls[0]![0])
-    expect(line).toContain("[lore] partial-failure:")
+    expect(line).toContain("[kennen] partial-failure:")
     expect(line).toContain("source=near-duplicate-hydrate")
     expect(line).toContain("pageId=bad id")
     expect(line).toContain("error=Memory <page-id> is archived. <redacted-token>")
