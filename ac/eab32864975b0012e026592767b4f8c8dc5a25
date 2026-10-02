@@ -1,0 +1,23 @@
+src/mcp/helpers.ts
+  s_876ea2f6aa27d8::t_baf7fe082d74fb 385-399
+  s_876ea2f6aa27d8::t_8a562c346a276e 362-364
+  s_876ea2f6aa27d8::t_87e896fdd3c9d7 373-375,377
+src/mcp/helpers.test.ts
+  s_876ea2f6aa27d8::t_543f0611b4066c 397-409
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aceab32864975b0012e026592767b4f8c8dc5a25",
+  "prompts": {},
+  "sessions": {
+    "s_876ea2f6aa27d8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b128e651-be67-40ff-8dec-407957759c21",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
