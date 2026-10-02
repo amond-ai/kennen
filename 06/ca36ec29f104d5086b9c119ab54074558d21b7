@@ -1,0 +1,97 @@
+src/mcp/server.ts
+  s_72be43a240e721::t_2abb06791365a1 17-18
+src/mcp/tools/procedures.ts
+  s_72be43a240e721::t_818dfc5ad6b2d2 18,475,567,571
+src/mcp/tools/pinned.test.ts
+  s_72be43a240e721::t_4cbce4094d82af 12,14,34-39,46
+src/mcp/tools/knowledge.ts
+  s_72be43a240e721::t_57f362a5731aab 2,817,878,881
+src/mcp/tools/pinned.ts
+  s_72be43a240e721::t_03db9afbb26af0 27,160,226,229
+src/mcp/tools/polymorphic.test.ts
+  s_72be43a240e721::t_8506104561154f 20,46-51,58,120-122,126-128,137-138,692,1733-1734,1736,1738-1739
+src/mcp/helpers.test.ts
+  s_72be43a240e721::t_a7f99177b478c8 2,8,374-397
+src/mcp/server-sdk.test.ts
+  s_72be43a240e721::t_cb0f59406849fb 2,29,248,252
+src/mcp/tools/project.ts
+  s_72be43a240e721::t_d4230d73ac1d26 2,138,154,158
+src/eval/skill-use.ts
+  s_72be43a240e721::t_99186ae5cd947c 883
+src/eval/schema.ts
+  s_72be43a240e721::t_45d878e51457d7 115
+src/mcp/tools/query.ts
+  s_72be43a240e721::t_6e126d24486679 2,115,257,261
+src/core/rich-text-schema.ts
+  s_72be43a240e721::t_f12a4c48fab73a 80
+src/mcp/tools/tasks.test.ts
+  s_72be43a240e721::t_4a12d2ce9f6967 1,56-61,73
+src/mcp/tools/decisions.ts
+  s_72be43a240e721::t_b0b64d40d236f7 2,1046,1213,1216
+src/mcp/tools/context.test.ts
+  s_72be43a240e721::t_48d92fe55d9e60 1
+package.json
+  s_72be43a240e721::t_611955098a0851 55,61
+src/eval/skill-retrieval.ts
+  s_72be43a240e721::t_db8d5469830ba7 1721
+src/eval/retrieval-quality.test.ts
+  s_72be43a240e721::t_b87c7cd5559b9c 352
+src/core/cost-ledger.ts
+  s_72be43a240e721::t_4b618f913aa27e 174
+src/mcp/tools/memory.ts
+  s_72be43a240e721::t_d0721044b062e3 5,66,337,340
+src/mcp/tools/decisions.test.ts
+  s_72be43a240e721::t_1229ced3fbf5c0 1
+src/config.test.ts
+  s_72be43a240e721::t_bd1e50203396dd 299,308
+package-lock.json
+  s_72be43a240e721::t_b44456751127e1 12,18,699-702,705,708-718,720-721,1639,1654,1975,2148,2302,2347,2445,2704,2717,3227,3294-3296
+src/mcp/server.test.ts
+  s_72be43a240e721::t_5942e72ba166d5 81,95
+src/eval/vaults.ts
+  s_72be43a240e721::t_3816f174f54480 75
+src/eval/task-runner/schema.ts
+  s_72be43a240e721::t_78aa88b92fb84a 128-130,186
+src/mcp/tools/knowledge.test.ts
+  s_72be43a240e721::t_3043d9eb4d3bf3 1
+src/mcp/tools/procedures.test.ts
+  s_72be43a240e721::t_2c3e4e70583d81 1
+src/mcp/help.ts
+  s_72be43a240e721::t_3287deadbfc248 1
+src/config.ts
+  s_72be43a240e721::t_98e2995a8f00e9 154
+src/mcp/tools/query.test.ts
+  s_72be43a240e721::t_339255b1591660 11
+src/mcp/tools/tasks.ts
+  s_72be43a240e721::t_38d7efd2eed712 15,1048,1231,1234
+src/mcp/tools/memory.test.ts
+  s_72be43a240e721::t_7c52de20266e00 1,99-104,115,139,8027
+src/mcp/cost-tracking.test.ts
+  s_72be43a240e721::t_e198cfc04da7a7 4,6,630-635,642,672-675
+src/mcp/help.test.ts
+  s_72be43a240e721::t_9f216eaa634955 2
+src/mcp/cost-tracking.ts
+  s_72be43a240e721::t_4a772f97c09b8e 1,158
+src/mcp/tools/context.ts
+  s_72be43a240e721::t_140a36f42267ea 1-2,25,29
+src/mcp/helpers.ts
+  s_72be43a240e721::t_e1ad11199849d7 370-386
+docs/mcp-tool-authoring.md
+  s_72be43a240e721::t_6bcf21f9715a12 31-32,54,59,61,97,107,110,133-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "06ca36ec29f104d5086b9c119ab54074558d21b7",
+  "prompts": {},
+  "sessions": {
+    "s_72be43a240e721": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fc08563-8279-4b3b-bcb4-41fbbed1865e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
