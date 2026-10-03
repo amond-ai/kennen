@@ -1,0 +1,19 @@
+{
+  "name": "kennen",
+  "owner": {
+    "name": "PassionFactory Corp.",
+    "url": "https://github.com/amond-ai"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for Kennen, the Notion-backed AI memory system"
+  },
+  "plugins": [
+    {
+      "name": "kennen",
+      "source": "./plugins/kennen",
+      "description": "Kennen MCP tools, wake-up context injection, and Stop-hook autosave for Claude Code",
+      "category": "productivity",
+      "tags": ["memory", "notion", "mcp"]
+    }
+  ]
+}

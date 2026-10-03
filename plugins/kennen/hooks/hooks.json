@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/libexec/kennen.sh\" \"${CLAUDE_PROJECT_DIR}\" hooks wakeup",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/libexec/kennen.sh\" \"${CLAUDE_PROJECT_DIR}\" hooks autosave",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
