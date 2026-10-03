@@ -120,7 +120,7 @@ export interface ClaudeHookEntry {
     type: string
     command: string
     timeout?: number
-    /** Not a Claude Code hook field; older installs wrote it. */
+    /** Not a Claude Code hook field; a Kennen hook carrying it is stale. */
     runOnce?: boolean
   }>
 }
@@ -128,9 +128,9 @@ export interface ClaudeHookEntry {
 type ClaudeHookCommand = ClaudeHookEntry["hooks"][number]
 
 /**
- * True when a Kennen-owned hook carries options an older install wrote:
- * the `runOnce` key, or a recorded `timeout` other than the one the
- * installer writes now (older installs wrote milliseconds).
+ * True when a Kennen-owned hook's options differ from what the installer
+ * writes: it carries a `runOnce` key, or it records a `timeout` other than
+ * `expectedTimeout`. A hook with no recorded `timeout` is not stale.
  */
 function hasOutdatedClaudeHookOptions(
   hook: ClaudeHookCommand,

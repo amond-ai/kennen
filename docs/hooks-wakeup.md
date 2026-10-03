@@ -78,8 +78,8 @@ failures are still debounced so the hook does not retry a decorative Notion
 path every turn. Later prompts in the same session return before Notion
 initialization.
 
-After `/clear` or a topical pivot inside the same Codex session, agents should
-explicitly rerun the MCP surface:
+After `/clear` or a topical pivot inside the same Claude Code or Codex session,
+agents should explicitly rerun the MCP surface:
 
 ```text
 kennen-context action='wake-up' userQuery='<new task prompt>'
