@@ -1,0 +1,39 @@
+plugins/kennen/hooks/hooks.json
+  s_c72dcfb6ba8398::t_443346df30be03 1-7,9-18,20-26
+  s_c72dcfb6ba8398::t_80953d24f6fb6e 8,19
+plugins/kennen/skills/kennen-memory/SKILL.md
+  s_c72dcfb6ba8398::t_b924d895f5c347 1-20,27-52
+  s_c72dcfb6ba8398::t_1145b6d2f12149 21-26
+plugins/kennen/.mcp.json
+  s_c72dcfb6ba8398::t_80953d24f6fb6e 5
+  s_c72dcfb6ba8398::t_443346df30be03 1-4,6-11
+README.md
+  s_c72dcfb6ba8398::t_1203b7221e2192 175-187,192,194-199
+  s_c72dcfb6ba8398::t_9d5c3c1ca63f5e 188-191,193
+.claude-plugin/marketplace.json
+  s_c72dcfb6ba8398::t_443346df30be03 1-19
+src/claude-plugin.test.ts
+  s_c72dcfb6ba8398::t_80953d24f6fb6e 16,47,52
+  s_c72dcfb6ba8398::t_a1a70e08f4ad9b 1,11-15,17-45,49-50,54-102
+  s_c72dcfb6ba8398::t_1145b6d2f12149 2-10,46,48,51,53
+plugins/kennen/.claude-plugin/plugin.json
+  s_c72dcfb6ba8398::t_443346df30be03 1-13
+plugins/kennen/libexec/kennen.sh
+  s_c72dcfb6ba8398::t_e3b3237b644cf1 1-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2fea54fd968b7fc9472c20e63b88530c982f6b94",
+  "prompts": {},
+  "sessions": {
+    "s_c72dcfb6ba8398": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c2d1454b-9f97-4712-86f0-b415b2d4ecbb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
