@@ -105,6 +105,9 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Package exports check
+        run: bun run exports:check
+
       - name: Eval starter suite
         run: node dist/cli.js eval run evals/suites/kennen-core.yaml --out evals/results/kennen-core-ci.json --min-lift 0.5 --max-harm 0.0 --baseline evals/baselines/kennen-core.json
 
