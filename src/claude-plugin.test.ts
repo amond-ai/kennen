@@ -119,7 +119,10 @@ describe.skipIf(process.platform === "win32")("Claude Code plugin launcher", () 
     await writeFile(join(projectDir, ".pnp.cjs"), "")
     await rm(join(binDir, "kennen"))
     const fakeYarn = join(binDir, "yarn")
-    await writeFile(fakeYarn, '#!/bin/sh\necho "yarn cwd=$(pwd) args=$*"\n')
+    await writeFile(
+      fakeYarn,
+      '#!/bin/sh\n[ "$1" = bin ] && exit 0\necho "yarn cwd=$(pwd) args=$*"\n'
+    )
     await chmod(fakeYarn, 0o755)
     const appDir = join(projectDir, "packages/app")
 
@@ -129,5 +132,22 @@ describe.skipIf(process.platform === "win32")("Claude Code plugin launcher", () 
     expect(result.stdout.trim()).toBe(
       `yarn cwd=${appDir} args=run -T kennen hooks wakeup`
     )
+  })
+
+  it("falls back to kennen on PATH when the Yarn PnP workspace does not resolve it", async () => {
+    await writeFile(join(projectDir, ".kennen.yaml"), "")
+    await writeFile(join(projectDir, ".pnp.cjs"), "")
+    const fakeYarn = join(binDir, "yarn")
+    await writeFile(
+      fakeYarn,
+      '#!/bin/sh\n[ "$1" = bin ] && exit 1\necho "yarn args=$*"\n'
+    )
+    await chmod(fakeYarn, 0o755)
+    const appDir = join(projectDir, "packages/app")
+
+    const result = runLauncher(appDir, "hooks", "wakeup")
+
+    expect(result.status).toBe(0)
+    expect(result.stdout.trim()).toBe(`cwd=${appDir} args=hooks wakeup`)
   })
 })

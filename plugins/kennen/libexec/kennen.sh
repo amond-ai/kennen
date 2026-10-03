@@ -44,34 +44,46 @@ has_vault() {
 # Yarn PnP installs have no node_modules/.bin, so dispatch through
 # `yarn run -T`, the launch shape `kennen install` writes for Yarn PnP
 # projects. The marker search stops at $HOME, matching the installer's detection.
-uses_yarn_pnp() {
-  command -v yarn >/dev/null 2>&1 || return 1
+pnp_root() {
   dir=$(pwd -P)
   while :; do
-    [ -f "$dir/.pnp.cjs" ] || [ -f "$dir/.pnp.loader.mjs" ] && return 0
+    if [ -f "$dir/.pnp.cjs" ] || [ -f "$dir/.pnp.loader.mjs" ]; then
+      echo "$dir"
+      return 0
+    fi
     [ "$dir" = "${HOME:-/}" ] || [ "$dir" = / ] && return 1
     dir=$(dirname "$dir")
   done
 }
 
-has_kennen() {
-  uses_yarn_pnp || command -v kennen >/dev/null 2>&1
+# Sets kennen_cmd to `yarn` when the PnP workspace resolves kennen, else to
+# `kennen` when it is on PATH (a global install), else leaves it empty.
+resolve_kennen() {
+  kennen_cmd=
+  if command -v yarn >/dev/null 2>&1 && root=$(pnp_root) &&
+    (cd "$root" && yarn bin kennen >/dev/null 2>&1); then
+    kennen_cmd=yarn
+  elif command -v kennen >/dev/null 2>&1; then
+    kennen_cmd=kennen
+  fi
 }
 
 run_kennen() {
-  if uses_yarn_pnp; then
+  if [ "$kennen_cmd" = yarn ]; then
     exec yarn run -T kennen "$@"
   fi
   exec kennen "$@"
 }
 
 if [ "${1:-}" = hooks ]; then
-  has_kennen || exit 0
   has_vault || exit 0
+  resolve_kennen
+  [ -n "$kennen_cmd" ] || exit 0
   run_kennen "$@"
 fi
 
-if ! has_kennen; then
+resolve_kennen
+if [ -z "$kennen_cmd" ]; then
   echo "kennen: command not found. Install it with 'npm install -g @amond-ai/kennen' (or as a project dependency) and restart Claude Code." >&2
   exit 127
 fi
