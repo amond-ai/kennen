@@ -54,6 +54,7 @@ jobs:
               .readFileSync(0, "utf8")
               .split(/\r?\n/)
               .some((line) => line.endsWith(": " + version));
+            process.exit(published ? 0 : 1);
           '; then
             echo "published=true" >> "$GITHUB_OUTPUT"
           else
