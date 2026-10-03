@@ -39,9 +39,10 @@ Public npm requires no registry configuration or package token.
 
 ```bash
 git clone https://github.com/amond-ai/kennen.git
-cd kennen && npm install && npm run build && npm link
+cd kennen && mise install && bun install && bun run build && npm link
 ```
 
+[mise](https://mise.jdx.dev) installs the pinned Node.js and Bun versions.
 `npm link` makes `kennen` available globally on your `PATH` from the clone.
 Run `kennen --version` to confirm either installation route, then continue with
 step 2 below.

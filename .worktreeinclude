@@ -5,8 +5,8 @@
 .kennen.yaml
 
 # Root environment variables
-.env
-.env.local
+/.env
+/.env.local
 
 # Claude Code local settings (internal marketplaces, permissions, env)
 .claude/settings.local.json

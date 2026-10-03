@@ -251,8 +251,8 @@ Two quick checks before opening a PR that touches CI:
 
 ```bash
 # 1. The whole ci.yml pipeline, with no supported Notion auth source
-#    available and CI=true so the prepare hooks installer takes its no-op
-#    branch.
+#    available and HUSKY=0 on the install so the prepare script skips Git
+#    hook installation, as it does on CI runners.
 #
 #    The chain runs inside a single `bash -c` so the env scrub and CI=true
 #    apply to every command, not just the first one. `env -u VAR cmd1 &&

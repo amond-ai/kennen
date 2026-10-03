@@ -14,5 +14,5 @@
 
 ## Changelog
 
-- [ ] The PR title's Conventional Commit type matches the change: `feat` or `fix` for observable behavior changes, `!` for breaking changes, and a non-releasing type such as `refactor`, `docs`, or `chore` otherwise.
+- [ ] The PR title uses `feat` or `fix` for observable behavior changes, appends `!` to the type for breaking changes (for example, `feat!:`), and uses a non-releasing type such as `refactor`, `docs`, or `chore` otherwise.
 - [ ] If this PR touches `.github/workflows/`, I have read [`docs/ci.md`](../docs/ci.md) and the workflow satisfies all seven rules in "Rules for new CI steps"; otherwise this PR does not touch CI.
