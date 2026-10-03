@@ -4289,6 +4289,38 @@ describe("Claude hook options — timeouts in seconds, no runOnce", () => {
   })
 })
 
+describe("upsertClaudeHookCommand — preserves user hooks", () => {
+  it("keeps a user hook that shares an entry with the rewritten Kennen hook", () => {
+    const autosaveCommand = buildClaudeHookCommand("autosave")
+    const userHook = { type: "command", command: "/Users/operator/scripts/notify.sh" }
+    const existing: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [{ type: "command", command: autosaveCommand, timeout: 10000 }, userHook],
+      },
+    ]
+
+    expect(
+      upsertClaudeHookCommand(existing, "autosave.sh", autosaveCommand, {
+        matcher: "",
+        timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.autosave,
+      })
+    ).toEqual([
+      { matcher: "", hooks: [userHook] },
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: autosaveCommand,
+            timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.autosave,
+          },
+        ],
+      },
+    ])
+  })
+})
+
 describe("Codex hook detection — recognizes prior-shape entries as stale", () => {
   // Symmetric to the Claude detection: pre-`run -T` Codex bin-dispatch
   // hooks (with the KENNEN_AGENT_NAME=Codex env prefix) classify as

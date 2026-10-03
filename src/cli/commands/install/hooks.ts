@@ -206,10 +206,12 @@ export function detectClaudeHook(
  * bin-dispatch shape (`kennen hooks <event>`) or a legacy absolute-path
  * shape on either side of the operation:
  *
- * - Filters existing entries by both shapes simultaneously: any entry
- *   whose command ends with `/<scriptName>` (legacy) OR exactly matches
+ * - Filters existing hooks by both shapes simultaneously: any hook whose
+ *   command ends with `/<scriptName>` (legacy) OR exactly matches
  *   `kennen hooks <event>` (bin-dispatch) is treated as Kennen-owned and
- *   removed before the new entry is appended.
+ *   removed before the new entry is appended. Other hooks that share an
+ *   entry with a Kennen hook stay in place; an entry left with no hooks
+ *   is dropped.
  * - Writes the new entry verbatim from `newCommand`, which the caller
  *   selects based on `context.legacyPaths`.
  *
@@ -244,15 +246,20 @@ export function upsertClaudeHookCommand(
   // means any prior install can be cleanly upgraded.
   const binDispatchPattern =
     /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
-  const filtered = (existing ?? []).filter(
-    (entry) =>
-      !entry.hooks?.some((hook) => {
-        if (typeof hook.command !== "string") return false
-        if (hook.command.endsWith(`/${scriptName}`)) return true
-        if (binDispatchPattern.test(hook.command)) return true
-        return false
-      })
-  )
+  const isKennenOwned = (hook: ClaudeHookCommand): boolean => {
+    if (typeof hook.command !== "string") return false
+    if (hook.command.endsWith(`/${scriptName}`)) return true
+    return binDispatchPattern.test(hook.command)
+  }
+  const filtered: ClaudeHookEntry[] = []
+  for (const entry of existing ?? []) {
+    if (!entry.hooks?.some(isKennenOwned)) {
+      filtered.push(entry)
+      continue
+    }
+    const kept = entry.hooks.filter((hook) => !isKennenOwned(hook))
+    if (kept.length > 0) filtered.push({ ...entry, hooks: kept })
+  }
   filtered.push({
     matcher: config.matcher,
     hooks: [
