@@ -102,13 +102,13 @@ prompt. Legacy Codex installs used `SessionStart`; that event has no prompt, so
 it still falls back to unranked output until the project reruns
 `kennen install --client codex`.
 
-Codex does not provide Claude Code's `runOnce` flag for `UserPromptSubmit`, so
-Kennen keeps its own per-session debounce marker and skips later prompt events
+Claude Code and Codex both fire `UserPromptSubmit` on every prompt, so Kennen
+keeps its own per-session debounce marker and skips later prompt events
 before initializing Notion. The marker records the first enabled
 `UserPromptSubmit` attempt, even when the prompt is a slash command or a
-transient Notion failure prevents context injection, so Codex does not retry the
-same decorative wake-up path every turn. After `/clear` or a topic pivot inside
-the same Codex session, call the MCP surface explicitly with
+transient Notion failure prevents context injection, so the hook does not retry
+the same decorative wake-up path every turn. After `/clear` or a topic pivot
+inside the same session, call the MCP surface explicitly with
 `kennen-context action='wake-up' userQuery='<new task prompt>'` to refresh ranked
 context. Set `hooks.wakeUp: false` in `.kennen.yaml` to skip automatic injection
 for supported assistants. If `.kennen.yaml` fails to parse, the hook falls back to

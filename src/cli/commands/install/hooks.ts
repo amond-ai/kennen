@@ -70,6 +70,16 @@ export function buildClaudeHookCommand(
 }
 
 /**
+ * Claude Code hook timeouts, in seconds (Claude Code's unit for a command
+ * hook's `timeout`). Autosave hands its work to a detached background
+ * process, so its limit only bounds the spawn.
+ */
+export const CLAUDE_HOOK_TIMEOUT_SECONDS = {
+  wakeup: 30,
+  autosave: 10,
+} as const
+
+/**
  * Codex hook command. Codex's hook runner already exposes the
  * project root via Codex's own context (.codex/hooks.json is
  * trusted-project-scoped, and Codex's hook shell launches with the
@@ -110,8 +120,26 @@ export interface ClaudeHookEntry {
     type: string
     command: string
     timeout?: number
+    /** Not a Claude Code hook field; older installs wrote it. */
     runOnce?: boolean
   }>
+}
+
+type ClaudeHookCommand = ClaudeHookEntry["hooks"][number]
+
+/**
+ * True when a Kennen-owned hook carries options an older install wrote:
+ * the `runOnce` key, or a recorded `timeout` other than the one the
+ * installer writes now (older installs wrote milliseconds).
+ */
+function hasOutdatedClaudeHookOptions(
+  hook: ClaudeHookCommand,
+  expectedTimeout: number | undefined
+): boolean {
+  if ("runOnce" in hook) return true
+  return (
+    expectedTimeout != null && hook.timeout != null && hook.timeout !== expectedTimeout
+  )
 }
 
 /**
@@ -132,7 +160,8 @@ export function detectClaudeHook(
   entries: ClaudeHookEntry[] | undefined,
   scriptName: string,
   legacyExpectedPath: string,
-  binDispatchCommand?: string
+  binDispatchCommand?: string,
+  expectedTimeout?: number
 ): HookStatus {
   if (!entries) return "missing"
 
@@ -154,13 +183,18 @@ export function detectClaudeHook(
       // Bin-dispatch form: exact match against the desired-write
       // shape is `current`; match against any other Kennen-owned
       // bin-dispatch variant is `stale` (eligible for upgrade).
-      if (binDispatchCommand && cmd === binDispatchCommand) return "current"
+      if (binDispatchCommand && cmd === binDispatchCommand) {
+        return hasOutdatedClaudeHookOptions(hook, expectedTimeout) ? "stale" : "current"
+      }
       if (allBinDispatchShapes.test(cmd)) return "stale"
       // Legacy absolute-path form: identified by the script-name
       // suffix, then classified by whether the full path matches the
       // resolved legacy path for this `pkgRoot`.
       if (cmd.endsWith(`/${scriptName}`)) {
-        return cmd === legacyExpectedPath ? "legacy-current" : "stale"
+        return cmd === legacyExpectedPath &&
+          !hasOutdatedClaudeHookOptions(hook, expectedTimeout)
+          ? "legacy-current"
+          : "stale"
       }
     }
   }
@@ -190,7 +224,7 @@ export function upsertClaudeHookCommand(
   existing: ClaudeHookEntry[] | undefined,
   scriptName: string,
   newCommand: string,
-  config: { matcher: string; timeout?: number; runOnce?: boolean }
+  config: { matcher: string; timeout?: number }
 ): ClaudeHookEntry[] {
   // Recognize ALL Kennen-owned bin-dispatch hook shapes so an upgrade
   // path strips the old entry before writing the new one — preventing
@@ -226,7 +260,6 @@ export function upsertClaudeHookCommand(
         type: "command",
         command: newCommand,
         ...(config.timeout != null ? { timeout: config.timeout } : {}),
-        ...(config.runOnce != null ? { runOnce: config.runOnce } : {}),
       },
     ],
   })

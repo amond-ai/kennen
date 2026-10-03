@@ -11,11 +11,12 @@ import {
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { CLAUDE_HOOK_TIMEOUT_SECONDS } from "./cli/commands/install/hooks.js"
 
 const PLUGIN_ROOT = resolve("plugins/kennen")
 const LAUNCHER = join(PLUGIN_ROOT, "libexec/kennen.sh")
 
-type HookGroup = { hooks: Array<{ type: string; command: string }> }
+type HookGroup = { hooks: Array<{ type: string; command: string; timeout?: number }> }
 
 async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(path, "utf-8")) as T
@@ -52,6 +53,17 @@ describe("Claude Code plugin manifests", () => {
         /libexec\/kennen\.sh" "\$\{CLAUDE_PROJECT_DIR\}" hooks autosave$/
       ),
     ])
+  })
+
+  it("uses the same hook timeouts kennen install writes for Claude", async () => {
+    const { hooks } = await readJson<{ hooks: Record<string, HookGroup[]> }>(
+      join(PLUGIN_ROOT, "hooks/hooks.json")
+    )
+    const timeoutsFor = (event: string) =>
+      (hooks[event] ?? []).flatMap((group) => group.hooks.map((hook) => hook.timeout))
+
+    expect(timeoutsFor("UserPromptSubmit")).toEqual([CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup])
+    expect(timeoutsFor("Stop")).toEqual([CLAUDE_HOOK_TIMEOUT_SECONDS.autosave])
   })
 })
 

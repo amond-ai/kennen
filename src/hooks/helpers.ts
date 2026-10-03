@@ -174,9 +174,10 @@ export function statePath(sessionId: string): string {
 }
 
 /**
- * Per-session attempt marker for prompt-bearing wake-up hooks. Codex's
- * `UserPromptSubmit` currently lacks Claude Code's `runOnce`, so the helper
- * owns the debounce that keeps wake-up to the first enabled prompt event.
+ * Per-session attempt marker for prompt-bearing wake-up hooks. Neither
+ * Claude Code nor Codex registers `UserPromptSubmit` once per session, so
+ * the helper owns the debounce that keeps wake-up to the first enabled
+ * prompt event.
  */
 export function wakeupStatePath(sessionId: string): string {
   return join(getStateDir(), `${safeFilenameSegment(sessionId)}.wakeup`)
@@ -725,11 +726,9 @@ export async function handleStop(
 // Wakeup — load context on the first user prompt (Claude Code and Codex)
 // ---------------------------------------------------------------------------
 //
-// Claude Code registration sets `runOnce: true` on the `UserPromptSubmit`
-// hook (the `mergeClaudeHookEntries` install path writes the flag).
-// Codex's `UserPromptSubmit` hook exposes the prompt too, but has no
-// equivalent `runOnce`, so the helper maintains a per-session marker
-// before it touches Notion. That keeps ranked wake-up as a first-prompt
+// Claude Code and Codex both fire `UserPromptSubmit` on every prompt and
+// expose the prompt text. The helper maintains a per-session marker
+// before it touches Notion, which keeps ranked wake-up as a first-prompt
 // path instead of a per-turn query.
 
 /**
