@@ -49,14 +49,14 @@ unbackfilled rows that need the SubjectKey substring fallback.
 
 | Command                | What it does            |
 | ---------------------- | ----------------------- |
-| `npm run build`        | tsup build              |
-| `npm run typecheck`    | `tsc --noEmit`          |
-| `npm run lint`         | `eslint src/`           |
-| `npm run format`       | `prettier --write src/` |
-| `npm run format:check` | `prettier --check src/` |
-| `npm run test`         | `vitest run`            |
-| `npm run test:watch`   | `vitest` watch mode     |
-| `npm run dev`          | `tsup --watch`          |
+| `bun run build`        | tsup build              |
+| `bun run typecheck`    | `tsc --noEmit`          |
+| `bun run lint`         | `eslint src/`           |
+| `bun run format`       | `prettier --write src/` |
+| `bun run format:check` | `prettier --check src/` |
+| `bun run test`         | `vitest run`            |
+| `bun run test:watch`   | `vitest` watch mode     |
+| `bun run dev`          | `tsup --watch`          |
 
 ## Notion SDK v5
 
@@ -175,7 +175,7 @@ imports and names alone.
 
 ## Testing
 
-- Run `npm run typecheck` before committing.
+- Run `bun run typecheck` before committing.
 - Write or update tests for behavior changes when a relevant test suite exists.
 - Follow the test framework and patterns already used in the project. This repo
   uses Vitest.

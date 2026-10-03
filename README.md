@@ -553,18 +553,19 @@ Memories, facts, and searches are automatically scoped to the matched project.
 
 ## Development
 
-**Prerequisites**: Node.js 20+, npm
+**Prerequisites**: [mise](https://mise.jdx.dev) (pins Node.js and Bun via `mise.toml`)
 
 ```bash
-npm install          # Install dependencies
-npm run build        # Build with tsup (ESM, 4 entry points)
-npm run typecheck    # Type-check with tsc --noEmit
-npm run lint         # Lint with eslint
-npm run lint:fix     # Lint and auto-fix
-npm run format       # Format with prettier
-npm run format:check # Check prettier formatting
-npm run test         # Run tests with vitest
-npm run dev          # Watch mode (tsup --watch)
+mise install         # Install the pinned Node.js and Bun
+bun install          # Install dependencies and the husky Git hooks
+bun run build        # Build with tsup (ESM, 4 entry points)
+bun run typecheck    # Type-check with tsc --noEmit
+bun run lint         # Lint with eslint
+bun run lint:fix     # Lint and auto-fix
+bun run format       # Format with prettier
+bun run format:check # Check prettier formatting
+bun run test         # Run tests with vitest
+bun run dev          # Watch mode (tsup --watch)
 ```
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md), [`AGENTS.md`](AGENTS.md), and the

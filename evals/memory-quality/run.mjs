@@ -229,7 +229,7 @@ async function loadPromptBuilder() {
     return await import(pathToFileURL(builtPath).href)
   } catch (error) {
     throw new Error(
-      `Could not load ${builtPath}. Run npm run build before this benchmark. ${error.message}`
+      `Could not load ${builtPath}. Run bun run build before this benchmark. ${error.message}`
     )
   }
 }

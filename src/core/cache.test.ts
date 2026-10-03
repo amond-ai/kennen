@@ -439,7 +439,7 @@ describe("LruCache — cacheNegatives option (PF1-09)", () => {
     //
     // The expectation here is a TypeScript error, not a runtime
     // exception. We use a `// @ts-expect-error` directive to assert
-    // the diagnostic — `tsc --noEmit` (run via `npm run typecheck`)
+    // the diagnostic — `tsc --noEmit` (run via `bun run typecheck`)
     // fails this test indirectly if the error stops being emitted.
     // Inline the construction so the directive scopes tightly.
     // @ts-expect-error cacheNegatives:true requires `null extends V`

@@ -157,7 +157,7 @@ pasting a bearer token there will:
 - Land the secret in git history on the next commit.
 - Trigger Kennen's config schema, which rejects every `auth.token` value before
   resolving auth.
-- Trigger the pre-commit hook (installed by `npm install`) which blocks
+- Trigger the pre-commit hook (installed by `bun install`) which blocks
   commits adding `auth.token`.
 
 The right home for a PAT is `NOTION_API_TOKEN` in your shell environment.
@@ -315,15 +315,15 @@ scratch page IDs and accidentally committed private page IDs that land in
 history need owner review; decide with the page owner whether to replace
 the page or rewrite history.
 
-The Kennen repo also installs a Git pre-commit guard during `npm install`
-to enforce the gitignore. The guard reads the staged `.kennen.yaml` from
-the Git index and rejects any committed content with a pointer at
-`.kennen.example.yaml`. It returns silently when `.kennen.yaml` is not
-tracked (the steady state). Fresh checkouts with only Git's sample hooks
-use `core.hooksPath=.githooks`; checkouts that already have active
-default `.git/hooks` or a custom hook path get a small wrapper installed
-there when no active `pre-commit` hook exists. If an active `pre-commit`
-hook already exists, chain `.githooks/pre-commit` from that hook.
+The Kennen repo also installs a Git pre-commit guard during `bun install`
+to enforce the gitignore. The `prepare` script runs husky, which points
+`core.hooksPath` at `.husky/_`, and `.husky/pre-commit` runs
+`tools/check-kennen-config.mjs --staged`. The guard reads the staged
+`.kennen.yaml` from the Git index and rejects any committed content with a
+pointer at `.kennen.example.yaml`. It returns silently when `.kennen.yaml`
+is not tracked (the steady state). husky replaces any existing
+`core.hooksPath`; if you keep personal hooks elsewhere, chain
+`.husky/pre-commit` from them.
 
 ## Rate limits
 

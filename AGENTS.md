@@ -64,14 +64,14 @@ need the SubjectKey substring fallback.
 
 | Command                | What it does            |
 | ---------------------- | ----------------------- |
-| `npm run build`        | tsup build              |
-| `npm run typecheck`    | `tsc --noEmit`          |
-| `npm run lint`         | `eslint src/`           |
-| `npm run format`       | `prettier --write src/` |
-| `npm run format:check` | `prettier --check src/` |
-| `npm run test`         | `vitest run`            |
-| `npm run test:watch`   | `vitest` watch mode     |
-| `npm run dev`          | `tsup --watch`          |
+| `bun run build`        | tsup build              |
+| `bun run typecheck`    | `tsc --noEmit`          |
+| `bun run lint`         | `eslint src/`           |
+| `bun run format`       | `prettier --write src/` |
+| `bun run format:check` | `prettier --check src/` |
+| `bun run test`         | `vitest run`            |
+| `bun run test:watch`   | `vitest` watch mode     |
+| `bun run dev`          | `tsup --watch`          |
 
 ## Non-Negotiables
 
@@ -79,10 +79,10 @@ Rule #1: If you need an exception to any rule here, stop and get explicit
 permission from the human lead first.
 
 - Do not bump version numbers. Never edit the `version` field in
-  `package.json`, `package-lock.json`, or any release manifest unless the
+  `package.json` or any release manifest unless the
   human lead has explicitly asked for a version bump in this turn. Releases
   are cut deliberately; an unrequested bump in an unrelated PR can ship a
-  release, break stacked-branch rebases, or desync `package-lock.json`.
+  release, break stacked-branch rebases, or desync the version sources.
 - Do not remove existing MCP tools. Deprecate first, remove in a future major.
 - Do not rename database properties. Property names are baked into schema,
   extractors, and services.
@@ -97,7 +97,7 @@ permission from the human lead first.
   [`docs/notion-sdk-v5.md`](docs/notion-sdk-v5.md): `client.dataSources.query`,
   `pages.retrieveMarkdown`, `pages.updateMarkdown`, and
   `databases.create({ initial_data_source: ... })`.
-- Run `npm run typecheck` before committing. Add or update tests when behavior
+- Run `bun run typecheck` before committing. Add or update tests when behavior
   changes and a relevant test suite exists.
 
 ## Operating Contract

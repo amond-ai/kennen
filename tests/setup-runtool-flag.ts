@@ -17,7 +17,7 @@
  * a developer or CI runner with `KENNEN_USE_RUNTOOL=1` in their shell
  * environment would see different test outcomes than a clean shell:
  * legacy mock-client tests would crash, and the suite would pass
- * locally but fail under `KENNEN_USE_RUNTOOL=1 npm test`. Pinned by PR
+ * locally but fail under `KENNEN_USE_RUNTOOL=1 bun run test`. Pinned by PR
  * #549 review iteration 1 (#543 Phase 4 blocker 1).
  *
  * Tests that exercise RunTool consumers (e.g. `compat.test.ts`'s A/B

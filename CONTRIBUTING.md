@@ -7,25 +7,34 @@ changing.
 
 ## Development Setup
 
-Kennen requires Node.js 20 or newer.
+Kennen uses [mise](https://mise.jdx.dev) to pin Node.js and Bun, and Bun for
+dependencies and scripts. The published package still runs on Node.js 20 or
+newer.
 
 ```bash
-npm install
-npm run build
-npm test
+mise install
+bun install
+bun run build
+bun run test
 ```
+
+`bun install` runs the `prepare` script, which builds the package and installs
+the husky Git hooks: `pre-commit` runs the `.kennen.yaml` and version-sync
+guards plus lint-staged, and `commit-msg` runs commitlint against the
+Conventional Commits rules.
 
 Useful commands:
 
 | Command                | Purpose                             |
 | ---------------------- | ----------------------------------- |
-| `npm run build`        | Build the ESM entry points          |
-| `npm run typecheck`    | Run TypeScript without emitting     |
-| `npm run lint`         | Run ESLint over `src/`              |
-| `npm run format`       | Format `src/` with Prettier         |
-| `npm run format:check` | Check Prettier formatting in `src/` |
-| `npm test`             | Run the Vitest suite                |
-| `npm run dev`          | Rebuild in watch mode               |
+| `bun run build`        | Build the ESM entry points          |
+| `bun run typecheck`    | Run TypeScript without emitting     |
+| `bun run lint`         | Run ESLint over `src/`              |
+| `bun run format`       | Format `src/` with Prettier         |
+| `bun run format:check` | Check Prettier formatting in `src/` |
+| `bun run test`         | Run the Vitest suite                |
+| `bun run dev`          | Rebuild in watch mode               |
+| `mise run check`       | Lint, typecheck, and test together  |
 
 `.kennen.yaml` is local-only — it's gitignored, the pre-commit hook
 (`tools/check-kennen-config.mjs --staged`) rejects any staged index entry,
@@ -71,8 +80,8 @@ and [`docs/mcp-tools.md`](docs/mcp-tools.md).
 ## Testing Expectations
 
 Run the narrowest useful checks while iterating, then run the relevant full
-checks before review. At minimum, run `npm run typecheck` before committing.
-For behavior changes, run `npm test` or the affected Vitest files. For public
+checks before review. At minimum, run `bun run typecheck` before committing.
+For behavior changes, run `bun run test` or the affected Vitest files. For public
 CLI, MCP, or hook changes, include the command you used to validate the affected
 workflow in the PR test plan.
 
@@ -108,7 +117,7 @@ The default eval suite is fixture-backed and does not read or write a live
 Notion vault:
 
 ```bash
-npm run build
+bun run build
 node dist/cli.js eval run evals/suites/kennen-core.yaml
 ```
 
@@ -150,8 +159,8 @@ Maintainers using the committed assistant configs should keep a stable
 
 ```bash
 cd ~/.kennen
-npm install
-npm run build
+bun install
+bun run build
 ```
 
 Then hack on Kennen from any worktree you like. A worktree under

@@ -98,7 +98,7 @@ export async function prepareInstallContext(opts: {
 
   // Sanity check that the package was built. The bin-dispatch path
   // launches the MCP server via lazy-import from the CLI bundle (which
-  // tsup also produces in the same `npm run build`); the legacy path
+  // tsup also produces in the same `bun run build`); the legacy path
   // invokes the standalone MCP entry directly. Either entry's
   // existence proves the build ran, so the existing standalone MCP
   // entry check remains the tripwire — checking the legacy entry is
@@ -107,7 +107,7 @@ export async function prepareInstallContext(opts: {
     console.error("Required file not found:")
     console.error("  dist/mcp.js")
     console.error()
-    console.error("Run 'npm run build' first.")
+    console.error("Run 'bun run build' first.")
     process.exit(1)
   }
 
@@ -156,7 +156,7 @@ export async function ensureHookPrerequisites(context: InstallContext): Promise<
     if (!hasAutosave) missing.push("hooks/autosave.sh")
     if (!hasWakeup) missing.push("hooks/wakeup.sh")
     throw new Error(
-      `Required hook scripts not found: ${missing.join(", ")}. Run 'npm run build' first.`
+      `Required hook scripts not found: ${missing.join(", ")}. Run 'bun run build' first.`
     )
   }
   await Promise.all([

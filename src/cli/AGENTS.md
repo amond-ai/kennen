@@ -95,7 +95,7 @@ When adding or changing a CLI command:
    surface, flags, output shape, or workflow changes.
 4. Add or update focused tests under [`commands/`](commands/) when behavior
    changes.
-5. Run `npm run typecheck` before committing.
+5. Run `bun run typecheck` before committing.
 
 Do not change CLI behavior as part of documentation-only splits. If a
 documentation edit discovers runtime drift, fix it in a focused code change or
