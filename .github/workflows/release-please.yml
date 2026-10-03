@@ -26,7 +26,9 @@ jobs:
           private-key: ${{ secrets.RELEASE_GITHUB_APP_PRIVATE_KEY }}
           # Narrow the token to what release-please needs — without these the
           # token inherits every permission the App holds on the installation.
+          # Issues write covers the labels release-please puts on its release PR.
           permission-contents: write
+          permission-issues: write
           permission-pull-requests: write
 
       - name: Run release-please
