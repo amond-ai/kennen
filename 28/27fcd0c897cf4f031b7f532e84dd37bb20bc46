@@ -1,0 +1,39 @@
+.github/pull_request_template.md
+  s_7df3ffae9a4d50::t_25f40da35870ab 5,17
+docs/ci.md
+  s_7df3ffae9a4d50::t_25f40da35870ab 104-119
+CHANGELOG.md
+  s_7df3ffae9a4d50::t_25f40da35870ab 7-10
+release-please-config.json
+  s_7df3ffae9a4d50::t_25f40da35870ab 1-18
+src/mcp/server.ts
+  s_7df3ffae9a4d50::t_25f40da35870ab 78
+AGENTS.md
+  s_7df3ffae9a4d50::t_25f40da35870ab 86-87
+.release-please-manifest.json
+  s_7df3ffae9a4d50::t_25f40da35870ab 1-3
+CONTRIBUTING.md
+  s_7df3ffae9a4d50::t_25f40da35870ab 45-47,76-79
+src/notion/client.ts
+  s_7df3ffae9a4d50::t_25f40da35870ab 12
+src/cli/index.ts
+  s_7df3ffae9a4d50::t_25f40da35870ab 34
+.github/workflows/release-please.yml
+  s_7df3ffae9a4d50::t_25f40da35870ab 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2827fcd0c897cf4f031b7f532e84dd37bb20bc46",
+  "prompts": {},
+  "sessions": {
+    "s_7df3ffae9a4d50": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e52e6c1-bee1-4aac-9d38-677efb8d827a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
