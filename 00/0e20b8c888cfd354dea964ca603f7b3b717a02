@@ -1,0 +1,19 @@
+.github/workflows/publish.yml
+  s_7df3ffae9a4d50::t_69acfe8d966fec 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "000e20b8c888cfd354dea964ca603f7b3b717a02",
+  "prompts": {},
+  "sessions": {
+    "s_7df3ffae9a4d50": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e52e6c1-bee1-4aac-9d38-677efb8d827a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
