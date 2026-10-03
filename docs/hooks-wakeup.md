@@ -63,7 +63,7 @@ and returns without injecting context.
 
 ## Per-Session Debounce
 
-Codex does not expose Claude Code's `runOnce` flag on `UserPromptSubmit`, so
+Claude Code and Codex both fire `UserPromptSubmit` on every prompt, so
 `wakeup()` owns a per-session filesystem marker:
 
 ```text
@@ -74,12 +74,12 @@ After `hooks.wakeUp` opt-out and config discovery pass, the first
 prompt-bearing event atomically creates the marker with `O_EXCL` before Notion
 initialization. The marker means wake-up was attempted for this session.
 Slash-command prompts, service init failures, and transient `loadWakeUpData`
-failures are still debounced so Codex does not retry a decorative Notion path
-every turn. Later prompts in the same session return before Notion
+failures are still debounced so the hook does not retry a decorative Notion
+path every turn. Later prompts in the same session return before Notion
 initialization.
 
-After `/clear` or a topical pivot inside the same Codex session, agents should
-explicitly rerun the MCP surface:
+After `/clear` or a topical pivot inside the same Claude Code or Codex session,
+agents should explicitly rerun the MCP surface:
 
 ```text
 kennen-context action='wake-up' userQuery='<new task prompt>'

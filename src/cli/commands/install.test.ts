@@ -28,6 +28,7 @@ import { trapProcessExit } from "../test-helpers.js"
 import {
   buildClaudeHookCommand,
   buildClaudeMcpEntry,
+  CLAUDE_HOOK_TIMEOUT_SECONDS,
   buildCodexHookCommand,
   buildCodexMcpSection,
   buildCursorGlobalIgnoredNotice,
@@ -64,6 +65,7 @@ import {
   stripKennenOwnedSessionEndEntries,
   stripShellEnvPrefix,
   toPortablePath,
+  upsertClaudeHookCommand,
   type ClaudeHookEntry,
   type InstallContext,
   type InstallRunners,
@@ -4208,6 +4210,144 @@ describe("Claude hook detection — recognizes prior-shape entries as stale", ()
     expect(detectClaudeHook(entries, "autosave.sh", "/no/legacy/path", newCommand)).toBe(
       "current"
     )
+  })
+})
+
+describe("Claude hook options — timeouts in seconds, no runOnce", () => {
+  const wakeupCommand = buildClaudeHookCommand("wakeup")
+
+  it("classifies a current command with a millisecond timeout and runOnce as stale", () => {
+    const entries: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          { type: "command", command: wakeupCommand, timeout: 10000, runOnce: true },
+        ],
+      },
+    ]
+    expect(
+      detectClaudeHook(
+        entries,
+        "wakeup.sh",
+        "/no/legacy/path",
+        wakeupCommand,
+        CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup
+      )
+    ).toBe("stale")
+  })
+
+  it("classifies a current command with the expected timeout as current", () => {
+    const entries: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: wakeupCommand,
+            timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup,
+          },
+        ],
+      },
+    ]
+    expect(
+      detectClaudeHook(
+        entries,
+        "wakeup.sh",
+        "/no/legacy/path",
+        wakeupCommand,
+        CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup
+      )
+    ).toBe("current")
+  })
+
+  it("classifies the event as stale when a stale hook follows a current one", () => {
+    const entries: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: wakeupCommand,
+            timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup,
+          },
+        ],
+      },
+      {
+        matcher: "",
+        hooks: [
+          { type: "command", command: wakeupCommand, timeout: 10000, runOnce: true },
+        ],
+      },
+    ]
+    expect(
+      detectClaudeHook(
+        entries,
+        "wakeup.sh",
+        "/no/legacy/path",
+        wakeupCommand,
+        CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup
+      )
+    ).toBe("stale")
+  })
+
+  it("rewrites an older entry with the seconds timeout and without runOnce", () => {
+    const existing: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          { type: "command", command: wakeupCommand, timeout: 10000, runOnce: true },
+        ],
+      },
+    ]
+    expect(
+      upsertClaudeHookCommand(existing, "wakeup.sh", wakeupCommand, {
+        matcher: "",
+        timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup,
+      })
+    ).toEqual([
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: wakeupCommand,
+            timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup,
+          },
+        ],
+      },
+    ])
+  })
+})
+
+describe("upsertClaudeHookCommand — preserves user hooks", () => {
+  it("keeps a user hook that shares an entry with the rewritten Kennen hook", () => {
+    const autosaveCommand = buildClaudeHookCommand("autosave")
+    const userHook = { type: "command", command: "/Users/operator/scripts/notify.sh" }
+    const existing: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [{ type: "command", command: autosaveCommand, timeout: 10000 }, userHook],
+      },
+    ]
+
+    expect(
+      upsertClaudeHookCommand(existing, "autosave.sh", autosaveCommand, {
+        matcher: "",
+        timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.autosave,
+      })
+    ).toEqual([
+      { matcher: "", hooks: [userHook] },
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: autosaveCommand,
+            timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.autosave,
+          },
+        ],
+      },
+    ])
   })
 })
 

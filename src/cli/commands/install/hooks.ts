@@ -70,6 +70,16 @@ export function buildClaudeHookCommand(
 }
 
 /**
+ * Claude Code hook timeouts, in seconds (Claude Code's unit for a command
+ * hook's `timeout`). Autosave hands its work to a detached background
+ * process, so its limit only bounds the spawn.
+ */
+export const CLAUDE_HOOK_TIMEOUT_SECONDS = {
+  wakeup: 30,
+  autosave: 10,
+} as const
+
+/**
  * Codex hook command. Codex's hook runner already exposes the
  * project root via Codex's own context (.codex/hooks.json is
  * trusted-project-scoped, and Codex's hook shell launches with the
@@ -110,8 +120,26 @@ export interface ClaudeHookEntry {
     type: string
     command: string
     timeout?: number
+    /** Not a Claude Code hook field; a Kennen hook carrying it is stale. */
     runOnce?: boolean
   }>
+}
+
+type ClaudeHookCommand = ClaudeHookEntry["hooks"][number]
+
+/**
+ * True when a Kennen-owned hook's options differ from what the installer
+ * writes: it carries a `runOnce` key, or, when `expectedTimeout` is provided,
+ * it records a different `timeout`. A missing `timeout` alone is not stale.
+ */
+function hasOutdatedClaudeHookOptions(
+  hook: ClaudeHookCommand,
+  expectedTimeout: number | undefined
+): boolean {
+  if ("runOnce" in hook) return true
+  return (
+    expectedTimeout != null && hook.timeout != null && hook.timeout !== expectedTimeout
+  )
 }
 
 /**
@@ -132,7 +160,8 @@ export function detectClaudeHook(
   entries: ClaudeHookEntry[] | undefined,
   scriptName: string,
   legacyExpectedPath: string,
-  binDispatchCommand?: string
+  binDispatchCommand?: string,
+  expectedTimeout?: number
 ): HookStatus {
   if (!entries) return "missing"
 
@@ -147,6 +176,20 @@ export function detectClaudeHook(
   const allBinDispatchShapes =
     /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
 
+  // Every Kennen-owned hook is classified, and the event takes the
+  // highest-ranked status: one stale hook makes the event stale so the
+  // upsert rewrites it, even when a current hook is also registered.
+  const rank: Record<HookStatus, number> = {
+    missing: 0,
+    "legacy-current": 1,
+    current: 2,
+    stale: 3,
+  }
+  let status: HookStatus = "missing"
+  const consider = (next: HookStatus): void => {
+    if (rank[next] > rank[status]) status = next
+  }
+
   for (const entry of entries) {
     for (const hook of entry.hooks ?? []) {
       const cmd = hook.command
@@ -154,17 +197,26 @@ export function detectClaudeHook(
       // Bin-dispatch form: exact match against the desired-write
       // shape is `current`; match against any other Kennen-owned
       // bin-dispatch variant is `stale` (eligible for upgrade).
-      if (binDispatchCommand && cmd === binDispatchCommand) return "current"
-      if (allBinDispatchShapes.test(cmd)) return "stale"
-      // Legacy absolute-path form: identified by the script-name
-      // suffix, then classified by whether the full path matches the
-      // resolved legacy path for this `pkgRoot`.
-      if (cmd.endsWith(`/${scriptName}`)) {
-        return cmd === legacyExpectedPath ? "legacy-current" : "stale"
+      if (binDispatchCommand && cmd === binDispatchCommand) {
+        consider(
+          hasOutdatedClaudeHookOptions(hook, expectedTimeout) ? "stale" : "current"
+        )
+      } else if (allBinDispatchShapes.test(cmd)) {
+        consider("stale")
+      } else if (cmd.endsWith(`/${scriptName}`)) {
+        // Legacy absolute-path form: identified by the script-name
+        // suffix, then classified by whether the full path matches the
+        // resolved legacy path for this `pkgRoot`.
+        consider(
+          cmd === legacyExpectedPath &&
+            !hasOutdatedClaudeHookOptions(hook, expectedTimeout)
+            ? "legacy-current"
+            : "stale"
+        )
       }
     }
   }
-  return "missing"
+  return status
 }
 
 /**
@@ -172,10 +224,12 @@ export function detectClaudeHook(
  * bin-dispatch shape (`kennen hooks <event>`) or a legacy absolute-path
  * shape on either side of the operation:
  *
- * - Filters existing entries by both shapes simultaneously: any entry
- *   whose command ends with `/<scriptName>` (legacy) OR exactly matches
+ * - Filters existing hooks by both shapes simultaneously: any hook whose
+ *   command ends with `/<scriptName>` (legacy) OR exactly matches
  *   `kennen hooks <event>` (bin-dispatch) is treated as Kennen-owned and
- *   removed before the new entry is appended.
+ *   removed before the new entry is appended. Other hooks that share an
+ *   entry with a Kennen hook stay in place; an entry left with no hooks
+ *   is dropped.
  * - Writes the new entry verbatim from `newCommand`, which the caller
  *   selects based on `context.legacyPaths`.
  *
@@ -190,7 +244,7 @@ export function upsertClaudeHookCommand(
   existing: ClaudeHookEntry[] | undefined,
   scriptName: string,
   newCommand: string,
-  config: { matcher: string; timeout?: number; runOnce?: boolean }
+  config: { matcher: string; timeout?: number }
 ): ClaudeHookEntry[] {
   // Recognize ALL Kennen-owned bin-dispatch hook shapes so an upgrade
   // path strips the old entry before writing the new one — preventing
@@ -210,15 +264,20 @@ export function upsertClaudeHookCommand(
   // means any prior install can be cleanly upgraded.
   const binDispatchPattern =
     /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
-  const filtered = (existing ?? []).filter(
-    (entry) =>
-      !entry.hooks?.some((hook) => {
-        if (typeof hook.command !== "string") return false
-        if (hook.command.endsWith(`/${scriptName}`)) return true
-        if (binDispatchPattern.test(hook.command)) return true
-        return false
-      })
-  )
+  const isKennenOwned = (hook: ClaudeHookCommand): boolean => {
+    if (typeof hook.command !== "string") return false
+    if (hook.command.endsWith(`/${scriptName}`)) return true
+    return binDispatchPattern.test(hook.command)
+  }
+  const filtered: ClaudeHookEntry[] = []
+  for (const entry of existing ?? []) {
+    if (!entry.hooks?.some(isKennenOwned)) {
+      filtered.push(entry)
+      continue
+    }
+    const kept = entry.hooks.filter((hook) => !isKennenOwned(hook))
+    if (kept.length > 0) filtered.push({ ...entry, hooks: kept })
+  }
   filtered.push({
     matcher: config.matcher,
     hooks: [
@@ -226,7 +285,6 @@ export function upsertClaudeHookCommand(
         type: "command",
         command: newCommand,
         ...(config.timeout != null ? { timeout: config.timeout } : {}),
-        ...(config.runOnce != null ? { runOnce: config.runOnce } : {}),
       },
     ],
   })

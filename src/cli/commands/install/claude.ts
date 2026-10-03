@@ -23,6 +23,7 @@ import {
 } from "./utils.js"
 import {
   buildClaudeHookCommand,
+  CLAUDE_HOOK_TIMEOUT_SECONDS,
   detectClaudeHook,
   removeClaudeScriptEntries,
   stripKennenOwnedSessionEndEntries,
@@ -175,13 +176,15 @@ export async function runClaudeInstall(
     hooks["Stop"],
     "autosave.sh",
     context.autosavePath,
-    binAutosaveCommand
+    binAutosaveCommand,
+    CLAUDE_HOOK_TIMEOUT_SECONDS.autosave
   )
   const wakeupStatus = detectClaudeHook(
     hooks["UserPromptSubmit"],
     "wakeup.sh",
     context.wakeupPath,
-    binWakeupCommand
+    binWakeupCommand,
+    CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup
   )
 
   // Active SessionEnd registration was removed in 0.6.0. The cleanup planner
@@ -309,8 +312,7 @@ export async function runClaudeInstall(
       hooks["Stop"],
       "autosave.sh",
       desiredAutosaveCommand,
-      // Claude settings use hook timeouts in milliseconds.
-      { matcher: "", timeout: 10000 }
+      { matcher: "", timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.autosave }
     )
   }
 
@@ -319,8 +321,7 @@ export async function runClaudeInstall(
       hooks["UserPromptSubmit"],
       "wakeup.sh",
       desiredWakeupCommand,
-      // Claude settings use hook timeouts in milliseconds.
-      { matcher: "", timeout: 10000, runOnce: true }
+      { matcher: "", timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup }
     )
   }
 
