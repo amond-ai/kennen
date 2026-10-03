@@ -17,7 +17,7 @@ argv.
 ## Run
 
 ```sh
-npm run build
+bun run build
 node evals/memory-quality/run.mjs --provider fixture --seeds 1,2,3
 node evals/memory-quality/run.mjs --provider claude --seeds 1,2,3
 ```

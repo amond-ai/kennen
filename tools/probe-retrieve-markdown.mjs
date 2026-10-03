@@ -81,7 +81,7 @@ const PROBE_CONCURRENCIES = [1, 3, 5, 10, 20]
  * Resolve a bearer token by honoring the same env-first priority chain
  * Kennen's own auth-resolution path uses, but stop short of importing
  * Kennen's TypeScript source into this `.mjs` tool — the imports would
- * force either a `npm run build` precondition or a runtime switch to
+ * force either a `bun run build` precondition or a runtime switch to
  * `tsx`, both of which add friction for a one-shot operator probe.
  *
  * Priority (matches the canonical Kennen auth-resolution order):

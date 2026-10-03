@@ -22,10 +22,10 @@
 | [`docs/development.md`](docs/development.md)                                                                                                                                                 | Architecture, commands, conventions, stability rules, troubleshooting                                                        |
 | [`docs/authentication.md`](docs/authentication.md)                                                                                                                                           | Auth priority chain, ntn behavior, `auth.json` contract, rate limits, troubleshooting                                        |
 | [`docs/profiles.md`](docs/profiles.md)                                                                                                                                                       | Default profile selector, profile-owned taxonomy/schema/prompts, no-singleton threading                                      |
-| [`docs/memory-workflows.md`](docs/memory-workflows.md)                                                                                                                                       | Kennen memory/fact/decision/task workflow, topic keys, digest                                                                 |
-| [`docs/conflict-detection.md`](docs/conflict-detection.md)                                                                                                                                   | `kennen conflicts scan` workflow and compare-verdict contract                                                                  |
-| [`docs/memory-debt.md`](docs/memory-debt.md)                                                                                                                                                 | `kennen debt scan` / `create-tasks` audit categories, scoring, recommended maintenance cadence, idempotency contract           |
-| [`docs/topology.md`](docs/topology.md)                                                                                                                                                       | `kennen status` topology section, health states, recovery workflow                                                             |
+| [`docs/memory-workflows.md`](docs/memory-workflows.md)                                                                                                                                       | Kennen memory/fact/decision/task workflow, topic keys, digest                                                                |
+| [`docs/conflict-detection.md`](docs/conflict-detection.md)                                                                                                                                   | `kennen conflicts scan` workflow and compare-verdict contract                                                                |
+| [`docs/memory-debt.md`](docs/memory-debt.md)                                                                                                                                                 | `kennen debt scan` / `create-tasks` audit categories, scoring, recommended maintenance cadence, idempotency contract         |
+| [`docs/topology.md`](docs/topology.md)                                                                                                                                                       | `kennen status` topology section, health states, recovery workflow                                                           |
 | [`docs/topology-inheritance.md`](docs/topology-inheritance.md)                                                                                                                               | Read-upstream wake-up rendering, trust containment, design rules, opt-out behavior, promotion-target read-upstream carve-out |
 | [`docs/topology-promotion.md`](docs/topology-promotion.md)                                                                                                                                   | Promotion workflow, audit block, guards, dry run, source validation, idempotency, promoter identity, implementation pointers |
 | [`docs/notion-sdk-v5.md`](docs/notion-sdk-v5.md), [`docs/notion-rate-limit.md`](docs/notion-rate-limit.md)                                                                                   | Notion SDK v5 shape differences, rate-limit gates, endpoint overrides, call-site checklist                                   |
@@ -64,14 +64,14 @@ need the SubjectKey substring fallback.
 
 | Command                | What it does            |
 | ---------------------- | ----------------------- |
-| `npm run build`        | tsup build              |
-| `npm run typecheck`    | `tsc --noEmit`          |
-| `npm run lint`         | `eslint src/`           |
-| `npm run format`       | `prettier --write src/` |
-| `npm run format:check` | `prettier --check src/` |
-| `npm run test`         | `vitest run`            |
-| `npm run test:watch`   | `vitest` watch mode     |
-| `npm run dev`          | `tsup --watch`          |
+| `bun run build`        | tsup build              |
+| `bun run typecheck`    | `tsc --noEmit`          |
+| `bun run lint`         | `eslint src/`           |
+| `bun run format`       | `prettier --write src/` |
+| `bun run format:check` | `prettier --check src/` |
+| `bun run test`         | `vitest run`            |
+| `bun run test:watch`   | `vitest` watch mode     |
+| `bun run dev`          | `tsup --watch`          |
 
 ## Non-Negotiables
 
@@ -79,10 +79,12 @@ Rule #1: If you need an exception to any rule here, stop and get explicit
 permission from the human lead first.
 
 - Do not bump version numbers. Never edit the `version` field in
-  `package.json`, `package-lock.json`, or any release manifest unless the
+  `package.json` or any release manifest unless the
   human lead has explicitly asked for a version bump in this turn. Releases
   are cut deliberately; an unrequested bump in an unrelated PR can ship a
-  release, break stacked-branch rebases, or desync `package-lock.json`.
+  release, break stacked-branch rebases, or desync the version sources.
+  release-please owns version bumps and `CHANGELOG.md`: merging its release
+  PR cuts the release.
 - Do not remove existing MCP tools. Deprecate first, remove in a future major.
 - Do not rename database properties. Property names are baked into schema,
   extractors, and services.
@@ -97,7 +99,7 @@ permission from the human lead first.
   [`docs/notion-sdk-v5.md`](docs/notion-sdk-v5.md): `client.dataSources.query`,
   `pages.retrieveMarkdown`, `pages.updateMarkdown`, and
   `databases.create({ initial_data_source: ... })`.
-- Run `npm run typecheck` before committing. Add or update tests when behavior
+- Run `bun run typecheck` before committing. Add or update tests when behavior
   changes and a relevant test suite exists.
 
 ## Operating Contract

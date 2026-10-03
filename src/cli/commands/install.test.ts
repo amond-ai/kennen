@@ -7,7 +7,7 @@ import { afterAll, afterEach, describe, expect, it, vi } from "vitest"
 // runPrintConfig calls fileExists(dist/mcp.js) before printing. Under vitest
 // the source-file `import.meta.url` resolves pkgRoot to `src/cli/`, not the
 // package root, so dist/mcp.js doesn't exist at the computed path even on a
-// fresh `npm run build`. Stub access ONLY for the dist/mcp.js probe; every
+// fresh `bun run build`. Stub access ONLY for the dist/mcp.js probe; every
 // other path passes through to the real fs.access. Tightly scoping the stub
 // keeps the runtime tests honest — if a future refactor accidentally drops
 // the `if (opts.printConfig != null) { ... return }` short-circuit and falls

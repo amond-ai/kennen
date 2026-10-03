@@ -36,7 +36,7 @@ hot-path gate.
 ## Run The Starter Suite
 
 ```bash
-npm run build
+bun run build
 node dist/cli.js eval run evals/suites/kennen-core.yaml
 ```
 
@@ -108,7 +108,7 @@ memory ids, and the project name that owns the memory. The runner resolves each
 project by name, runs the real search path, and emits one result per lane.
 
 ```bash
-npm run build
+bun run build
 KENNEN_CONFIG_ROOT=~/Developer/Notion/Mail \
 node dist/cli.js eval run evals/retrieval-quality/mail.yaml
 ```
@@ -147,7 +147,7 @@ It does not measure an LLM agent deciding to use Kennen or applying a retrieved
 memory.
 
 ```bash
-npm run build
+bun run build
 node dist/cli.js eval skill-retrieval fetch skillret
 node dist/cli.js eval run evals/skill-retrieval/skillret-test.yaml
 ```
@@ -155,7 +155,7 @@ node dist/cli.js eval run evals/skill-retrieval/skillret-test.yaml
 Run the Notion AI lane against the registered persistent SkillRet eval vault:
 
 ```bash
-npm run build
+bun run build
 node dist/cli.js eval skill-retrieval fetch skillret
 
 mkdir -p /tmp/kennen-eval-vaults/skillret-dev-eval
@@ -241,7 +241,7 @@ mine, autosave, or otherwise mutate Kennen state. Any write attempt is blocked b
 the harness and counted in the artifact.
 
 ```bash
-npm run build
+bun run build
 NOTION_ENV=dev \
 KENNEN_CONFIG_ROOT=/tmp/kennen-eval-vaults/skillret-dev-eval \
 KENNEN_EVAL_BENCH_REAL=1 \
@@ -289,7 +289,7 @@ support set makes the context sufficient. Harmful evidence ids model stale or
 contradictory memories that should not enter retrieved context.
 
 ```bash
-npm run build
+bun run build
 node dist/cli.js eval run evals/skill-use/smoke.yaml
 ```
 
@@ -370,7 +370,7 @@ commit tokens or generated `.kennen.yaml` files.
 List the registered vaults:
 
 ```bash
-npm run build
+bun run build
 node dist/cli.js eval vaults
 ```
 
@@ -479,7 +479,7 @@ next to the JSON result so reviewers can adjudicate verifier false negatives
 after temporary workspaces are cleaned up.
 
 ```bash
-npm run build
+bun run build
 NOTION_ENV=dev \
 NOTION_WORKSPACE_ID=415fc269-e68f-4da0-b3e3-b1273b741a7f \
 KENNEN_EVAL_LONGITUDINAL_CONFIG_ROOT=/tmp/kennen-eval-vaults/kennen-dev-sandbox \

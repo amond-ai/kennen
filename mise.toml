@@ -1,0 +1,27 @@
+[tools]
+node = "24"
+bun = "1.4.2"
+
+[tasks.dev]
+description = "개발 빌드 watch"
+run = "bun run dev"
+
+[tasks.build]
+description = "빌드"
+run = "bun run build"
+
+[tasks.lint]
+description = "린트"
+run = "bun run lint"
+
+[tasks.typecheck]
+description = "타입 체크"
+run = "bun run typecheck"
+
+[tasks.test]
+description = "테스트"
+run = "bun run test"
+
+[tasks.check]
+description = "lint → typecheck → test 일괄 검사"
+depends = ["lint", "typecheck", "test"]

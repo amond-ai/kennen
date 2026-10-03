@@ -31,7 +31,7 @@ import { costsCommand } from "./commands/costs.js"
 
 const program = new Command()
 
-program.name("kennen").description("AI memory system backed by Notion").version("1.0.0")
+program.name("kennen").description("AI memory system backed by Notion").version("1.0.0") // x-release-please-version
 
 program.addCommand(initCommand)
 program.addCommand(authCommand)

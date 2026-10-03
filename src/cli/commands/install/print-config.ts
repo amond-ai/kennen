@@ -90,7 +90,7 @@ export async function runPrintConfig(
   const mcpJsPath = join(pkgRoot, "dist", "mcp.js")
 
   if (!(await fileExists(mcpJsPath))) {
-    throw new Error(`dist/mcp.js not found at ${mcpJsPath}. Run 'npm run build' first.`)
+    throw new Error(`dist/mcp.js not found at ${mcpJsPath}. Run 'bun run build' first.`)
   }
 
   // `--dev` ↔ shell-signal conflict guard. Symmetric to the

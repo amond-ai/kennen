@@ -42,15 +42,15 @@ why it stays inside the envelope.
 | Run actionlint       | `actionlint .github/workflows/*.yml`                                                               | No                          | No                          | No                      | Pure static analysis of committed workflow files.                                                                                                                                                                                                                                |
 | Install zizmor       | `curl` the pinned `zizmor` Linux release archive, verify SHA-256, and add the binary to `PATH`     | No                          | Public GitHub release asset | No                      | Downloads a public, versioned static-analysis binary and verifies the archive checksum before execution.                                                                                                                                                                         |
 | Run zizmor           | `zizmor --min-severity medium --format github --no-progress .github/workflows`                     | No                          | No                          | No                      | Pure static analysis of committed workflow files; unsuppressed medium-or-higher findings fail the job.                                                                                                                                                                           |
-| Setup Node.js        | `actions/setup-node` (SHA-pinned, see rule #6)                                                     | No                          | Public npm mirror           | No                      | Standard action; pulls Node 20 binary.                                                                                                                                                                                                                                           |
-| Install dependencies | `npm ci`                                                                                           | No                          | Public npm registry         | No                      | No `.npmrc`, no `@amond-ai`-scoped runtime deps. `prepare` script (`tools/install-git-hooks.mjs`) returns early when `CI=true`.                                                                                                                                                |
-| Format check         | `npm run format:check` (`prettier --check src/`)                                                   | No                          | No                          | No                      | Pure static formatting check.                                                                                                                                                                                                                                                    |
-| Version sync check   | `npm run version:check` (`node tools/check-version-sync.mjs`)                                      | No                          | No                          | No                      | Pure static consistency check that package, MCP handshake, CLI, and Notion `User-Agent` version literals match.                                                                                                                                                                  |
-| Lint                 | `npm run lint` (`eslint src/`)                                                                     | No                          | No                          | No                      | Pure static analysis.                                                                                                                                                                                                                                                            |
-| Typecheck            | `npm run typecheck` (`tsc --noEmit`)                                                               | No                          | No                          | No                      | Pure static analysis.                                                                                                                                                                                                                                                            |
-| Test                 | `npm test` (`vitest run`)                                                                          | No                          | No                          | No                      | Tests use fixture-backed services. `tests/setup-runtool-flag.ts` pins all RunTool flags to `0` so no test path can accidentally hit Notion.                                                                                                                                      |
-| Build                | `npm run build` (`tsup`)                                                                           | No                          | No                          | No                      | Local bundler.                                                                                                                                                                                                                                                                   |
-| Eval starter suite   | `node dist/cli.js eval run evals/suites/kennen-core.yaml …`                                          | No                          | No                          | No (synthetic)          | Runs the **retrieval** runner (see below). Synthetic YAML fixtures, no Notion calls.                                                                                                                                                                                             |
+| Setup mise           | `jdx/mise-action` (SHA-pinned, see rule #6)                                                        | No                          | Public GitHub release asset | No                      | Installs the Node.js and Bun versions pinned in `mise.toml` / `mise.lock`, verifying lockfile checksums.                                                                                                                                                                         |
+| Install dependencies | `bun install --frozen-lockfile`                                                                    | No                          | Public npm registry         | No                      | No `.npmrc`, no `@amond-ai`-scoped runtime deps. The step sets `HUSKY=0`, so the `prepare` script builds but skips Git hook installation.                                                                                                                                        |
+| Format check         | `bun run format:check` (`prettier --check src/`)                                                   | No                          | No                          | No                      | Pure static formatting check.                                                                                                                                                                                                                                                    |
+| Version sync check   | `bun run version:check` (`node tools/check-version-sync.mjs`)                                      | No                          | No                          | No                      | Pure static consistency check that package, MCP handshake, CLI, and Notion `User-Agent` version literals match.                                                                                                                                                                  |
+| Lint                 | `bun run lint` (`eslint src/`)                                                                     | No                          | No                          | No                      | Pure static analysis.                                                                                                                                                                                                                                                            |
+| Typecheck            | `bun run typecheck` (`tsc --noEmit`)                                                               | No                          | No                          | No                      | Pure static analysis.                                                                                                                                                                                                                                                            |
+| Test                 | `bun run test` (`vitest run`)                                                                      | No                          | No                          | No                      | Tests use fixture-backed services. `tests/setup-runtool-flag.ts` pins all RunTool flags to `0` so no test path can accidentally hit Notion.                                                                                                                                      |
+| Build                | `bun run build` (`tsup`)                                                                           | No                          | No                          | No                      | Local bundler.                                                                                                                                                                                                                                                                   |
+| Eval starter suite   | `node dist/cli.js eval run evals/suites/kennen-core.yaml …`                                        | No                          | No                          | No (synthetic)          | Runs the **retrieval** runner (see below). Synthetic YAML fixtures, no Notion calls.                                                                                                                                                                                             |
 | Upload eval artifact | `actions/upload-artifact` (SHA-pinned, see rule #6)                                                | Ambient `GITHUB_TOKEN` only | GitHub API                  | No                      | The ambient per-run `GITHUB_TOKEN` is **automatically scoped to this run**; on a fork PR it is read-only by default and lifetime-bound to the run. The workflow declares `permissions: contents: read` at top level so the token is least-privilege regardless of repo defaults. |
 
 The `concurrency` block keys on `github.ref` and cancels stale runs; that's
@@ -101,20 +101,36 @@ workflow treats an already-published version as success, allowing that bootstrap
 version to receive a matching GitHub Release without attempting a duplicate
 publish.
 
+## How releases are cut (`release-please.yml`)
+
+`release-please.yml` runs on every push to `main`, never on `pull_request`, so
+fork PRs cannot reach its secrets. It reads the Conventional Commit titles of
+merged PRs since the last release and keeps one release PR open with the
+version bump and the generated `CHANGELOG.md` section. Version literals in
+`src/mcp/server.ts`, `src/cli/index.ts`, and `src/notion/client.ts` carry an
+`x-release-please-version` marker, so the release PR updates every source that
+`bun run version:check` compares.
+
+Merging the release PR tags `vX.Y.Z` and publishes a GitHub Release. The
+workflow authenticates with the `amond-ai-release` GitHub App
+(`vars.RELEASE_GITHUB_APP_CLIENT_ID`, `secrets.RELEASE_GITHUB_APP_PRIVATE_KEY`)
+instead of `GITHUB_TOKEN`, because events created with `GITHUB_TOKEN` do not
+start other workflows; the App-created Release is what triggers `publish.yml`.
+
 ## What the local dev hooks installer does in CI
 
-`tools/install-git-hooks.mjs` is wired into the `prepare` npm script and runs
-on every `npm ci` — including in CI. It guards against running in CI by
-returning early when `process.env.CI === "true"`:
+`bun install` runs the `prepare` script (`tsup && husky`) on every
+install — including in CI. Every workflow that installs dependencies sets
+`HUSKY=0` on that step, so husky returns before touching `core.hooksPath`:
 
-```js
-if (env["CI"] === "true" || env["KENNEN_SKIP_GIT_HOOK_INSTALL"] === "1") {
-  return
-}
+```yaml
+- name: Install dependencies
+  env:
+    HUSKY: "0"
+  run: bun install --frozen-lockfile
 ```
 
-GitHub Actions sets `CI=true` automatically, so the hooks installer is a
-no-op on every CI run, fork or otherwise.
+The hooks installer is therefore a no-op on every CI run, fork or otherwise.
 
 ## How the `.kennen.yaml` gitignore invariant is enforced
 
@@ -124,14 +140,14 @@ enforces this with two complementary layers. This invariant is the current
 policy even for credential-free shared vault config and supersedes older
 changelog notes that described intentionally committed config:
 
-- **Pre-commit guard.** `.githooks/pre-commit` invokes
+- **Pre-commit guard.** `.husky/pre-commit` invokes
   `node tools/check-kennen-config.mjs --staged`, which rejects any staged
   `.kennen.yaml` index entry regardless of content (keying off
-  `git ls-files --cached --error-unmatch`). The hook is installed by
-  `tools/install-git-hooks.mjs` during `npm install`. CI does not
+  `git ls-files --cached --error-unmatch`). husky installs the hook
+  through the `prepare` script during `bun install`. CI does not
   invoke it directly — pre-commit hooks run on the contributor's
-  machine, and `KENNEN_SKIP_GIT_HOOK_INSTALL=1` plus the `CI=true` guard
-  in the installer skip the install path on CI runners anyway.
+  machine, and `HUSKY=0` on the CI install steps skips the install path
+  on CI runners anyway.
 - **CI-side repo invariant.** The `src/config-guard.test.ts` invariant for
   an untracked root `.kennen.yaml` runs in the standard test suite and fails
   the build if `.kennen.yaml` is ever tracked at the repo root again,
@@ -156,9 +172,9 @@ Before adding a new step to `ci.yml`, confirm all seven of these:
    either explicitly synthetic or sourced from public data.
 4. **No privileged `prepare` / `postinstall` work.** Don't add `prepare` or
    `postinstall` hooks that require interactive state, a writable git
-   config, or non-public network access. The existing
-   `tools/install-git-hooks.mjs` short-circuits on `CI=true`; new install-time
-   hooks must take the same posture.
+   config, or non-public network access. The existing husky install is
+   skipped with `HUSKY=0` on CI install steps; new install-time hooks must
+   take the same posture.
 5. **No privileged PR-head checkout.** `pull_request_target` and
    `workflow_run` run with write tokens and elevated permissions. The single
    most common GitHub Actions supply-chain footgun combines
@@ -235,8 +251,8 @@ Two quick checks before opening a PR that touches CI:
 
 ```bash
 # 1. The whole ci.yml pipeline, with no supported Notion auth source
-#    available and CI=true so the prepare hooks installer takes its no-op
-#    branch.
+#    available and HUSKY=0 on the install so the prepare script skips Git
+#    hook installation, as it does on CI runners.
 #
 #    The chain runs inside a single `bash -c` so the env scrub and CI=true
 #    apply to every command, not just the first one. `env -u VAR cmd1 &&
@@ -251,12 +267,12 @@ env -u NOTION_API_TOKEN -u GITHUB_TOKEN \
   HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/.config" CI=true \
   bash -c '
     set -euo pipefail
-    npm ci
-    npm run format:check
-    npm run lint
-    npm run typecheck
-    npm test
-    npm run build
+    HUSKY=0 bun install --frozen-lockfile
+    bun run format:check
+    bun run lint
+    bun run typecheck
+    bun run test
+    bun run build
     node dist/cli.js eval run evals/suites/kennen-core.yaml \
       --out evals/results/kennen-core-ci.json \
       --min-lift 0.5 --max-harm 0.0 \

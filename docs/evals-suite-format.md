@@ -742,14 +742,14 @@ runtime or cost measurement intended to be compared across conditions.
 Run the dry path with mock adapters in unit tests:
 
 ```bash
-npm run test -- src/eval/task-runner.test.ts
+bun run test -- src/eval/task-runner.test.ts
 ```
 
 Run the committed suite with real agents only when you intentionally opt into
 model spend:
 
 ```bash
-npm run build
+bun run build
 KENNEN_EVAL_TASK_REAL=1 \
 node dist/cli.js eval run --runner task evals/task-suites/longitudinal.yaml
 ```
@@ -761,7 +761,7 @@ workspace, archives the per-run project in cleanup, and removes the temporary
 config root:
 
 ```bash
-npm run build
+bun run build
 KENNEN_EVAL_TASK_REAL=1 \
 KENNEN_EVAL_LONGITUDINAL_REAL=1 \
 KENNEN_EVAL_LONGITUDINAL_SANDBOX_PROJECT="Eval Sandbox" \

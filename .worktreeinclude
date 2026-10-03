@@ -1,0 +1,12 @@
+# .worktreeinclude — gitignored files to copy into a new worktree.
+# Uses .gitignore syntax; only files that match AND are ignored by git are copied.
+
+# Local Kennen vault config (never committed)
+.kennen.yaml
+
+# Root environment variables
+/.env
+/.env.local
+
+# Claude Code local settings (internal marketplaces, permissions, env)
+.claude/settings.local.json

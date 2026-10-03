@@ -4,10 +4,10 @@ All notable user-facing changes to Kennen are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and Kennen versions
 adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Entries describe behavior an operator or AI assistant can observe — tool
-output shape, CLI flags, hook side effects, schema additions. Internal
-refactors that leave behavior unchanged are intentionally omitted; the git
-log is the canonical source for those.
+release-please generates each release section from the Conventional Commit
+titles of merged pull requests. `feat`, `fix`, `perf`, and `revert` changes
+appear; internal-only types such as `refactor`, `chore`, and `ci` are omitted,
+and the git log is the canonical source for those.
 
 ## [Unreleased]
 
