@@ -1,0 +1,35 @@
+src/cli/commands/install/claude.ts
+  s_c72dcfb6ba8398::t_5f7644be3758b7 26,179-180,186-187,315,324
+docs/hooks.md
+  s_c72dcfb6ba8398::t_e1860a21eb07e0 105-106,109-111
+src/cli/commands/install/hooks.ts
+  s_c72dcfb6ba8398::t_84ba346175c835 140-142
+  s_c72dcfb6ba8398::t_5f7644be3758b7 72-81,123,128-139,163-164,186-188,194-197,227
+  s_c72dcfb6ba8398::t_48b02b1a2d2596 143-144
+src/cli/commands/install.test.ts
+  s_c72dcfb6ba8398::t_94f5bf5c6c4681 31,68,4216-4289
+  s_c72dcfb6ba8398::t_da84e392c4da6b 4290-4291
+src/claude-plugin.test.ts
+  s_c72dcfb6ba8398::t_94f5bf5c6c4681 14,19,57-66
+  s_c72dcfb6ba8398::t_36c1cd341fdd92 67
+src/hooks/helpers.ts
+  s_c72dcfb6ba8398::t_9abab0c828725f 177-180,729-731
+docs/hooks-wakeup.md
+  s_c72dcfb6ba8398::t_e1860a21eb07e0 66,77-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "744e756a3fcf17f82978b0af3ec96492383d044c",
+  "prompts": {},
+  "sessions": {
+    "s_c72dcfb6ba8398": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c2d1454b-9f97-4712-86f0-b415b2d4ecbb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
