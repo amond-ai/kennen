@@ -1,0 +1,3 @@
+node tools/check-kennen-config.mjs --staged
+node tools/check-version-sync.mjs --staged
+bunx lint-staged

@@ -21,12 +21,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Node.js
-        # zizmor: ignore[cache-poisoning] package-manager caching is disabled because this step omits setup-node's cache input.
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - name: Setup mise
+        # Release builds never restore a tool cache, so a poisoned cache entry
+        # from another workflow cannot reach the published artifact. npm
+        # authenticates through OIDC trusted publishing (`id-token: write`),
+        # which needs no registry-url or NODE_AUTH_TOKEN; the target registry
+        # comes from package.json#publishConfig.registry.
+        uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492 # v5.0.1
         with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org
+          cache: false
 
       - name: Verify version matches release tag
         id: version
@@ -59,12 +62,15 @@ jobs:
 
       - name: Install dependencies
         if: steps.registry.outputs.published != 'true'
-        run: npm ci
+        env:
+          # Skip husky Git hook installation on CI runners.
+          HUSKY: "0"
+        run: bun install --frozen-lockfile
 
       - name: Build
         if: steps.registry.outputs.published != 'true'
-        run: npm run build
+        run: bun run build
 
       - name: Publish
         if: steps.registry.outputs.published != 'true'
-        run: npm publish
+        run: npm publish --provenance --access public

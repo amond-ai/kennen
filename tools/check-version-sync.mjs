@@ -6,7 +6,6 @@ import { pathToFileURL } from "node:url"
 
 export const VERSION_SOURCE_PATHS = {
   packageJson: "package.json",
-  packageLock: "package-lock.json",
   mcpServer: "src/mcp/server.ts",
   cliIndex: "src/cli/index.ts",
   notionClient: "src/notion/client.ts",
@@ -17,16 +16,6 @@ const VERSION_SOURCES = [
     path: VERSION_SOURCE_PATHS.packageJson,
     label: "package.json#version",
     extract: extractPackageVersion,
-  },
-  {
-    path: VERSION_SOURCE_PATHS.packageLock,
-    label: "package-lock.json#version",
-    extract: extractPackageLockVersion,
-  },
-  {
-    path: VERSION_SOURCE_PATHS.packageLock,
-    label: 'package-lock.json#packages[""].version',
-    extract: extractPackageLockRootVersion,
   },
   {
     path: VERSION_SOURCE_PATHS.mcpServer,
@@ -85,31 +74,6 @@ function parseJson(raw, label) {
     })
   }
   return parsed
-}
-
-export function extractPackageLockVersion(raw) {
-  const parsed = parseJson(raw, "package-lock.json")
-
-  if (!parsed || typeof parsed.version !== "string" || parsed.version.length === 0) {
-    throw new Error("package-lock.json#version must be a non-empty string")
-  }
-
-  return parsed.version
-}
-
-export function extractPackageLockRootVersion(raw) {
-  const parsed = parseJson(raw, "package-lock.json")
-  const rootPackage = parsed?.packages?.[""]
-
-  if (
-    !rootPackage ||
-    typeof rootPackage.version !== "string" ||
-    rootPackage.version.length === 0
-  ) {
-    throw new Error('package-lock.json#packages[""].version must be a non-empty string')
-  }
-
-  return rootPackage.version
 }
 
 export function extractMcpServerVersion(raw) {

@@ -78,32 +78,32 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 20
-          cache: npm
+      - name: Setup mise
+        uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492 # v5.0.1
 
       - name: Install dependencies
-        run: npm ci
+        env:
+          # Skip husky Git hook installation on CI runners.
+          HUSKY: "0"
+        run: bun install --frozen-lockfile
 
       - name: Format check
-        run: npm run format:check
+        run: bun run format:check
 
       - name: Version sync check
-        run: npm run version:check
+        run: bun run version:check
 
       - name: Lint
-        run: npm run lint
+        run: bun run lint
 
       - name: Typecheck
-        run: npm run typecheck
+        run: bun run typecheck
 
       - name: Test
-        run: npm test
+        run: bun run test
 
       - name: Build
-        run: npm run build
+        run: bun run build
 
       - name: Eval starter suite
         run: node dist/cli.js eval run evals/suites/kennen-core.yaml --out evals/results/kennen-core-ci.json --min-lift 0.5 --max-harm 0.0 --baseline evals/baselines/kennen-core.json
