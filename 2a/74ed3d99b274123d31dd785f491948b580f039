@@ -1,0 +1,19 @@
+CHANGELOG.md
+  s_7df3ffae9a4d50::t_1e0255c39f21d5 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2a74ed3d99b274123d31dd785f491948b580f039",
+  "prompts": {},
+  "sessions": {
+    "s_7df3ffae9a4d50": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e52e6c1-bee1-4aac-9d38-677efb8d827a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
