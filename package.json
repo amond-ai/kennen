@@ -46,6 +46,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "version:check": "node tools/check-version-sync.mjs",
+    "exports:check": "node tools/check-package-exports.mjs",
     "test:watch": "vitest",
     "mcp": "node dist/mcp.js",
     "prepare": "tsup && husky",

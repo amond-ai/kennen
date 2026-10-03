@@ -9,7 +9,7 @@ export default defineConfig({
     "hooks/prompts": "src/hooks/prompts.ts",
   },
   format: ["esm"],
-  dts: { entry: { index: "src/index.ts" } },
+  dts: { entry: { index: "src/index.ts", mcp: "src/mcp/server.ts" } },
   sourcemap: true,
   clean: true,
   target: "node20",
