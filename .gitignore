@@ -51,3 +51,6 @@ evals/skill-retrieval/manifests/
 # code wrote into cwd; this guard keeps any future regression from
 # leaking lock state into the repo.
 autosave-learning-locks/
+
+# Per-run state written by local review and PR automation tooling.
+.please/state/

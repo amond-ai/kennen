@@ -47,15 +47,9 @@ jobs:
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.value }}
         run: |
-          if npm dist-tag ls @amond-ai/kennen | node -e '
-            const fs = require("node:fs");
-            const version = process.env.PACKAGE_VERSION;
-            const published = fs
-              .readFileSync(0, "utf8")
-              .split(/\r?\n/)
-              .some((line) => line.endsWith(": " + version));
-            process.exit(published ? 0 : 1);
-          '; then
+          # Ask for the exact version: dist-tags only point at the newest
+          # releases, so an older re-run would read as unpublished.
+          if [ "$(npm view "@amond-ai/kennen@${PACKAGE_VERSION}" version 2>/dev/null)" = "$PACKAGE_VERSION" ]; then
             echo "published=true" >> "$GITHUB_OUTPUT"
           else
             echo "published=false" >> "$GITHUB_OUTPUT"
