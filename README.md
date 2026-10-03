@@ -172,6 +172,31 @@ and the detached auto-digest spawn run only under Claude Code or Codex.
 Recall / save / scan paths work identically across Claude Code, Codex, Cursor,
 and OMP.
 
+#### Claude Code plugin
+
+Claude Code users can install Kennen as a plugin instead of running
+`kennen install --client claude`. The plugin provides the Kennen MCP server, the
+wake-up (`UserPromptSubmit`) and autosave (`Stop`) hooks, and a `kennen-memory`
+skill. It still runs the `kennen` CLI, so install Kennen (step 1) and join a vault
+(step 2) first.
+
+```bash
+claude plugin marketplace add amond-ai/kennen
+claude plugin install kennen@kennen --scope project
+```
+
+- The plugin starts `kennen` from the Claude Code project directory, and both
+  the MCP server and the hooks find `.kennen.yaml` by searching upward from
+  there. A project-local `node_modules/.bin/kennen` takes precedence over a
+  global one.
+- The hooks do nothing in projects without a `.kennen.yaml`. The MCP server
+  still starts there in diagnostic mode and reports how to set up a vault.
+- Use either the plugin or `kennen install --client claude` in a project, not
+  both. With both installed, every hook runs twice and Claude Code loads two
+  Kennen MCP servers. The plugin's tools are named
+  `mcp__plugin_kennen_kennen__<tool>`.
+- The plugin launcher needs a POSIX `sh`.
+
 #### Other MCP Hosts
 
 For agents not directly supported by `kennen install --client`, run

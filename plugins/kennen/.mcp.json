@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "kennen": {
+      "command": "sh",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/libexec/kennen.sh", "${CLAUDE_PROJECT_DIR}", "mcp"],
+      "env": {
+        "KENNEN_SUPPRESS_DEPRECATIONS": "1"
+      }
+    }
+  }
+}

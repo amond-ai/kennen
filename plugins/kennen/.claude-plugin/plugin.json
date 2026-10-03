@@ -1,0 +1,13 @@
+{
+  "name": "kennen",
+  "displayName": "Kennen",
+  "description": "Notion-backed AI memory: Kennen MCP tools, wake-up context injection, and Stop-hook autosave",
+  "author": {
+    "name": "PassionFactory Corp.",
+    "url": "https://github.com/amond-ai"
+  },
+  "homepage": "https://github.com/amond-ai/kennen#readme",
+  "repository": "https://github.com/amond-ai/kennen",
+  "license": "MIT",
+  "keywords": ["memory", "notion", "mcp", "knowledge-graph"]
+}
