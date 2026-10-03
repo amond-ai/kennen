@@ -1,0 +1,19 @@
+plugins/kennen/skills/kennen-memory/SKILL.md
+  s_c72dcfb6ba8398::t_ae3bedb4045135 15-17,39-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dd5a115953195dbfcc49b0ee63a2a0ec0b773d56",
+  "prompts": {},
+  "sessions": {
+    "s_c72dcfb6ba8398": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c2d1454b-9f97-4712-86f0-b415b2d4ecbb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
