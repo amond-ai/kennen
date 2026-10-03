@@ -19,12 +19,12 @@ The wake-up hook injects project context on the first prompt of a session. Call
 
 ## What to save
 
-| Knowledge                                                    | Tool call                                                     |
-| ------------------------------------------------------------ | ------------------------------------------------------------- |
-| Architectural choice, its rationale and alternatives         | `kennen-decision action='create'` (pass `affects: [...]`)     |
-| Non-obvious discovery, debugging insight, gotcha, workaround | `kennen-memory action='save'`                                 |
-| Durable relationship (`uses`, `depends_on`, `is_a`)          | `kennen-fact action='create'`                                 |
-| Follow-up work, open PR, blocked dependency                  | `kennen-task action='create'`; close it as soon as it is done |
+| Knowledge                                                                          | Tool call                                                                  |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Architectural choice, its rationale and alternatives                               | `kennen-decision action='create'` (pass `affects: [...]`)                  |
+| Non-obvious discovery, debugging insight, gotcha, workaround                       | `kennen-memory action='save'`                                              |
+| Durable relationship (`uses`, `depends_on`, `is_a`)                                | `kennen-fact action='create'`                                              |
+| Tangential follow-up work, open PR, blocked dependency (not the current objective) | `kennen-task action='create'`; close it as soon as it is done or cancelled |
 
 - `kennen-fact action='create'` needs provenance: pass `sourceMemoryId` of an
   existing memory, or `agent` and `session` matching a memory saved earlier in

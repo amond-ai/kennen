@@ -19,8 +19,17 @@ if [ -n "$project_dir" ] && ! cd "$project_dir" 2>/dev/null; then
   exit 1
 fi
 
-# Project-local installs (`npm install -D @amond-ai/kennen`) resolve first.
-PATH="$(pwd -P)/node_modules/.bin:$PATH"
+# Project-local installs (`npm install -D @amond-ai/kennen`) resolve first,
+# nearest node_modules/.bin winning, so a workspace package also finds a
+# binary hoisted to the workspace root.
+local_bins=
+dir=$(pwd -P)
+while :; do
+  [ -d "$dir/node_modules/.bin" ] && local_bins="$local_bins:$dir/node_modules/.bin"
+  [ "$dir" = / ] && break
+  dir=$(dirname "$dir")
+done
+PATH="${local_bins#:}${local_bins:+:}$PATH"
 export PATH
 
 has_vault() {

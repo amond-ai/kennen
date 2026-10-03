@@ -187,8 +187,9 @@ claude plugin install kennen@kennen --scope project
 
 - The plugin starts `kennen` from the Claude Code project directory, and both
   the MCP server and the hooks find `.kennen.yaml` by searching upward from
-  there. A project-local `node_modules/.bin/kennen` takes precedence over a
-  global one.
+  there. A project-local `node_modules/.bin/kennen`, in the project or any
+  parent directory, takes precedence over a global one. In a Yarn PnP project
+  the plugin runs `yarn run -T kennen` instead.
 - The hooks do nothing in projects without a `.kennen.yaml`. The MCP server
   still starts there in diagnostic mode and reports how to set up a vault.
 - Use either the plugin or `kennen install --client claude` in a project, not

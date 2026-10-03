@@ -88,6 +88,7 @@ describe.skipIf(process.platform === "win32")("Claude Code plugin launcher", () 
 
     expect(result.status).toBe(0)
     expect(result.stdout).toBe("")
+    expect(result.stderr).toBe("")
   })
 
   it("runs hook events from the project directory when a vault config is found upward", async () => {
@@ -98,6 +99,19 @@ describe.skipIf(process.platform === "win32")("Claude Code plugin launcher", () 
 
     expect(result.status).toBe(0)
     expect(result.stdout.trim()).toBe(`cwd=${appDir} args=hooks wakeup`)
+  })
+
+  it("prefers a kennen binary hoisted to the workspace node_modules over PATH", async () => {
+    await writeFile(join(projectDir, ".kennen.yaml"), "")
+    const localBin = join(projectDir, "node_modules/.bin")
+    await mkdir(localBin, { recursive: true })
+    await writeFile(join(localBin, "kennen"), '#!/bin/sh\necho "local args=$*"\n')
+    await chmod(join(localBin, "kennen"), 0o755)
+
+    const result = runLauncher(join(projectDir, "packages/app"), "hooks", "wakeup")
+
+    expect(result.status).toBe(0)
+    expect(result.stdout.trim()).toBe("local args=hooks wakeup")
   })
 
   it("dispatches through yarn run -T in a Yarn PnP workspace", async () => {
