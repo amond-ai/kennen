@@ -1,0 +1,21 @@
+docs/hooks-wakeup.md
+  s_c72dcfb6ba8398::t_64da2fa1af3ad0 81-82
+src/cli/commands/install/hooks.ts
+  s_c72dcfb6ba8398::t_64da2fa1af3ad0 123,131-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "497ad7bcefd3c79effc44394885ff091cbdb68fd",
+  "prompts": {},
+  "sessions": {
+    "s_c72dcfb6ba8398": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c2d1454b-9f97-4712-86f0-b415b2d4ecbb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
