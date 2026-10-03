@@ -1,0 +1,31 @@
+tools/check-package-exports.mjs
+  s_7df3ffae9a4d50::t_2166abc9a7f4eb 82-84
+  s_7df3ffae9a4d50::t_d134e772d230ef 66-67,70-72,85
+  s_7df3ffae9a4d50::t_b10b418235df33 89-91
+  s_7df3ffae9a4d50::t_27447a251f93ae 1-65,68-69,73-81,86-88,92-99
+.github/workflows/ci.yml
+  s_7df3ffae9a4d50::t_87529dbd64015f 108-110
+src/package-exports.test.ts
+  s_7df3ffae9a4d50::t_26791678550561 44-49,57-60
+  s_7df3ffae9a4d50::t_f1e8062236fe15 1-43,50-56,61-63
+docs/ci.md
+  s_7df3ffae9a4d50::t_26791678550561 38-55
+package.json
+  s_7df3ffae9a4d50::t_87529dbd64015f 49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b8194866e0fa1ce04e747ae049c2728c318d8387",
+  "prompts": {},
+  "sessions": {
+    "s_7df3ffae9a4d50": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7e52e6c1-bee1-4aac-9d38-677efb8d827a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
