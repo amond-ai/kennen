@@ -25,11 +25,10 @@ Thumbs.db
 
 # Per-developer Claude Code state. `kennen install` writes hooks under
 # `~/.claude/projects/<encoded>/settings.json` (the per-user-per-project
-# location), so a project-scoped `.claude/settings.json` here is whatever
-# Claude Code itself generates locally for the operator and is not part of
-# the committed integration surface. `settings.local.json` carries the
-# per-developer Bash() permission allowlist.
-.claude/settings.json
+# location), never into this repo. The committed `.claude/settings.json`
+# carries only public plugin marketplaces and shared env; internal
+# marketplaces, permissions, and telemetry labels belong in the gitignored
+# `settings.local.json`.
 .claude/settings.local.json
 .claude/worktrees/
 .claudio/
