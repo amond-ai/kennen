@@ -1,0 +1,21 @@
+src/cli/commands/install/hooks.ts
+  s_c72dcfb6ba8398::t_657ce4a8df7651 209-210,212-214,249-262
+src/cli/commands/install.test.ts
+  s_c72dcfb6ba8398::t_657ce4a8df7651 4292-4323
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ed9e796880738e65f526c8b3963c139b61debd7",
+  "prompts": {},
+  "sessions": {
+    "s_c72dcfb6ba8398": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c2d1454b-9f97-4712-86f0-b415b2d4ecbb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Minsu Lee <amond@amond.net>"
+    }
+  }
+}
