@@ -129,8 +129,8 @@ type ClaudeHookCommand = ClaudeHookEntry["hooks"][number]
 
 /**
  * True when a Kennen-owned hook's options differ from what the installer
- * writes: it carries a `runOnce` key, or it records a `timeout` other than
- * `expectedTimeout`. A hook with no recorded `timeout` is not stale.
+ * writes: it carries a `runOnce` key, or, when `expectedTimeout` is provided,
+ * it records a different `timeout`. A missing `timeout` alone is not stale.
  */
 function hasOutdatedClaudeHookOptions(
   hook: ClaudeHookCommand,
@@ -176,6 +176,20 @@ export function detectClaudeHook(
   const allBinDispatchShapes =
     /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
 
+  // Every Kennen-owned hook is classified, and the event takes the
+  // highest-ranked status: one stale hook makes the event stale so the
+  // upsert rewrites it, even when a current hook is also registered.
+  const rank: Record<HookStatus, number> = {
+    missing: 0,
+    "legacy-current": 1,
+    current: 2,
+    stale: 3,
+  }
+  let status: HookStatus = "missing"
+  const consider = (next: HookStatus): void => {
+    if (rank[next] > rank[status]) status = next
+  }
+
   for (const entry of entries) {
     for (const hook of entry.hooks ?? []) {
       const cmd = hook.command
@@ -184,21 +198,25 @@ export function detectClaudeHook(
       // shape is `current`; match against any other Kennen-owned
       // bin-dispatch variant is `stale` (eligible for upgrade).
       if (binDispatchCommand && cmd === binDispatchCommand) {
-        return hasOutdatedClaudeHookOptions(hook, expectedTimeout) ? "stale" : "current"
-      }
-      if (allBinDispatchShapes.test(cmd)) return "stale"
-      // Legacy absolute-path form: identified by the script-name
-      // suffix, then classified by whether the full path matches the
-      // resolved legacy path for this `pkgRoot`.
-      if (cmd.endsWith(`/${scriptName}`)) {
-        return cmd === legacyExpectedPath &&
-          !hasOutdatedClaudeHookOptions(hook, expectedTimeout)
-          ? "legacy-current"
-          : "stale"
+        consider(
+          hasOutdatedClaudeHookOptions(hook, expectedTimeout) ? "stale" : "current"
+        )
+      } else if (allBinDispatchShapes.test(cmd)) {
+        consider("stale")
+      } else if (cmd.endsWith(`/${scriptName}`)) {
+        // Legacy absolute-path form: identified by the script-name
+        // suffix, then classified by whether the full path matches the
+        // resolved legacy path for this `pkgRoot`.
+        consider(
+          cmd === legacyExpectedPath &&
+            !hasOutdatedClaudeHookOptions(hook, expectedTimeout)
+            ? "legacy-current"
+            : "stale"
+        )
       }
     }
   }
-  return "missing"
+  return status
 }
 
 /**

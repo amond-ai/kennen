@@ -4260,6 +4260,36 @@ describe("Claude hook options — timeouts in seconds, no runOnce", () => {
     ).toBe("current")
   })
 
+  it("classifies the event as stale when a stale hook follows a current one", () => {
+    const entries: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: wakeupCommand,
+            timeout: CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup,
+          },
+        ],
+      },
+      {
+        matcher: "",
+        hooks: [
+          { type: "command", command: wakeupCommand, timeout: 10000, runOnce: true },
+        ],
+      },
+    ]
+    expect(
+      detectClaudeHook(
+        entries,
+        "wakeup.sh",
+        "/no/legacy/path",
+        wakeupCommand,
+        CLAUDE_HOOK_TIMEOUT_SECONDS.wakeup
+      )
+    ).toBe("stale")
+  })
+
   it("rewrites an older entry with the seconds timeout and without runOnce", () => {
     const existing: ClaudeHookEntry[] = [
       {

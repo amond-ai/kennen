@@ -4,7 +4,8 @@ set -euo pipefail
 # Kennen wake-up hook for Claude Code and Codex
 #
 # Fires on:
-#   - Claude Code: UserPromptSubmit (runOnce: true) — delivers the user's
+#   - Claude Code: UserPromptSubmit, on every prompt; the helper's
+#     per-session marker limits wake-up to the first one. Delivers the user's
 #     prompt as JSON on stdin, including a `prompt` field. P3-05 forwards
 #     this to the helper via KENNEN_WAKEUP_EVENT so wake-up can seed a
 #     relevance search from the user's actual question.
