@@ -101,6 +101,22 @@ workflow treats an already-published version as success, allowing that bootstrap
 version to receive a matching GitHub Release without attempting a duplicate
 publish.
 
+## How releases are cut (`release-please.yml`)
+
+`release-please.yml` runs on every push to `main`, never on `pull_request`, so
+fork PRs cannot reach its secrets. It reads the Conventional Commit titles of
+merged PRs since the last release and keeps one release PR open with the
+version bump and the generated `CHANGELOG.md` section. Version literals in
+`src/mcp/server.ts`, `src/cli/index.ts`, and `src/notion/client.ts` carry an
+`x-release-please-version` marker, so the release PR updates every source that
+`bun run version:check` compares.
+
+Merging the release PR tags `vX.Y.Z` and publishes a GitHub Release. The
+workflow authenticates with the `amond-ai-release` GitHub App
+(`vars.RELEASE_GITHUB_APP_CLIENT_ID`, `secrets.RELEASE_GITHUB_APP_PRIVATE_KEY`)
+instead of `GITHUB_TOKEN`, because events created with `GITHUB_TOKEN` do not
+start other workflows; the App-created Release is what triggers `publish.yml`.
+
 ## What the local dev hooks installer does in CI
 
 `bun install` runs the `prepare` script (`tsup && husky`) on every

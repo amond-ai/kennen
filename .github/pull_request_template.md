@@ -2,7 +2,7 @@
 
 <!-- What changed, and why? -->
 
-> Use a plain descriptive PR title; conventional-commit prefixes belong in commits, not PR titles.
+> Use a Conventional Commit PR title, for example `fix: handle missing project scope`. The squash-merge commit takes the PR title, and release-please reads it to pick the version bump and write the changelog entry.
 
 ## Test Plan
 
@@ -14,5 +14,5 @@
 
 ## Changelog
 
-- [ ] Observable behavior changes are documented in `CHANGELOG.md` under `[Unreleased]`, or this PR intentionally has no user-facing changelog entry.
+- [ ] The PR title's Conventional Commit type matches the change: `feat` or `fix` for observable behavior changes, `!` for breaking changes, and a non-releasing type such as `refactor`, `docs`, or `chore` otherwise.
 - [ ] If this PR touches `.github/workflows/`, I have read [`docs/ci.md`](../docs/ci.md) and the workflow satisfies all seven rules in "Rules for new CI steps"; otherwise this PR does not touch CI.

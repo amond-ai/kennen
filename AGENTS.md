@@ -83,6 +83,8 @@ permission from the human lead first.
   human lead has explicitly asked for a version bump in this turn. Releases
   are cut deliberately; an unrequested bump in an unrelated PR can ship a
   release, break stacked-branch rebases, or desync the version sources.
+  release-please owns version bumps and `CHANGELOG.md`: merging its release
+  PR cuts the release.
 - Do not remove existing MCP tools. Deprecate first, remove in a future major.
 - Do not rename database properties. Property names are baked into schema,
   extractors, and services.

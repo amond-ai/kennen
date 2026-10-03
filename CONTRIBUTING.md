@@ -42,8 +42,9 @@ and `src/config-guard.test.ts > repo invariants > does not track a
 `.kennen.yaml` at the repo root` pins the absence on every CI run. Copy
 `.kennen.example.yaml` to `.kennen.yaml` per clone; don't commit it.
 
-Do not bump package versions in contribution PRs unless a maintainer explicitly
-asks for a release change.
+Do not bump package versions or edit `CHANGELOG.md` in contribution PRs.
+release-please opens a release PR that bumps the version and writes the
+changelog from merged PR titles.
 
 ## Repository Guides
 
@@ -72,7 +73,10 @@ and [`docs/mcp-tools.md`](docs/mcp-tools.md).
   changes into the branch's existing commit.
 - Use Conventional Commits for commit messages, for example
   `fix: handle missing project scope`.
-- Keep PR titles human-readable and omit Conventional Commit prefixes.
+- Use a Conventional Commit PR title, for example `feat: add topic filter`.
+  The squash-merge commit takes the PR title, and release-please derives the
+  version bump and changelog entry from it. Mark breaking changes with `!`
+  (`feat!: …`).
 - Open a draft PR while work is still in progress.
 - Rebase on the latest `origin/main` before pushing or asking for review.
 - Fill out the PR template, including the test plan and changelog decision.
