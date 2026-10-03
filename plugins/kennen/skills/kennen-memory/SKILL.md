@@ -12,8 +12,9 @@ is a safety net, so save durable knowledge explicitly with the tools below.
 
 ## Session start
 
-Load context with `kennen-context action='wake-up'`. After `/clear` or a topic
-change inside the same session, run it again with
+The wake-up hook injects project context on the first prompt of a session. Call
+`kennen-context action='wake-up'` yourself only when that context is missing
+(hooks disabled), or after `/clear` or a topic change, with
 `userQuery='<new task prompt>'` so recall is ranked against the new task.
 
 ## What to save
@@ -35,8 +36,9 @@ change inside the same session, run it again with
 
 ## Recall
 
-Use `kennen-query action='recall'` to search memories before re-deriving
-something a previous session may already have learned.
+Use `kennen-query action='search'` to find memories on a topic before
+re-deriving something a previous session may already have learned;
+`action='recall'` lists recent memories.
 
 ## Conflicting memories
 
