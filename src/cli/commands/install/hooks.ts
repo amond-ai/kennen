@@ -179,14 +179,18 @@ export function detectClaudeHook(
   // Every Kennen-owned hook is classified, and the event takes the
   // highest-ranked status: one stale hook makes the event stale so the
   // upsert rewrites it, even when a current hook is also registered.
+  // A current bin-dispatch hook next to a legacy-current script hook is
+  // also stale: both would fire, and the upsert collapses them to one.
   const rank: Record<HookStatus, number> = {
     missing: 0,
     "legacy-current": 1,
     current: 2,
     stale: 3,
   }
-  let status: HookStatus = "missing"
+  let status = "missing" as HookStatus
+  let sawLegacyCurrent = false
   const consider = (next: HookStatus): void => {
+    if (next === "legacy-current") sawLegacyCurrent = true
     if (rank[next] > rank[status]) status = next
   }
 
@@ -216,6 +220,7 @@ export function detectClaudeHook(
       }
     }
   }
+  if (status === "current" && sawLegacyCurrent) return "stale"
   return status
 }
 
@@ -296,13 +301,17 @@ export function removeClaudeScriptEntries(
   scriptName: string
 ): ClaudeHookEntry[] | undefined {
   if (!entries) return undefined
-  const filtered = entries.filter(
-    (entry) =>
-      !entry.hooks?.some(
-        (hook) =>
-          typeof hook.command === "string" && hook.command.endsWith(`/${scriptName}`)
-      )
-  )
+  const isKennenScript = (hook: ClaudeHookCommand): boolean =>
+    typeof hook.command === "string" && hook.command.endsWith(`/${scriptName}`)
+  const filtered: ClaudeHookEntry[] = []
+  for (const entry of entries) {
+    if (!entry.hooks?.some(isKennenScript)) {
+      filtered.push(entry)
+      continue
+    }
+    const kept = entry.hooks.filter((hook) => !isKennenScript(hook))
+    if (kept.length > 0) filtered.push({ ...entry, hooks: kept })
+  }
   return filtered.length > 0 ? filtered : undefined
 }
 
@@ -317,13 +326,8 @@ export function removeClaudeScriptEntries(
  * Two historical Kennen-owned SessionEnd shapes need to be stripped:
  * the `session-end.sh` registration
  * and the older `autosave.sh`-on-SessionEnd legacy form. Unrelated user
- * hooks on `SessionEnd` are preserved entry-by-entry.
- *
- * Note: cleanup runs at the `ClaudeHookEntry` granularity. A hand-edited
- * settings.json that mixes a Kennen-owned and a user-owned hook command in
- * a single `entry.hooks[]` array would lose the sibling on cleanup —
- * Kennen's writer never produces that shape, but it's a sharp edge worth
- * being aware of.
+ * hooks on `SessionEnd` are preserved, including a user hook that shares an
+ * `entry.hooks[]` array with a Kennen-owned one.
  */
 export function stripKennenOwnedSessionEndEntries(
   entries: ClaudeHookEntry[] | undefined

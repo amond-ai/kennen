@@ -391,14 +391,10 @@ describe("install helpers", () => {
     expect(section).toContain('env_vars = ["KENNEN_NOTION_BASE_URL"]')
   })
 
-  it("detectClaudeHook prefers bin-dispatch match over legacy-current when both are present", () => {
-    // A pathological config with both shapes registered shouldn't
-    // happen in practice, but if it does, detection picks the
-    // bin-dispatch entry first because it iterates entries in order
-    // and bin-dispatch is what `upsertClaudeHookCommand` writes today.
-    // The runner's strip-both-shapes pre-pass prevents the dual-entry
-    // shape from outliving any single install — but the detection
-    // primitive must not panic if it sees one in the wild.
+  it("detectClaudeHook classifies a current bin-dispatch hook next to a legacy-current one as stale", () => {
+    // Both commands would fire on the same event. Classifying the mix as
+    // stale sends the event through `upsertClaudeHookCommand`, whose
+    // strip-both-shapes filter collapses it to a single hook.
     const binCommand = buildClaudeHookCommand("autosave")
     const entries = [
       { matcher: "", hooks: [{ type: "command", command: binCommand }] },
@@ -414,7 +410,7 @@ describe("install helpers", () => {
         "/tmp/kennen/hooks/autosave.sh",
         binCommand
       )
-    ).toBe("current")
+    ).toBe("stale")
   })
 
   it("flags TOML array-of-tables as unsupported for Kennen rewrites", () => {
@@ -595,6 +591,22 @@ describe("SessionEnd cleanup (issue 0.6.0/26)", () => {
     expect(result).toBeDefined()
     expect(result).toHaveLength(1)
     expect(result![0]!.hooks[0]!.command).toBe("/Users/operator/scripts/notify.sh")
+  })
+
+  it("keeps a user hook that shares an entry with the stripped Kennen script", () => {
+    const userHook = { type: "command", command: "/Users/operator/scripts/notify.sh" }
+    const entries: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          { type: "command", command: "/tmp/kennen/hooks/session-end.sh" },
+          userHook,
+        ],
+      },
+    ]
+    expect(removeClaudeScriptEntries(entries, "session-end.sh")).toEqual([
+      { matcher: "", hooks: [userHook] },
+    ])
   })
 
   it("returns undefined for an empty entry list so callers can `delete settings.hooks.SessionEnd`", () => {
