@@ -128,6 +128,31 @@ export interface ClaudeHookEntry {
 type ClaudeHookCommand = ClaudeHookEntry["hooks"][number]
 
 /**
+ * Every bin-dispatch command shape a Kennen install has written:
+ *   1. `kennen hooks <event>`
+ *   2. `yarn kennen hooks <event>`
+ *   3. `cd "$CLAUDE_PROJECT_DIR" && kennen hooks <event>`
+ *   4. `cd "$CLAUDE_PROJECT_DIR" && yarn run -T kennen hooks <event>`
+ *   5. `cd "$CLAUDE_PROJECT_DIR" && yarn kennen hooks <event>`
+ * The cd prefix and the yarn wrapper vary independently, so any prior
+ * install matches regardless of which half was upgraded.
+ */
+const KENNEN_BIN_DISPATCH_COMMAND =
+  /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
+
+/**
+ * True when a Claude hook belongs to Kennen: either a legacy absolute-path
+ * command ending in `/<scriptName>`, or any bin-dispatch shape for any
+ * Kennen hook event. Detection, upsert, and cleanup all decide ownership
+ * here, so a hook reported as Kennen-owned is always one reinstall removes.
+ */
+function isKennenOwnedClaudeHook(hook: ClaudeHookCommand, scriptName: string): boolean {
+  const cmd = hook.command
+  if (typeof cmd !== "string") return false
+  return cmd.endsWith(`/${scriptName}`) || KENNEN_BIN_DISPATCH_COMMAND.test(cmd)
+}
+
+/**
  * True when a Kennen-owned hook's options differ from what the installer
  * writes: it carries a `runOnce` key, or, when `expectedTimeout` is provided,
  * it records a different `timeout`. A missing `timeout` alone is not stale.
@@ -165,17 +190,6 @@ export function detectClaudeHook(
 ): HookStatus {
   if (!entries) return "missing"
 
-  // Pattern matching all known Kennen-owned bin-dispatch shapes. Same
-  // pattern `upsertClaudeHookCommand` uses for filter — so any entry
-  // the upsert would strip on reinstall surfaces here as something
-  // OTHER than `missing`, giving operators an accurate "update
-  // available" status before the rewrite. Without this match, an
-  // older `kennen hooks <event>` (no cd anchor) would classify as
-  // `missing`, status would say "not installed", but the upsert
-  // would still strip it — confusing.
-  const allBinDispatchShapes =
-    /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
-
   // Every Kennen-owned hook is classified, and the event takes the
   // highest-ranked status: one stale hook makes the event stale so the
   // upsert rewrites it, even when a current hook is also registered.
@@ -196,27 +210,26 @@ export function detectClaudeHook(
 
   for (const entry of entries) {
     for (const hook of entry.hooks ?? []) {
+      if (!isKennenOwnedClaudeHook(hook, scriptName)) continue
       const cmd = hook.command
-      if (typeof cmd !== "string") continue
       // Bin-dispatch form: exact match against the desired-write
-      // shape is `current`; match against any other Kennen-owned
-      // bin-dispatch variant is `stale` (eligible for upgrade).
+      // shape is `current`; any other Kennen-owned bin-dispatch
+      // variant is `stale` (eligible for upgrade).
       if (binDispatchCommand && cmd === binDispatchCommand) {
         consider(
           hasOutdatedClaudeHookOptions(hook, expectedTimeout) ? "stale" : "current"
         )
-      } else if (allBinDispatchShapes.test(cmd)) {
-        consider("stale")
       } else if (cmd.endsWith(`/${scriptName}`)) {
-        // Legacy absolute-path form: identified by the script-name
-        // suffix, then classified by whether the full path matches the
-        // resolved legacy path for this `pkgRoot`.
+        // Legacy absolute-path form: classified by whether the full path
+        // matches the resolved legacy path for this `pkgRoot`.
         consider(
           cmd === legacyExpectedPath &&
             !hasOutdatedClaudeHookOptions(hook, expectedTimeout)
             ? "legacy-current"
             : "stale"
         )
+      } else {
+        consider("stale")
       }
     }
   }
@@ -230,11 +243,9 @@ export function detectClaudeHook(
  * shape on either side of the operation:
  *
  * - Filters existing hooks by both shapes simultaneously: any hook whose
- *   command ends with `/<scriptName>` (legacy) OR exactly matches
- *   `kennen hooks <event>` (bin-dispatch) is treated as Kennen-owned and
- *   removed before the new entry is appended. Other hooks that share an
- *   entry with a Kennen hook stay in place; an entry left with no hooks
- *   is dropped.
+ *   command ends with `/<scriptName>` (legacy) OR matches any Kennen
+ *   bin-dispatch shape is treated as Kennen-owned and removed (via
+ *   `removeKennenOwnedClaudeHooks`) before the new entry is appended.
  * - Writes the new entry verbatim from `newCommand`, which the caller
  *   selects based on `context.legacyPaths`.
  *
@@ -251,38 +262,7 @@ export function upsertClaudeHookCommand(
   newCommand: string,
   config: { matcher: string; timeout?: number }
 ): ClaudeHookEntry[] {
-  // Recognize ALL Kennen-owned bin-dispatch hook shapes so an upgrade
-  // path strips the old entry before writing the new one — preventing
-  // duplicate Kennen hooks from accumulating in `Stop[]` /
-  // `UserPromptSubmit[]` across reinstalls. The shapes the pattern
-  // covers:
-  //   1. Pre-`cd` bare bin: `kennen hooks <event>`
-  //   2. Pre-`cd` yarn-PnP bin: `yarn kennen hooks <event>`
-  //   3. Current bare with cd-anchor: `cd "$CLAUDE_PROJECT_DIR" && kennen hooks <event>`
-  //   4. Current yarn-PnP with cd-anchor + `run -T`:
-  //      `cd "$CLAUDE_PROJECT_DIR" && yarn run -T kennen hooks <event>`
-  //   5. Transition: `cd "..." && yarn kennen hooks <event>`
-  //      (cd added, yarn shape not yet upgraded)
-  // The two halves are independent: the cd-prefix is optional, the
-  // yarn variant has two acceptable command shapes (legacy `yarn
-  // kennen` and current `yarn run -T kennen`). Matching all combinations
-  // means any prior install can be cleanly upgraded.
-  const binDispatchPattern =
-    /^(?:cd "\$CLAUDE_PROJECT_DIR" && )?(?:yarn (?:run -T )?)?kennen hooks (?:wakeup|autosave|session-end)$/
-  const isKennenOwned = (hook: ClaudeHookCommand): boolean => {
-    if (typeof hook.command !== "string") return false
-    if (hook.command.endsWith(`/${scriptName}`)) return true
-    return binDispatchPattern.test(hook.command)
-  }
-  const filtered: ClaudeHookEntry[] = []
-  for (const entry of existing ?? []) {
-    if (!entry.hooks?.some(isKennenOwned)) {
-      filtered.push(entry)
-      continue
-    }
-    const kept = entry.hooks.filter((hook) => !isKennenOwned(hook))
-    if (kept.length > 0) filtered.push({ ...entry, hooks: kept })
-  }
+  const filtered = removeKennenOwnedClaudeHooks(existing, scriptName) ?? []
   filtered.push({
     matcher: config.matcher,
     hooks: [
@@ -296,20 +276,26 @@ export function upsertClaudeHookCommand(
   return filtered
 }
 
-export function removeClaudeScriptEntries(
+/**
+ * Remove every Kennen-owned hook (`isKennenOwnedClaudeHook`) from an event's
+ * entries. Other hooks that share an entry with a Kennen hook stay in place;
+ * an entry left with no hooks is dropped. Returns `undefined` when nothing
+ * remains so the caller can delete the event key.
+ */
+export function removeKennenOwnedClaudeHooks(
   entries: ClaudeHookEntry[] | undefined,
   scriptName: string
 ): ClaudeHookEntry[] | undefined {
   if (!entries) return undefined
-  const isKennenScript = (hook: ClaudeHookCommand): boolean =>
-    typeof hook.command === "string" && hook.command.endsWith(`/${scriptName}`)
+  const isKennenOwned = (hook: ClaudeHookCommand): boolean =>
+    isKennenOwnedClaudeHook(hook, scriptName)
   const filtered: ClaudeHookEntry[] = []
   for (const entry of entries) {
-    if (!entry.hooks?.some(isKennenScript)) {
+    if (!entry.hooks?.some(isKennenOwned)) {
       filtered.push(entry)
       continue
     }
-    const kept = entry.hooks.filter((hook) => !isKennenScript(hook))
+    const kept = entry.hooks.filter((hook) => !isKennenOwned(hook))
     if (kept.length > 0) filtered.push({ ...entry, hooks: kept })
   }
   return filtered.length > 0 ? filtered : undefined
@@ -323,9 +309,9 @@ export function removeClaudeScriptEntries(
  * along with flags describing what was removed for status / "will remove"
  * messaging.
  *
- * Two historical Kennen-owned SessionEnd shapes need to be stripped:
- * the `session-end.sh` registration
- * and the older `autosave.sh`-on-SessionEnd legacy form. Unrelated user
+ * Every Kennen-owned SessionEnd hook is stripped: the `session-end.sh`
+ * registration, the older `autosave.sh`-on-SessionEnd legacy form, and any
+ * bin-dispatch `kennen hooks <event>` command. Unrelated user
  * hooks on `SessionEnd` are preserved, including a user hook that shares an
  * `entry.hooks[]` array with a Kennen-owned one.
  */
@@ -343,8 +329,8 @@ export function stripKennenOwnedSessionEndEntries(
   const removedLegacyAutosave = detectClaudeHook(entries, "autosave.sh", "") !== "missing"
 
   let next = entries
-  if (removedShim) next = removeClaudeScriptEntries(next, "session-end.sh")
-  if (removedLegacyAutosave) next = removeClaudeScriptEntries(next, "autosave.sh")
+  if (removedShim) next = removeKennenOwnedClaudeHooks(next, "session-end.sh")
+  if (removedLegacyAutosave) next = removeKennenOwnedClaudeHooks(next, "autosave.sh")
 
   return {
     result: next && next.length > 0 ? next : undefined,
