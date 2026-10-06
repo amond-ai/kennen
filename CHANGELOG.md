@@ -9,6 +9,26 @@ titles of merged pull requests. `feat`, `fix`, `perf`, and `revert` changes
 appear; internal-only types such as `refactor`, `chore`, and `ci` are omitted,
 and the git log is the canonical source for those.
 
+## [2.0.0](https://github.com/amond-ai/kennen/compare/v1.0.0...v2.0.0) (2026-10-06)
+
+
+### Features
+
+* add Claude Code plugin and marketplace for kennen ([#9](https://github.com/amond-ai/kennen/issues/9)) ([ce2cbe9](https://github.com/amond-ai/kennen/commit/ce2cbe97e2122fcb78a7ea090847cadebec743f0))
+
+
+### Bug Fixes
+
+* **build:** emit type declarations for the mcp subpath ([#11](https://github.com/amond-ai/kennen/issues/11)) ([0680f58](https://github.com/amond-ai/kennen/commit/0680f583e2e1b8db806a2def47fed864d80299a9))
+* **install:** collapse mixed Claude hook shapes and keep user hooks in legacy cleanup ([#15](https://github.com/amond-ai/kennen/issues/15)) ([3b95ed1](https://github.com/amond-ai/kennen/commit/3b95ed12f02f6e030ea899e685aa3509e210cf7b)), closes [#14](https://github.com/amond-ai/kennen/issues/14)
+* **install:** share one Kennen-owned hook predicate across detection and cleanup ([#17](https://github.com/amond-ai/kennen/issues/17)) ([2ab926a](https://github.com/amond-ai/kennen/commit/2ab926a037d3fd85a18de2ffd90b900726b6c5d7)), closes [#16](https://github.com/amond-ai/kennen/issues/16)
+* **install:** write Claude hook timeouts in seconds ([#13](https://github.com/amond-ai/kennen/issues/13)) ([692212d](https://github.com/amond-ai/kennen/commit/692212da8d568067cf6eafa1df8b395029228996))
+
+
+### Miscellaneous Chores
+
+* release 2.0.0 ([#7](https://github.com/amond-ai/kennen/issues/7)) ([354aee7](https://github.com/amond-ai/kennen/commit/354aee753209d50491483a063c85d73e1f8fffd1))
+
 ## [Unreleased]
 
 ### Changed
