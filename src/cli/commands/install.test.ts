@@ -57,7 +57,7 @@ import {
   installCommand,
   parseInstallClient,
   parsePrintConfigFormat,
-  removeClaudeScriptEntries,
+  removeKennenOwnedClaudeHooks,
   resolveBackgroundAgentForInstall,
   resolveCursorMcpPath,
   runCodexInstall,
@@ -566,12 +566,12 @@ describe("SessionEnd cleanup (issue 0.6.0/26)", () => {
 
   it("removes Kennen-owned session-end.sh entries", () => {
     const entries = [kennenSessionEndEntry()]
-    expect(removeClaudeScriptEntries(entries, "session-end.sh")).toBeUndefined()
+    expect(removeKennenOwnedClaudeHooks(entries, "session-end.sh")).toBeUndefined()
   })
 
   it("removes legacy SessionEnd -> autosave.sh entries", () => {
     const entries = [legacyAutosaveOnSessionEndEntry()]
-    expect(removeClaudeScriptEntries(entries, "autosave.sh")).toBeUndefined()
+    expect(removeKennenOwnedClaudeHooks(entries, "autosave.sh")).toBeUndefined()
   })
 
   it("preserves unrelated user hooks when stripping the Kennen-owned shim", () => {
@@ -579,7 +579,7 @@ describe("SessionEnd cleanup (issue 0.6.0/26)", () => {
     // preserved across reinstalls. Strip the Kennen-owned entry and check
     // the user-owned one survives untouched.
     const entries = [kennenSessionEndEntry(), userOwnedSessionEndEntry()]
-    const result = removeClaudeScriptEntries(entries, "session-end.sh")
+    const result = removeKennenOwnedClaudeHooks(entries, "session-end.sh")
     expect(result).toBeDefined()
     expect(result).toHaveLength(1)
     expect(result![0]!.hooks[0]!.command).toBe("/Users/operator/scripts/notify.sh")
@@ -587,7 +587,7 @@ describe("SessionEnd cleanup (issue 0.6.0/26)", () => {
 
   it("preserves unrelated user hooks when stripping the legacy autosave registration", () => {
     const entries = [legacyAutosaveOnSessionEndEntry(), userOwnedSessionEndEntry()]
-    const result = removeClaudeScriptEntries(entries, "autosave.sh")
+    const result = removeKennenOwnedClaudeHooks(entries, "autosave.sh")
     expect(result).toBeDefined()
     expect(result).toHaveLength(1)
     expect(result![0]!.hooks[0]!.command).toBe("/Users/operator/scripts/notify.sh")
@@ -604,22 +604,22 @@ describe("SessionEnd cleanup (issue 0.6.0/26)", () => {
         ],
       },
     ]
-    expect(removeClaudeScriptEntries(entries, "session-end.sh")).toEqual([
+    expect(removeKennenOwnedClaudeHooks(entries, "session-end.sh")).toEqual([
       { matcher: "", hooks: [userHook] },
     ])
   })
 
   it("returns undefined for an empty entry list so callers can `delete settings.hooks.SessionEnd`", () => {
     // The install path checks `if (!mergedHooks["SessionEnd"]) delete ...`
-    // — `removeClaudeScriptEntries` returning undefined is what triggers
+    // — `removeKennenOwnedClaudeHooks` returning undefined is what triggers
     // the delete, leaving no `SessionEnd` key behind on a vault whose
     // only entry was Kennen-owned. A regression that returned an empty
     // array here would leave `"SessionEnd": []` in settings.json,
     // which is harmless but visible.
     expect(
-      removeClaudeScriptEntries([kennenSessionEndEntry()], "session-end.sh")
+      removeKennenOwnedClaudeHooks([kennenSessionEndEntry()], "session-end.sh")
     ).toBeUndefined()
-    expect(removeClaudeScriptEntries(undefined, "session-end.sh")).toBeUndefined()
+    expect(removeKennenOwnedClaudeHooks(undefined, "session-end.sh")).toBeUndefined()
   })
 
   it("detects the Kennen-owned shim entry against any path so reinstalls match across moved installs", () => {
@@ -645,7 +645,7 @@ describe("stripKennenOwnedSessionEndEntries (integration plan)", () => {
   // The pure planner that drives `runClaudeInstall`'s SessionEnd cleanup.
   // Test cases here mirror the real settings.json shapes the install path
   // sees on reinstall — the helper-level filter coverage is upstream in
-  // `removeClaudeScriptEntries`'s unit tests; this suite proves the
+  // `removeKennenOwnedClaudeHooks`'s unit tests; this suite proves the
   // integration assembled on top of it preserves user hooks end-to-end.
 
   function kennenSessionEndEntry(): ClaudeHookEntry {
@@ -4360,6 +4360,60 @@ describe("upsertClaudeHookCommand — preserves user hooks", () => {
         ],
       },
     ])
+  })
+})
+
+describe("Claude cleanup-only events — bin-dispatch hooks", () => {
+  // Kennen registers nothing on these events; reinstall must strip every
+  // Kennen-owned hook it reports, or the next run asks to remove it again.
+  const userHook = { type: "command", command: "/Users/operator/scripts/notify.sh" }
+
+  it.each([
+    ["PostToolUse", "autosave.sh", "kennen hooks autosave"],
+    ["PreToolUse", "wakeup.sh", 'cd "$CLAUDE_PROJECT_DIR" && kennen hooks wakeup'],
+    [
+      "PreCompact",
+      "autosave.sh",
+      'cd "$CLAUDE_PROJECT_DIR" && yarn run -T kennen hooks autosave',
+    ],
+  ])(
+    "removes a %s bin-dispatch hook, keeps user hooks, and reports clean next run",
+    (_event, scriptName, command) => {
+      const userEntry: ClaudeHookEntry = { matcher: "*", hooks: [userHook] }
+      const entries: ClaudeHookEntry[] = [
+        { matcher: "", hooks: [{ type: "command", command }, userHook] },
+        userEntry,
+      ]
+      expect(detectClaudeHook(entries, scriptName, "")).not.toBe("missing")
+
+      const result = removeKennenOwnedClaudeHooks(entries, scriptName)
+
+      expect(result).toEqual([{ matcher: "", hooks: [userHook] }, userEntry])
+      expect(detectClaudeHook(result, scriptName, "")).toBe("missing")
+    }
+  )
+
+  it("strips a SessionEnd bin-dispatch hook and keeps the user hook sharing its entry", () => {
+    const entries: ClaudeHookEntry[] = [
+      {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: 'cd "$CLAUDE_PROJECT_DIR" && kennen hooks session-end',
+          },
+          userHook,
+        ],
+      },
+    ]
+
+    const plan = stripKennenOwnedSessionEndEntries(entries)
+
+    expect(plan.removedShim || plan.removedLegacyAutosave).toBe(true)
+    expect(plan.result).toEqual([{ matcher: "", hooks: [userHook] }])
+    const rerun = stripKennenOwnedSessionEndEntries(plan.result)
+    expect(rerun.removedShim).toBe(false)
+    expect(rerun.removedLegacyAutosave).toBe(false)
   })
 })
 

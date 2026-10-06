@@ -25,7 +25,7 @@ import {
   buildClaudeHookCommand,
   CLAUDE_HOOK_TIMEOUT_SECONDS,
   detectClaudeHook,
-  removeClaudeScriptEntries,
+  removeKennenOwnedClaudeHooks,
   stripKennenOwnedSessionEndEntries,
   upsertClaudeHookCommand,
   type ClaudeHookEntry,
@@ -326,14 +326,14 @@ export async function runClaudeInstall(
   }
 
   if (hasLegacyAutosave) {
-    mergedHooks["PostToolUse"] = removeClaudeScriptEntries(
+    mergedHooks["PostToolUse"] = removeKennenOwnedClaudeHooks(
       hooks["PostToolUse"],
       "autosave.sh"
     )
     if (!mergedHooks["PostToolUse"]) delete mergedHooks["PostToolUse"]
   }
   if (hasLegacyWakeup) {
-    mergedHooks["PreToolUse"] = removeClaudeScriptEntries(
+    mergedHooks["PreToolUse"] = removeKennenOwnedClaudeHooks(
       hooks["PreToolUse"],
       "wakeup.sh"
     )
@@ -351,7 +351,7 @@ export async function runClaudeInstall(
     }
   }
   if (hasLegacyPreCompact) {
-    mergedHooks["PreCompact"] = removeClaudeScriptEntries(
+    mergedHooks["PreCompact"] = removeKennenOwnedClaudeHooks(
       hooks["PreCompact"],
       "autosave.sh"
     )
